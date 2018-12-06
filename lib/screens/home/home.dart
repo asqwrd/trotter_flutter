@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_parallax/flutter_parallax.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 
 class Home extends StatefulWidget {
@@ -18,25 +17,42 @@ class HomeState extends State<Home> {
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return <Widget>[
             SliverAppBar(
-              expandedHeight: 200.0,
+              expandedHeight: 350.0,
               floating: false,
               pinned: true,
               flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
                   title: Text("Collapsing Toolbar",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black,
                         fontSize: 16.0,
                       )),
-                  background: Image.asset(
-                    "images/home_bg.jpeg",
-                    fit: BoxFit.cover,
-                  )),
+                  background: Stack(
+                    children: <Widget>[
+                      Positioned.fill(
+                        top:0,
+                        child:Image.asset(
+                          "images/home_bg.jpeg",
+                          fit: BoxFit.cover,
+                        )
+                      ),
+                      Positioned.fill(
+                        top:250,
+                        child: Image.asset(
+                          "images/header.png",
+                          fit: BoxFit.fill,
+                        )
+                      )
+                    ]
+                  )
+                ),
             ),
           ];
         },
-        body: Center(
-          child: Text("Sample Text"),
+        body: Stack(
+          children: <Widget>[
+            TopList(name: "Test", onPressed: null,)
+          ],
         ),
       ),
     );

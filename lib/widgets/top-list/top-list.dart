@@ -1,60 +1,66 @@
 import 'package:flutter/material.dart';
 
-
 class TopList extends StatelessWidget {
   final VoidCallback onPressed;
   final String name;
+  final String header;
 
-
-    //passing props in react style
+  //passing props in react style
   TopList({
+    this.header,
     this.name,
     this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-        itemBuilder: (BuildContext context, int index) {
-          if(index % 2 == 0) {
-            return _buildCarousel(context, index ~/ 2);
-          }
-          else {
-            return Divider();
-          }
-        },
-      );
-  }
-  Widget _buildCarousel(BuildContext context, int carouselIndex) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Text('Carousel $carouselIndex'),
-        SizedBox(
-          // you may want to use an aspect ratio here for tablet support
-          height: 200.0,
-          child: PageView.builder(
-            // store this controller in a State to save the carousel scroll position
-            controller: PageController(viewportFraction: 0.8),
-            itemBuilder: (BuildContext context, int itemIndex) {
-              return _buildCarouselItem(context, carouselIndex, itemIndex);
-            },
-          ),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.max,
+      children:<Widget>[
+      Container(
+        margin: EdgeInsets.symmetric(horizontal: 20.0),
+        child: Text(this.header)
+      ),
+      
+      Container(
+        height:110.0,
+        margin: EdgeInsets.only(top: 10.0),
+        child: ListView.builder(
+          shrinkWrap: true,
+          scrollDirection: Axis.horizontal,
+          itemCount: 20,
+          itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index, this.name)
         )
-      ],
+      )
+      ]
     );
   }
 
-  Widget _buildCarouselItem(BuildContext context, int carouselIndex, int itemIndex) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey,
-          borderRadius: BorderRadius.all(Radius.circular(4.0)),
+  Widget buildBody(BuildContext ctxt, int index,name) {
+  return new Container(height:200.0,child:Column(
+    mainAxisAlignment: MainAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.0),
+          child: Container(
+            // A fixed-height child.
+            decoration: BoxDecoration(
+              color: Colors.yellow,
+              borderRadius: BorderRadius.circular(5)
+            ),
+            width: 120.0,
+            height: 70.0,
+           
+            
+          )
         ),
-      ),
-    );
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          child: Text(name, textAlign: TextAlign.left, overflow: TextOverflow.ellipsis,)
+        )
+      ]
+    ));
   }
 }
-

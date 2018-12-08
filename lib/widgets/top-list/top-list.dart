@@ -4,15 +4,18 @@ class TopList extends StatelessWidget {
   final VoidCallback onPressed;
   final String name;
   final String header;
+  final List<dynamic> items;
 
   //passing props in react style
   TopList({
     this.header,
     this.name,
     this.onPressed,
+    this.items
   });
 
   @override
+  
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -20,25 +23,31 @@ class TopList extends StatelessWidget {
       children:<Widget>[
       Container(
         margin: EdgeInsets.symmetric(horizontal: 20.0),
-        child: Text(this.header)
+        child: Text(
+          this.header,
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.w300
+          ),
+        )
       ),
       
       Container(
-        height:110.0,
-        margin: EdgeInsets.only(top: 10.0),
+        height:130.0,
+        margin: EdgeInsets.only(top: 20.0),
         child: ListView.builder(
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
-          itemCount: 20,
-          itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index, this.name)
+          itemCount: this.items.length,
+          itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index, this.items)
         )
       )
       ]
     );
   }
 
-  Widget buildBody(BuildContext ctxt, int index,name) {
-  return new Container(height:200.0,child:Column(
+  Widget buildBody(BuildContext ctxt, int index, List<dynamic> items) {
+  return new Container(height:210.0,child:Column(
     mainAxisAlignment: MainAxisAlignment.start,
     crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -47,9 +56,14 @@ class TopList extends StatelessWidget {
           child: Container(
             // A fixed-height child.
             decoration: BoxDecoration(
-              color: Colors.yellow,
-              borderRadius: BorderRadius.circular(5)
+              color: Color.fromRGBO(240, 240, 240, 0.8),
+              borderRadius: BorderRadius.circular(5),
+              image: DecorationImage(
+                image: NetworkImage(items[index]['image']),
+                fit: BoxFit.cover
+              )
             ),
+            
             width: 120.0,
             height: 70.0,
            
@@ -58,7 +72,17 @@ class TopList extends StatelessWidget {
         ),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-          child: Text(name, textAlign: TextAlign.left, overflow: TextOverflow.ellipsis,)
+          width: 150.0,
+          child: Text(
+            items[index]['name'], 
+            textAlign: TextAlign.left, 
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w300
+            ),
+          )
         )
       ]
     ));

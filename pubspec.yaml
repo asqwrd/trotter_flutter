@@ -19,8 +19,8 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
-  english_words: ^3.1.0
-  flutter_parallax: "^0.1.2"
+  http: ^0.12.0
+  flutter_svg: ^0.7.0+1
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +42,11 @@ flutter:
   assets:
   - images/home_bg.jpeg
   - images/header.png
+  - images/logo_nw.png
+  - images/search-icon.svg
+  - images/trips-icon.svg
+  - images/explore-icon.svg
+  - images/avatar-icon.svg
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

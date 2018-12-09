@@ -3,23 +3,29 @@ import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 Future<HomeData> fetchHome() async {
-  try{
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String cacheData = prefs.getString('home') ?? null;
+  if(cacheData != null) {
+    await Future.delayed(const Duration(seconds: 1));
+    return HomeData.fromJson(json.decode(cacheData));
+  } else {
     final response = await http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
-      debugPrint('Response> $json.decode(response.body)');
       // If server returns an OK response, parse the JSON
+      await prefs.setString('home', response.body);
       return HomeData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
-      debugPrint('Response> $msg');
-      throw Exception('Failed to load home');
+      throw Exception('Response> $msg');
     }
-  } catch(error){
-    debugPrint('Response> $error');
   }
+  
+  
 }
 
 class HomeData {
@@ -42,9 +48,7 @@ class HomeData {
 }
 
 class Home extends StatefulWidget {
-  Home({Key key, this.title}) : super(key: key);
-
-  final String title;
+  Home() : super();
   @override
   HomeState createState() => new HomeState();
 }
@@ -107,6 +111,14 @@ class HomeState extends State<Home> {
             pinned: true,
             backgroundColor: Color.fromRGBO(194, 121, 73, 1),
             automaticallyImplyLeading: false,
+            leading: _showTitle ? Padding(
+              padding: EdgeInsets.only(top: 10.0, bottom: 10.0, left: 20.0),
+              child: Image.asset(
+              "images/logo_nw.png", 
+              width: 25.0,
+              height: 25.0,
+              fit: BoxFit.contain,
+            )): null,
             bottom: !_showTitle
                 ? PreferredSize(
                     preferredSize: Size.fromHeight(40),

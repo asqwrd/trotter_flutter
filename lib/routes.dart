@@ -6,7 +6,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class Routes {
   final routes = <String, WidgetBuilder>{
-    '/Auth': (BuildContext context) => new Auth()
+    '/Auth': (BuildContext context) => new Auth(),
+    '/Home': (BuildContext context) => new Home()
   };
 
   Routes () {
@@ -15,48 +16,63 @@ class Routes {
       routes: routes,
       //home: new Auth(),
       home: Scaffold(
-        body: new Home(title: 'Parallax demo'),
-        bottomNavigationBar: BottomAppBar(
-          color: Colors.white,
-          child: Container(
-            height: 70.0,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                _buildBottomItem('Explore','images/explore-icon.svg'),
-                _buildBottomItem('Search','images/search-icon.svg'),
-                _buildBottomItem('Trips', 'images/trips-icon.svg'),
-                _buildBottomItem('Profile', 'images/avatar-icon.svg'),
-              ],
-            ),
-          ),
-        ),
+        body: new Home(),
+        bottomNavigationBar: BottomNav(),
+        )
       )
-    ));
-  }
-
-  Widget _buildBottomItem (String label, String path) {
-    return IconButton(
-      icon: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Flexible(
-            child:SvgPicture.asset(path, color:Colors.black, width: 50, height: 50, fit: BoxFit.contain,)
-          ),
-          Flexible(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 15.0
-              )
-            )
-          )
-        ]
-      ), 
-      iconSize: 60, 
-      onPressed: () {},
     );
   }
+    
+}
+
+class BottomNav extends StatefulWidget {
+ BottomNav({Key key}) : super(key: key);
+
+ @override
+ _BottomNav createState() => _BottomNav();
+}
+
+class _BottomNav extends State<BottomNav> {
+  int _selectedIndex = 0;
+  Color activeColor = Color.fromRGBO(194, 121, 73, 1);
+  @override
+  Widget build(BuildContext context) {
+    return new Theme(
+    data: Theme.of(context).copyWith(
+        // sets the background color of the `BottomNavigationBar`
+        canvasColor: Colors.white,
+      ), // sets the inactive color of the `BottomNavigationBar`
+    child: BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      items: [
+        BottomNavigationBarItem(
+          icon: new SvgPicture.asset('images/explore-icon.svg', color: _selectedIndex == 0 ? activeColor : Colors.black, width: 30, height: 30, fit: BoxFit.contain),
+          title: new Text('Explore'),
+        ),
+          BottomNavigationBarItem(
+          icon: new SvgPicture.asset('images/trips-icon.svg', color: _selectedIndex == 1 ? activeColor : Colors.black, width: 30, height: 30, fit: BoxFit.contain),
+          title: new Text('Trips'),
+        ),
+        BottomNavigationBarItem(
+          icon: new SvgPicture.asset('images/search-icon.svg', color: _selectedIndex == 2 ? activeColor : Colors.black, width: 30, height: 30, fit: BoxFit.contain),
+          title: new Text('Search'),
+        ),
+        BottomNavigationBarItem(
+          icon: new SvgPicture.asset('images/avatar-icon.svg', color: _selectedIndex == 3 ? activeColor : Colors.black, width: 30, height: 30, fit: BoxFit.contain),
+          title: new Text('Profile')
+        )
+      ],
+      fixedColor: activeColor,
+      type: BottomNavigationBarType.fixed,
+      onTap: _onItemTapped,
+    )
+    );
+  }
+  void _onItemTapped(int index) {
+    debugPrint('Response> $index');
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
 }

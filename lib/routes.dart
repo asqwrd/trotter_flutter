@@ -1,19 +1,33 @@
 import 'package:flutter/material.dart';
 import 'screens/auth/index.dart';
 import 'screens/home/index.dart';
+import 'screens/country/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-
+class MyBehavior extends ScrollBehavior {
+  @override
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
+  }
+}
 class Routes {
   final routes = <String, WidgetBuilder>{
     '/Auth': (BuildContext context) => new Auth(),
-    '/Home': (BuildContext context) => new Home()
+    '/Home': (BuildContext context) => new Home(),
+    //'/Country': (BuildContext context) => new Country(),
   };
 
   Routes () {
     runApp(new MaterialApp(
       title: 'Flutter Demo',
       routes: routes,
+      builder: (context, child) {
+        return ScrollConfiguration(
+          behavior: MyBehavior(),
+          child: child,
+        );
+      },
       //home: new Auth(),
       home: Scaffold(
         body: new Home(),

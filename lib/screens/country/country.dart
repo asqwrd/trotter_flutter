@@ -4,21 +4,27 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/screens/country/index.dart';
 
+class Country extends StatefulWidget {
+  final String countryId;
+  Country({Key key, @required this.countryId}) : super(key: key);
+  @override
+  CountryState createState() => new CountryState(countryId:this.countryId);
+}
 
-Future<HomeData> fetchHome() async {
+Future<CountryData> fetchCountry(String id) async {
+  print('Id $id');
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String cacheData = prefs.getString('home') ?? null;
+  final String cacheData = prefs.getString('country_$id') ?? null;
   if(cacheData != null) {
     await Future.delayed(const Duration(seconds: 1));
-    return HomeData.fromJson(json.decode(cacheData));
+    return CountryData.fromJson(json.decode(cacheData));
   } else {
-    final response = await http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
+    final response = await http.get('http://localhost:3002/api/explore/countries/$id', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
-      await prefs.setString('home', response.body);
-      return HomeData.fromJson(json.decode(response.body));
+      //await prefs.setString('country_$id', response.body);
+      return CountryData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
@@ -27,51 +33,52 @@ Future<HomeData> fetchHome() async {
   }
 }
 
-class HomeData {
-  final List<dynamic> nationalParks;
-  final List<dynamic> popularCities;
-  final List<dynamic> popularCountries;
-  final List<dynamic> popularIslands;
+class CountryData {
+  final String color;
+  final Map<String, dynamic> country;
+  final dynamic currency;
+  final dynamic emergencyNumber;
+  final List<dynamic> plugs;
+  final dynamic safety;
+  final dynamic visa;
  
 
-  HomeData({this.nationalParks, this.popularCities, this.popularCountries, this.popularIslands});
+  CountryData({this.color, this.country, this.currency, this.emergencyNumber,this.plugs, this.safety, this.visa});
 
-  factory HomeData.fromJson(Map<String, dynamic> json) {
-    return HomeData(
-      nationalParks: json['national_parks'],
-      popularCities: json['popular_cities'],
-      popularCountries: json['popular_countries'],
-      popularIslands: json['popular_islands'],
+  factory CountryData.fromJson(Map<String, dynamic> json) {
+    return CountryData(
+      color: json['color'],
+      country: json['country'],
+      currency: json['currency'],
+      emergencyNumber: json['emergency_number'],
+      plugs: json['plugs'],
+      safety: json['safety'],
+      visa: json['visa'],
     );
   }
 }
 
-class Home extends StatefulWidget {
-  Home() : super();
-  @override
-  HomeState createState() => new HomeState();
-}
+const kExpandedHeight = 450.0;
 
-const kExpandedHeight = 300.0;
 
-class HomeState extends State<Home> {
-  //final ScrollController _scrollController = ScrollController();
+class CountryState extends State<Country> {
   bool _showTitle = false;
+  static String id;
+  final String countryId;
+  Future<CountryData> data;
 
   @override
   void initState() {
     super.initState();
-
-    //_scrollController.addListener(() => setState(() {}));
+    data = fetchCountry(this.countryId);
   }
+
+  CountryState({
+    this.countryId,
+  });
 
   
 
-  /*bool get _showTitle {
-    return _scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-  }*/
-  final Future<HomeData> data = fetchHome();
 
   @override
   Widget build(BuildContext context) {
@@ -101,6 +108,13 @@ class HomeState extends State<Home> {
     );
   }
 
+  hexStringToHexInt(String hex) {
+  hex = hex.replaceFirst('#', '');
+  hex = hex.length == 6 ? 'ff' + hex : hex;
+  int val = int.parse(hex, radix: 16);
+  return val;
+}
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     final ScrollController _scrollController = ScrollController();
@@ -108,37 +122,36 @@ class HomeState extends State<Home> {
        _showTitle =_scrollController.hasClients &&
         _scrollController.offset > kExpandedHeight - kToolbarHeight;
      }));
+     var name = snapshot.data.country['name'];
+     var image = snapshot.data.country['image'];
+     var description_short = snapshot.data.country['description_short'];
+     var color = Color(hexStringToHexInt(snapshot.data.color));
+     print(color);
+
     return NestedScrollView(
       controller: _scrollController,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 350.0,
+            expandedHeight: 500.0,
             floating: false,
             pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
+            backgroundColor: color,
             automaticallyImplyLeading: false,
-            leading: _showTitle ? Padding(
-              padding: EdgeInsets.only(top: 10.0, bottom: 10.0, left: 20.0),
-              child: Image.asset(
-              "images/logo_nw.png", 
-              width: 25.0,
-              height: 25.0,
-              fit: BoxFit.contain,
-            )): null,
-            bottom: !_showTitle
-                ? PreferredSize(
-                    preferredSize: Size.fromHeight(40),
-                    child: Image.asset("images/header.png",
-                        fit: BoxFit.fill,
-                        height: 100.0,
-                        width: double.infinity))
-                : null,
+            leading: Padding(
+                padding: EdgeInsets.only(top: 0.0, bottom: 0.0, left: 0.0),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {  Navigator.pop(ctxt);},
+                  tooltip: MaterialLocalizations.of(ctxt).openAppDrawerTooltip,
+                  iconSize: 40,
+                )
+            ),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 collapseMode: CollapseMode.parallax,
                 title: _showTitle
-                    ? Text("Explore the world",
+                    ? Text(name,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16.0,
@@ -147,18 +160,18 @@ class HomeState extends State<Home> {
                 background: Stack(children: <Widget>[
                   Positioned.fill(
                       top: 0,
-                      child: Image.asset(
-                        "images/home_bg.jpeg",
+                      child: Image.network(
+                        image,
                         fit: BoxFit.cover,
                       )),
                   Positioned.fill(
                       top: 0,
                       left: 0,
                       child: Container(
-                        color: Color.fromRGBO(194, 121, 73, 0.4),
+                        color: color.withOpacity(0.4),
                       )),
                   Positioned(
-                    left: 20,
+                    right: 20,
                     top: 30,
                     child: Image.asset("images/logo_nw.png",
                         width: 55.0,
@@ -167,8 +180,8 @@ class HomeState extends State<Home> {
                   ),
                   Positioned(
                     left: 20,
-                    top: 180,
-                    child: Text("Explore the world",
+                    top: 250,
+                    child: Text(name,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 40,
@@ -187,58 +200,7 @@ class HomeState extends State<Home> {
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           children: <Widget>[
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.popularCountries,
-                onPressed: (id){
-                  print("Clicked $id");
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Country(countryId:id)),
-                  );
-                },
-                header: "Trending countries"
-              )
-            ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.popularCities,
-                onPressed: (id){
-                  print("Clicked $id");
-                },
-                header: "Trending cities"
-              )
-            ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.nationalParks,
-                onPressed: (id){
-                  print("Clicked $id");
-                },
-                header: "Explore national parks"
-              )
-            ),  
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.popularIslands,
-                onPressed: (id){
-                  print("Clicked $id");
-                },
-                header: "Explore the island life"
-              )
-            ),        
+                  
           ],
         )
       ),
@@ -247,14 +209,15 @@ class HomeState extends State<Home> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
+
     final ScrollController _scrollController = ScrollController();
      _scrollController.addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
         _scrollController.offset > kExpandedHeight - kToolbarHeight;
      }));
-     
+
     return NestedScrollView(
-      controller: _scrollController,
+      //controller: _scrollControllerCountry,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
@@ -263,19 +226,11 @@ class HomeState extends State<Home> {
             pinned: true,
             backgroundColor: Color.fromRGBO(194, 121, 73, 1),
             automaticallyImplyLeading: false,
-            bottom: !_showTitle
-              ? PreferredSize(
-                  preferredSize: Size.fromHeight(40),
-                  child: Image.asset("images/header.png",
-                      fit: BoxFit.fill,
-                      height: 100.0,
-                      width: double.infinity))
-              : null,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
               background: Container(
-                color: Color.fromRGBO(240, 240, 240, 0.8)
+                color: Color.fromRGBO(240, 240, 240, 1)
               ),
             ),
           ),

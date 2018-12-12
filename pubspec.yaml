@@ -22,6 +22,7 @@ dependencies:
   http: ^0.12.0
   flutter_svg: ^0.7.0+1
   shared_preferences: ^0.4.3
+  flutter_statusbarcolor: ^0.1.1
 
 dev_dependencies:
   flutter_test:
@@ -44,6 +45,8 @@ flutter:
   - images/home_bg.jpeg
   - images/header.png
   - images/logo_nw.png
+  - images/vaccines.png
+  - images/risk.png
   - images/search-icon.svg
   - images/trip-icon.svg
   - images/trips-icon.svg

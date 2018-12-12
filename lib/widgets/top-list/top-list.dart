@@ -42,6 +42,7 @@ class TopList extends StatelessWidget {
         margin: EdgeInsets.only(top: 20.0),
         child: ListView.builder(
           shrinkWrap: true,
+          primary: false,
           scrollDirection: Axis.horizontal,
           itemCount: this.items.length,
           itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index, this.items)

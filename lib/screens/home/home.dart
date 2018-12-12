@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/screens/country/index.dart';
+import 'package:trotter_flutter/utils/index.dart';
+
 
 
 Future<HomeData> fetchHome() async {
@@ -47,47 +47,36 @@ class HomeData {
 }
 
 class Home extends StatefulWidget {
-  Home() : super();
+  final ValueChanged<String> onPush;
+  Home({Key key, @required this.onPush}) : super(key: key);
   @override
-  HomeState createState() => new HomeState();
+  HomeState createState() => new HomeState(onPush:this.onPush);
 }
 
-const kExpandedHeight = 300.0;
+const kExpandedHeight = 450.0;
 
 class HomeState extends State<Home> {
   //final ScrollController _scrollController = ScrollController();
   bool _showTitle = false;
+  final ValueChanged<String> onPush;
 
   @override
   void initState() {
     super.initState();
-
+    
     //_scrollController.addListener(() => setState(() {}));
   }
 
+  final Future<HomeData> data = fetchHome();
+  HomeState({
+    this.onPush,
+  });
+
   
 
-  /*bool get _showTitle {
-    return _scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-  }*/
-  final Future<HomeData> data = fetchHome();
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.white,
-        systemNavigationBarIconBrightness: Brightness.dark));
-    SystemChannels.lifecycle.setMessageHandler((msg) {
-      if (msg == AppLifecycleState.resumed.toString()) {
-        debugPrint('SystemChannels> $msg');
-        SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            systemNavigationBarColor: Colors.white,
-            systemNavigationBarIconBrightness: Brightness.dark));
-      }
-    });
     return new Scaffold(
       body: FutureBuilder(
         future: data,
@@ -113,10 +102,10 @@ class HomeState extends State<Home> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 350.0,
+            expandedHeight: 500.0,
             floating: false,
             pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
+            backgroundColor: _showTitle ? Color.fromRGBO(194, 121, 73, 1) : Colors.white,
             automaticallyImplyLeading: false,
             leading: _showTitle ? Padding(
               padding: EdgeInsets.only(top: 10.0, bottom: 10.0, left: 20.0),
@@ -129,10 +118,18 @@ class HomeState extends State<Home> {
             bottom: !_showTitle
                 ? PreferredSize(
                     preferredSize: Size.fromHeight(40),
-                    child: Image.asset("images/header.png",
-                        fit: BoxFit.fill,
-                        height: 100.0,
-                        width: double.infinity))
+                    child: Container(
+                      width: double.infinity,
+                      height: 100.0,
+                      decoration:BoxDecoration(
+                        //color: Colors.white,
+                        image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: AssetImage("images/header.png")
+                        )
+                      )
+                    )
+                  )
                 : null,
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
@@ -195,10 +192,7 @@ class HomeState extends State<Home> {
                 items: snapshot.data.popularCountries,
                 onPressed: (id){
                   print("Clicked $id");
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Country(countryId:id)),
-                  );
+                  onPush(id);
                 },
                 header: "Trending countries"
               )

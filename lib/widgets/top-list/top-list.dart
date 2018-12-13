@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-typedef String2VoidFunc = void Function(String);
+typedef String2VoidFunc = void Function(Map<String, String>);
 
 class TopList extends StatelessWidget {
   final String2VoidFunc onPressed;
@@ -22,44 +22,60 @@ class TopList extends StatelessWidget {
   @override
   
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.max,
-      children:<Widget>[
-      Container(
-        margin: EdgeInsets.symmetric(horizontal: 20.0),
-        child: Text(
-          this.header,
-          style: TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.w300
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 20.0), 
+      child:Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.max,
+        children:<Widget>[
+          Container(
+            margin: EdgeInsets.only(left: 20.0, right:20.0, bottom:20.0),
+            child: Text(
+              this.header,
+              style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.w300
+              ),
+            )
           ),
-        )
-      ),
-      
-      Container(
-        height:130.0,
-        margin: EdgeInsets.only(top: 20.0),
-        child: ListView.builder(
-          shrinkWrap: true,
-          primary: false,
-          scrollDirection: Axis.horizontal,
-          itemCount: this.items.length,
-          itemBuilder: (BuildContext ctxt, int index) => buildBody(ctxt, index, this.items)
-        )
+          
+          SingleChildScrollView(
+            primary: false,
+            scrollDirection: Axis.horizontal,
+            child: buildRow(buildItems(this.items))
+          )
+        ]
       )
-      ]
     );
   }
 
-  Widget buildBody(BuildContext ctxt, int index, List<dynamic> items) {
+  buildItems(items) {
+    var widgets = List<Widget>();
+    for (var item in items) {
+      widgets.add(buildBody(item));
+        
+    }
+    return widgets;
+  }
+
+  buildRow(List<Widget> widgets) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.min,
+      children: widgets,
+    );
+  }
+
+  Widget buildBody(dynamic item) {
   return new GestureDetector ( 
     onTap: (){
-      var id = items[index]['id'];
-      this.onPressed(id);
+      var id = item['id'];
+      var level = item['level'];
+      this.onPressed({'id': id, 'level': level});
     },
     child:Container(
-      height:210.0,
+      //height:210.0,
       child:Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,12 +88,12 @@ class TopList extends StatelessWidget {
                   color: Color.fromRGBO(240, 240, 240, 0.8),
                   borderRadius: BorderRadius.circular(5),
                   image: DecorationImage(
-                    image: NetworkImage(items[index]['image']),
+                    image: NetworkImage(item['image']),
                     fit: BoxFit.cover
                   )
                 ),
                 width: 120.0,
-                height: 70.0,
+                height: 90.0,
               
                 
               )
@@ -86,7 +102,7 @@ class TopList extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               width: 150.0,
               child: Text(
-                items[index]['name'], 
+                item['name'], 
                 textAlign: TextAlign.left, 
                 overflow: TextOverflow.ellipsis,
                 maxLines: 2,

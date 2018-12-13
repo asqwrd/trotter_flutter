@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
+import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/utils/index.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
 
 
 
@@ -45,9 +47,10 @@ class HomeData {
     );
   }
 }
+typedef String2VoidFunc = void Function(String, String);
 
 class Home extends StatefulWidget {
-  final ValueChanged<String> onPush;
+  final ValueChanged<dynamic> onPush;
   Home({Key key, @required this.onPush}) : super(key: key);
   @override
   HomeState createState() => new HomeState(onPush:this.onPush);
@@ -58,7 +61,7 @@ const kExpandedHeight = 450.0;
 class HomeState extends State<Home> {
   //final ScrollController _scrollController = ScrollController();
   bool _showTitle = false;
-  final ValueChanged<String> onPush;
+  final ValueChanged<dynamic> onPush;
 
   @override
   void initState() {
@@ -102,45 +105,50 @@ class HomeState extends State<Home> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 500.0,
+            expandedHeight: 600.0,
             floating: false,
             pinned: true,
+            title: SearchBar(
+              placeholder: 'Explore the world',
+              leading: SvgPicture.asset("images/search-icon.svg",
+                width: 55.0,
+                height: 55.0,
+                color: Colors.black,
+                fit: BoxFit.contain
+              )
+                  
+            ),
+            centerTitle: true,
             backgroundColor: _showTitle ? Color.fromRGBO(194, 121, 73, 1) : Colors.white,
             automaticallyImplyLeading: false,
-            leading: _showTitle ? Padding(
+            /*leading: _showTitle ? Padding(
               padding: EdgeInsets.only(top: 10.0, bottom: 10.0, left: 20.0),
               child: Image.asset(
               "images/logo_nw.png", 
               width: 25.0,
               height: 25.0,
               fit: BoxFit.contain,
-            )): null,
+            )): null,*/
             bottom: !_showTitle
                 ? PreferredSize(
                     preferredSize: Size.fromHeight(40),
                     child: Container(
                       width: double.infinity,
                       height: 100.0,
-                      decoration:BoxDecoration(
-                        //color: Colors.white,
-                        image: DecorationImage(
-                          fit: BoxFit.fill,
-                          image: AssetImage("images/header.png")
-                        )
-                      )
+                      child:Image.asset("images/header.png", fit:BoxFit.fill)
                     )
                   )
-                : null,
+                : PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 collapseMode: CollapseMode.parallax,
-                title: _showTitle
+                /*title: _showTitle
                     ? Text("Explore the world",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16.0,
                         ))
-                    : null,
+                    : null,*/
                 background: Stack(children: <Widget>[
                   Positioned.fill(
                       top: 0,
@@ -149,19 +157,20 @@ class HomeState extends State<Home> {
                         fit: BoxFit.cover,
                       )),
                   Positioned.fill(
-                      top: 0,
-                      left: 0,
-                      child: Container(
-                        color: Color.fromRGBO(194, 121, 73, 0.4),
-                      )),
-                  Positioned(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                      color: Color.fromRGBO(194, 121, 73, 0.4),
+                    )
+                  ),
+                  /*Positioned(
                     left: 20,
                     top: 30,
                     child: Image.asset("images/logo_nw.png",
                         width: 55.0,
                         height: 55.0,
                         fit: BoxFit.contain),
-                  ),
+                  ),*/
                   Positioned(
                     left: 20,
                     top: 180,
@@ -180,59 +189,38 @@ class HomeState extends State<Home> {
         ];
       },
       body: Container(
-        padding: EdgeInsets.only(top: 40.0),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           children: <Widget>[
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.popularCountries,
-                onPressed: (id){
-                  print("Clicked $id");
-                  onPush(id);
-                },
-                header: "Trending countries"
-              )
+            TopList(
+              items: snapshot.data.popularCountries,
+              onPressed: (data){
+                print("Clicked ${data['id']}");
+                onPush({'id':data['id'], 'level':data['level']});
+              },
+              header: "Trending countries"
             ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.popularCities,
-                onPressed: (id){
-                  print("Clicked $id");
-                },
-                header: "Trending cities"
-              )
+            TopList(
+              items: snapshot.data.popularCities,
+              onPressed: (data){
+                print("Clicked ${data['level']}");
+              },
+              header: "Trending cities"
             ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.nationalParks,
-                onPressed: (id){
-                  print("Clicked $id");
-                },
-                header: "Explore national parks"
-              )
-            ),  
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopList(
-                items: snapshot.data.popularIslands,
-                onPressed: (id){
-                  print("Clicked $id");
-                },
-                header: "Explore the island life"
-              )
-            ),        
+            TopList(
+              items: snapshot.data.nationalParks,
+              onPressed: (data){
+                print("Clicked ${data['id']}");
+              },
+              header: "Explore national parks"
+            ),
+            TopList(
+              items: snapshot.data.popularIslands,
+              onPressed: (data){
+                print("Clicked ${data['id']}");
+              },
+              header: "Explore the island life"
+            )
           ],
         )
       ),
@@ -242,7 +230,7 @@ class HomeState extends State<Home> {
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
     final ScrollController _scrollController = ScrollController();
-     _scrollController.addListener(() => setState(() {
+     _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
         _scrollController.offset > kExpandedHeight - kToolbarHeight;
      }));

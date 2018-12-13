@@ -44,7 +44,10 @@ flutter:
   assets:
   - images/home_bg.jpeg
   - images/header.png
+  - images/header.svg
   - images/logo_nw.png
+  - images/trotter-logo.svg
+  - images/logo_nw_black.png
   - images/vaccines.png
   - images/risk.png
   - images/search-icon.svg
@@ -52,6 +55,20 @@ flutter:
   - images/trips-icon.svg
   - images/explore-icon.svg
   - images/avatar-icon.svg
+  - images/A.png
+  - images/B.png
+  - images/C.png
+  - images/D.png
+  - images/E.png
+  - images/F.png
+  - images/G.png
+  - images/H.png
+  - images/I.png
+  - images/J.png
+  - images/K.png
+  - images/L.png
+  - images/M.png
+  - images/N.png
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

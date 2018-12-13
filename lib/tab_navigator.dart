@@ -6,6 +6,7 @@ import 'package:trotter_flutter/screens/country/index.dart';
 class TabNavigatorRoutes {
   static const String root = '/';
   static const String country = '/country';
+  static const String city = '/city';
 }
 
 class TabNavigator extends StatelessWidget {
@@ -13,25 +14,39 @@ class TabNavigator extends StatelessWidget {
   final GlobalKey<NavigatorState> navigatorKey;
   final TabItem tabItem;
 
-  void _push(BuildContext context, {String id}) {
-    var routeBuilders = _routeBuilders(context, id: id);
+  void _push(BuildContext context, Map<String, String> data) {
+    print(data['level']);
+    var routeBuilders = _routeBuilders(context, data: data);
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => routeBuilders[TabNavigatorRoutes.country](context),
+      PageRouteBuilder(
+        pageBuilder: (context, _, __) =>  routeBuilders[TabNavigatorRoutes.country](context),
+        transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+          return new FadeTransition(
+            opacity: animation,
+              child: child,
+            );
+          /*return new SlideTransition(
+            position: new Tween<Offset>(
+              begin: const Offset(-1.0, 0.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+           );*/
+         }
       ),
     );
   }
 
-  Map<String, WidgetBuilder> _routeBuilders(BuildContext context,
-      {String id}) {
+  Map<String, WidgetBuilder> _routeBuilders(BuildContext context, {Map<String, String> data}) {
     return {
       TabNavigatorRoutes.root: (context) => Home(
-        onPush: (id) =>
-          _push(context, id: id),
+        onPush: (data) =>
+          _push(context, data),
       ),
-      TabNavigatorRoutes.country: (context) => Country(countryId:id),
+      TabNavigatorRoutes.country: (context) => Country(countryId:data['id']),
+      TabNavigatorRoutes.city: (context) => Country(countryId:data['id']),
     };
   }
 

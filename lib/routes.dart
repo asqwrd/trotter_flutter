@@ -14,7 +14,11 @@ class MyBehavior extends ScrollBehavior {
 // const mySystemTheme= StyleUiOverlayStyle.light
 //  .copyWith(systemNavigationBarColor: Colors.red);
 class Routes {
-  final mySystemTheme = SystemUiOverlayStyle.dark.copyWith(systemNavigationBarIconBrightness: Brightness.dark, systemNavigationBarColor: Colors.white, statusBarColor: Colors.transparent);
+  final mySystemTheme = SystemUiOverlayStyle.dark.copyWith(
+    systemNavigationBarIconBrightness: Brightness.dark, 
+    systemNavigationBarColor: Colors.white, 
+    statusBarColor: Colors.transparent
+  );
 
 
   Routes () {
@@ -23,6 +27,9 @@ class Routes {
       new AnnotatedRegion<SystemUiOverlayStyle>(
         value:mySystemTheme,
         child:new MaterialApp(
+          theme: ThemeData(
+            scaffoldBackgroundColor: Colors.white,
+          ),
           builder: (context, child) {
             return ScrollConfiguration(
               behavior: MyBehavior(),

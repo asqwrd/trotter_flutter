@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
+import 'package:trotter_flutter/widgets/top-list/index.dart';
+
 
 Future<CountryData> fetchCountry(String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -35,9 +37,10 @@ class CountryData {
   final List<dynamic> plugs;
   final dynamic safety;
   final dynamic visa;
+  final dynamic popularDestinations;
  
 
-  CountryData({this.color, this.country, this.currency, this.emergencyNumber,this.plugs, this.safety, this.visa});
+  CountryData({this.color, this.country, this.currency, this.emergencyNumber,this.plugs, this.safety, this.visa, this.popularDestinations});
 
   factory CountryData.fromJson(Map<String, dynamic> json) {
     return CountryData(
@@ -48,11 +51,12 @@ class CountryData {
       plugs: json['plugs'],
       safety: json['safety'],
       visa: json['visa'],
+      popularDestinations: json['popular_destinations'],
     );
   }
 }
 
-const kExpandedHeight = 450.0;
+const kExpandedHeight = 300.0;
 
 class Country extends StatefulWidget {
   final String countryId;
@@ -122,7 +126,10 @@ class CountryState extends State<Country> {
     var image = snapshot.data.country['image'];
     var visa = snapshot.data.visa;
     var safety = snapshot.data.safety;
+    var plugs = snapshot.data.plugs;
     var descriptionShort = snapshot.data.country['description_short'];
+    var emergencyNumbers = snapshot.data.emergencyNumber;
+    var popularDestinations = snapshot.data.popularDestinations;
     var color = Color(hexStringToHexInt(snapshot.data.color));
     _showVisa = visa != null;
     _showVisaTextual = _showVisa && visa['visa']['textual'] != null;
@@ -130,6 +137,10 @@ class CountryState extends State<Country> {
     _showVisaNotes = _showVisa && visa['visa']['notes'] != null;
     _showVisaPassportValid = _showVisa && visa['passport'] != null  && visa['passport']['passport_validity'] != null;
     _showVisaBlankPages = _showVisa && visa['passport'] != null  && visa['passport']['blank_pages'] != null;
+    String ambulance = _arrayString(emergencyNumbers['ambulance']['all']);
+    String police = _arrayString(emergencyNumbers['police']['all']);
+    String fire = _arrayString(emergencyNumbers['fire']['all']);
+    String dispatch = _arrayString(emergencyNumbers['dispatch']['all']);
 
     Color _getAdviceColor(int rating){
       if(rating > 0 && rating < 2.5){
@@ -150,7 +161,7 @@ class CountryState extends State<Country> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 500.0,
+            expandedHeight: 350.0,
             floating: false,
             pinned: true,
             backgroundColor: color,
@@ -213,12 +224,12 @@ class CountryState extends State<Country> {
         ];
       },
       body: Container(
-        padding: EdgeInsets.only(top: 40.0, left: 20.0, right: 20.0),
+        margin: EdgeInsets.only(top: 40.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(bottom: 40.0),
+              padding: EdgeInsets.only(bottom: 40.0, left:20.0, right: 20.0),
               child: Text(
                 descriptionShort, 
                 style: TextStyle(
@@ -228,7 +239,7 @@ class CountryState extends State<Country> {
               )
             ),
             _showVisa ? Container(
-              margin: EdgeInsets.only(bottom:40.0),
+              margin: EdgeInsets.only(bottom:40.0, left: 20.0, right: 20.0),
               decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.0),
               border: Border.all(
@@ -259,21 +270,27 @@ class CountryState extends State<Country> {
                 )
               )
             ):Container(),
-            Divider(color: Colors.grey),  
+
+            _buildDivider(), 
+
             Container(
               margin: EdgeInsets.symmetric(vertical: 40.0), 
               child:Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    'Health and Safety',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 25.0
-                    ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    child:Text(
+                      'Health and Safety',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 25.0
+                      ),
+                    )
                   ),
                   Container(
                     margin: EdgeInsets.only(top:20.0, bottom:20.0),
+                    padding: EdgeInsets.symmetric(horizontal:20.0),
                     child:Text(
                       safety['advice'],
                       style: TextStyle(
@@ -284,14 +301,154 @@ class CountryState extends State<Country> {
                     )
                   ),
                   VaccineList(vaccines: visa['vaccination']),
-                  
-                  Text('gdfgljdlgjkldjfgld')
                 ]
               ),
-            )
+            ),
+
+            _buildDivider(),
+
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 40.0), 
+              child:Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    child:Text(
+                      'Emergency numbers',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 25.0
+                      ),
+                    )
+                  ),
+                  Container(
+                    padding:EdgeInsets.all(20.0),
+                    margin: EdgeInsets.only(left: 20.0, right:20.0, top: 20.0, bottom: 40.0 ),
+                    decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(
+                        color: Colors.black,
+                          width: 0.8,
+                      )                
+                    ),
+                    child:Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        ambulance.isNotEmpty ? _buildEmergencyNumRow('Ambulance', ambulance):Container(),
+                        dispatch.isNotEmpty ? _buildEmergencyNumRow('Dispatch', dispatch):Container(),
+                        fire.isNotEmpty ? _buildEmergencyNumRow('Fire', fire):Container(),
+                        police.isNotEmpty ? _buildEmergencyNumRow('Police', police):Container(),
+                      ] 
+                    )
+                  ),
+
+                  _buildDivider(),
+
+                  Container(
+                    padding:EdgeInsets.all(20.0),
+                    margin: EdgeInsets.only(left: 20.0, right:20.0, top: 40.0, bottom: 40.0 ),
+                    decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(
+                        color: Colors.black,
+                          width: 0.8,
+                      )                
+                    ),
+                    child:Wrap(
+                      children: _getPlugs(plugs, name)
+                    )
+                  ),
+
+                  TopList(
+                    items: popularDestinations,
+                    onPressed: (data){
+                      print("Clicked ${data['id']}");
+                    },
+                    header: "Popular cities"
+                  )
+
+                ]
+              ),
+            ),
           ],
         )
       ),
+    );
+  }
+
+  _buildDivider() {
+    return Padding(padding:EdgeInsets.symmetric(horizontal: 20.0), child:Divider(color: Colors.grey));  
+  }
+
+  _getPlugs(List<dynamic> plugsData, String name) {
+    var plugs = <Widget>[
+      Container(
+        margin: EdgeInsets.only(top: 10.0, bottom: 40.0),
+        width: double.infinity,
+        child:Text(
+          '$name uses a frequency of ${plugsData[0]['frequency']} and voltage of ${plugsData[0]['voltage']} in sockets.  Below are the types of plugs you need when traveling to $name.',
+          style: TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.w400,
+          ),
+        )
+      )
+    ];
+    for (var plug in plugsData) {
+      plugs.add(
+        Padding(
+          padding: EdgeInsets.only(right: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Image.asset(
+                'images/${plug['type']}.png',
+                width: 100.0,
+                height: 100.0,
+              ),
+              Text(
+                'Type ${plug['type']}',
+                style: TextStyle(
+                  fontSize: 20.0,
+                )
+              )
+            ]
+          )
+        )
+      );
+    }
+    return plugs;
+  }
+
+  _arrayString(List<dynamic> list) {
+    return list.join(', ');
+  }
+
+  _buildEmergencyNumRow(String label, String numbers){
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 20.0
+            )
+          ),
+          Text(
+            numbers,
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.w300
+            )
+          )
+        ],
+      
+      )
     );
   }
 
@@ -353,7 +510,7 @@ class CountryState extends State<Country> {
   Widget _buildLoadingBody(BuildContext ctxt) {
 
     final ScrollController _scrollController = ScrollController();
-     _scrollController.addListener(() => setState(() {
+     _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
         _scrollController.offset > kExpandedHeight - kToolbarHeight;
      }));

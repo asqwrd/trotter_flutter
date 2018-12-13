@@ -14,7 +14,7 @@ class VaccineList extends StatelessWidget {
   
   Widget build(BuildContext context) {
       //print(this.vaccines);
-      this.vaccines['recommended'] = [{'type':'Hepatitus A'}, {'type':'Routine immunizations'}, {'type':'Typhoid fever'},{'type':'Typhoid fever'},{'type':'Typhoid fever'},{'type':'Typhoid fever'}];
+      this.vaccines['recommended'] = [{'type':'Hepatitus A'}, {'type':'Routine immunizations'}, {'type':'Typhoid fever'}];
 
     return SingleChildScrollView(
       primary: false,
@@ -24,22 +24,30 @@ class VaccineList extends StatelessWidget {
   }
 
   buildRow(BuildContext context){
+    bool _showRequired = this.vaccines['required'] != null;
+    bool _showRisk = this.vaccines['risk'] != null;
+    var recommended = [{'type':'Hepatitus A'}, {'type':'Routine immunizations'}, {'type':'Typhoid fever'},{'type':'Typhoid fever'},{'type':'Typhoid fever'},{'type':'Typhoid fever'}];
+    if(this.vaccines['recommended'] != null) {
+      this.vaccines['recommeded'] = new List.from(this.vaccines['recommended'])..addAll(recommended);
+    } else{
+      this.vaccines['recommeded'] = recommended;
+    }
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.min,
       children:<Widget>[
-        buildBody(context, this.vaccines['recommended']),
-        buildBody(context, this.vaccines['recommended']),
-        buildBody(context, this.vaccines['risk']),
+        buildBody(context, this.vaccines['recommended'], 'Required vaccinations', 'images/vaccines.png' ),
+        _showRequired ? buildBody(context, this.vaccines['required'],'Recommended vaccinations', 'images/vaccines.png'): Container(),
+        _showRisk ? buildBody(context, this.vaccines['risk'], 'Viral risks', 'images/risk.png'):Container(),
       ],
     );
   }
 
-  Widget buildBody(BuildContext ctxt, List<dynamic> vaccines) {
+  Widget buildBody(BuildContext ctxt, List<dynamic> vaccines, String label, String icon) {
     return new Container(
       //margin: EdgeInsets.only(right: 20),
       child:Column(
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
@@ -60,17 +68,20 @@ class VaccineList extends StatelessWidget {
               child:Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Image.asset('images/vaccines.png',width: 45.0, height: 45.0,),
+                  Image.asset(icon, width: 45.0, height: 45.0, fit: BoxFit.contain),
                   Text(
-                    "Viral Risk",
+                    label,
                     style: TextStyle(
                       fontSize: 20.0,
                       fontWeight: FontWeight.w700
                     )
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: buildBodyList(vaccines),
+                  Padding(
+                    padding:EdgeInsets.only(top: 10.0, bottom:10.0),
+                    child:Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: buildBodyList(vaccines),
+                    )
                   )
                 ],
               )
@@ -86,7 +97,7 @@ class VaccineList extends StatelessWidget {
     for (var vaccine in vaccines) {
       vaccineWidgets.add(
         Text(
-          vaccine['type'],
+          '${vaccine['type'][0]}${vaccine['type'].toLowerCase().replaceAll(new RegExp(r'_'), ' ').substring(1)}',
           style: TextStyle(
             fontSize: 20.0,
             fontWeight: FontWeight.w300

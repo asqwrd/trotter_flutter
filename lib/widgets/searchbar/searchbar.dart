@@ -19,16 +19,8 @@ class SearchBar extends StatelessWidget {
       width: double.infinity,
       margin: EdgeInsets.symmetric(vertical: 5, horizontal: 20), 
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.all(Radius.circular(3.0)),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: Colors.black12,
-            //offset: Offset(0, 0),
-            blurRadius: 2,
-            spreadRadius: 2,
-          ),
-        ]
+        color: Color.fromRGBO(255, 255, 255, 0.6),
+        borderRadius: BorderRadius.all(Radius.circular(30.0)),
       ),
       child: new Row(
         children: <Widget>[

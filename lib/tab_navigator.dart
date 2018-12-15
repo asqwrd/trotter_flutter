@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/screens/home/index.dart';
 import 'package:trotter_flutter/screens/country/index.dart';
+import 'package:trotter_flutter/screens/city/index.dart';
 
 class TabNavigatorRoutes {
   static const String root = '/';
@@ -17,11 +18,22 @@ class TabNavigator extends StatelessWidget {
   void _push(BuildContext context, Map<String, String> data) {
     print(data['level']);
     var routeBuilders = _routeBuilders(context, data: data);
+    var goTo = TabNavigatorRoutes.root;
+    switch(data['level']){
+      case 'country':
+        goTo = TabNavigatorRoutes.country;
+        break;
+      case 'city':
+        goTo = TabNavigatorRoutes.city;
+        break;
+      default:
+        break;
+    }
 
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, _, __) =>  routeBuilders[TabNavigatorRoutes.country](context),
+        pageBuilder: (context, _, __) =>  routeBuilders[goTo](context),
         transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
           return new FadeTransition(
             opacity: animation,
@@ -45,8 +57,11 @@ class TabNavigator extends StatelessWidget {
         onPush: (data) =>
           _push(context, data),
       ),
-      TabNavigatorRoutes.country: (context) => Country(countryId:data['id']),
-      TabNavigatorRoutes.city: (context) => Country(countryId:data['id']),
+      TabNavigatorRoutes.country: (context) => Country(
+        countryId:data['id'],
+        onPush: (data) => _push(context,data),
+        ),
+      TabNavigatorRoutes.city: (context) => City(cityId:data['id']),
     };
   }
 

@@ -72,8 +72,8 @@ class VaccineList extends StatelessWidget {
                   Text(
                     label,
                     style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w700
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w600
                     )
                   ),
                   Padding(
@@ -99,7 +99,7 @@ class VaccineList extends StatelessWidget {
         Text(
           '${vaccine['type'][0]}${vaccine['type'].toLowerCase().replaceAll(new RegExp(r'_'), ' ').substring(1)}',
           style: TextStyle(
-            fontSize: 20.0,
+            fontSize: 18.0,
             fontWeight: FontWeight.w300
           )
         )

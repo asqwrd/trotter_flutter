@@ -4,7 +4,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
+import 'package:trotter_flutter/widgets/searchbar/index.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:trotter_flutter/utils/index.dart';
+
+
 
 
 Future<CountryData> fetchCountry(String id) async {
@@ -56,19 +60,21 @@ class CountryData {
   }
 }
 
-const kExpandedHeight = 300.0;
 
 class Country extends StatefulWidget {
   final String countryId;
-  Country({Key key, @required this.countryId}) : super(key: key);
+  final ValueChanged<dynamic> onPush;
+  Country({Key key, @required this.countryId, this.onPush}) : super(key: key);
   @override
-  CountryState createState() => new CountryState(countryId:this.countryId);
+  CountryState createState() => new CountryState(countryId:this.countryId, onPush:this.onPush);
 }
 
 class CountryState extends State<Country> {
   bool _showTitle = false;
   static String id;
   final String countryId;
+  final ValueChanged<dynamic> onPush;
+  
   Future<CountryData> data;
 
   @override
@@ -80,6 +86,7 @@ class CountryState extends State<Country> {
 
   CountryState({
     this.countryId,
+    this.onPush
   });
 
   
@@ -99,13 +106,7 @@ class CountryState extends State<Country> {
       )
     );
   }
-
-  hexStringToHexInt(String hex) {
-  hex = hex.replaceFirst('#', '');
-  hex = hex.length == 6 ? 'ff' + hex : hex;
-  int val = int.parse(hex, radix: 16);
-  return val;
-}
+  
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
@@ -116,6 +117,8 @@ class CountryState extends State<Country> {
     bool _showVisaNotes = false;
     bool _showVisaPassportValid = false;
     bool _showVisaBlankPages = false;
+    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+
 
     _scrollController.addListener(() => setState(() {
       _showTitle =_scrollController.hasClients &&
@@ -137,10 +140,10 @@ class CountryState extends State<Country> {
     _showVisaNotes = _showVisa && visa['visa']['notes'] != null;
     _showVisaPassportValid = _showVisa && visa['passport'] != null  && visa['passport']['passport_validity'] != null;
     _showVisaBlankPages = _showVisa && visa['passport'] != null  && visa['passport']['blank_pages'] != null;
-    String ambulance = _arrayString(emergencyNumbers['ambulance']['all']);
-    String police = _arrayString(emergencyNumbers['police']['all']);
-    String fire = _arrayString(emergencyNumbers['fire']['all']);
-    String dispatch = _arrayString(emergencyNumbers['dispatch']['all']);
+    String ambulance = arrayString(emergencyNumbers['ambulance']['all']);
+    String police = arrayString(emergencyNumbers['police']['all']);
+    String fire = arrayString(emergencyNumbers['fire']['all']);
+    String dispatch = arrayString(emergencyNumbers['dispatch']['all']);
 
     Color _getAdviceColor(int rating){
       if(rating > 0 && rating < 2.5){
@@ -161,30 +164,42 @@ class CountryState extends State<Country> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 350.0,
+            expandedHeight: MediaQuery.of(context).size.height * 0.80,
             floating: false,
             pinned: true,
             backgroundColor: color,
             automaticallyImplyLeading: false,
-            leading: Padding(
-                padding: EdgeInsets.only(top: 0.0, bottom: 0.0, left: 0.0),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {  Navigator.pop(context);},
-                  tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-                  iconSize: 40,
-                )
+            title: SearchBar(
+              placeholder: 'Explore $name',
+              leading: IconButton(
+                padding: EdgeInsets.all(0),
+                icon:  Icon(Icons.arrow_back),
+                onPressed: () {  Navigator.pop(context);},
+                iconSize: 30,
+                color: Colors.black,
+              )
+                  
             ),
+            bottom: !_showTitle
+                ? PreferredSize(
+                    preferredSize: Size.fromHeight(40),
+                    child: Container(
+                      width: double.infinity,
+                      height: 100.0,
+                      child:Image.asset("images/header.png", fit:BoxFit.fill)
+                    )
+                  )
+                : PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 collapseMode: CollapseMode.parallax,
-                title: _showTitle
+                /*title: _showTitle
                     ? Text(name,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20.0,
                         ))
-                    : null,
+                    : null,*/
                 background: Stack(children: <Widget>[
                   Positioned.fill(
                       top: 0,
@@ -196,25 +211,40 @@ class CountryState extends State<Country> {
                       top: 0,
                       left: 0,
                       child: Container(
-                        color: color.withOpacity(0.4),
+                        color: color.withOpacity(0.5),
                       )),
-                  Positioned(
+                  /*Positioned(
                     right: 20,
                     top: 30,
                     child: Image.asset("images/logo_nw.png",
                         width: 55.0,
                         height: 55.0,
                         fit: BoxFit.contain),
-                  ),
+                  ),*/
                   Positioned(
-                    left: 20,
-                    top: 250,
-                    child: Text(name,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 40,
-                        fontWeight: FontWeight.w300
-                      )
+                    left: 0,
+                    top: 280,
+                    width: MediaQuery.of(context).size.width,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children:<Widget>[
+                        Container(
+                          margin: EdgeInsets.only(right:10.0),
+                          child: SvgPicture.asset("images/trotter-logo.svg",
+                            width: 50.0,
+                            height: 50.0,
+                            fit: BoxFit.contain
+                          )
+                        ),
+                        Text("Learn about $name",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 40,
+                            fontWeight: FontWeight.w300
+                          )
+                        )
+                      ]
                     )
                   ),
                 ]
@@ -224,7 +254,7 @@ class CountryState extends State<Country> {
         ];
       },
       body: Container(
-        margin: EdgeInsets.only(top: 40.0, left: 0.0, right: 0.0),
+        margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           children: <Widget>[
@@ -233,7 +263,7 @@ class CountryState extends State<Country> {
               child: Text(
                 descriptionShort, 
                 style: TextStyle(
-                  fontSize: 20.0,
+                  fontSize: 18.0,
                   fontWeight: FontWeight.w300
                 )
               )
@@ -256,7 +286,7 @@ class CountryState extends State<Country> {
                       'VISA SNAPSHOT',
                       style: TextStyle(
                         fontWeight: FontWeight.w300,
-                        fontSize: 20.0,
+                        fontSize: 18.0,
                       ),
                       textAlign: TextAlign.left,
                     ),
@@ -271,7 +301,7 @@ class CountryState extends State<Country> {
               )
             ):Container(),
 
-            _buildDivider(), 
+            buildDivider(), 
 
             Container(
               margin: EdgeInsets.symmetric(vertical: 40.0), 
@@ -283,8 +313,8 @@ class CountryState extends State<Country> {
                     child:Text(
                       'Health and Safety',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 25.0
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18.0
                       ),
                     )
                   ),
@@ -305,7 +335,7 @@ class CountryState extends State<Country> {
               ),
             ),
 
-            _buildDivider(),
+            buildDivider(),
 
             Container(
               margin: EdgeInsets.symmetric(vertical: 40.0), 
@@ -317,8 +347,8 @@ class CountryState extends State<Country> {
                     child:Text(
                       'Emergency numbers',
                       style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 25.0
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20.0
                       ),
                     )
                   ),
@@ -343,7 +373,7 @@ class CountryState extends State<Country> {
                     )
                   ),
 
-                  _buildDivider(),
+                  buildDivider(),
 
                   Container(
                     padding:EdgeInsets.all(20.0),
@@ -364,6 +394,7 @@ class CountryState extends State<Country> {
                     items: popularDestinations,
                     onPressed: (data){
                       print("Clicked ${data['id']}");
+                      onPush({'id':data['id'], 'level':data['level']});
                     },
                     header: "Popular cities"
                   )
@@ -375,10 +406,6 @@ class CountryState extends State<Country> {
         )
       ),
     );
-  }
-
-  _buildDivider() {
-    return Padding(padding:EdgeInsets.symmetric(horizontal: 20.0), child:Divider(color: Colors.grey));  
   }
 
   _getPlugs(List<dynamic> plugsData, String name) {
@@ -421,10 +448,6 @@ class CountryState extends State<Country> {
     return plugs;
   }
 
-  _arrayString(List<dynamic> list) {
-    return list.join(', ');
-  }
-
   _buildEmergencyNumRow(String label, String numbers){
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10.0),
@@ -462,14 +485,14 @@ class CountryState extends State<Country> {
             label, 
             style: TextStyle(
             fontWeight: FontWeight.w700,
-            fontSize: 20.0
+            fontSize: 18.0
           )),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 5.0),
             child:Text(
               obj[key].join(' '),
               style: TextStyle(
-                fontSize: 20.0,
+                fontSize: 18.0,
                 fontWeight: FontWeight.w300
               ),
             )
@@ -488,8 +511,8 @@ class CountryState extends State<Country> {
           Text(
             label, 
             style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 20.0,
+              fontWeight: FontWeight.w600,
+              fontSize: 18.0,
             )
           ),
           Padding(
@@ -508,7 +531,7 @@ class CountryState extends State<Country> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-
+    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
@@ -520,7 +543,7 @@ class CountryState extends State<Country> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 350.0,
+            expandedHeight: MediaQuery.of(context).size.height * 0.80,
             floating: false,
             pinned: true,
             backgroundColor: Color.fromRGBO(194, 121, 73, 1),

@@ -56,7 +56,6 @@ class Home extends StatefulWidget {
   HomeState createState() => new HomeState(onPush:this.onPush);
 }
 
-const kExpandedHeight = 450.0;
 
 class HomeState extends State<Home> {
   //final ScrollController _scrollController = ScrollController();
@@ -96,6 +95,8 @@ class HomeState extends State<Home> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     final ScrollController _scrollController = ScrollController();
+    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+
      _scrollController.addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
         _scrollController.offset > kExpandedHeight - kToolbarHeight;
@@ -105,7 +106,7 @@ class HomeState extends State<Home> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 600.0,
+            expandedHeight: MediaQuery.of(context).size.height * 0.80,
             floating: false,
             pinned: true,
             title: SearchBar(
@@ -160,26 +161,41 @@ class HomeState extends State<Home> {
                     top: 0,
                     left: 0,
                     child: Container(
-                      color: Color.fromRGBO(194, 121, 73, 0.4),
+                      color: Color.fromRGBO(194, 121, 73, 0.5),
                     )
                   ),
                   /*Positioned(
-                    left: 20,
-                    top: 30,
-                    child: Image.asset("images/logo_nw.png",
-                        width: 55.0,
-                        height: 55.0,
+                    left: MediaQuery.of(context).size.width * 0.5,
+                    top: 200,
+                    child: SvgPicture.asset("images/trotter-logo.svg",
+                        width: 100.0,
+                        height: 100.0,
                         fit: BoxFit.contain),
                   ),*/
                   Positioned(
-                    left: 20,
-                    top: 180,
-                    child: Text("Explore the world",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 40,
-                        fontWeight: FontWeight.w300
-                      )
+                    left: 0,
+                    top: 280,
+                    width: MediaQuery.of(context).size.width,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children:<Widget>[
+                        Container(
+                          margin: EdgeInsets.only(right:10.0),
+                          child: SvgPicture.asset("images/trotter-logo.svg",
+                            width: 50.0,
+                            height: 50.0,
+                            fit: BoxFit.contain
+                          )
+                        ),
+                        Text("Trotter",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 40,
+                            fontWeight: FontWeight.w300
+                          )
+                        )
+                      ]
                     )
                   ),
                 ]
@@ -204,6 +220,7 @@ class HomeState extends State<Home> {
               items: snapshot.data.popularCities,
               onPressed: (data){
                 print("Clicked ${data['level']}");
+                onPush({'id':data['id'], 'level':data['level']});
               },
               header: "Trending cities"
             ),
@@ -229,6 +246,7 @@ class HomeState extends State<Home> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
+    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&

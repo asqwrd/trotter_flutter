@@ -42,7 +42,7 @@ class TopList extends StatelessWidget {
           SingleChildScrollView(
             primary: false,
             scrollDirection: Axis.horizontal,
-            child: buildRow(buildItems(this.items))
+            child: Container(margin:EdgeInsets.only(left:20.0), child:buildRow(buildItems(this.items)))
           )
         ]
       )
@@ -80,26 +80,24 @@ class TopList extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              child: Container(
-                // A fixed-height child.
-                decoration: BoxDecoration(
-                  color: Color.fromRGBO(240, 240, 240, 0.8),
-                  borderRadius: BorderRadius.circular(5),
-                  image: DecorationImage(
-                    image: NetworkImage(item['image']),
-                    fit: BoxFit.cover
-                  )
-                ),
-                width: 120.0,
-                height: 90.0,
+            Container(
+              // A fixed-height child.
+              margin:EdgeInsets.only(right:20),
+              decoration: BoxDecoration(
+                color: Color.fromRGBO(240, 240, 240, 0.8),
+                borderRadius: BorderRadius.circular(5),
+                image: DecorationImage(
+                  image: item['image'] != null ? NetworkImage(item['image']) : AssetImage('images/placeholder.jpg'),
+                  fit: BoxFit.cover
+                )
+              ),
+              width: 140.0,
+              height: 90.0,
+            
               
-                
-              )
             ),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              padding: EdgeInsets.symmetric(vertical: 10.0),
               width: 150.0,
               child: Text(
                 item['name'], 

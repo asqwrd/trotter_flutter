@@ -89,9 +89,10 @@ class CityData {
 
 class City extends StatefulWidget {
   final String cityId;
-  City({Key key, @required this.cityId}) : super(key: key);
+  final ValueChanged<dynamic> onPush;
+  City({Key key, @required this.cityId, this.onPush}) : super(key: key);
   @override
-  CityState createState() => new CityState(cityId:this.cityId);
+  CityState createState() => new CityState(cityId:this.cityId, onPush:this.onPush);
 }
 
 class CityState extends State<City> with SingleTickerProviderStateMixin{
@@ -100,6 +101,8 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
   final String cityId;
   Future<CityData> data;
   TabController _tabController;
+  final ValueChanged<dynamic> onPush;
+
 
   @override
   void initState() {
@@ -111,6 +114,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
 
   CityState({
     this.cityId,
+    this.onPush
   });
 
  @override
@@ -138,7 +142,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
   }
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+    var kExpandedHeight = 300;
     final ScrollController _scrollController = ScrollController();
     
     _scrollController.addListener(() => setState(() {
@@ -173,10 +177,10 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: MediaQuery.of(context).size.height * 0.80,
+            expandedHeight: 450,
             floating: false,
             pinned: true,
-            backgroundColor: color,
+            backgroundColor: _showTitle ? color : Colors.transparent,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Explore $name',
@@ -191,18 +195,12 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
             ),
             bottom: !_showTitle
             ? PreferredSize(
-                preferredSize: Size.fromHeight(40),
+                preferredSize: Size.fromHeight(100),
                 child: Column(
                   children: <Widget>[
                     Container(
                       width: double.infinity,
-                      height: 100.0,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage("images/header.png"),
-                          fit: BoxFit.fill,
-                        )
-                      ),
+                      height: 40.0,
                     ),
                     Container(
                       color: Colors.white,
@@ -219,34 +217,27 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 collapseMode: CollapseMode.parallax,
-                /*title: _showTitle
-                    ? Text(name,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                        ))
-                    : null,*/
                 background: Stack(children: <Widget>[
                   Positioned.fill(
                       top: 0,
-                      child: Image.network(
+                      child: ClipPath(
+                        clipper: BottomWaveClipperTab(),
+                        child: Image.network(
                         image,
                         fit: BoxFit.cover,
-                      )),
+                      )
+                    )
+                  ),
                   Positioned.fill(
                       top: 0,
                       left: 0,
-                      child: Container(
+                      child: ClipPath(
+                        clipper:BottomWaveClipperTab(),
+                        child: Container(
                         color: color.withOpacity(0.5),
-                      )),
-                  /*Positioned(
-                    right: 20,
-                    top: 30,
-                    child: Image.asset("images/logo_nw.png",
-                        width: 55.0,
-                        height: 55.0,
-                        fit: BoxFit.contain),
-                  ),*/
+                      )
+                    )
+                  ),
                   Positioned(
                     left: 0,
                     top: 280,
@@ -351,6 +342,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
           items: section['items'],
           onPressed: (data){
             print("Clicked ${data['id']}");
+            onPush({'id':data['id'], 'level':data['level']});
           },
           header: section['header']
         )
@@ -490,23 +482,26 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: MediaQuery.of(context).size.height * 0.80,
+            expandedHeight: 450,
             floating: false,
             pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
+            backgroundColor: Colors.white,
             automaticallyImplyLeading: false,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
+              background: ClipPath(
+                  clipper:BottomWaveClipperTab(),
+                  child: Container(
+                  color: Color.fromRGBO(240, 240, 240, 1),
+                )
               ),
             ),
           ),
         ];
       },
       body: Container(
-        padding: EdgeInsets.only(top: 40.0),
+        padding: EdgeInsets.only(top: 0.0),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           children: <Widget>[

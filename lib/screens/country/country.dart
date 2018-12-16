@@ -117,7 +117,7 @@ class CountryState extends State<Country> {
     bool _showVisaNotes = false;
     bool _showVisaPassportValid = false;
     bool _showVisaBlankPages = false;
-    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+    var kExpandedHeight = 300;
 
 
     _scrollController.addListener(() => setState(() {
@@ -164,10 +164,10 @@ class CountryState extends State<Country> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: MediaQuery.of(context).size.height * 0.80,
+            expandedHeight: 450,
             floating: false,
             pinned: true,
-            backgroundColor: color,
+            backgroundColor: _showTitle ? color : Colors.transparent,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Explore $name',
@@ -180,47 +180,31 @@ class CountryState extends State<Country> {
               )
                   
             ),
-            bottom: !_showTitle
-                ? PreferredSize(
-                    preferredSize: Size.fromHeight(40),
-                    child: Container(
-                      width: double.infinity,
-                      height: 100.0,
-                      child:Image.asset("images/header.png", fit:BoxFit.fill)
-                    )
-                  )
-                : PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
+            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 collapseMode: CollapseMode.parallax,
-                /*title: _showTitle
-                    ? Text(name,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                        ))
-                    : null,*/
                 background: Stack(children: <Widget>[
                   Positioned.fill(
                       top: 0,
-                      child: Image.network(
+                      child: ClipPath(
+                        clipper: BottomWaveClipper(),
+                        child: Image.network(
                         image,
                         fit: BoxFit.cover,
-                      )),
+                      )
+                    )
+                  ),
                   Positioned.fill(
-                      top: 0,
-                      left: 0,
+                    top: 0,
+                    left: 0,
+                    child: ClipPath(
+                      clipper: BottomWaveClipper(),
                       child: Container(
                         color: color.withOpacity(0.5),
-                      )),
-                  /*Positioned(
-                    right: 20,
-                    top: 30,
-                    child: Image.asset("images/logo_nw.png",
-                        width: 55.0,
-                        height: 55.0,
-                        fit: BoxFit.contain),
-                  ),*/
+                      )
+                    )
+                  ),
                   Positioned(
                     left: 0,
                     top: 280,
@@ -543,7 +527,7 @@ class CountryState extends State<Country> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: MediaQuery.of(context).size.height * 0.80,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
             backgroundColor: Color.fromRGBO(194, 121, 73, 1),

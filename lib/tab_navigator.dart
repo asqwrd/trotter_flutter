@@ -3,11 +3,13 @@ import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/screens/home/index.dart';
 import 'package:trotter_flutter/screens/country/index.dart';
 import 'package:trotter_flutter/screens/city/index.dart';
+import 'package:trotter_flutter/screens/poi/index.dart';
 
 class TabNavigatorRoutes {
   static const String root = '/';
   static const String country = '/country';
   static const String city = '/city';
+  static const String poi = '/poi';
 }
 
 class TabNavigator extends StatelessWidget {
@@ -19,12 +21,15 @@ class TabNavigator extends StatelessWidget {
     print(data['level']);
     var routeBuilders = _routeBuilders(context, data: data);
     var goTo = TabNavigatorRoutes.root;
-    switch(data['level']){
+    switch (data['level']) {
       case 'country':
         goTo = TabNavigatorRoutes.country;
         break;
       case 'city':
         goTo = TabNavigatorRoutes.city;
+        break;
+      case 'poi':
+        goTo = TabNavigatorRoutes.poi;
         break;
       default:
         break;
@@ -33,35 +38,44 @@ class TabNavigator extends StatelessWidget {
     Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, _, __) =>  routeBuilders[goTo](context),
-        transitionsBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-          return new FadeTransition(
-            opacity: animation,
+          pageBuilder: (context, _, __) => routeBuilders[goTo](context),
+          transitionsBuilder: (BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child) {
+            return new FadeTransition(
+              opacity: animation,
               child: child,
             );
-          /*return new SlideTransition(
+            /*return new SlideTransition(
             position: new Tween<Offset>(
               begin: const Offset(-1.0, 0.0),
               end: Offset.zero,
             ).animate(animation),
             child: child,
            );*/
-         }
-      ),
+          }),
     );
   }
 
-  Map<String, WidgetBuilder> _routeBuilders(BuildContext context, {Map<String, String> data}) {
+  Map<String, WidgetBuilder> _routeBuilders(BuildContext context,
+      {Map<String, String> data}) {
     return {
       TabNavigatorRoutes.root: (context) => Home(
-        onPush: (data) =>
-          _push(context, data),
+        onPush: (data) => _push(context, data),
       ),
       TabNavigatorRoutes.country: (context) => Country(
-        countryId:data['id'],
-        onPush: (data) => _push(context,data),
-        ),
-      TabNavigatorRoutes.city: (context) => City(cityId:data['id']),
+        countryId: data['id'],
+        onPush: (data) => _push(context, data),
+      ),
+      TabNavigatorRoutes.city: (context) =>City(
+        cityId: data['id'],
+        onPush: (data) => _push(context, data)
+      ),
+      TabNavigatorRoutes.poi: (context) => Poi(
+        poiId: data['id'], 
+        onPush: (data) => _push(context, data)
+      ),
     };
   }
 

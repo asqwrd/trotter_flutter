@@ -68,7 +68,7 @@ class TopList extends StatelessWidget {
   }
 
   Widget buildBody(dynamic item) {
-  return new GestureDetector ( 
+  return new InkWell ( 
     onTap: (){
       var id = item['id'];
       var level = item['level'];

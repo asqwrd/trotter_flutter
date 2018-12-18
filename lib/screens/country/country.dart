@@ -164,7 +164,7 @@ class CountryState extends State<Country> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 450,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
             backgroundColor: _showTitle ? color : Colors.transparent,
@@ -207,7 +207,7 @@ class CountryState extends State<Country> {
                   ),
                   Positioned(
                     left: 0,
-                    top: 280,
+                    top: 200,
                     width: MediaQuery.of(context).size.width,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -221,7 +221,7 @@ class CountryState extends State<Country> {
                             fit: BoxFit.contain
                           )
                         ),
-                        Text("Learn about $name",
+                        Text(name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
@@ -515,7 +515,7 @@ class CountryState extends State<Country> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+    var kExpandedHeight = 300;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
@@ -535,8 +535,11 @@ class CountryState extends State<Country> {
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
+              background: ClipPath(
+                clipper: BottomWaveClipper(),
+                child:Container(
+                  color: Color.fromRGBO(240, 240, 240, 1)
+                )
               ),
             ),
           ),

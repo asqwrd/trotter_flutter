@@ -23,6 +23,9 @@ dependencies:
   flutter_svg: ^0.7.0+1
   shared_preferences: ^0.4.3
   flutter_statusbarcolor: ^0.1.1
+  flutter_swiper: ^1.1.4
+  google_maps_flutter: ^0.0.3+3
+
 
 dev_dependencies:
   flutter_test:

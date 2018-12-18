@@ -142,7 +142,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
   }
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 200;
     final ScrollController _scrollController = ScrollController();
     
     _scrollController.addListener(() => setState(() {
@@ -177,7 +177,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 450,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
             backgroundColor: _showTitle ? color : Colors.transparent,
@@ -240,7 +240,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
                   ),
                   Positioned(
                     left: 0,
-                    top: 280,
+                    top: 150,
                     width: MediaQuery.of(context).size.width,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -254,7 +254,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
                             fit: BoxFit.contain
                           )
                         ),
-                        Text("Learn about $name",
+                        Text(name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
@@ -356,58 +356,65 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
 
   _buildListView(List<dynamic> items, key) {
     return ListView.builder(
-      padding: EdgeInsets.all(20.0),
       key: new PageStorageKey(key),
       itemCount: items.length,
       itemBuilder: (BuildContext context, int index) {
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                width:150,
-                height: 90,
-                margin: EdgeInsets.only(right: 20.0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5.0),
-                  image: DecorationImage(
-                    image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
-                    fit: BoxFit.fill   
-                  )
-                )
-              ),
-              Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      items[index]['name'],
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.w500
-                      ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(top:5),
-                      width: MediaQuery.of(context).size.width - 210,
-                      child: Text(
-                        items[index]['description_short'],
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 3,
-                        style: TextStyle(
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w300
-                        ),
-                      )
+        return InkWell(
+          onTap: () {
+            print(items[index]['level']);
+            var id = items[index]['id'];
+            var level  = items[index]['level'];
+            onPush({'id':id.toString(), 'level':level.toString()});
+          },
+          child:Padding(
+            padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  width:150,
+                  height: 90,
+                  margin: EdgeInsets.only(right: 20.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5.0),
+                    image: DecorationImage(
+                      image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
+                      fit: BoxFit.fill   
                     )
-                    
-                  ],
+                  )
                 ),
-              )
-            ],
+                Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        items[index]['name'],
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w500
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.only(top:5),
+                        width: MediaQuery.of(context).size.width - 210,
+                        child: Text(
+                          items[index]['description_short'],
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 3,
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.w300
+                          ),
+                        )
+                      )
+                      
+                    ],
+                  ),
+                )
+              ],
+            )
           )
         );
       },
@@ -470,7 +477,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+    var kExpandedHeight = 300;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
@@ -482,7 +489,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 450,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
             backgroundColor: Colors.white,

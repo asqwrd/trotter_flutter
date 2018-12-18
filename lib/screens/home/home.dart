@@ -97,7 +97,7 @@ class HomeState extends State<Home> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+    var kExpandedHeight = 300;
 
      _scrollController.addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
@@ -108,7 +108,7 @@ class HomeState extends State<Home> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: MediaQuery.of(context).size.height * 0.80,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
             title: SearchBar(
@@ -147,7 +147,7 @@ class HomeState extends State<Home> {
                   ),
                   Positioned(
                     left: 0,
-                    top: 280,
+                    top: 200,
                     width: MediaQuery.of(context).size.width,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -219,7 +219,7 @@ class HomeState extends State<Home> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+    var kExpandedHeight = 300;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
@@ -260,13 +260,13 @@ class HomeState extends State<Home> {
         child: ListView(
           children: <Widget>[
             Container(
-              height: 175.0,
+              //height: 175.0,
               width: double.infinity,
               margin: EdgeInsets.only(bottom: 30.0),
               child: TopListLoading()
             ),
             Container(
-              height: 175.0,
+              //height: 175.0,
               width: double.infinity,
               margin: EdgeInsets.only(bottom: 30.0),
               child: TopListLoading()

@@ -6,6 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+
 
 
 
@@ -60,6 +64,7 @@ class PoiState extends State<Poi> {
   static String id;
   final String poiId;
   final ValueChanged<dynamic> onPush;
+   GoogleMapController mapController;
   
   Future<PoiData> data;
 
@@ -106,16 +111,32 @@ class PoiState extends State<Poi> {
 
     }));
     var name = snapshot.data.poi['name'];
+    var poi = snapshot.data.poi;
+    var properties = poi['properties'];
     var images = snapshot.data.poi['images'];
     var descriptionShort = snapshot.data.poi['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
+
+    void _onMapCreated(GoogleMapController controller) {
+      setState(() { 
+        mapController = controller; 
+        mapController.animateCamera(CameraUpdate.newCameraPosition(
+          CameraPosition(
+            bearing: 270.0,
+            target: LatLng(poi['location']['lat'], poi['location']['lng']),
+            tilt: 30.0,
+            zoom: 17.0,
+          ),
+        ));
+      });
+    }
 
     return NestedScrollView(
       controller: _scrollController,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 450,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
             backgroundColor: _showTitle ? color : Colors.transparent,
@@ -136,48 +157,15 @@ class PoiState extends State<Poi> {
                 centerTitle: true,
                 collapseMode: CollapseMode.parallax,
                 background: Stack(children: <Widget>[
-                  /*Positioned.fill(
-                      top: 0,
-                      child: ClipPath(
-                        clipper: BottomWaveClipper(),
-                        child: Image.network(
-                        image,
-                        fit: BoxFit.cover,
-                      )
-                    )
-                  ),*/
                   Positioned.fill(
                     top: 0,
-                    left: 0,
-                    child: Container(
-                        color: color.withOpacity(0.5),
-                    )
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 280,
-                    width: MediaQuery.of(context).size.width,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children:<Widget>[
-                        Container(
-                          margin: EdgeInsets.only(right:10.0),
-                          child: SvgPicture.asset("images/trotter-logo.svg",
-                            width: 50.0,
-                            height: 50.0,
-                            fit: BoxFit.contain
-                          )
-                        ),
-                        Text("Learn about $name",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w300
-                          )
-                        )
-                      ]
-                    )
+                    child: new Swiper(
+                      itemBuilder: (BuildContext context,int index){
+                        return new Image.network(images[index]['sizes']['medium']['url'],fit: BoxFit.cover,);
+                      },
+                      itemCount: images.length,
+                      pagination: new SwiperPagination(),
+                    ),
                   ),
                 ]
               )
@@ -200,6 +188,28 @@ class PoiState extends State<Poi> {
                 )
               )
             ),
+            Center(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                height: 250.0,
+                width: double.infinity, 
+                child: ClipPath(
+                  clipper: CornerRadiusClipper(10.0), 
+                  child: GoogleMap(
+                    onMapCreated: _onMapCreated,
+                  )
+                ),
+              )
+            ),
+            ListView.separated(
+              separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+              padding: EdgeInsets.all(20.0),
+              itemCount: properties.length,
+              shrinkWrap: true,
+              primary: false,
+              itemBuilder: (BuildContext context, int index) => _buildProperties(properties, index),
+            )
+            
           ],
         )
       ),
@@ -207,9 +217,44 @@ class PoiState extends State<Poi> {
   }
 
   
+_buildProperties(List<dynamic> properties, int index){
+  return Container(
+    width: double.infinity,
+    padding: EdgeInsets.symmetric(vertical: 20),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.max,
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.only(right: 10.0),
+          child:Text(
+            '${properties[index]['name']}:',
+            style: TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.w500
+            ),
+          )
+        ),
+        Flexible(
+          child:Text(
+            properties[index]['value'],
+            //maxLines: 2,
+            //overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 18.0,
+              fontWeight: FontWeight.w300
+            ),
+          )
+        ),
+      ],
+    )
+  );
+}
+  
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = (MediaQuery.of(context).size.height * 0.80) - 150;
+    var kExpandedHeight = 300;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
@@ -221,7 +266,7 @@ class PoiState extends State<Poi> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 450,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
             backgroundColor: Color.fromRGBO(194, 121, 73, 1),

@@ -67,6 +67,25 @@ class BottomWaveClipperTab extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
+class CornerRadiusClipper extends CustomClipper<Path> {
+  final double radius;
+
+  CornerRadiusClipper(this.radius);
+
+  @override
+  Path getClip(Size size) {
+    final path = new Path();
+    final rect = new Rect.fromLTRB(0.0, 0.0, size.width, size.height);
+    path.addRRect(new RRect.fromRectAndRadius(rect, new Radius.circular(radius)));
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) {
+    return true;
+  }
+}
+
 hexStringToHexInt(String hex) {
   hex = hex.replaceFirst('#', '');
   hex = hex.length == 6 ? 'ff' + hex : hex;

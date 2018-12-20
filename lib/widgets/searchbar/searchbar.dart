@@ -15,31 +15,37 @@ class SearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 20), 
-      decoration: BoxDecoration(
-        color: Color.fromRGBO(255, 255, 255, 0.6),
-        borderRadius: BorderRadius.all(Radius.circular(30.0)),
-      ),
-      child: new Row(
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.symmetric(vertical:10.0),
-            child:this.leading
-          ),
-          Container(
-            child: Text(
-              this.placeholder,
-              style: TextStyle(
-                fontSize: 20.0,
-                color: Colors.black,
-                fontWeight: FontWeight.w400
-              )
+    return GestureDetector(
+      onTap: () {
+        print("SearchBar");
+        this.onPressed();
+      }, 
+      child:Container(
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 20), 
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(255, 255, 255, 0.6),
+          borderRadius: BorderRadius.all(Radius.circular(30.0)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.symmetric(vertical:10.0),
+              child:this.leading
             ),
-          )
-
-        ],
+            Container(
+              child: Text(
+                this.placeholder,
+                style: TextStyle(
+                  fontSize: 20.0,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w400
+                )
+              ),
+            )
+          ],
+        )
       ),
     );
   }

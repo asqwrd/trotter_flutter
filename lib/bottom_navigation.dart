@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 
-enum TabItem { explore, trips, search, profile }
+enum TabItem { explore, trips, profile }
 
 class TabHelper {
   static TabItem item({int index}) {
@@ -12,8 +12,6 @@ class TabHelper {
       case 1:
         return TabItem.trips;
       case 2:
-        return TabItem.search;
-      case 3:
         return TabItem.profile;
     }
     return TabItem.explore;
@@ -25,8 +23,6 @@ class TabHelper {
         return 'Explore';
       case TabItem.trips:
         return 'Trips';
-      case TabItem.search:
-        return 'Search';
       case TabItem.profile:
         return 'Profile';
     }
@@ -38,8 +34,6 @@ class TabHelper {
         return 'images/explore-icon.svg';
       case TabItem.trips:
         return 'images/trips-icon.svg';
-      case TabItem.search:
-        return 'images/search-icon.svg';
       case TabItem.profile:
         return 'images/avatar-icon.svg';
     }
@@ -54,8 +48,6 @@ class TabHelper {
         return Colors.red;
       case TabItem.trips:
         return Colors.green;
-      case TabItem.search:
-        return Colors.blue;
       case TabItem.profile:
         return Colors.blue;
     }
@@ -81,7 +73,6 @@ class BottomNavigation extends StatelessWidget {
       items: [
         _buildItem(tabItem: TabItem.explore),
         _buildItem(tabItem: TabItem.trips),
-        _buildItem(tabItem: TabItem.search),
         _buildItem(tabItem: TabItem.profile),
       ],
       onTap: (index) => onSelectTab(

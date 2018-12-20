@@ -180,7 +180,7 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: _showTitle ? color : Colors.transparent,
+            backgroundColor: _showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Explore $name',
@@ -389,12 +389,17 @@ class CityState extends State<City> with SingleTickerProviderStateMixin{
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                        items[index]['name'],
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.w500
-                        ),
+                      Container(
+                        width: MediaQuery.of(context).size.width - 210,
+                        child: Text(
+                          items[index]['name'],
+                          maxLines: 2,
+                          overflow: TextOverflow.fade,
+                          style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.w500
+                          ),
+                        )
                       ),
                       Container(
                         margin: EdgeInsets.only(top:5),

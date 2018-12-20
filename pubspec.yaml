@@ -25,6 +25,7 @@ dependencies:
   flutter_statusbarcolor: ^0.1.1
   flutter_swiper: ^1.1.4
   google_maps_flutter: ^0.0.3+3
+  shimmer: ^0.0.6
 
 
 dev_dependencies:

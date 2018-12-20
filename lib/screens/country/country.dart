@@ -135,7 +135,7 @@ class CountryState extends State<Country> {
     var popularDestinations = snapshot.data.popularDestinations;
     var color = Color(hexStringToHexInt(snapshot.data.color));
     _showVisa = visa != null;
-    _showVisaTextual = _showVisa && visa['visa']['textual'] != null;
+    _showVisaTextual = _showVisa && visa['visa']['textual'] != null && visa['visa']['textual']['text'] != null;
     _showVisaAllowedStay = _showVisa && visa['visa']['allowed_stay'] != null;
     _showVisaNotes = _showVisa && visa['visa']['notes'] != null;
     _showVisaPassportValid = _showVisa && visa['passport'] != null  && visa['passport']['passport_validity'] != null;
@@ -530,7 +530,7 @@ class CountryState extends State<Country> {
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
+            backgroundColor: Colors.white,
             automaticallyImplyLeading: false,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,

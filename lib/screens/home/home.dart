@@ -118,7 +118,10 @@ class HomeState extends State<Home> {
                 height: 55.0,
                 color: Colors.black,
                 fit: BoxFit.contain
-              )
+              ),
+              onPressed: (){
+                onPush({'query':'', 'level':'search'});
+              },
                   
             ),
             centerTitle: true,

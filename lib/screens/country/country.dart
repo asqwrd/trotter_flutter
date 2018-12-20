@@ -145,7 +145,7 @@ class CountryState extends State<Country> {
     String fire = arrayString(emergencyNumbers['fire']['all']);
     String dispatch = arrayString(emergencyNumbers['dispatch']['all']);
 
-    Color _getAdviceColor(int rating){
+    Color _getAdviceColor(double rating){
       if(rating > 0 && rating < 2.5){
         return Colors.green;
       } else if(rating >= 2.5 && rating < 3.5){
@@ -177,7 +177,10 @@ class CountryState extends State<Country> {
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
                 color: Colors.black,
-              )
+              ),
+              onPressed: (){
+                onPush({'query':'', 'level':'search'});
+              },
                   
             ),
             bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
@@ -310,7 +313,7 @@ class CountryState extends State<Country> {
                       style: TextStyle(
                         fontSize: 20.0,
                         fontWeight: FontWeight.w300,
-                        color: _getAdviceColor(safety['rating'])
+                        color: _getAdviceColor(safety['rating'].toDouble())
                       )
                     )
                   ),

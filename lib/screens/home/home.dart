@@ -183,6 +183,7 @@ class HomeState extends State<Home> {
       body: Container(
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
+          shrinkWrap: true,
           children: <Widget>[
             TopList(
               items: snapshot.data.popularCountries,
@@ -204,6 +205,7 @@ class HomeState extends State<Home> {
               items: snapshot.data.nationalParks,
               onPressed: (data){
                 print("Clicked ${data['id']}");
+                onPush({'id':data['id'], 'level':data['level']});
               },
               header: "Explore national parks"
             ),
@@ -211,6 +213,7 @@ class HomeState extends State<Home> {
               items: snapshot.data.popularIslands,
               onPressed: (data){
                 print("Clicked ${data['id']}");
+                onPush({'id':data['id'], 'level':data['level']});
               },
               header: "Explore the island life"
             )

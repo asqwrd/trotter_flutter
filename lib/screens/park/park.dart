@@ -11,21 +11,21 @@ import 'package:trotter_flutter/utils/index.dart';
 
 
 
-Future<CityData> fetchCity(String id) async {
+Future<ParkData> fetchPark(String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String cacheData = prefs.getString('city_$id') ?? null;
+  final String cacheData = prefs.getString('park_$id') ?? null;
   if(cacheData != null) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
-    return CityData.fromJson(json.decode(cacheData));
+    return ParkData.fromJson(json.decode(cacheData));
   } else {
     print('no-cached');
     print(id);
-    final response = await http.get('http://localhost:3002/api/explore/cities/$id/', headers:{'Authorization':'security'});
+    final response = await http.get('http://localhost:3002/api/explore/national_parks/$id/', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
-      await prefs.setString('city_$id', response.body);
-      return CityData.fromJson(json.decode(response.body));
+      await prefs.setString('park_$id', response.body);
+      return ParkData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
@@ -34,72 +34,39 @@ Future<CityData> fetchCity(String id) async {
   }
 }
 
-class CityData {
+class ParkData {
   final String color;
-  final Map<String, dynamic> city;
-  final List<dynamic> discover;
-  final List<dynamic> discoverLocations;
-  final List<dynamic> eat;
-  final List<dynamic> eatLocations;
-  final List<dynamic> nightlife;
-  final List<dynamic> nightlifeLocations;
-  final List<dynamic> play;
-  final List<dynamic> playLocations;
-  final List<dynamic> relax;
-  final List<dynamic> relaxLocations;
-  final List<dynamic> see;
-  final List<dynamic> seeLocations;
-  final List<dynamic> shop;
-  final List<dynamic> shopLocations;
- 
+  final Map<String, dynamic> park;
+  final List<dynamic> pois; 
 
-  CityData({
+  ParkData({
     this.color, 
-    this.city, 
-    this.discover, 
-    this.eat,
-    this.nightlife, 
-    this.play, 
-    this.relax, 
-    this.see,
-    this.shop,
-    this.discoverLocations,
-    this.eatLocations,
-    this.nightlifeLocations,
-    this.playLocations,
-    this.relaxLocations,
-    this.seeLocations,
-    this.shopLocations,
+    this.park, 
+    this.pois, 
   });
 
-  factory CityData.fromJson(Map<String, dynamic> json) {
-    return CityData(
+  factory ParkData.fromJson(Map<String, dynamic> json) {
+    return ParkData(
       color: json['color'],
-      city: json['city'],
-      discover: json['discover'],
-      eat: json['eat'],
-      nightlife: json['nightlife'],
-      play: json['play'],
-      relax: json['relax'],
-      see: json['see'],
-      shop: json['shop'],
+      park: json['park'],
+      pois: json['pois'],
     );
   }
 }
 
-class City extends StatefulWidget {
-  final String cityId;
+class Park extends StatefulWidget {
+  final String parkId;
   final ValueChanged<dynamic> onPush;
-  City({Key key, @required this.cityId, this.onPush}) : super(key: key);
+  Park({Key key, @required this.parkId, this.onPush}) : super(key: key);
   @override
-  CitiesState createState() => new CitiesState(cityId:this.cityId, onPush:this.onPush);
+  ParkState createState() => new ParkState(parkId:this.parkId, onPush:this.onPush);
 }
 
-class CitiesState extends State<City> with SingleTickerProviderStateMixin{
+class ParkState extends State<Park> with SingleTickerProviderStateMixin{
   bool _showTitle = false;
   static String id;
-  final String cityId;
-  Future<CityData> data;
+  final String parkId;
+  Future<ParkData> data;
   TabController _tabController;
   final ValueChanged<dynamic> onPush;
 
@@ -108,12 +75,12 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: 8);
-    data = fetchCity(this.cityId);
+    data = fetchPark(this.parkId);
     
   }
 
-  CitiesState({
-    this.cityId,
+  ParkState({
+    this.parkId,
     this.onPush
   });
 
@@ -149,28 +116,13 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
       _scrollController.offset > kExpandedHeight - kToolbarHeight;
 
     }));
-    var name = snapshot.data.city['name'];
-    var image = snapshot.data.city['image'];
-    var descriptionShort = snapshot.data.city['description_short'];
+    var name = snapshot.data.park['name'];
+    var image = snapshot.data.park['image'];
+    var descriptionShort = snapshot.data.park['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
-    var discover = snapshot.data.discover;
-    var see = snapshot.data.see;
-    var eat = snapshot.data.eat;
-    var relax = snapshot.data.relax;
-    var play = snapshot.data.play;
-    var shop = snapshot.data.shop;
-    var nightlife = snapshot.data.nightlife;
-    var allTab = [
-      {'items': discover, 'header':'Discover' },
-      {'items': see, 'header':'See' },
-      {'items': eat, 'header':'Eat' },
-      {'items': relax, 'header':'Relax' },
-      {'items': play, 'header':'Play' },
-      {'items': shop, 'header':'Shop' },
-      {'items': nightlife, 'header':'Nightlife' },
-    ];
-   
-   
+    var pois = snapshot.data.pois;
+
+     
     return NestedScrollView(
       controller: _scrollController,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -195,26 +147,9 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
               },
                   
             ),
-            bottom: !_showTitle
-            ? PreferredSize(
-                preferredSize: Size.fromHeight(100),
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      width: double.infinity,
-                      height: 40.0,
-                    ),
-                    Container(
-                      color: Colors.white,
-                      width: double.infinity,
-                      child: _renderTabBar(color, Colors.white,allTab)
-                    )
-                  ]        
-                )
-              )
-            : PreferredSize(
-              preferredSize: Size.fromHeight(70), 
-              child: Container(color: Colors.transparent, child:_renderTabBar(Colors.white, color, allTab))
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(15), 
+              child: Container()
             ),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
@@ -223,7 +158,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                   Positioned.fill(
                       top: 0,
                       child: ClipPath(
-                        clipper: BottomWaveClipperTab(),
+                        clipper: BottomWaveClipper(),
                         child: Image.network(
                         image,
                         fit: BoxFit.cover,
@@ -234,7 +169,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                       top: 0,
                       left: 0,
                       child: ClipPath(
-                        clipper:BottomWaveClipperTab(),
+                        clipper:BottomWaveClipper(),
                         child: Container(
                         color: color.withOpacity(0.5),
                       )
@@ -242,9 +177,11 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                   ),
                   Positioned(
                     left: 0,
-                    top: 150,
+                    top: 180,
                     width: MediaQuery.of(context).size.width,
-                    child: Row(
+                    child: Padding( 
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children:<Widget>[
@@ -256,15 +193,19 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                             fit: BoxFit.contain
                           )
                         ),
-                        Text(name,
+                        Container(
+                          width: MediaQuery.of(context).size.width - 100,
+                          child:Text(name,
+                          maxLines: 2,
+                          overflow: TextOverflow.fade,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
                             fontWeight: FontWeight.w300
                           )
-                        )
+                        ))
                       ]
-                    )
+                    ))
                   ),
                 ]
               )
@@ -272,88 +213,28 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
           ),
         ];
       },
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTabContent(
-            _buildAllTab(allTab, descriptionShort),
-            'All'
+      body: Column(
+        //shrinkWrap: true,
+        //primary: false,
+        children:<Widget>[
+          Container(
+            padding: EdgeInsets.only(top: 40, left: 20, right:20),
+            child: Text(
+              descriptionShort,
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.w300
+              ),
+            )
           ),
-          _buildListView(
-            discover, 
-            'Discover'
-          ),
-          _buildListView(
-            see, 
-            'See'
-          ),
-          _buildListView(
-            eat, 
-            'Eat'
-          ),
-          _buildListView(
-            relax, 
-            'Relax'
-          ),
-          _buildListView(
-            play, 
-            'Play'
-          ),
-          _buildListView(
-            shop, 
-            'Shop'
-          ),
-          _buildListView(
-            nightlife, 
-            'NightLife'
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-  _buildTabContent(List<Widget> widgets, String key){
-    return Container(
-      margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-      decoration: BoxDecoration(color: Colors.white),
-      key: new PageStorageKey(key),
-      child: ListView(
-        children: widgets
-      )
-    );
-  }
-
-  _buildAllTab(List<dynamic> sections, String description) {
-    var widgets = <Widget>[
-      Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Text(
-          description,
-          style: TextStyle(
-            fontSize: 18.0,
-            fontWeight: FontWeight.w300
-          ),
-        )
-      )
-    ];
-    for (var section in sections) {
-      if(section['items'].length > 0){
-        widgets.add(
-          TopList(
-            items: section['items'],
-            onPressed: (data){
-              onPush({'id':data['id'], 'level':data['level']});
-            },
-            header: section['header']
+          Flexible(  
+            child:_buildListView(
+              pois, 
+              'Poi'
+            )
           )
-        );
-      }
-    }
-    return new List<Widget>.from(widgets)..addAll(
-      <Widget>[
-      ]
+        ]
+      )
     );
   }
 
@@ -427,51 +308,6 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
       },
     );
   }
-
-  _renderTab(String label) {
-    return Text(
-      label,
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w300,
-      )
-    );
-  }
-
-  _renderTabBar(Color mainColor, Color fontColor, List<dynamic> sections){
-    var tabs = [
-      Tab(
-        child: _renderTab('All')
-      ),
-    ];
-
-    for (var section in sections) {
-      if(section['items'].length > 0){
-        tabs.add(
-          Tab(
-            child:  _renderTab(section['header'])
-          ),
-        );
-      }
-    }
-
-    return TabBar(
-      controller: _tabController,
-      labelColor: mainColor,
-      isScrollable: true,
-      unselectedLabelColor: fontContrast(fontColor).withOpacity(0.6),
-      indicator: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: mainColor,
-            width: 2.0
-          )
-        )
-      ),
-      tabs: tabs,
-    );
-  }
-
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
@@ -483,7 +319,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
      }));
 
     return NestedScrollView(
-      //controller: _scrollControllerCity,
+      //controller: _scrollControllerPark,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(

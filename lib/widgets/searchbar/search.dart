@@ -78,6 +78,7 @@ class SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      resizeToAvoidBottomPadding: false,
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
@@ -117,6 +118,7 @@ class SearchState extends State<Search> {
     
 
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         brightness: Brightness.light,
@@ -160,6 +162,9 @@ class SearchState extends State<Search> {
                 }
                 timer = new Timer(const Duration(milliseconds: 500), (){
                   print('Print $value');
+                  setState(() {
+                    data = fetchSearch(value);             
+                  });
                 });
                 
               },

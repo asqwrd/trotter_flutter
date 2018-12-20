@@ -6,26 +6,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 
 
 
 
 
-Future<CityData> fetchCity(String id) async {
+
+Future<CityStateData> fetchCityState(String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String cacheData = prefs.getString('city_$id') ?? null;
+  final String cacheData = prefs.getString('cityState_$id') ?? null;
   if(cacheData != null) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
-    return CityData.fromJson(json.decode(cacheData));
+    return CityStateData.fromJson(json.decode(cacheData));
   } else {
     print('no-cached');
     print(id);
-    final response = await http.get('http://localhost:3002/api/explore/cities/$id/', headers:{'Authorization':'security'});
+    final response = await http.get('http://localhost:3002/api/explore/city_states/$id/', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
-      await prefs.setString('city_$id', response.body);
-      return CityData.fromJson(json.decode(response.body));
+      await prefs.setString('cityState_$id', response.body);
+      return CityStateData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
@@ -34,9 +36,9 @@ Future<CityData> fetchCity(String id) async {
   }
 }
 
-class CityData {
+class CityStateData {
   final String color;
-  final Map<String, dynamic> city;
+  final Map<String, dynamic> cityState;
   final List<dynamic> discover;
   final List<dynamic> discoverLocations;
   final List<dynamic> eat;
@@ -51,11 +53,16 @@ class CityData {
   final List<dynamic> seeLocations;
   final List<dynamic> shop;
   final List<dynamic> shopLocations;
+  final dynamic currency;
+  final dynamic emergencyNumber;
+  final List<dynamic> plugs;
+  final dynamic safety;
+  final dynamic visa;
  
 
-  CityData({
+  CityStateData({
     this.color, 
-    this.city, 
+    this.cityState, 
     this.discover, 
     this.eat,
     this.nightlife, 
@@ -70,36 +77,46 @@ class CityData {
     this.relaxLocations,
     this.seeLocations,
     this.shopLocations,
+    this.currency, 
+    this.emergencyNumber,
+    this.plugs, 
+    this.safety, 
+    this.visa,
   });
 
-  factory CityData.fromJson(Map<String, dynamic> json) {
-    return CityData(
+  factory CityStateData.fromJson(Map<String, dynamic> json) {
+    return CityStateData(
       color: json['color'],
-      city: json['city'],
-      discover: json['discover'],
-      eat: json['eat'],
-      nightlife: json['nightlife'],
-      play: json['play'],
-      relax: json['relax'],
-      see: json['see'],
-      shop: json['shop'],
+      cityState: json['city_state'],
+      discover: json['city_state_places']['discover'],
+      eat: json['city_state_places']['eat'],
+      nightlife: json['city_state_places']['nightlife'],
+      play: json['city_state_places']['play'],
+      relax: json['city_state_places']['relax'],
+      see: json['city_state_places']['see'],
+      shop: json['city_state_places']['shop'],
+      currency: json['currency'],
+      emergencyNumber: json['emergency_number'],
+      plugs: json['plugs'],
+      safety: json['safety'],
+      visa: json['visa'],
     );
   }
 }
 
-class City extends StatefulWidget {
-  final String cityId;
+class CityState extends StatefulWidget {
+  final String cityStateId;
   final ValueChanged<dynamic> onPush;
-  City({Key key, @required this.cityId, this.onPush}) : super(key: key);
+  CityState({Key key, @required this.cityStateId, this.onPush}) : super(key: key);
   @override
-  CitiesState createState() => new CitiesState(cityId:this.cityId, onPush:this.onPush);
+  CityStateState createState() => new CityStateState(cityStateId:this.cityStateId, onPush:this.onPush);
 }
 
-class CitiesState extends State<City> with SingleTickerProviderStateMixin{
+class CityStateState extends State<CityState> with SingleTickerProviderStateMixin{
   bool _showTitle = false;
   static String id;
-  final String cityId;
-  Future<CityData> data;
+  final String cityStateId;
+  Future<CityStateData> data;
   TabController _tabController;
   final ValueChanged<dynamic> onPush;
 
@@ -108,12 +125,12 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
   void initState() {
     super.initState();
     _tabController = TabController(vsync: this, length: 8);
-    data = fetchCity(this.cityId);
+    data = fetchCityState(this.cityStateId);
     
   }
 
-  CitiesState({
-    this.cityId,
+  CityStateState({
+    this.cityStateId,
     this.onPush
   });
 
@@ -131,6 +148,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
+          print(snapshot.hasData);
           if (snapshot.hasData) {
             return _buildLoadedBody(context,snapshot);
           }
@@ -144,14 +162,15 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
     var kExpandedHeight = 200;
     final ScrollController _scrollController = ScrollController();
     
+      
     _scrollController.addListener(() => setState(() {
       _showTitle =_scrollController.hasClients &&
       _scrollController.offset > kExpandedHeight - kToolbarHeight;
 
     }));
-    var name = snapshot.data.city['name'];
-    var image = snapshot.data.city['image'];
-    var descriptionShort = snapshot.data.city['description_short'];
+
+    var name = snapshot.data.cityState['name'];
+    var image = snapshot.data.cityState['image'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
     var discover = snapshot.data.discover;
     var see = snapshot.data.see;
@@ -169,6 +188,8 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
       {'items': shop, 'header':'Shop' },
       {'items': nightlife, 'header':'Nightlife' },
     ];
+
+    
    
    
     return NestedScrollView(
@@ -189,6 +210,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
                 color: Colors.black,
+                
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});
@@ -207,7 +229,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                     Container(
                       color: Colors.white,
                       width: double.infinity,
-                      child: _renderTabBar(color, Colors.white,allTab)
+                      child: _renderTabBar(color, Colors.white, allTab)
                     )
                   ]        
                 )
@@ -276,7 +298,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
         controller: _tabController,
         children: [
           _buildTabContent(
-            _buildAllTab(allTab, descriptionShort),
+            _buildAllTab(allTab, snapshot),
             'All'
           ),
           _buildListView(
@@ -312,6 +334,127 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
     );
   }
 
+  _getPlugs(List<dynamic> plugsData, String name ) {
+    var plugs = <Widget>[
+      Container(
+        margin: EdgeInsets.only(top: 10.0, bottom: 40.0),
+        width: double.infinity,
+        child:Text(
+          '$name uses a frequency of ${plugsData[0]['frequency']} and voltage of ${plugsData[0]['voltage']} in sockets.  Below are the types of plugs you need when traveling to $name.',
+          style: TextStyle(
+            fontSize: 20.0,
+            fontWeight: FontWeight.w400,
+          ),
+        )
+      )
+    ];
+    for (var plug in plugsData) {
+      plugs.add(
+        Padding(
+          padding: EdgeInsets.only(right: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Image.asset(
+                'images/${plug['type']}.png',
+                width: 100.0,
+                height: 100.0,
+              ),
+              Text(
+                'Type ${plug['type']}',
+                style: TextStyle(
+                  fontSize: 20.0,
+                )
+              )
+            ]
+          )
+        )
+      );
+    }
+    return plugs;
+  }
+
+  _buildEmergencyNumRow(String label, String numbers){
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 20.0
+            )
+          ),
+          Text(
+            numbers,
+            style: TextStyle(
+              fontSize: 20.0,
+              fontWeight: FontWeight.w300
+            )
+          )
+        ],
+      
+      )
+    );
+  }
+
+  Widget _buildInfoParagraphBlock(dynamic obj, String key, String label) {
+    return Padding(
+      padding: EdgeInsets.only(top: 20.0, bottom:5.0),
+      child:Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label, 
+            style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 18.0
+          )),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.0),
+            child:Text(
+              obj[key].join(' '),
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.w300
+              ),
+            )
+          )
+        ]
+      )
+    );                
+  }
+
+  Widget _buildInfoBlock(dynamic objValue, String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(top: 20.0, bottom:5.0),
+      child:Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            label, 
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 18.0,
+            )
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 5.0),
+            child:Text('$value $objValue',
+              style: TextStyle(
+                fontSize: 20.0,
+                fontWeight: FontWeight.w300
+              ),
+            )
+          )
+        ]
+      )
+    );                
+  }
+
 
 
   _buildTabContent(List<Widget> widgets, String key){
@@ -325,31 +468,190 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildAllTab(List<dynamic> sections, String description) {
+  _buildAllTab(List<dynamic> sections, AsyncSnapshot snapshot ) {
+    bool _showVisaTextual = false;
+    bool _showVisaAllowedStay = false;
+    bool _showVisa = false;
+    bool _showVisaNotes = false;
+    bool _showVisaPassportValid = false;
+    bool _showVisaBlankPages = false;
+    var name = snapshot.data.cityState['name'];
+    var descriptionShort = snapshot.data.cityState['description_short'];
+
+    var visa = snapshot.data.visa;
+    var safety = snapshot.data.safety;
+    var plugs = snapshot.data.plugs;
+    var emergencyNumbers = snapshot.data.emergencyNumber;
+    _showVisa = visa != null;
+    _showVisaTextual = _showVisa && visa['visa']['textual'] != null && visa['visa']['textual']['text'] != null;
+    _showVisaAllowedStay = _showVisa && visa['visa']['allowed_stay'] != null;
+    _showVisaNotes = _showVisa && visa['visa']['notes'] != null;
+    _showVisaPassportValid = _showVisa && visa['passport'] != null  && visa['passport']['passport_validity'] != null;
+    _showVisaBlankPages = _showVisa && visa['passport'] != null  && visa['passport']['blank_pages'] != null;
+    //print('Amb ${emergencyNumbers['ambulance']}');
+    String ambulance = arrayString(emergencyNumbers['ambulance']['all']);
+    String police = arrayString(emergencyNumbers['police']['all']);
+    String fire = arrayString(emergencyNumbers['fire']['all']);
+    String dispatch = arrayString(emergencyNumbers['dispatch']['all']);
+    Color _getAdviceColor(double rating){
+      if(rating > 0 && rating < 2.5){
+        return Colors.green;
+      } else if(rating >= 2.5 && rating < 3.5){
+        return Colors.blue;
+      } else if(rating >= 3.5 && rating < 4.5){
+        return Colors.amber;
+      }
+
+      return Colors.red;
+    }
     var widgets = <Widget>[
-      Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      Padding(
+        padding: EdgeInsets.only(bottom: 40.0, left:20.0, right: 20.0),
         child: Text(
-          description,
+          descriptionShort, 
           style: TextStyle(
             fontSize: 18.0,
             fontWeight: FontWeight.w300
-          ),
+          )
         )
-      )
+      ),
+      _showVisa ? Container(
+        margin: EdgeInsets.only(bottom:40.0, left: 20.0, right: 20.0),
+        decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(
+            color: Colors.black,
+              width: 0.8,
+          )                
+        ),
+        child: Padding(
+          padding:EdgeInsets.all(20.0),
+          child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'VISA SNAPSHOT',
+                style: TextStyle(
+                  fontWeight: FontWeight.w300,
+                  fontSize: 18.0,
+                ),
+                textAlign: TextAlign.left,
+              ),
+              _showVisaTextual ? _buildInfoParagraphBlock(visa['visa']['textual'], 'text', 'Visa information ') : Container(),             
+              _showVisaAllowedStay ? _buildInfoBlock(visa['visa']['allowed_stay'], 'Duration of stay ', 'You are allowed to stay') : Container(),             
+              _showVisaNotes ? _buildInfoParagraphBlock(visa['visa'], 'notes', 'Additional notes') : Container(),
+              _showVisaPassportValid ? _buildInfoBlock(visa['passport']['passport_validity'], 'Passport validity requirement',''): Container(),  
+
+              _showVisaBlankPages ? _buildInfoBlock(visa['passport']['blank_pages'], 'Blank passport pages requirement', '') : Container(),
+            ] 
+          )
+        )
+      ):Container(),
+
+      buildDivider(), 
+
+      Container(
+        margin: EdgeInsets.symmetric(vertical: 40.0), 
+        child:Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child:Text(
+                'Health and Safety',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18.0
+                ),
+              )
+            ),
+            Container(
+              margin: EdgeInsets.only(top:20.0, bottom:20.0),
+              padding: EdgeInsets.symmetric(horizontal:20.0),
+              child:Text(
+                safety['advice'],
+                style: TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.w300,
+                  color: _getAdviceColor(safety['rating'])
+                )
+              )
+            ),
+            VaccineList(vaccines: visa['vaccination']),
+          ]
+        ),
+      ),
+
+      buildDivider(),
+
+      Container(
+        margin: EdgeInsets.symmetric(vertical: 40.0), 
+        child:Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child:Text(
+                'Emergency numbers',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 20.0
+                ),
+              )
+            ),
+            Container(
+              padding:EdgeInsets.all(20.0),
+              margin: EdgeInsets.only(left: 20.0, right:20.0, top: 20.0, bottom: 40.0 ),
+              decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(
+                  color: Colors.black,
+                    width: 0.8,
+                )                
+              ),
+              child:Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  ambulance.isNotEmpty ? _buildEmergencyNumRow('Ambulance', ambulance):Container(),
+                  dispatch.isNotEmpty ? _buildEmergencyNumRow('Dispatch', dispatch):Container(),
+                  fire.isNotEmpty ? _buildEmergencyNumRow('Fire', fire):Container(),
+                  police.isNotEmpty ? _buildEmergencyNumRow('Police', police):Container(),
+                ] 
+              )
+            ),
+
+            buildDivider(),
+
+            Container(
+              padding:EdgeInsets.all(20.0),
+              margin: EdgeInsets.only(left: 20.0, right:20.0, top: 40.0, bottom: 40.0 ),
+              decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(
+                  color: Colors.black,
+                    width: 0.8,
+                )                
+              ),
+              child:Wrap(
+                children: _getPlugs(plugs, name)
+              )
+            ),
+
+          ]
+        ),
+      ),
     ];
     for (var section in sections) {
-      if(section['items'].length > 0){
-        widgets.add(
-          TopList(
-            items: section['items'],
-            onPressed: (data){
-              onPush({'id':data['id'], 'level':data['level']});
-            },
-            header: section['header']
-          )
-        );
-      }
+      widgets.add(
+        TopList(
+          items: section['items'],
+          onPressed: (data){
+            print("Clicked ${data['id']}");
+            onPush({'id':data['id'], 'level':data['level']});
+          },
+          header: section['header']
+        )
+      );
     }
     return new List<Widget>.from(widgets)..addAll(
       <Widget>[
@@ -364,6 +666,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
       itemBuilder: (BuildContext context, int index) {
         return InkWell(
           onTap: () {
+            print(items[index]['level']);
             var id = items[index]['id'];
             var level  = items[index]['level'];
             onPush({'id':id.toString(), 'level':level.toString()});
@@ -483,7 +786,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
      }));
 
     return NestedScrollView(
-      //controller: _scrollControllerCity,
+      //controller: _scrollControllerCityState,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(

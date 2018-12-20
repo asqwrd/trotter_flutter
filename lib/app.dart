@@ -59,6 +59,7 @@ class AppState extends State<App> {
           !await navigatorKeys[currentTab].currentState.maybePop(),
       child: SizedBox.expand(child: Scaffold(
         backgroundColor: Colors.white,
+        //resizeToAvoidBottomPadding: false,
         body: Stack(children: <Widget>[
           FocusScope(node: _focusA,  child:_buildOffstageNavigator(TabItem.explore)),
           FocusScope(node: _focusB, child:_buildOffstageNavigator(TabItem.trips)),

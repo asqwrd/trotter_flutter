@@ -120,6 +120,11 @@ class PoiState extends State<Poi> {
     void _onMapCreated(GoogleMapController controller) {
       setState(() { 
         mapController = controller; 
+        mapController.addMarker(
+          MarkerOptions(
+            position: LatLng(poi['location']['lat'], poi['location']['lng']),
+          )
+        );
         mapController.animateCamera(CameraUpdate.newCameraPosition(
           CameraPosition(
             bearing: 270.0,
@@ -149,7 +154,10 @@ class PoiState extends State<Poi> {
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
                 color: Colors.black,
-              )
+              ),
+              onPressed: (){
+                onPush({'query':'', 'level':'search', 'id':poi['location_id'].toString()});
+              },
                   
             ),
             bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),

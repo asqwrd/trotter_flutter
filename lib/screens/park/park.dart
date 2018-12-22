@@ -134,7 +134,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
             backgroundColor: _showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
-              placeholder: 'Explore $name',
+              placeholder: 'Search',
               leading: IconButton(
                 padding: EdgeInsets.all(0),
                 icon:  Icon(Icons.arrow_back),

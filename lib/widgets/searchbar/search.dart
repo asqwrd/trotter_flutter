@@ -9,10 +9,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 
-Future<SearchData> fetchSearch(String query) async {
+Future<SearchData> fetchSearch(String query, String id, bool searchPoi) async {
   var response;
   if(query.isEmpty){
     response = await http.get('http://localhost:3002/api/search/recent', headers:{'Authorization':'security'});
+  } else if(query.isNotEmpty && (id != null && id.isNotEmpty) && searchPoi) {
+    response = await http.get('http://localhost:3002/api/search/find/$query?id=${id}', headers:{'Authorization':'security'});
   } else {
     response = await http.get('http://localhost:3002/api/search/find/$query', headers:{'Authorization':'security'});
   }
@@ -45,15 +47,20 @@ class SearchData {
 
 class Search extends StatefulWidget {
   final String query;
+  final String id;
+  final String location;
   final ValueChanged<dynamic> onPush;
-  Search({Key key, @required this.query, this.onPush}) : super(key: key);
+  Search({Key key, @required this.query, this.onPush, this.id, this.location}) : super(key: key);
   @override
-  SearchState createState() => new SearchState(query:this.query, onPush:this.onPush);
+  SearchState createState() => new SearchState(query:this.query, id:this.id, onPush:this.onPush, location:this.location);
 }
 
 class SearchState extends State<Search> {
   bool _showTitle = false;
   String query;
+  String id;
+  String location;
+  bool selectId = false;
   final ValueChanged<dynamic> onPush;
    GoogleMapController mapController;
   
@@ -63,15 +70,18 @@ class SearchState extends State<Search> {
   @override
   void initState() {
     super.initState();
-    data = fetchSearch('');
     txt.text = '';
+    selectId = this.id != null && this.id.isNotEmpty ? true : false;
+    data = fetchSearch('',this.id,selectId);
     
   }
   
 
   SearchState({
     this.query,
-    this.onPush
+    this.onPush,
+    this.id,
+    this.location
   });
 
 
@@ -87,11 +97,13 @@ class SearchState extends State<Search> {
               return Text('Press button to start.');
             case ConnectionState.active:
             case ConnectionState.waiting:
-              return _buildLoadedBody(context,snapshot, true);
+              return _buildLoadedBody(context,snapshot, true,'');
             case ConnectionState.done:
               if (snapshot.hasData) {
-                return _buildLoadedBody(context,snapshot, false);
-            }
+                return _buildLoadedBody(context,snapshot, false, this.id);
+              } else if(snapshot.hasError) {
+                return Text('No Connection');
+              }
           }
           
         }
@@ -101,12 +113,10 @@ class SearchState extends State<Search> {
   
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading) {
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading, String id) {
     final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 300;
     var timer;
-
-
 
     _scrollController.addListener(() => setState(() {
       _showTitle =_scrollController.hasClients &&
@@ -115,6 +125,38 @@ class SearchState extends State<Search> {
     }));
     var recentSearch = snapshot.hasData ? snapshot.data.recentSearch : null;
     var results = snapshot.hasData ? snapshot.data.results : null;
+    var chips = [
+      FilterChip(
+        selected: this.id != null && this.id.isNotEmpty ? !selectId : true,
+        label: Text("Anywhere"),
+        onSelected: (bool value){
+          setState(() {
+            if(this.id.isNotEmpty) {
+              selectId = !selectId;
+              txt.text =  '';
+              data = fetchSearch('', this.id, selectId); 
+            }
+          }); 
+        }
+      )
+    ];
+
+    if(this.id != null) {
+      chips.add(
+        FilterChip(
+          selected: selectId,
+          label: Text(this.location),
+          onSelected: (bool value){
+            setState(() {
+              if(this.id != null)
+                selectId = !selectId;
+                txt.text =  '';
+                data = fetchSearch('', this.id, selectId); 
+            }); 
+          }
+        )
+      );
+    }
     
 
     return Scaffold(
@@ -135,64 +177,114 @@ class SearchState extends State<Search> {
             onPressed: () {
               setState(() {
                 txt.text = '';
-                data = fetchSearch('');              
+                data = fetchSearch('', this.id, selectId);              
               });
             },
           )
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(40), 
+          preferredSize: Size.fromHeight(80), 
           child: Container(
-            child: TextField(
-              enabled: true,
-              controller: txt,
-              cursorColor: Colors.black,
-              textInputAction: TextInputAction.search,
-              enableInteractiveSelection: true,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                hintText: 'Search'
-              ),
-              onChanged: (value){
-                if(timer != null){
-                  timer.cancel();
-                  timer = null;
-                  
-                }
-                timer = new Timer(const Duration(milliseconds: 500), (){
-                  print('Print $value');
-                  setState(() {
-                    data = fetchSearch(value);             
-                  });
-                });
-                
-              },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextField(
+                  enabled: true,
+                  controller: txt,
+                  cursorColor: Colors.black,
+                  textInputAction: TextInputAction.search,
+                  enableInteractiveSelection: true,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                    hintText: selectId ? 'Search for places in $location...' : 'Search cities to travel to...'
+                  ),
+                  onChanged: (value){
+                    if(timer != null){
+                      timer.cancel();
+                      timer = null;
+                      
+                    }
+                    timer = new Timer(const Duration(milliseconds: 500), (){
+                      print('Print $value');
+                      setState(() {
+                        data = fetchSearch(value,this.id,selectId);             
+                      });
+                    });
+                    
+                  },
+                ),
+                Container( 
+                  margin: EdgeInsets.symmetric(horizontal:20.0),
+                  child: Wrap(
+                    spacing: 10.0,
+                    children: chips
+                  )
+                )
+              ]
             ),
           )
         ),
-      ) ,
+      ),
       body: isLoading ? _buildLoadingBody() : results != null ? 
         ListView.builder(
           //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
           itemCount: results.length,
           //shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
-            return InkWell(
+            return selectId == false ? InkWell(
               onTap: (){
-                print(results[index]['level']);
-
                 onPush({'id':results[index]['id'].toString(), 'level':results[index]['level'].toString(), 'from':'search'});
               },
               child: ListTile(
-                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                title: Text(
-                  results[index]['country_id'] == 'United_States' ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}' :'${results[index]['name']}, ${results[index]['country_name']}',
+                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  title: Text(
+                    results[index]['country_id'] == 'United_States' ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}' :'${results[index]['name']}, ${results[index]['country_name']}',
+                  )
                 )
-            )
+              ) : InkWell(
+               onTap: (){
+                onPush({'id':results[index]['id'].toString(), 'level':results[index]['level'].toString(), 'from':'search'});
+              },
+              child: Container( 
+                margin:EdgeInsets.symmetric(vertical: 20), 
+                child:ListTile(
+                  leading: Container(
+                    width: 130.0,
+                    height: 80.0, 
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: results[index]['image'] != null ? NetworkImage(
+                          results[index]['image'],
+                        ) : AssetImage('images/placeholder.jpg')
+                      )
+                    ),
+                  ),
+                  title: Text(
+                    results[index]['name'],
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600
+                    ),
+                  ),
+                  subtitle: Text(
+                    results[index]['description_short'],
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w300
+                    ),
+                  ),
+                )
+              )
             );
           },
-        ) : ListView.builder(
+        ) : this.id != null && this.id.isNotEmpty && selectId ? Text('Testing')
+        
+        : ListView.builder(
           //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
           itemCount: recentSearch.length,
           //shrinkWrap: true,
@@ -201,7 +293,7 @@ class SearchState extends State<Search> {
               onTap: (){
                 setState(() {
                   txt.text = recentSearch[index]['value'];
-                  data = fetchSearch(recentSearch[index]['value']);                
+                  data = fetchSearch(recentSearch[index]['value'], this.id,selectId);                
                 });
               },
               child: ListTile(

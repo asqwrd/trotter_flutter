@@ -130,6 +130,8 @@ class TabNavigator extends StatelessWidget {
       ),
       TabNavigatorRoutes.search: (context) => Search(
         query: '',
+        id: data['id'],
+        location: data['location'],
         onPush: (data) => _push(context, data)
       ),
     };

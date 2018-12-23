@@ -6,6 +6,7 @@ import 'package:trotter_flutter/screens/city/index.dart';
 import 'package:trotter_flutter/screens/city_state/index.dart';
 import 'package:trotter_flutter/screens/poi/index.dart';
 import 'package:trotter_flutter/screens/park/index.dart';
+import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
 class TabNavigatorRoutes {
@@ -143,7 +144,7 @@ class TabNavigator extends StatelessWidget {
         );
         return routes;
       case TabItem.trips:
-        routes[TabNavigatorRoutes.root] = (context) => Home(
+        routes[TabNavigatorRoutes.root] = (context) => Trips(
           onPush: (data) => _push(context, data),
         );
         return routes;

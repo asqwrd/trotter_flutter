@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 
 Future<SearchData> fetchSearch(String query, String id, bool searchPoi) async {
   var response;
-  if(query.isEmpty){
+  if(query.isEmpty && !searchPoi){
     response = await http.get('http://localhost:3002/api/search/recent', headers:{'Authorization':'security'});
+  } else if(query.isEmpty && searchPoi){
+    response = await http.get('http://localhost:3002/api/search/recent?poi=true', headers:{'Authorization':'security'});
   } else if(query.isNotEmpty && (id != null && id.isNotEmpty) && searchPoi) {
     response = await http.get('http://localhost:3002/api/search/find/$query?id=${id}', headers:{'Authorization':'security'});
-  } else {
+  }else {
     response = await http.get('http://localhost:3002/api/search/find/$query', headers:{'Authorization':'security'});
   }
   
@@ -282,9 +282,7 @@ class SearchState extends State<Search> {
               )
             );
           },
-        ) : this.id != null && this.id.isNotEmpty && selectId ? Text('Testing')
-        
-        : ListView.builder(
+        ) : ListView.builder(
           //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
           itemCount: recentSearch.length,
           //shrinkWrap: true,
@@ -310,19 +308,21 @@ class SearchState extends State<Search> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      //crossAxisAlignment: CrossAxisAlignment.start,
+      shrinkWrap: true,
+      primary: false,
       children: <Widget>[
-        TextLoading(),
-        TextLoading(width:200.0),
-        TextLoading(),
-        TextLoading(width:220.0),
-        TextLoading(),
-        TextLoading(width:180.0),
-        TextLoading(width:180.0),
-        TextLoading(width:150.0),
-        TextLoading(width:200.0),
-        TextLoading(width:180.0),
+        Align(alignment:Alignment.centerLeft, child:TextLoading()),
+        Align(alignment:Alignment.centerLeft, child:TextLoading(width:200.0)),
+        Align(alignment:Alignment.centerLeft, child:TextLoading()),
+        Align(alignment:Alignment.centerLeft, child:TextLoading(width:220.0)),
+        Align(alignment:Alignment.centerLeft, child:TextLoading()),
+        Align(alignment:Alignment.centerLeft, child:TextLoading(width:180.0)),
+        Align(alignment:Alignment.centerLeft, child:TextLoading(width:180.0)),
+        Align(alignment:Alignment.centerLeft, child:TextLoading(width:150.0)),
+        Align(alignment:Alignment.centerLeft, child:TextLoading(width:200.0)),
+        Align(alignment:Alignment.centerLeft, child:TextLoading(width:180.0)),
       ]
     );
   }

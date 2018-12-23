@@ -24,7 +24,7 @@ class SearchBar extends StatelessWidget {
         width: double.infinity,
         margin: EdgeInsets.symmetric(vertical: 5, horizontal: 20), 
         decoration: BoxDecoration(
-          color: Color.fromRGBO(255, 255, 255, 0.6),
+          color: Color.fromRGBO(255, 255, 255, 0.8),
           borderRadius: BorderRadius.all(Radius.circular(30.0)),
         ),
         child: Row(

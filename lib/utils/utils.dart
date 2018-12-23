@@ -67,6 +67,28 @@ class BottomWaveClipperTab extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
+class BottomWaveClipperSlant extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+
+    // Since the wave goes vertically lower than bottom left starting point,
+    // we'll have to make this point a little higher.
+    path.lineTo(0.0, size.height - 10); 
+
+    // The bottom right point also isn't at the same level as its left counterpart,
+    // so we'll adjust that one too.
+    path.lineTo(size.width, size.height - 50);
+    path.lineTo(size.width, 0.0);
+  
+
+    path.close();
+    return path;
+  }
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
 class CornerRadiusClipper extends CustomClipper<Path> {
   final double radius;
 

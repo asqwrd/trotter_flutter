@@ -18,6 +18,7 @@ class TabNavigatorRoutes {
   static const String cityState = '/city_state';
   static const String island = '/island';
   static const String park = '/park';
+  static const String trip = '/trip';
 }
 
 class TabNavigator extends StatelessWidget {
@@ -49,6 +50,9 @@ class TabNavigator extends StatelessWidget {
         break;
       case 'national_park':
         goTo = TabNavigatorRoutes.park;
+        break;
+      case 'trip':
+        goTo = TabNavigatorRoutes.trip;
         break;
       default:
         break;
@@ -127,6 +131,10 @@ class TabNavigator extends StatelessWidget {
       ),
       TabNavigatorRoutes.park: (context) => Park(
         parkId: data['id'], 
+        onPush: (data) => _push(context, data)
+      ),
+      TabNavigatorRoutes.trip: (context) => Trip(
+        tripId: data['id'], 
         onPush: (data) => _push(context, data)
       ),
       TabNavigatorRoutes.search: (context) => Search(

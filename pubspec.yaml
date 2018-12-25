@@ -26,6 +26,8 @@ dependencies:
   flutter_swiper: ^1.1.4
   google_maps_flutter: ^0.0.3+3
   shimmer: ^0.0.6
+  intl: ^0.15.7
+  html_unescape: ^1.0.1+2
 
 
 dev_dependencies:

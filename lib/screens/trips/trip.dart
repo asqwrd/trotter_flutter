@@ -18,11 +18,11 @@ import 'package:html_unescape/html_unescape.dart';
 
 
 
-Future<TripsData> fetchTrips() async {
-  final response = await http.get('http://localhost:3002/api/trips/all/', headers:{'Authorization':'security'});
+Future<TripData> fetchTrip(String id) async {
+  final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
-    return TripsData.fromJson(json.decode(response.body));
+    return TripData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
     var msg = response.statusCode;
@@ -31,42 +31,47 @@ Future<TripsData> fetchTrips() async {
   
 }
 
-class TripsData {
-  final List<dynamic> trips; 
+class TripData {
+  final Map<String, dynamic> trip; 
+  final List<dynamic> destinations; 
 
-  TripsData({this.trips});
+  TripData({this.trip, this.destinations});
 
-  factory TripsData.fromJson(Map<String, dynamic> json) {
-    return TripsData(
-      trips: json['trips'],
+  factory TripData.fromJson(Map<String, dynamic> json) {
+    return TripData(
+      trip: json['trip'],
+      destinations: json['destinations']
     );
   }
 }
 
 
-class Trips extends StatefulWidget {
+class Trip extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
-  Trips({Key key, this.onPush}) : super(key: key);
+  final String tripId;
+  Trip({Key key, this.onPush, @required this.tripId}) : super(key: key);
   @override
-  TripsState createState() => new TripsState(onPush:this.onPush);
+  TripState createState() => new TripState(onPush:this.onPush, tripId: this.tripId);
 }
 
-class TripsState extends State<Trips> {
+class TripState extends State<Trip> {
   bool _showTitle = false;
   final ValueChanged<dynamic> onPush;
+  final String tripId;
    GoogleMapController mapController;
   
-  Future<TripsData> data;
+  Future<TripData> data;
 
   @override
   void initState() {
     super.initState();
-    data = fetchTrips();
+    data = fetchTrip(this.tripId);
     
   }
 
-  TripsState({
-    this.onPush
+  TripState({
+    this.onPush,
+    this.tripId
   });
 
   
@@ -75,13 +80,6 @@ class TripsState extends State<Trips> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blueGrey,
-        onPressed: () { },
-        tooltip: 'Create trip',
-        child: Icon(Icons.add),
-        elevation: 5.0,
-      ),
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
@@ -106,9 +104,27 @@ class TripsState extends State<Trips> {
       _scrollController.offset > kExpandedHeight - kToolbarHeight;
 
     }));
-    var trips = snapshot.data.trips;
-    var color = Colors.blueGrey;
+    var trip = snapshot.data.trip;
+    var name = snapshot.data.trip['name'];
+    var destinations = snapshot.data.destinations;
+    var color = Color(hexStringToHexInt(snapshot.data.trip['color']));
+    var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
+    var fields = [
+      {"label":"Itinerary", "icon": Icon(Icons.map, color: iconColor)},
+      {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},
+    ];
 
+    for (var destination in destinations) {
+      fields.add(
+        {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
+      );
+
+      fields.add(
+        {"label":"Must knows about ${destination['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": destination['country_id'].toString(), "level":"country"}
+      );
+
+    }
+  
     return NestedScrollView(
       controller: _scrollController,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -117,7 +133,7 @@ class TripsState extends State<Trips> {
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: _showTitle ? Colors.blueGrey : Colors.transparent,
+            backgroundColor: _showTitle ? color : Colors.transparent,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Search',
@@ -141,8 +157,8 @@ class TripsState extends State<Trips> {
                       top: 0,
                       child: ClipPath(
                         clipper: BottomWaveClipperSlant(),
-                        child: Image.asset(
-                        'images/search2.jpg',
+                        child: Image.network(
+                        trip['image'],
                         fit: BoxFit.cover,
                       )
                     )
@@ -173,7 +189,7 @@ class TripsState extends State<Trips> {
                             fit: BoxFit.contain
                           )
                         ),
-                        Text('Trips',
+                        Text(name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
@@ -189,95 +205,41 @@ class TripsState extends State<Trips> {
           ),
         ];
       },
-      body: Container(
-        margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: trips.length,
-          //itemExtent: 300,
-          itemBuilder: (BuildContext context, int index) {
-            var color = Color(hexStringToHexInt(trips[index]['color']));
-            //print(trips[index]['start_date']);
-            
-            return InkWell(
-              onTap: () {
-                onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
-              },
-              child:Card(
-                semanticContainer: true,
-                color: Colors.white,
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                child: Column(
-                    children: <Widget>[  
-                      Container(
-                        height: 450.0,
-                        width: double.infinity,
-                        color: Colors.white,
-                        child: Stack(
-                          children: <Widget>[
-                            Positioned.fill(
-                              top:0,
-                              left:0,
-                              
-                              child: ClipPath( 
-                                clipper: BottomWaveClipper(),
-                                child: Image.network(
-                                  trips[index]['image'],
-                                  fit: BoxFit.cover
-                                ),
-                              )
-                            ),
-                            Positioned.fill(
-                              top:0,
-                              left: 0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [Colors.transparent, Colors.white.withOpacity(0.8)], // whitish to gray
-                                    tileMode: TileMode.repeated, // repeats the gradient over the canvas
-                                  ),
-                                ) 
-                              )
-                            )
-                          ],
-                        )                        
+      body: Column(
+        children: <Widget>[
+          _buildDestinationInfo(destinations),
+          Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+          ListView.separated(
+            shrinkWrap: true,
+            padding: EdgeInsets.all(0),
+            itemCount: fields.length,
+            separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+            itemBuilder: (BuildContext context, int index){
+              return ListTile(
+                onTap: (){
+                  print('here');
+                  if(fields[index]['id'] != null)
+                    onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
+                },
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      fields[index]['label'],
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w300
                       ),
-                      ListView(
-                        shrinkWrap: true,
-                        primary: false,
-                        children:<Widget>[
-                          Padding(
-                            padding: EdgeInsets.only(top: 10.0, bottom: 10),
-                            child: Text(
-                              trips[index]['name'].toUpperCase(),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: color,
-                                fontSize: 25.0,
-                                fontWeight: FontWeight.w500
-                                
-                              ),
-                            )
-                          ),
-                          _buildDestinationInfo(trips[index]['destinations'])
-                        ] 
-                      )
-                    ]
-                  ),
-                
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                elevation:1,
-                margin: EdgeInsets.all(20),
-              )
-            );
-          },
-        )
-      ),
+                    ),
+                    fields[index]['icon']
+                  ]
+                )
+              );
+            }
+          )
+        ]
+      )
     );
   }
 
@@ -288,10 +250,10 @@ class TripsState extends State<Trips> {
       var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
       widgets.add(
         Padding(
-          padding: EdgeInsets.only(top:0, bottom:40),
+          padding: EdgeInsets.only(top:20, bottom:20, right:20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               Text(
                 '${destination['destination_name']}',
@@ -319,6 +281,8 @@ class TripsState extends State<Trips> {
       children: widgets,
     );
   }
+
+  
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
@@ -330,7 +294,7 @@ class TripsState extends State<Trips> {
      }));
 
     return NestedScrollView(
-      //controller: _scrollControllerTrips,
+      //controller: _scrollControllerTrip,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(

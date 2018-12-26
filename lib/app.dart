@@ -16,28 +16,23 @@ class AppState extends State<App> {
     TabItem.profile: GlobalKey<NavigatorState>(),
   };
 
-  FocusScopeNode _focusA;
-  FocusScopeNode _focusB;
-  FocusScopeNode _focusC;
+  FocusScopeNode _focusA = FocusScopeNode();
+  FocusScopeNode _focusB = FocusScopeNode();
+  FocusScopeNode _focusC = FocusScopeNode();
+  
 
   @override
   void initState() {
     super.initState();
-    _focusA = FocusScopeNode();
-    _focusB = FocusScopeNode();
-    _focusC = FocusScopeNode();
-    //FocusScope.of(context).setFirstFocus(_focusA);
   }
 
   @override
-  void dispose() {
-    _focusA.detach();
-    _focusB.detach();
-    _focusC.detach();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    FocusScope.of(context).setFirstFocus(_focusA);
   }
 
-  void _selectTab(TabItem tabItem) {
+  void _selectTab(BuildContext context, TabItem tabItem) {
     setState(() {
       if( tabItem == TabItem.explore)
         FocusScope.of(context).setFirstFocus(_focusA);
@@ -49,17 +44,25 @@ class AppState extends State<App> {
       currentTab = tabItem;
     });
   }
+
+  @override
+  void dispose() {
+    _focusA.detach();
+    _focusB.detach();
+    _focusC.detach();
+    super.dispose();
+  }
+
+  
   
 
   @override
   Widget build(BuildContext context) {
-    FocusScope.of(context).setFirstFocus(_focusA);
     return WillPopScope(
       onWillPop: () async =>
           !await navigatorKeys[currentTab].currentState.maybePop(),
       child: SizedBox.expand(child: Scaffold(
         backgroundColor: Colors.white,
-        //resizeToAvoidBottomPadding: false,
         body: Stack(children: <Widget>[
           FocusScope(node: _focusA,  child:_buildOffstageNavigator(TabItem.explore)),
           FocusScope(node: _focusB, child:_buildOffstageNavigator(TabItem.trips)),
@@ -67,7 +70,7 @@ class AppState extends State<App> {
         ]),
         bottomNavigationBar: BottomNavigation(
           currentTab: currentTab,
-          onSelectTab: _selectTab,
+          onSelectTab: (TabItem tabitem) => _selectTab(context,tabitem)
         ),
       )),
     );

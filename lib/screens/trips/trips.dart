@@ -77,7 +77,9 @@ class TripsState extends State<Trips> {
     return new Scaffold(
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueGrey,
-        onPressed: () { },
+        onPressed: () { 
+          onPush({"level": "createtrip"});
+        },
         tooltip: 'Create trip',
         child: Icon(Icons.add),
         elevation: 5.0,

@@ -28,6 +28,8 @@ dependencies:
   shimmer: ^0.0.6
   intl: ^0.15.7
   html_unescape: ^1.0.1+2
+  flutter_typeahead: ^0.4.1
+  datetime_picker_formfield: ^0.1.7
 
 
 dev_dependencies:

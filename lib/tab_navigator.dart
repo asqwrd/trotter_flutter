@@ -19,6 +19,7 @@ class TabNavigatorRoutes {
   static const String island = '/island';
   static const String park = '/park';
   static const String trip = '/trip';
+  static const String createtrip = '/trip/create';
 }
 
 class TabNavigator extends StatelessWidget {
@@ -53,6 +54,9 @@ class TabNavigator extends StatelessWidget {
         break;
       case 'trip':
         goTo = TabNavigatorRoutes.trip;
+        break;
+      case 'createtrip':
+        goTo = TabNavigatorRoutes.createtrip;
         break;
       default:
         break;
@@ -135,6 +139,9 @@ class TabNavigator extends StatelessWidget {
       ),
       TabNavigatorRoutes.trip: (context) => Trip(
         tripId: data['id'], 
+        onPush: (data) => _push(context, data)
+      ),
+      TabNavigatorRoutes.createtrip: (context) => CreateTrip(
         onPush: (data) => _push(context, data)
       ),
       TabNavigatorRoutes.search: (context) => Search(

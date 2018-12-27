@@ -42,8 +42,8 @@ class SearchData {
 }
 
 
-Future<CreateTripData> fetchCreateTrip(dynamic data) async {
-  final response = await http.post('http://localhost:3002/api/trips/create/', body: data, headers:{'Authorization':'security'});
+Future<CreateTripData> postCreateTrip(dynamic data) async {
+  final response = await http.post('http://localhost:3002/api/trips/create/', body: data, headers:{'Authorization':'security',"Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     return CreateTripData.fromJson(json.decode(response.body));
@@ -89,11 +89,27 @@ class CreateTripState extends State<CreateTrip> {
   //final TextEditingController _typeAheadController = TextEditingController();
   
   List<dynamic> _destinations = [];
+  List<dynamic> _destinationImages = [];
+  String name;
   var destinationsCount = 0;
   List<Widget> fields;
+  final nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the Widget is removed from the Widget tree
+    nameController.dispose();
+    super.dispose();
+  }
+
+  _printLatestValue() {
+    this.name = nameController.text;
+  }
+
 
   @override
   void initState() {
+    nameController.addListener(_printLatestValue);
     this.fields = [
       _buildDestField(0),
       Container(
@@ -104,14 +120,105 @@ class CreateTripState extends State<CreateTrip> {
           onPressed: () { 
             setState(() { 
               this.destinationsCount = this.destinationsCount + 1;
-              print(this.destinationsCount);
               this.fields.insert(this.destinationsCount - 1, _buildDestField(this.destinationsCount - 1));
-              print(this.fields);
             }); 
           },
         )
       ),
-      _buildDivider()
+      _buildDivider(),
+      Container(
+        margin:EdgeInsets.symmetric(horizontal: 20),
+        child: TextFormField(
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(vertical:20.0),
+            prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
+            fillColor: Colors.blueGrey.withOpacity(0.5),
+            filled: true,
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderSide: BorderSide(
+                width: 1.0,
+                color: Colors.red
+              )
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderSide: BorderSide(
+                width: 1.0,
+                color: Colors.red
+              )
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderSide: BorderSide(
+                width: 0.0,
+                color: Colors.transparent
+              )
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderSide: BorderSide(
+                width: 0.0,
+                color: Colors.transparent
+              )
+            ),
+            hintText: 'Name your trip',
+          ),
+          controller: nameController,
+          onSaved: (String value) {
+            // This optional block of code can be used to run
+            // code when the user saves the form.
+            print(value);
+
+          },
+          validator: (value) {
+            if (value.isEmpty) {
+              return 'Please name your trip.';
+            }
+          },
+        )
+      ),
+      Align(
+        alignment:Alignment.center, 
+        child:Container(
+          margin: EdgeInsets.symmetric(vertical: 20),
+          width: 200,
+          child: FlatButton(
+            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(50.0)),
+            padding: EdgeInsets.symmetric(vertical: 10),
+            onPressed: () async {
+              // Validate will return true if the form is valid, or false if
+              // the form is invalid.
+              if (this._formKey.currentState.validate()) {
+                // If the form is valid, display a snackbar. In the real world, you'd
+                // often want to call a server or save the information in a database
+                print(this._destinations);
+                print(this._destinationImages);
+                print(this.name);
+                var data = {
+                  "trip":{
+                    "image": this._destinationImages[0],
+                    "name": this.name
+                  },
+                  "destinations": this._destinations
+                };
+                var response = await postCreateTrip(json.encode(data));
+                print(response);
+                Scaffold
+                    .of(context)
+                    .showSnackBar(SnackBar(content: Text('Processing Data')));
+              }
+            },
+            child: Text(
+              'Submit', 
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w300
+              )
+            ),
+          )
+        )
+      )
     ];
     this.destinationsCount = this.destinationsCount + 1;
     super.initState();    
@@ -140,18 +247,43 @@ class CreateTripState extends State<CreateTrip> {
       children: <Widget>[
         Container(
           margin:EdgeInsets.symmetric(horizontal: 20),
-
-          decoration: BoxDecoration(
-            color: Colors.blueGrey.withOpacity(0.5),
-            borderRadius: BorderRadius.all(Radius.circular(30.0)),
-          ), 
           child:TypeAheadFormField(
             textFieldConfiguration: TextFieldConfiguration(
               controller: _typeAheadController,
               decoration: InputDecoration(
                 hintText: 'Destination',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0)
+                contentPadding: EdgeInsets.symmetric(vertical:20.0),
+                prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.pin_drop)), 
+                fillColor: Colors.blueGrey.withOpacity(0.5),
+                filled: true,
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                  borderSide: BorderSide(
+                    width: 1.0,
+                    color: Colors.red
+                  )
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                  borderSide: BorderSide(
+                    width: 1.0,
+                    color: Colors.red
+                  )
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                  borderSide: BorderSide(
+                    width: 0.0,
+                    color: Colors.transparent
+                  )
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                  borderSide: BorderSide(
+                    width: 0.0,
+                    color: Colors.transparent
+                  )
+                ),
               )
             ),
             debounceDuration: Duration(milliseconds:500),   
@@ -172,14 +304,15 @@ class CreateTripState extends State<CreateTrip> {
             },
             onSuggestionSelected: (suggestion) {
               _typeAheadController.text = suggestion['country_id'] == 'United_States' ? '${suggestion['name']}, ${suggestion['parent_name']}' :'${suggestion['name']}, ${suggestion['country_name']}';
-              if(this._destinations.length > 0){
+              /*if(this._destinations.length > 0){
                 this._destinations[index]['location'] = suggestion['location'];
                 this._destinations[index]['destination_id'] = suggestion['destination_id'];
                 this._destinations[index]['destination_name'] = suggestion['destination_name'];
                 this._destinations[index]['level'] = suggestion['level'];
                 this._destinations[index]['country_id'] = suggestion['country_id'];
                 this._destinations[index]['country_name'] = suggestion['country_name'];
-              } else {
+                this._destinationImages[index] = suggestion['image'];
+              } else {*/
                 this._destinations.insert(index,{
                   "location": suggestion['location'],
                   "destination_id": suggestion['id'],
@@ -188,7 +321,8 @@ class CreateTripState extends State<CreateTrip> {
                   "country_id": suggestion['country_id'],
                   "country_name": suggestion["country_name"],
                 });
-              }
+                this._destinationImages.insert(index, suggestion["image"]);
+              //}
               
             },
             validator: (value) {
@@ -205,58 +339,125 @@ class CreateTripState extends State<CreateTrip> {
             Flexible(
               child:Container(
                 margin:EdgeInsets.only(left: 20.0, right:10, top: 20.0, bottom:0),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey.withOpacity(0.5),
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                ),  
                 child:DateTimePickerFormField(
                   format: dateFormat,
                   dateOnly: true,
                   decoration: InputDecoration(
                     hintText: 'Arrival date', 
-                    contentPadding: EdgeInsets.all(20.0),
-                    border: InputBorder.none
+                    contentPadding: EdgeInsets.symmetric(vertical:20.0),
+                    prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.calendar_today)), 
+                    fillColor: Colors.blueGrey.withOpacity(0.5),
+                    filled: true,
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 1.0,
+                        color: Colors.red
+                      )
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 1.0,
+                        color: Colors.red
+                      )
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 0.0,
+                        color: Colors.transparent
+                      )
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 0.0,
+                        color: Colors.transparent
+                      )
+                    ),
                   ),
                   onChanged: (dt){ 
                     setState(() { 
-                      if(this._destinations.length > 0){
-                        this._destinations[index]['start_date'] = dt;
-                      } else {
+                      if(this._destinations.length > 0 && dt != null){
+                        this._destinations[index]['start_date'] = dt.millisecondsSinceEpoch/1000;
+                        this._destinations[index]['start_date'] = this._destinations[index]['start_date'].toInt();
+                      } else if(dt != null) {
                         this._destinations.insert(index,{
-                          "start_date": dt,
+                          "start_date": dt.millisecondsSinceEpoch/1000.toInt(),
                         });
+                        this._destinations[index]['start_date'] = this._destinations[index]['start_date'].toInt();
                       }
                   
                     });
-                  }
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select an arrival date';
+                    }
+                  },
                 )
               )
             ),
             Flexible(
               child:Container(
                 margin:EdgeInsets.only(left: 10.0, right:20, top: 20.0, bottom:0),
-                decoration: BoxDecoration(
-                  color: Colors.blueGrey.withOpacity(0.5),
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                ), 
                 child: DateTimePickerFormField(
                   format: dateFormat,
                   dateOnly: true,
                   decoration: InputDecoration(
                     hintText: 'Departure date', 
-                    contentPadding: EdgeInsets.all(20.0),
-                    border: InputBorder.none
+                    contentPadding: EdgeInsets.symmetric(vertical:20.0),
+                    prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.calendar_today)), 
+                    fillColor: Colors.blueGrey.withOpacity(0.5),
+                    filled: true,
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 1.0,
+                        color: Colors.red
+                      )
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 1.0,
+                        color: Colors.red
+                      )
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 0.0,
+                        color: Colors.transparent
+                      )
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderSide: BorderSide(
+                        width: 0.0,
+                        color: Colors.transparent
+                      )
+                    ),
                   ),
-                  onChanged: (dt) => setState(() {
-                    print(dt); 
-                    if(this._destinations.length > 0){
-                      this._destinations[index]['end_date'] = dt;
-                    } else {
-                      this._destinations.insert(index,{
-                        "end_date": dt,
-                      });
+                  onChanged: (dt){
+                    setState(() {
+                      if(this._destinations.length > 0 && dt != null){
+                        this._destinations[index]['end_date'] = dt.millisecondsSinceEpoch/1000;
+                        this._destinations[index]['end_date'] = this._destinations[index]['end_date'].toInt();
+                      } else if(dt != null) {
+                        this._destinations.insert(index,{
+                          "end_date": dt.millisecondsSinceEpoch/1000.toInt(),
+                        });
+                        this._destinations[index]['end_date'] = this._destinations[index]['end_date'].toInt();
+                      }
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Please select a departure date';
                     }
-                  }),
+                  },
                 )
               )
             ),
@@ -301,7 +502,13 @@ class CreateTripState extends State<CreateTrip> {
             pinned: true,
             backgroundColor: _showTitle ? color : Colors.transparent,
             automaticallyImplyLeading: false,
-            leading: Icon(Icons.close),
+            leading: IconButton(
+              padding: EdgeInsets.all(0),
+              icon:  Icon(Icons.close),
+              onPressed: () {  Navigator.pop(context);},
+              iconSize: 30,
+              color: Colors.white,
+            ),
             bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
@@ -359,21 +566,19 @@ class CreateTripState extends State<CreateTrip> {
           ),
         ];
       },
-      body: 
-          Form(
-            key: this._formKey,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal:0.0),
-              child: ListView.builder(
-                itemCount: this.fields.length,
-                itemBuilder: (_, int index){
-                  return this.fields[index];
-                }
-              )
-            )
+      body: Form(
+        key: this._formKey,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal:0.0, vertical: 0),
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: this.fields.length,
+            itemBuilder: (_, int index){
+              return this.fields[index];
+            }
           )
-        
-      
+        )
+      )  
     ); 
   }
 }

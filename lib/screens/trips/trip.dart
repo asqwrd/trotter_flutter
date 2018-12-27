@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:queries/collections.dart';
 
 
 
@@ -97,6 +98,7 @@ class TripState extends State<Trip> {
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 300;
+    Map<String, List<dynamic>> destinationGroup; 
 
 
     _scrollController.addListener(() => setState(() {
@@ -107,6 +109,8 @@ class TripState extends State<Trip> {
     var trip = snapshot.data.trip;
     var name = snapshot.data.trip['name'];
     var destinations = snapshot.data.destinations;
+    var destTable = new Collection<dynamic>(destinations);
+    var result2 = destTable.groupBy<dynamic>((destination) => destination['country_id']);
     var color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
     var fields = [
@@ -115,14 +119,19 @@ class TripState extends State<Trip> {
     ];
 
     for (var destination in destinations) {
-      fields.add(
-        {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
-      );
 
+    }
+    for (var group in result2.asIterable()) {
+      var key = group.key;
+      print(key);
+      for (var destination in group.asIterable()) {
+        fields.add(
+          {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
+        );
+      }
       fields.add(
-        {"label":"Must knows about ${destination['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": destination['country_id'].toString(), "level":"country"}
+        {"label":"Must knows about ${group.asIterable().first['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": key.toString(), "level":"country"}
       );
-
     }
   
     return NestedScrollView(
@@ -133,7 +142,7 @@ class TripState extends State<Trip> {
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: _showTitle ? color : Colors.transparent,
+            backgroundColor: _showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Search',
@@ -205,12 +214,13 @@ class TripState extends State<Trip> {
           ),
         ];
       },
-      body: Column(
+      body: ListView(
         children: <Widget>[
           _buildDestinationInfo(destinations),
           Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
           ListView.separated(
             shrinkWrap: true,
+            primary: false,
             padding: EdgeInsets.all(0),
             itemCount: fields.length,
             separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
@@ -250,7 +260,7 @@ class TripState extends State<Trip> {
       var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
       widgets.add(
         Padding(
-          padding: EdgeInsets.only(top:20, bottom:20, right:20),
+          padding: EdgeInsets.only(top:5, bottom:5, right:20),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.end,

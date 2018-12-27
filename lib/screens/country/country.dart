@@ -144,6 +144,7 @@ class CountryState extends State<Country> {
     String police = arrayString(emergencyNumbers['police']['all']);
     String fire = arrayString(emergencyNumbers['fire']['all']);
     String dispatch = arrayString(emergencyNumbers['dispatch']['all']);
+    String europeanEmergencyNumber = arrayString(emergencyNumbers['european_emergency_number']);
 
     Color _getAdviceColor(double rating){
       if(rating > 0 && rating < 2.5){
@@ -356,6 +357,7 @@ class CountryState extends State<Country> {
                         dispatch.isNotEmpty ? _buildEmergencyNumRow('Dispatch', dispatch):Container(),
                         fire.isNotEmpty ? _buildEmergencyNumRow('Fire', fire):Container(),
                         police.isNotEmpty ? _buildEmergencyNumRow('Police', police):Container(),
+                        europeanEmergencyNumber.isNotEmpty ? _buildEmergencyNumRow('European Emergency Number', europeanEmergencyNumber):Container(),
                       ] 
                     )
                   ),

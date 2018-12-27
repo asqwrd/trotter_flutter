@@ -357,7 +357,9 @@ class TripsState extends State<Trips> {
           ),
         ];
       },
-      body: Container(
+      body: RefreshIndicator(
+          onRefresh: _handleRefresh,
+          child: Container(
         padding: EdgeInsets.only(top: 40.0),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
@@ -377,6 +379,6 @@ class TripsState extends State<Trips> {
           ],
         )
       ),
-    );
+    ));
   }
 }

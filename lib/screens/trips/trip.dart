@@ -129,9 +129,11 @@ class TripState extends State<Trip> {
           {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
         );
       }
-      fields.add(
-        {"label":"Must knows about ${group.asIterable().first['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": key.toString(), "level":"country"}
-      );
+      if(group.asIterable().first['level'] != 'city_state'){
+        fields.add(
+          {"label":"Must knows about ${group.asIterable().first['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": key.toString(), "level":"country"}
+        );
+      }
     }
   
     return NestedScrollView(

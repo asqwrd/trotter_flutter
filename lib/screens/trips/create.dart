@@ -192,9 +192,6 @@ class CreateTripState extends State<CreateTrip> {
               if (this._formKey.currentState.validate()) {
                 // If the form is valid, display a snackbar. In the real world, you'd
                 // often want to call a server or save the information in a database
-                print(this._destinations);
-                print(this._destinationImages);
-                print(this.name);
                 var data = {
                   "trip":{
                     "image": this._destinationImages[0],
@@ -206,7 +203,8 @@ class CreateTripState extends State<CreateTrip> {
                 print(response);
                 Scaffold
                     .of(context)
-                    .showSnackBar(SnackBar(content: Text('Processing Data')));
+                    .showSnackBar(SnackBar(content: Text('Trip created!')));
+                onPush({"id": response.trip['ID'].toString(),"level":"trip", 'from':'createtrip'});
               }
             },
             child: Text(
@@ -296,7 +294,6 @@ class CreateTripState extends State<CreateTrip> {
                 title: Text(
                   suggestion['country_id'] == 'United_States' ? '${suggestion['name']}, ${suggestion['parent_name']}' :'${suggestion['name']}, ${suggestion['country_name']}',
                 ),
-                //subtitle: Text('\$${suggestion['price']}'),
               );
             },
             transitionBuilder: (context, suggestionsBox, controller) {
@@ -304,15 +301,6 @@ class CreateTripState extends State<CreateTrip> {
             },
             onSuggestionSelected: (suggestion) {
               _typeAheadController.text = suggestion['country_id'] == 'United_States' ? '${suggestion['name']}, ${suggestion['parent_name']}' :'${suggestion['name']}, ${suggestion['country_name']}';
-              /*if(this._destinations.length > 0){
-                this._destinations[index]['location'] = suggestion['location'];
-                this._destinations[index]['destination_id'] = suggestion['destination_id'];
-                this._destinations[index]['destination_name'] = suggestion['destination_name'];
-                this._destinations[index]['level'] = suggestion['level'];
-                this._destinations[index]['country_id'] = suggestion['country_id'];
-                this._destinations[index]['country_name'] = suggestion['country_name'];
-                this._destinationImages[index] = suggestion['image'];
-              } else {*/
                 this._destinations.insert(index,{
                   "location": suggestion['location'],
                   "destination_id": suggestion['id'],
@@ -322,8 +310,6 @@ class CreateTripState extends State<CreateTrip> {
                   "country_name": suggestion["country_name"],
                 });
                 this._destinationImages.insert(index, suggestion["image"]);
-              //}
-              
             },
             validator: (value) {
               if (value.isEmpty) {

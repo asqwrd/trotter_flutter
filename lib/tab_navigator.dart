@@ -62,7 +62,7 @@ class TabNavigator extends StatelessWidget {
         break;
     }
 
-    if(data['from'] != null && data['from'] == 'search') {
+    if(data['from'] != null && (data['from'] == 'search' || data['from'] == 'createtrip')) {
       Navigator.pushReplacement(
       context,
       PageRouteBuilder(

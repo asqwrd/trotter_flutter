@@ -32,27 +32,26 @@ Future<HomeData> fetchHome() async {
 }
 
 class HomeData {
-  final List<dynamic> nationalParks;
+  //final List<dynamic> nationalParks;
   final List<dynamic> popularCities;
-  final List<dynamic> popularCountries;
+  //final List<dynamic> popularCountries;
   final List<dynamic> popularIslands;
  
 
-  HomeData({this.nationalParks, this.popularCities, this.popularCountries, this.popularIslands});
+  HomeData({this.popularCities, this.popularIslands});
 
   factory HomeData.fromJson(Map<String, dynamic> json) {
     return HomeData(
-      nationalParks: json['national_parks'],
+      //nationalParks: json['national_parks'],
       popularCities: json['popular_cities'],
-      popularCountries: json['popular_countries'],
+      //popularCountries: json['popular_countries'],
       popularIslands: json['popular_islands'],
     );
   }
 }
-typedef String2VoidFunc = void Function(String, String);
 
 class Home extends StatefulWidget {
-  final ValueChanged<dynamic> onPush;
+  final String2VoidFunc onPush;
   Home({Key key, @required this.onPush}) : super(key: key);
   @override
   HomeState createState() => new HomeState(onPush:this.onPush);
@@ -62,7 +61,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home> {
   //final ScrollController _scrollController = ScrollController();
   bool _showTitle = false;
-  final ValueChanged<dynamic> onPush;
+  final String2VoidFunc onPush;
 
   @override
   void initState() {
@@ -93,6 +92,31 @@ class HomeState extends State<Home> {
       )
     );
   }
+
+  bottomSheetModal(BuildContext context, dynamic data){
+  return showModalBottomSheet(context: context,
+    builder: (BuildContext context) {
+      return new Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new ListTile(
+            leading: new Icon(Icons.trip_origin),
+            title: new Text('Create Trip'),
+            onTap: () {
+              Navigator.pop(context);
+              onPush({'level':'createtrip', 'param':data}); 
+              
+            }   
+          ),
+          new ListTile(
+            leading: new Icon(Icons.add_circle),
+            title: new Text('Add to trip'),
+            onTap: () => print('')          
+          ),
+        ]
+      );
+  });
+}
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
@@ -185,35 +209,41 @@ class HomeState extends State<Home> {
         child: ListView(
           shrinkWrap: true,
           children: <Widget>[
-            TopList(
+            /*TopList(
               items: snapshot.data.popularCountries,
               onPressed: (data){
                 print("Clicked ${data['id']}");
                 onPush({'id':data['id'], 'level':data['level']});
               },
               header: "Trending countries"
-            ),
+            ),*/
             TopList(
               items: snapshot.data.popularCities,
               onPressed: (data){
                 print("Clicked ${data['level']}");
                 onPush({'id':data['id'], 'level':data['level']});
               },
+              onLongPressed: (data){
+                bottomSheetModal(context, data['item']);
+              },
               header: "Trending cities"
             ),
-            TopList(
+            /*TopList(
               items: snapshot.data.nationalParks,
               onPressed: (data){
                 print("Clicked ${data['id']}");
                 onPush({'id':data['id'], 'level':data['level']});
               },
               header: "Explore national parks"
-            ),
+            ),*/
             TopList(
               items: snapshot.data.popularIslands,
               onPressed: (data){
                 print("Clicked ${data['id']}");
                 onPush({'id':data['id'], 'level':data['level']});
+              },
+              onLongPressed: (data){
+                bottomSheetModal(context, data['item']);
               },
               header: "Explore the island life"
             )
@@ -222,7 +252,6 @@ class HomeState extends State<Home> {
       ),
     );
   }
-
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
     var kExpandedHeight = 300;

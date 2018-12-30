@@ -130,3 +130,5 @@ buildDivider() {
 arrayString(List<dynamic> list) {
   return list.join(', ');
 }
+
+typedef String2VoidFunc = void Function(Map<String, dynamic>);

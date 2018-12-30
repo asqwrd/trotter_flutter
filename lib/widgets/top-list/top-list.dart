@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
-typedef String2VoidFunc = void Function(Map<String, String>);
 
 class TopList extends StatelessWidget {
   final String2VoidFunc onPressed;
+  final ValueChanged onLongPressed;
   final String name;
   final String header;
   final List<dynamic> items;
@@ -15,6 +16,7 @@ class TopList extends StatelessWidget {
     this.header,
     this.name,
     this.onPressed,
+    this.onLongPressed,
     this.items,
     this.callback
   });
@@ -73,6 +75,9 @@ class TopList extends StatelessWidget {
       var id = item['id'];
       var level = item['level'];
       this.onPressed({'id': id, 'level': level});
+    },
+    onLongPress: () {
+      this.onLongPressed({'item': item});
     },
     child:Container(
       //height:210.0,

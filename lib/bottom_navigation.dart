@@ -75,9 +75,11 @@ class BottomNavigation extends StatelessWidget {
         _buildItem(tabItem: TabItem.trips),
         _buildItem(tabItem: TabItem.profile),
       ],
-      onTap: (index) => onSelectTab(
-        TabHelper.item(index: index),
-      ),
+      onTap: (index){
+        onSelectTab(
+          TabHelper.item(index: index),
+        );
+      }
     ));
   }
 

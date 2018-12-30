@@ -9,6 +9,7 @@ import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
+
 class TabNavigatorRoutes {
   static const String root = '/';
   static const String country = '/country';
@@ -22,12 +23,17 @@ class TabNavigatorRoutes {
   static const String createtrip = '/trip/create';
 }
 
+class Contexts {
+  static BuildContext trips;
+}
+
 class TabNavigator extends StatelessWidget {
   TabNavigator({this.navigatorKey, this.tabItem});
   final GlobalKey<NavigatorState> navigatorKey;
   final TabItem tabItem;
+  //final ValueChanged<dynamic> onSwitchTab;
 
-  void _push(BuildContext context, Map<String, String> data) {
+  void _push(BuildContext context, Map<String, dynamic> data) {
     var routeBuilders = _routeBuilders(context, data: data);
     var goTo = TabNavigatorRoutes.root;
     switch (data['level']) {
@@ -62,6 +68,27 @@ class TabNavigator extends StatelessWidget {
         break;
     }
 
+    /*if(data['from'] == 'createtrip') {
+      Navigator.push(
+        Contexts.trips,
+        PageRouteBuilder(
+            pageBuilder: (context, _, __) => routeBuilders[goTo](context),
+            transitionsBuilder: (BuildContext context,
+                Animation<double> animation,
+                Animation<double> secondaryAnimation,
+                Widget child) {
+              return new FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+
+            }),
+        );
+        onSwitchTab({'tabItem':TabItem.trips});
+      
+
+    }*/
+
     if(data['from'] != null && (data['from'] == 'search' || data['from'] == 'createtrip')) {
       Navigator.pushReplacement(
       context,
@@ -84,7 +111,7 @@ class TabNavigator extends StatelessWidget {
            );*/
           }),
       );
-    } else{
+    } else {
       Navigator.push(
         context,
         PageRouteBuilder(
@@ -110,7 +137,7 @@ class TabNavigator extends StatelessWidget {
   }
 
 
-  Map<String, WidgetBuilder> _routeBuilders(BuildContext context,{Map<String, String> data}) {
+  Map<String, WidgetBuilder> _routeBuilders(BuildContext context,{Map<String, dynamic> data}) {
     //print(data['id']);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
@@ -142,6 +169,7 @@ class TabNavigator extends StatelessWidget {
         onPush: (data) => _push(context, data)
       ),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(
+        param: data['param'],
         onPush: (data) => _push(context, data)
       ),
       TabNavigatorRoutes.search: (context) => Search(
@@ -160,7 +188,7 @@ class TabNavigator extends StatelessWidget {
         return routes;
       case TabItem.trips:
         routes[TabNavigatorRoutes.root] = (context) => Trips(
-          onPush: (data) => _push(context, data),
+            onPush: (data) => _push(context, data),
         );
         return routes;
       case TabItem.profile:
@@ -179,6 +207,11 @@ class TabNavigator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var routeBuilders = _routeBuilders(context);
+
+    //using trips context for anything trip related
+    /*if(this.tabItem == TabItem.trips){
+      Contexts.trips = context; 
+    }*/
 
     return Navigator(
         key: navigatorKey,

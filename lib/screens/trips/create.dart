@@ -72,9 +72,10 @@ class CreateTripData {
 
 class CreateTrip extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
-  CreateTrip({Key key, this.onPush}) : super(key: key);
+  final dynamic param;
+  CreateTrip({Key key, this.onPush, this.param}) : super(key: key);
   @override
-  CreateTripState createState() => new CreateTripState(onPush:this.onPush);
+  CreateTripState createState() => new CreateTripState(onPush:this.onPush, param:this.param);
 }
 
 
@@ -82,6 +83,7 @@ class CreateTrip extends StatefulWidget {
 class CreateTripState extends State<CreateTrip> {
   bool _showTitle = false;
   final ValueChanged<dynamic> onPush;
+  final dynamic param;
   GoogleMapController mapController;
   
   Future<CreateTripData> data;
@@ -111,7 +113,7 @@ class CreateTripState extends State<CreateTrip> {
   void initState() {
     nameController.addListener(_printLatestValue);
     this.fields = [
-      _buildDestField(0),
+      _buildDestField(0,this.param),
       Container(
         margin: EdgeInsets.symmetric(vertical: 0.0),
         child:IconButton(
@@ -218,12 +220,27 @@ class CreateTripState extends State<CreateTrip> {
         )
       )
     ];
+    if(this.param != null){
+      var destination = {
+        "location": this.param['location'],
+        "destination_id": this.param['id'],
+        "destination_name": this.param['name'],
+        "level": this.param['level'],
+        "country_id": this.param['country_id'],
+        "country_name": this.param["country_name"],
+        "start_date": null,
+        "end_date": null,
+      };
+      this._destinations.add(destination);
+      this._destinationImages.add(this.param['image']);
+    }
     this.destinationsCount = this.destinationsCount + 1;
     super.initState();    
   }
 
   CreateTripState({
     this.onPush,
+    this.param
   });
 
   
@@ -238,9 +255,11 @@ class CreateTripState extends State<CreateTrip> {
       
   }
 
-   _buildDestField(int index) {
+   _buildDestField(int index,[dynamic param]) {
     TextEditingController _typeAheadController = TextEditingController();
     var dateFormat = DateFormat("EEE, MMM d, yyyy");
+    if(param != null)
+      _typeAheadController.text = param['country_id'] == 'United_States' ? '${param['name']}, ${param['parent_name']}' :'${param['name']}, ${param['country_name']}';
     return Column(
       children: <Widget>[
         Container(
@@ -290,7 +309,7 @@ class CreateTripState extends State<CreateTrip> {
             },
             itemBuilder: (context, suggestion) {
               return ListTile(
-                leading: Icon(Icons.shopping_cart),
+                leading: Icon(Icons.place),
                 title: Text(
                   suggestion['country_id'] == 'United_States' ? '${suggestion['name']}, ${suggestion['parent_name']}' :'${suggestion['name']}, ${suggestion['country_name']}',
                 ),
@@ -301,6 +320,19 @@ class CreateTripState extends State<CreateTrip> {
             },
             onSuggestionSelected: (suggestion) {
               _typeAheadController.text = suggestion['country_id'] == 'United_States' ? '${suggestion['name']}, ${suggestion['parent_name']}' :'${suggestion['name']}, ${suggestion['country_name']}';
+              if(this._destinations.length > 0 && this._destinations[index] != null) {
+                this._destinations.replaceRange(index,index+1,[{
+                  "location": suggestion['location'],
+                  "destination_id": suggestion['id'],
+                  "destination_name": suggestion['name'],
+                  "level": suggestion['level'],
+                  "country_id": suggestion['country_id'],
+                  "country_name": suggestion["country_name"],
+                  "start_date": this._destinations[index]['start_date'] != null ? this._destinations[index]['start_date'] : null,
+                  "end_date": this._destinations[index]['end_date'] != null ? this._destinations[index]['end_date'] : null,
+                }]);
+
+              } else {
                 this._destinations.insert(index,{
                   "location": suggestion['location'],
                   "destination_id": suggestion['id'],
@@ -308,8 +340,11 @@ class CreateTripState extends State<CreateTrip> {
                   "level": suggestion['level'],
                   "country_id": suggestion['country_id'],
                   "country_name": suggestion["country_name"],
+                  "start_date": this._destinations[index]['start_date'] != null ? this._destinations[index]['start_date'] : null,
+                  "end_date": this._destinations[index]['end_date'] != null ? this._destinations[index]['end_date'] : null,
                 });
-                this._destinationImages.insert(index, suggestion["image"]);
+              }
+              this._destinationImages.insert(index, suggestion["image"]);
             },
             validator: (value) {
               if (value.isEmpty) {
@@ -328,6 +363,7 @@ class CreateTripState extends State<CreateTrip> {
                 child:DateTimePickerFormField(
                   format: dateFormat,
                   dateOnly: true,
+                  firstDate: DateTime.now(),
                   decoration: InputDecoration(
                     hintText: 'Arrival date', 
                     contentPadding: EdgeInsets.symmetric(vertical:20.0),
@@ -366,13 +402,15 @@ class CreateTripState extends State<CreateTrip> {
                   onChanged: (dt){ 
                     setState(() { 
                       if(this._destinations.length > 0 && dt != null){
-                        this._destinations[index]['start_date'] = dt.millisecondsSinceEpoch/1000;
-                        this._destinations[index]['start_date'] = this._destinations[index]['start_date'].toInt();
+                        var startDate = dt.millisecondsSinceEpoch/1000;
+                        this._destinations[index]['start_date'] = startDate.toInt();
+                        //print(this._destinations[index]['name']);
                       } else if(dt != null) {
+                        print(this._destinations[index]['name']);
+                        var startDate = dt.millisecondsSinceEpoch/1000;
                         this._destinations.insert(index,{
-                          "start_date": dt.millisecondsSinceEpoch/1000.toInt(),
+                          "start_date": startDate.toInt(),
                         });
-                        this._destinations[index]['start_date'] = this._destinations[index]['start_date'].toInt();
                       }
                   
                     });
@@ -391,6 +429,7 @@ class CreateTripState extends State<CreateTrip> {
                 child: DateTimePickerFormField(
                   format: dateFormat,
                   dateOnly: true,
+                  firstDate: DateTime.now(),
                   decoration: InputDecoration(
                     hintText: 'Departure date', 
                     contentPadding: EdgeInsets.symmetric(vertical:20.0),
@@ -429,19 +468,21 @@ class CreateTripState extends State<CreateTrip> {
                   onChanged: (dt){
                     setState(() {
                       if(this._destinations.length > 0 && dt != null){
-                        this._destinations[index]['end_date'] = dt.millisecondsSinceEpoch/1000;
-                        this._destinations[index]['end_date'] = this._destinations[index]['end_date'].toInt();
+                        var endDate = dt.millisecondsSinceEpoch/1000;
+                        this._destinations[index]['end_date'] = endDate.toInt();
                       } else if(dt != null) {
+                        var endDate = dt.millisecondsSinceEpoch/1000;
                         this._destinations.insert(index,{
-                          "end_date": dt.millisecondsSinceEpoch/1000.toInt(),
+                          "end_date": endDate.toInt(),
                         });
-                        this._destinations[index]['end_date'] = this._destinations[index]['end_date'].toInt();
                       }
                     });
                   },
                   validator: (value) {
                     if (value == null) {
                       return 'Please select a departure date';
+                    } else if(this._destinations[index]['end_date'] < this._destinations[index]['start_date']){
+                      return "Please choose a later departure date";
                     }
                   },
                 )

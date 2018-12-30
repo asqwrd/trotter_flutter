@@ -124,22 +124,29 @@ class TripsState extends State<Trips> {
             pinned: true,
             backgroundColor: _showTitle ? Colors.blueGrey : Colors.transparent,
             automaticallyImplyLeading: false,
-            title: SearchBar(
-              placeholder: 'Search',
-              leading: SvgPicture.asset("images/search-icon.svg",
-                width: 55.0,
-                height: 55.0,
-                color: Colors.black,
-                fit: BoxFit.contain
-              ),
-              onPressed: (){
-                onPush({'query':'', 'level':'search'});
-              },
-                  
-            ),
-            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
+                title: _showTitle ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children:<Widget>[
+                        Container(
+                          margin: EdgeInsets.only(right:10.0),
+                          child: SvgPicture.asset("images/trotter-logo.svg",
+                            width: 25.0,
+                            height: 25.0,
+                            fit: BoxFit.contain
+                          )
+                        ),
+                        Text('Trips',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w300
+                          )
+                        )
+                      ]
+                    ) : null,
                 collapseMode: CollapseMode.parallax,
                 background: Stack(children: <Widget>[
                   Positioned.fill(

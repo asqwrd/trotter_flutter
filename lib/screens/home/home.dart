@@ -269,21 +269,16 @@ class HomeState extends State<Home> {
             expandedHeight: 350.0,
             floating: false,
             pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
+            backgroundColor: Color.fromRGBO(240, 240, 240, 1),
             automaticallyImplyLeading: false,
-            bottom: !_showTitle
-              ? PreferredSize(
-                  preferredSize: Size.fromHeight(40),
-                  child: Image.asset("images/header.png",
-                      fit: BoxFit.fill,
-                      height: 100.0,
-                      width: double.infinity))
-              : null,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 0.8)
+              background: ClipPath(
+                clipper: BottomWaveClipper(),
+                child:Container(
+                  color: Color.fromRGBO(240, 240, 240, 1)
+                )
               ),
             ),
           ),

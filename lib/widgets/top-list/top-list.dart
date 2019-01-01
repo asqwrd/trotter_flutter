@@ -28,7 +28,7 @@ class TopList extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 20.0), 
       child:Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         children:<Widget>[
           Container(
             margin: EdgeInsets.only(left: 20.0, right:20.0, bottom:20.0),

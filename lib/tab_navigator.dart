@@ -89,10 +89,34 @@ class TabNavigator extends StatelessWidget {
 
     }*/
 
+
     if(data['from'] != null && (data['from'] == 'search' || data['from'] == 'createtrip')) {
       Navigator.pushReplacement(
       context,
       PageRouteBuilder(
+        pageBuilder: (context, _, __) => routeBuilders[goTo](context),
+        transitionsBuilder: (BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            Widget child) {
+          return new FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        }),
+      );
+    } else {
+       goTo == TabNavigatorRoutes.search || goTo == TabNavigatorRoutes.createtrip ? Navigator.push(
+        context,
+        MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (context) => routeBuilders[goTo](context),
+          )
+        )
+       : 
+       Navigator.push(
+        context,
+        PageRouteBuilder(
           pageBuilder: (context, _, __) => routeBuilders[goTo](context),
           transitionsBuilder: (BuildContext context,
               Animation<double> animation,
@@ -102,43 +126,14 @@ class TabNavigator extends StatelessWidget {
               opacity: animation,
               child: child,
             );
-            /*return new SlideTransition(
-            position: new Tween<Offset>(
-              begin: const Offset(-1.0, 0.0),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-           );*/
           }),
-      );
-    } else {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-            pageBuilder: (context, _, __) => routeBuilders[goTo](context),
-            transitionsBuilder: (BuildContext context,
-                Animation<double> animation,
-                Animation<double> secondaryAnimation,
-                Widget child) {
-              return new FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-              /*return new SlideTransition(
-              position: new Tween<Offset>(
-                begin: const Offset(-1.0, 0.0),
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            );*/
-            }),
         );
       }
   }
 
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context,{Map<String, dynamic> data}) {
-    //print(data['id']);
+    //print(this.tabItem);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
         countryId: data['id'],

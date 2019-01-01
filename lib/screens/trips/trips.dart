@@ -124,29 +124,22 @@ class TripsState extends State<Trips> {
             pinned: true,
             backgroundColor: _showTitle ? Colors.blueGrey : Colors.transparent,
             automaticallyImplyLeading: false,
+            title: SearchBar(
+              placeholder: 'Search',
+              leading: SvgPicture.asset("images/search-icon.svg",
+                width: 55.0,
+                height: 55.0,
+                color: Colors.black,
+                fit: BoxFit.contain
+              ),
+              onPressed: (){
+                onPush({'query':'', 'level':'search'});
+              },
+                  
+            ),
+            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
-                title: _showTitle ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children:<Widget>[
-                        Container(
-                          margin: EdgeInsets.only(right:10.0),
-                          child: SvgPicture.asset("images/trotter-logo.svg",
-                            width: 25.0,
-                            height: 25.0,
-                            fit: BoxFit.contain
-                          )
-                        ),
-                        Text('Trips',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 25,
-                            fontWeight: FontWeight.w300
-                          )
-                        )
-                      ]
-                    ) : null,
                 collapseMode: CollapseMode.parallax,
                 background: Stack(children: <Widget>[
                   Positioned.fill(
@@ -245,16 +238,18 @@ class TripsState extends State<Trips> {
                           Positioned.fill(
                             top:0,
                             left: 0,
-                            child: Container(
+                            child: ClipPath( 
+                              clipper: BottomWaveClipper(),
+                              child: Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
-                                  colors: [Colors.transparent, Colors.white.withOpacity(0.8)], // whitish to gray
+                                  colors: [Colors.transparent, Colors.transparent,Colors.black.withOpacity(0.8)], // whitish to gray
                                   tileMode: TileMode.repeated, // repeats the gradient over the canvas
                                 ),
                               ) 
-                            )
+                            ))
                           )
                         ],
                       )                        

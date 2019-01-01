@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
+import 'package:trotter_flutter/widgets/trips/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -110,8 +111,11 @@ class HomeState extends State<Home> {
           ),
           new ListTile(
             leading: new Icon(Icons.add_circle),
-            title: new Text('Add to trip'),
-            onTap: () => print('')          
+            title: new Text('Add to Trip'),
+            onTap: () { 
+              Navigator.pop(context);
+              showTripsBottomSheet(context); 
+            }        
           ),
         ]
       );
@@ -155,7 +159,8 @@ class HomeState extends State<Home> {
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
                 collapseMode: CollapseMode.parallax,
-                background: Stack(children: <Widget>[
+                background: Stack(
+                  children: <Widget>[
                   Positioned.fill(
                       top: 0,
                       child:ClipPath(

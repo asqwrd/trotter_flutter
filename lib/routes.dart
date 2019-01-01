@@ -22,6 +22,11 @@ class Routes {
 
 
   Routes () {
+    var builders = {
+      TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+      TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
+    };
     
     runApp(
       new AnnotatedRegion<SystemUiOverlayStyle>(
@@ -29,6 +34,7 @@ class Routes {
         child:new MaterialApp(
           theme: ThemeData(
             scaffoldBackgroundColor: Colors.white,
+            pageTransitionsTheme: PageTransitionsTheme(builders: builders)
           ),
           builder: (context, child) {
             return ScrollConfiguration(

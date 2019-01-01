@@ -6,7 +6,7 @@ class TopListLoading extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Container(
             margin: EdgeInsets.symmetric(horizontal: 20.0),

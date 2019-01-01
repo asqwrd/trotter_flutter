@@ -9,12 +9,11 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
-
-Future<CreateTripData> postCreateTrip(dynamic data) async {
+Future<AddTripData> postAddTrip(dynamic data) async {
   final response = await http.post('http://localhost:3002/api/trips/create/', body: data, headers:{'Authorization':'security',"Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
-    return CreateTripData.fromJson(json.decode(response.body));
+    return AddTripData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
     var msg = response.statusCode;
@@ -23,14 +22,14 @@ Future<CreateTripData> postCreateTrip(dynamic data) async {
   
 }
 
-class CreateTripData {
+class AddTripData {
   final Map<String, dynamic> trip; 
   final List<dynamic> destIds; 
 
-  CreateTripData({this.trip, this.destIds});
+  AddTripData({this.trip, this.destIds});
 
-  factory CreateTripData.fromJson(Map<String, dynamic> json) {
-    return CreateTripData(
+  factory AddTripData.fromJson(Map<String, dynamic> json) {
+    return AddTripData(
       trip: json['doc'],
       destIds: json['dest_ids']
     );
@@ -38,116 +37,41 @@ class CreateTripData {
 }
 
 
-class CreateTrip extends StatefulWidget {
+class AddTrip extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
   final dynamic param;
-  CreateTrip({Key key, this.onPush, this.param}) : super(key: key);
+  AddTrip({Key key, this.onPush, this.param}) : super(key: key);
   @override
-  CreateTripState createState() => new CreateTripState(onPush:this.onPush, param:this.param);
+  AddTripState createState() => new AddTripState(onPush:this.onPush, param:this.param);
 }
 
 
 
-class CreateTripState extends State<CreateTrip> {
+class AddTripState extends State<AddTrip> {
   bool _showTitle = false;
   final ValueChanged<dynamic> onPush;
   final dynamic param;
   GoogleMapController mapController;
   
-  Future<CreateTripData> data;
+  Future<AddTripData> data;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  //final TextEditingController _typeAheadController = TextEditingController();
   
-  List<dynamic> _destinations = [];
-  List<dynamic> _destinationImages = [];
+  dynamic _destination;
   String name;
-  var destinationsCount = 0;
   List<Widget> fields;
-  final nameController = TextEditingController();
 
   @override
   void dispose() {
     // Clean up the controller when the Widget is removed from the Widget tree
-    nameController.dispose();
     super.dispose();
   }
 
-  _printLatestValue() {
-    this.name = nameController.text;
-  }
 
 
   @override
   void initState() {
-    nameController.addListener(_printLatestValue);
-    this.fields = [
-      _buildDestField(0,this.param),
-      Container(
-        margin: EdgeInsets.symmetric(vertical: 0.0),
-        child:IconButton(
-          icon: Icon(Icons.add),
-          tooltip: 'Add Destination',
-          onPressed: () { 
-            setState(() { 
-              this.destinationsCount = this.destinationsCount + 1;
-              this.fields.insert(this.destinationsCount - 1, _buildDestField(this.destinationsCount - 1));
-            }); 
-          },
-        )
-      ),
-      _buildDivider(),
-      Container(
-        margin:EdgeInsets.symmetric(horizontal: 20),
-        child: TextFormField(
-          decoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(vertical:20.0),
-            prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
-            fillColor: Colors.blueGrey.withOpacity(0.5),
-            filled: true,
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
-              borderSide: BorderSide(
-                width: 1.0,
-                color: Colors.red
-              )
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
-              borderSide: BorderSide(
-                width: 1.0,
-                color: Colors.red
-              )
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
-              borderSide: BorderSide(
-                width: 0.0,
-                color: Colors.transparent
-              )
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
-              borderSide: BorderSide(
-                width: 0.0,
-                color: Colors.transparent
-              )
-            ),
-            hintText: 'Name your trip',
-          ),
-          controller: nameController,
-          onSaved: (String value) {
-            // This optional block of code can be used to run
-            // code when the user saves the form.
-            print(value);
-
-          },
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please name your trip.';
-            }
-          },
-        )
-      ),
+    this.fields = [ 
+      _buildDestField(0,this.param),   
       Align(
         alignment:Alignment.center, 
         child:Container(
@@ -162,18 +86,10 @@ class CreateTripState extends State<CreateTrip> {
               if (this._formKey.currentState.validate()) {
                 // If the form is valid, display a snackbar. In the real world, you'd
                 // often want to call a server or save the information in a database
-                var data = {
-                  "trip":{
-                    "image": this._destinationImages[0],
-                    "name": this.name
-                  },
-                  "destinations": this._destinations
-                };
-                var response = await postCreateTrip(json.encode(data));
                 Scaffold
                     .of(context)
                     .showSnackBar(SnackBar(content: Text('Trip created!')));
-                onPush({"id": response.trip['ID'].toString(),"level":"trip", 'from':'createtrip'});
+                //onPush({"id": response.trip['ID'].toString(),"level":"trip", 'from':'createtrip'});
               }
             },
             child: Text(
@@ -198,14 +114,13 @@ class CreateTripState extends State<CreateTrip> {
         "start_date": null,
         "end_date": null,
       };
-      this._destinations.add(destination);
-      this._destinationImages.add(this.param['image']);
+      this._destination = destination;
     }
-    this.destinationsCount = this.destinationsCount + 1;
+    //this.destinationsCount = this.destinationsCount + 1;
     super.initState();    
   }
 
-  CreateTripState({
+  AddTripState({
     this.onPush,
     this.param
   });
@@ -290,31 +205,16 @@ class CreateTripState extends State<CreateTrip> {
               print(suggestion);
               if(suggestion != null){
                 _typeAheadController.text = suggestion['country_id'] == 'United_States' ? '${suggestion['name']}, ${suggestion['parent_name']}' :'${suggestion['name']}, ${suggestion['country_name']}';
-                if(this._destinations.length > 0 && this._destinations[index] != null) {
-                  this._destinations.replaceRange(index,index+1,[{
-                    "location": suggestion['location'],
-                    "destination_id": suggestion['id'],
-                    "destination_name": suggestion['name'],
-                    "level": suggestion['level'],
-                    "country_id": suggestion['country_id'],
-                    "country_name": suggestion["country_name"],
-                    "start_date": this._destinations[index]['start_date'] != null ? this._destinations[index]['start_date'] : null,
-                    "end_date": this._destinations[index]['end_date'] != null ? this._destinations[index]['end_date'] : null,
-                  }]);
-
-                } else {
-                  this._destinations.insert(index,{
-                    "location": suggestion['location'],
-                    "destination_id": suggestion['id'],
-                    "destination_name": suggestion['name'],
-                    "level": suggestion['level'],
-                    "country_id": suggestion['country_id'],
-                    "country_name": suggestion["country_name"],
-                    "start_date":  null,
-                    "end_date": null,
-                  });
-                }
-                this._destinationImages.insert(index, suggestion["image"]);
+                this._destination = {
+                  "location": suggestion['location'],
+                  "destination_id": suggestion['id'],
+                  "destination_name": suggestion['name'],
+                  "level": suggestion['level'],
+                  "country_id": suggestion['country_id'],
+                  "country_name": suggestion["country_name"],
+                  "start_date":  this._destination['start_date'],
+                  "end_date": this._destination['end_date'],
+                };
               }
             }
           )
@@ -367,16 +267,11 @@ class CreateTripState extends State<CreateTrip> {
                   ),
                   onChanged: (dt){ 
                     setState(() { 
-                      if(this._destinations.length > 0 && dt != null){
+                      if(dt != null) {
                         var startDate = dt.millisecondsSinceEpoch/1000;
-                        this._destinations[index]['start_date'] = startDate.toInt();
-                        //print(this._destinations[index]['name']);
-                      } else if(dt != null) {
-                        print(this._destinations[index]['name']);
-                        var startDate = dt.millisecondsSinceEpoch/1000;
-                        this._destinations.insert(index,{
+                        this._destination = {
                           "start_date": startDate.toInt(),
-                        });
+                        };
                       }
                   
                     });
@@ -433,21 +328,18 @@ class CreateTripState extends State<CreateTrip> {
                   ),
                   onChanged: (dt){
                     setState(() {
-                      if(this._destinations.length > 0 && dt != null){
+                      if(dt != null) {
                         var endDate = dt.millisecondsSinceEpoch/1000;
-                        this._destinations[index]['end_date'] = endDate.toInt();
-                      } else if(dt != null) {
-                        var endDate = dt.millisecondsSinceEpoch/1000;
-                        this._destinations.insert(index,{
+                        this._destination = {
                           "end_date": endDate.toInt(),
-                        });
+                        };
                       }
                     });
                   },
                   validator: (value) {
                     if (value == null) {
                       return 'Please select a departure date';
-                    } else if(this._destinations[index]['end_date'] < this._destinations[index]['start_date']){
+                    } else if(this._destination['end_date'] < this._destination['start_date']){
                       return "Please choose a later departure date";
                     }
                   },
@@ -456,18 +348,10 @@ class CreateTripState extends State<CreateTrip> {
             ),
           ],
         ),
-        _buildDivider()
       ]
     );
   }
 
-  
-  _buildDivider(){
-    return Container(
-          margin: EdgeInsets.only(top:20, left: 20, right: 20, bottom:20),
-          child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))
-        );
-  }
   
 
 // function for rendering view after data is loaded
@@ -543,7 +427,7 @@ class CreateTripState extends State<CreateTrip> {
                             fit: BoxFit.contain
                           )
                         ),
-                        Text('Create a trip',
+                        Text('Add to trip',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,

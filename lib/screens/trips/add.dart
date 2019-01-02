@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
 Future<dynamic> postAddTrip(String id, dynamic data) async {
-  final response = await http.post('http://localhost:3002/api/trips/add/$id', body: data, headers:{'Authorization':'security',"Content-Type": "application/json"});
+  final response = await http.post('http://localhost:3002/api/trips/add/$id', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     return AddTripData.fromJson(json.decode(response.body));
@@ -25,6 +25,20 @@ Future<dynamic> postAddTrip(String id, dynamic data) async {
   
 }
 
+Future<dynamic> putUpdateTrip(String tripId, String destinationId, dynamic data) async {
+  final response = await http.put('http://localhost:3002/api/trips/update/$tripId/destination/$destinationId', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return UpdateTripData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    return {
+      "success": false
+    };
+  }
+  
+}
+
 class AddTripData {
   final dynamic destination; 
   final bool exist;
@@ -35,6 +49,18 @@ class AddTripData {
     return AddTripData(
       destination: json['destination'],
       exist: false
+    );
+  }
+}
+
+class UpdateTripData {
+  final bool success;
+
+  UpdateTripData({this.success});
+
+  factory UpdateTripData.fromJson(Map<String, dynamic> json) {
+    return UpdateTripData(
+      success: json['success'],
     );
   }
 }

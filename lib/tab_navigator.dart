@@ -119,14 +119,16 @@ class TabNavigator extends StatelessWidget {
         PageRouteBuilder(
           pageBuilder: (context, _, __) => routeBuilders[goTo](context),
           transitionsBuilder: (BuildContext context,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation,
-              Widget child) {
-            return new FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          }),
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            Widget child) {
+              return new FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
         );
       }
   }

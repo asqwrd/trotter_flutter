@@ -102,31 +102,31 @@ class CreateTripState extends State<CreateTrip> {
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(vertical:20.0),
             prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
-            fillColor: Colors.blueGrey.withOpacity(0.5),
+            //fillColor: Colors.blueGrey.withOpacity(0.5),
             filled: true,
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
               borderSide: BorderSide(
                 width: 1.0,
                 color: Colors.red
               )
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
               borderSide: BorderSide(
                 width: 1.0,
                 color: Colors.red
               )
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
               borderSide: BorderSide(
                 width: 0.0,
                 color: Colors.transparent
               )
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(30.0)),
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
               borderSide: BorderSide(
                 width: 0.0,
                 color: Colors.transparent
@@ -151,11 +151,12 @@ class CreateTripState extends State<CreateTrip> {
       Align(
         alignment:Alignment.center, 
         child:Container(
-          margin: EdgeInsets.symmetric(vertical: 20),
-          width: 200,
+          margin: EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+          width: double.infinity,
           child: FlatButton(
-            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(50.0)),
-            padding: EdgeInsets.symmetric(vertical: 10),
+            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+            padding: EdgeInsets.symmetric(vertical: 15),
+            color: Colors.blueGrey,
             onPressed: () async {
               // Validate will return true if the form is valid, or false if
               // the form is invalid.
@@ -180,7 +181,8 @@ class CreateTripState extends State<CreateTrip> {
               'Submit', 
               style: TextStyle(
                 fontSize: 25,
-                fontWeight: FontWeight.w300
+                fontWeight: FontWeight.w300,
+                color: Colors.white
               )
             ),
           )
@@ -232,59 +234,65 @@ class CreateTripState extends State<CreateTrip> {
         Container(
           margin:EdgeInsets.symmetric(horizontal: 20),
           child:InkWell(
-            child: IgnorePointer(ignoring:true, child: TextFormField(
-              enabled: true,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.symmetric(vertical:20.0),
-                prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
-                fillColor: Colors.blueGrey.withOpacity(0.5),
-                filled: true,
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
+            child: IgnorePointer(
+              ignoring:true, 
+              child: TextFormField(
+                enabled: true,
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(vertical:20.0),
+                  prefixIcon: Padding(
+                    padding:EdgeInsets.only(left:20.0, right: 5.0), 
+                    child:Icon(Icons.label)
+                  ), 
+                  //fillColor: Colors.blueGrey.withOpacity(0.5),
+                  filled: true,
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 1.0,
+                      color: Colors.red
+                    )
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 1.0,
+                      color: Colors.red
+                    )
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 0.0,
+                      color: Colors.transparent
+                    )
+                  ),
+                  disabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 0.0,
+                      color: Colors.transparent
+                    )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 0.0,
+                      color: Colors.transparent
+                    )
+                  ),
+                  hintText: 'Destination',
                 ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-                disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-                hintText: 'Destination',
-              ),
-              controller: _typeAheadController,
-              validator: (value) {
-                if (value.isEmpty) {
-                  print('here');
-                  return 'Please select a destination';
-                }
-              },
-      
-            )),
+                controller: _typeAheadController,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    print('here');
+                    return 'Please select a destination';
+                  }
+                },
+        
+              )
+            ),
             onTap: () async {
               var suggestion = await Navigator.push(context, MaterialPageRoute(fullscreenDialog: true, builder: (context) => SearchModal(query:'')),);
               print(suggestion);
@@ -333,32 +341,32 @@ class CreateTripState extends State<CreateTrip> {
                   decoration: InputDecoration(
                     hintText: 'Arrival date', 
                     contentPadding: EdgeInsets.symmetric(vertical:20.0),
-                    prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.calendar_today)), 
-                    fillColor: Colors.blueGrey.withOpacity(0.5),
+                    prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.calendar_today, size: 18)), 
+                    //fillColor: Colors.blueGrey.withOpacity(0.5),
                     filled: true,
                     errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 1.0,
                         color: Colors.red
                       )
                     ),
                     focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 1.0,
                         color: Colors.red
                       )
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 0.0,
                         color: Colors.transparent
                       )
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 0.0,
                         color: Colors.transparent
@@ -399,32 +407,32 @@ class CreateTripState extends State<CreateTrip> {
                   decoration: InputDecoration(
                     hintText: 'Departure date', 
                     contentPadding: EdgeInsets.symmetric(vertical:20.0),
-                    prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.calendar_today)), 
-                    fillColor: Colors.blueGrey.withOpacity(0.5),
+                    prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.calendar_today, size:18)), 
+                    //fillColor: Colors.blueGrey.withOpacity(0.5),
                     filled: true,
                     errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 1.0,
                         color: Colors.red
                       )
                     ),
                     focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 1.0,
                         color: Colors.red
                       )
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 0.0,
                         color: Colors.transparent
                       )
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       borderSide: BorderSide(
                         width: 0.0,
                         color: Colors.transparent

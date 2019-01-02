@@ -114,7 +114,7 @@ class HomeState extends State<Home> {
             title: new Text('Add to Trip'),
             onTap: () { 
               Navigator.pop(context);
-              showTripsBottomSheet(context); 
+              showTripsBottomSheet(context, data); 
             }        
           ),
         ]

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:shimmer/shimmer.dart';
+import 'dart:convert';
+import 'package:trotter_flutter/tab_navigator.dart';
 
 
 
-void showTripsBottomSheet(context){
+void showTripsBottomSheet(context, dynamic destination){
   showModalBottomSheet(
     context: context,
     builder: (BuildContext bc){
@@ -13,7 +15,7 @@ void showTripsBottomSheet(context){
         future: data,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return _buildLoadedList(context,snapshot);
+            return _buildLoadedList(context,snapshot, destination);
           }
           return _buildLoadingList();
         }
@@ -23,7 +25,7 @@ void showTripsBottomSheet(context){
 }
 
 
-_buildLoadedList(BuildContext context, AsyncSnapshot snapshot) {
+_buildLoadedList(BuildContext context, AsyncSnapshot snapshot, dynamic destination) {
   var trips = snapshot.data.trips;
   //var color = Colors.blueGrey;
   return Container(
@@ -35,7 +37,7 @@ _buildLoadedList(BuildContext context, AsyncSnapshot snapshot) {
           SingleChildScrollView(
             primary: false,
             scrollDirection: Axis.horizontal,
-            child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(context,trips)))
+            child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(context,trips, destination)))
           )
         ]
       )
@@ -61,10 +63,10 @@ _buildLoadingList(){
   );
 }
 
-_buildItems(BuildContext context,items) {
+_buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
     var widgets = List<Widget>();
     for (var item in items) {
-      widgets.add(_buildBody(context, item));
+      widgets.add(_buildBody(context, item, destination));
         
     }
     return widgets;
@@ -79,14 +81,38 @@ _buildItems(BuildContext context,items) {
     );
   }
 
-  Widget _buildBody(BuildContext context,  dynamic item) {
+  Widget _buildBody(BuildContext context,  dynamic item, dynamic destination) {
   return new InkWell ( 
-    onTap: (){
+    onTap: () async{
       //var id = item['id'];
       //var level = item['level'];
       //this.onPressed({'id': id, 'level': level});
       //Navigator.push(context, MaterialPageRoute(fullscreenDialog: true, builder: (context) => AddTrip()),);
+      var data = {
+        "location": destination['location'],
+        "destination_id": destination['id'],
+        "destination_name": destination['name'],
+        "level": destination['level'],
+        "country_id": destination['country_id'],
+        "country_name": destination["country_name"],
+        "start_date":  null,
+        "end_date": null,
+      };
+
+      var response = await postAddTrip(item['id'], json.encode(data));
+      if(response.exist == false){
+        Scaffold
+          .of(context)
+          .showSnackBar(SnackBar(content: Text('${destination['name']} added to ${item['name']}')));
+          
+          TabNavigator().push(context,{"id": item['id'].toString(),"level":"trip"});
+      } else {
+         Scaffold
+          .of(context)
+          .showSnackBar(SnackBar(content: Text('${destination['name']} was already added to ${item['name']}')));
+      }
       
+
     },
     child:Container(
       //height:210.0,

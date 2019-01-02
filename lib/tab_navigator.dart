@@ -33,7 +33,7 @@ class TabNavigator extends StatelessWidget {
   final TabItem tabItem;
   //final ValueChanged<dynamic> onSwitchTab;
 
-  void _push(BuildContext context, Map<String, dynamic> data) {
+  push(BuildContext context, Map<String, dynamic> data) {
     var routeBuilders = _routeBuilders(context, data: data);
     var goTo = TabNavigatorRoutes.root;
     switch (data['level']) {
@@ -137,63 +137,63 @@ class TabNavigator extends StatelessWidget {
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
         countryId: data['id'],
-        onPush: (data) => _push(context, data),
+        onPush: (data) => push(context, data),
       ),
       TabNavigatorRoutes.city: (context) =>City(
         cityId: data['id'],
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.island: (context) => City(
         cityId: data['id'],
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.cityState: (context) => CityState(
         cityStateId: data['id'],
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.poi: (context) => Poi(
         poiId: data['id'], 
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.park: (context) => Park(
         parkId: data['id'], 
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.trip: (context) => Trip(
         tripId: data['id'], 
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(
         param: data['param'],
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.search: (context) => Search(
         query: '',
         id: data['id'],
         location: data['location'],
-        onPush: (data) => _push(context, data)
+        onPush: (data) => push(context, data)
       ),
     };
 
     switch(this.tabItem){
       case TabItem.explore:
         routes[TabNavigatorRoutes.root] = (context) => Home(
-          onPush: (data) => _push(context, data),
+          onPush: (data) => push(context, data),
         );
         return routes;
       case TabItem.trips:
         routes[TabNavigatorRoutes.root] = (context) => Trips(
-            onPush: (data) => _push(context, data),
+            onPush: (data) => push(context, data),
         );
         return routes;
       case TabItem.profile:
         routes[TabNavigatorRoutes.root] = (context) => Home(
-          onPush: (data) => _push(context, data),
+          onPush: (data) => push(context, data),
         );
         return routes;
       default:
         routes[TabNavigatorRoutes.root] = (context) => Home(
-          onPush: (data) => _push(context, data),
+          onPush: (data) => push(context, data),
         );
         return routes;
     }

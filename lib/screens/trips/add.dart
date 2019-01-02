@@ -9,29 +9,46 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
-Future<AddTripData> postAddTrip(dynamic data) async {
-  final response = await http.post('http://localhost:3002/api/trips/create/', body: data, headers:{'Authorization':'security',"Content-Type": "application/json"});
+Future<dynamic> postAddTrip(String id, dynamic data) async {
+  final response = await http.post('http://localhost:3002/api/trips/add/$id', body: data, headers:{'Authorization':'security',"Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     return AddTripData.fromJson(json.decode(response.body));
+  } else if(response.statusCode == 409){
+    return AddTripErrorData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
     var msg = response.statusCode;
+
     throw Exception('Response> $msg');
   }
   
 }
 
 class AddTripData {
-  final Map<String, dynamic> trip; 
-  final List<dynamic> destIds; 
+  final dynamic destination; 
+  final bool exist;
 
-  AddTripData({this.trip, this.destIds});
+  AddTripData({this.destination, this.exist});
 
   factory AddTripData.fromJson(Map<String, dynamic> json) {
     return AddTripData(
-      trip: json['doc'],
-      destIds: json['dest_ids']
+      destination: json['destination'],
+      exist: false
+    );
+  }
+}
+
+class AddTripErrorData {
+  final bool exist; 
+  final String message; 
+
+  AddTripErrorData({this.exist, this.message});
+
+  factory AddTripErrorData.fromJson(Map<String, dynamic> json) {
+    return AddTripErrorData(
+      exist: json['exist'],
+      message: json['message'],
     );
   }
 }

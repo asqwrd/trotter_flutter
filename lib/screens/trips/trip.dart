@@ -11,7 +11,241 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'add.dart';
+import 'trip-api.dart';
+
+showDateModal(BuildContext context, dynamic destination, Color color,String tripId) {
+    return showGeneralDialog(
+      context: context,
+      pageBuilder: (BuildContext buildContext, Animation<double> animation,
+        Animation<double> secondaryAnimation) {
+        return Dialog(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(top: 40, bottom: 20),
+                child: Text(
+                  'Arrival and Departure',
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w300
+                  ),
+                )
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: 20),
+                child: _buildDatesModal(buildContext, destination, color, tripId)
+              )
+            ],
+          )
+        );
+      },
+      transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+        return new FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+      },
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 300),
+    );
+  }
+  _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
+    var dateFormat = DateFormat("EEE, MMM d, yyyy");
+    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+    var arrival = destination['start_date'];
+    var departure = destination['end_date'];
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: <Widget>[
+          Container(
+            margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
+            child:DateTimePickerFormField(
+              format: dateFormat,
+              dateOnly: true,
+              editable: false,
+              initialValue: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : null,
+              //firstDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
+              initialDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
+              decoration: InputDecoration(
+                hintText: 'Arrival date', 
+                contentPadding: EdgeInsets.symmetric(vertical:20.0),
+                prefixIcon: Padding(
+                  padding:EdgeInsets.only(left:20.0, right: 5.0), 
+                  child:Icon(
+                    Icons.calendar_today,
+                    size: 18,
+                  )
+                ), 
+                //fillColor: Colors.blueGrey.withOpacity(0.5),
+                filled: true,
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 1.0,
+                    color: Colors.red
+                  )
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 1.0,
+                    color: Colors.red
+                  )
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 0.0,
+                    color: Colors.transparent
+                  )
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 0.0,
+                    color: Colors.transparent
+                  )
+                ),
+              ),
+              onChanged: (dt){ 
+                if(dt != null) {
+                  var startDate = dt.millisecondsSinceEpoch/1000;
+                  arrival =  startDate.toInt();
+                }
+              },
+              validator: (value) {
+                if (value == null) {
+                  return 'Please select an arrival date';
+                }
+              },
+            )
+          ),
+          Container(
+            margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
+            child: DateTimePickerFormField(
+              format: dateFormat,
+              dateOnly: true,
+              editable: false,
+              initialValue: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : null,
+              //firstDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
+              initialDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
+              decoration: InputDecoration(
+                hintText: 'Departure date', 
+                contentPadding: EdgeInsets.symmetric(vertical:20.0),
+                prefixIcon: Padding(
+                  padding:EdgeInsets.only(left:20.0, right: 5.0), 
+                  child:Icon(
+                    Icons.calendar_today,
+                    size: 18,
+                  )
+                ), 
+                //fillColor: Colors.blueGrey.withOpacity(0.5),
+                filled: true,
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 1.0,
+                    color: Colors.red
+                  )
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 1.0,
+                    color: Colors.red
+                  )
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 0.0,
+                    color: Colors.transparent
+                  )
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  borderSide: BorderSide(
+                    width: 0.0,
+                    color: Colors.transparent
+                  )
+                ),
+              ),
+              onChanged: (dt){
+                if(dt != null) {
+                  var endDate = dt.millisecondsSinceEpoch/1000;
+                  departure =  endDate.toInt();
+                }
+              },
+              validator: (value) {
+                if (value == null) {
+                  return 'Please select a departure date';
+                } else if(departure < arrival){
+                  return "Please choose a later departure date";
+                }
+              },
+            )
+          ),
+          Container(
+            width:double.infinity,
+            margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom:20),
+            child: FlatButton(
+              color: color.withOpacity(0.8),
+              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                child: Text(
+                  'Change date',
+                  style: TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.w300,
+                    color: Colors.white
+                  )
+                )
+              ),
+              onPressed: () async {
+                if(_formKey.currentState.validate() ){
+                  destination["start_date"] =  arrival;
+                  destination["end_date"] = departure;
+                  var response = await putUpdateTrip(tripId, destination['id'], destination);
+                  if(response.success == true){
+                    //setState(() {
+                      destination["start_date"] =  arrival;
+                      destination["end_date"] = departure;
+                      Navigator.pop(context,{"arrival": arrival, "departure": departure});   
+                    //});
+                  }
+
+                }
+              },
+            )
+          ),
+          Container(
+            width:double.infinity,
+            margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+            child: FlatButton(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                child:Text(
+                  'Close',
+                  style: TextStyle(
+                    fontSize: 23,
+                    fontWeight: FontWeight.w300
+                  )
+                )
+              ),
+              onPressed: (){
+                Navigator.pop(context,{"arrival": arrival, "departure": departure, "closed":true});  
+              },
+            )
+          )
+        ]
+      )
+    );
+  }
 
 Future<TripData> fetchTrip(String id) async {
   final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
@@ -24,6 +258,168 @@ Future<TripData> fetchTrip(String id) async {
     throw Exception('Response> $msg');
   }
   
+}
+
+class TripsDialogContent extends StatefulWidget {
+   TripsDialogContent({
+    Key key,
+    this.destinations,
+    this.color,
+    @required this.tripId
+  }): super(key: key);
+  final dynamic destinations;
+  final String tripId;
+  final Color color;
+  @override
+  _TripsDialogContentState createState() => new _TripsDialogContentState(color: this.color, tripId: this.tripId, destinations: this.destinations);
+
+}
+
+class _TripsDialogContentState extends State<TripsDialogContent> {
+  _TripsDialogContentState({this.color,this.tripId,this.destinations});
+  
+  final List<dynamic> destinations;
+  final String tripId;
+  final Color color;
+  @override
+  void initState(){
+    super.initState();
+  }
+
+   @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            brightness: Brightness.light,
+            title: Text(
+              'Destinations',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.black,
+                fontWeight: FontWeight.w300
+              ),
+            ),
+            centerTitle: true,
+            leading: IconButton(
+              iconSize: 20,
+              color: Colors.black,
+              icon: Icon(Icons.close),
+              onPressed: (){
+                Navigator.pop(context);
+              },
+            ),
+          ),
+          body: ListView.separated(
+            separatorBuilder: (BuildContext serperatorContext, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+            padding: EdgeInsets.all(20.0),
+            itemCount: destinations.length,
+            shrinkWrap: true,
+            primary: false,
+            itemBuilder: (BuildContext listContext, int index){
+              var startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['start_date']*1000));
+              var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['end_date']*1000));
+              var arrival = destinations[index]['start_date'];
+              var departure = destinations[index]['end_date'];
+              var name = destinations[index]['destination_name'];
+              return ListTile(
+                subtitle: Text(
+                  arrival == 0 || departure == 0 ? 'No dates given' : '$startDate - $endDate',
+                ),
+                trailing: IconButton(
+                  onPressed: (){
+                    showModalBottomSheet(context: listContext,
+                      builder: (BuildContext modalcontext) {
+                        return new Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            new ListTile(
+                              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                              leading: new Icon(Icons.calendar_today, size:22),
+                              title: new Text(
+                                'Change arrival and departure dates',
+                              ),
+                              onTap: () async{
+                                Navigator.pop(context);
+                                var update = await showDateModal(context,destinations[index],this.color, this.tripId);
+                                setState(() {
+                                  if(update['closed'] == null){
+                                    startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['arrival']*1000));
+                                    endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['departure']*1000));
+                                    Scaffold
+                                    .of(listContext)
+                                    .showSnackBar(SnackBar(content: Text('${destinations[index]['destination_name']}\'s dates updated')));
+                                  }
+
+                                });
+                                
+                              }   
+                            ),
+                            new ListTile(
+                              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                              leading: new Icon(Icons.delete, size:22),
+                              title: new Text(
+                                'Delete $name',
+                              ),
+                              onTap: () async {
+                                var response = await deleteDestination(this.tripId, this.destinations[index]['id']);
+                                if(response.success == true){
+                                  Navigator.pop(modalcontext);
+                                  setState(() {
+                                    var undoDestination = this.destinations[index];
+                                    this.destinations.removeAt(index);
+                                    Scaffold
+                                    .of(listContext)
+                                    .showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          '$name\'s was deleted.',
+                                          style: TextStyle(
+                                            fontSize: 18
+                                          )
+                                        ),
+                                        action: SnackBarAction(
+                                          label: 'Undo',
+                                          textColor: this.color,
+                                          onPressed: () async {
+                                            var response = await postAddToTrip(this.tripId, undoDestination);
+                                            if(response.destination != null) {
+                                              undoDestination['id'] = response.destination['ID'];
+                                              setState(() {
+                                                this.destinations.insert(index, undoDestination);
+                                                Scaffold.of(listContext).removeCurrentSnackBar();
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      )
+                                    );                           
+                                  });
+                                }
+                                
+
+                              }        
+                            ),
+                          ]
+                        );
+                      }
+                    );
+                  },
+                  icon:Icon(Icons.more_vert)
+                ),
+                title: Text(
+                  destinations[index]['destination_name'],
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w300
+                  ),
+                ),
+                    
+              );
+            },
+          )
+        );
+  }
 }
 
 class TripData {
@@ -53,7 +449,9 @@ class TripState extends State<Trip> {
   bool _showTitle = false;
   final ValueChanged<dynamic> onPush;
   final String tripId;
-   GoogleMapController mapController;
+  GoogleMapController mapController;
+  Color color = Colors.blueGrey;
+  List<dynamic> destinations;
   
   Future<TripData> data;
 
@@ -69,12 +467,58 @@ class TripState extends State<Trip> {
     this.tripId
   });
 
+  bottomSheetModal(BuildContext context, dynamic data){
+  return showModalBottomSheet(context: context,
+    builder: (BuildContext context) {
+      return new Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new ListTile(
+            leading: new Icon(Icons.card_travel),
+            title: new Text('Trip name'),
+            onTap: () {
+              Navigator.pop(context);
+              
+            }   
+          ),
+          new ListTile(
+            leading: new Icon(Icons.pin_drop),
+            title: new Text('Destinations'),
+            onTap: () { 
+              Navigator.pop(context);
+              showDestinationsModal(context,this.destinations, this.color);
+            }        
+          ),
+        ]
+      );
+    }
+  );
+}
+
+
+
   
 
 
   @override
   Widget build(BuildContext context) {
+    data.then((data){
+      setState(() {
+        this.color = Color(hexStringToHexInt(data.trip['color']));
+        this.destinations = data.destinations;
+      });
+      
+    });
     return new Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: this.color,
+        onPressed: () { 
+          bottomSheetModal(context, this.destinations);
+        },
+        tooltip: 'Create trip',
+        child: Icon(Icons.edit),
+        elevation: 5.0,
+      ),
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
@@ -113,7 +557,6 @@ class TripState extends State<Trip> {
 
     for (var group in result2.asIterable()) {
       var key = group.key;
-      print(key);
       for (var destination in group.asIterable()) {
         fields.add(
           {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
@@ -222,20 +665,15 @@ class TripState extends State<Trip> {
                   if(fields[index]['id'] != null)
                     onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
                 },
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      fields[index]['label'],
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.w300
-                      ),
-                    ),
-                    fields[index]['icon']
-                  ]
-                )
+                trailing: fields[index]['icon'],
+                title: Text(
+                  fields[index]['label'],
+                  style: TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w300
+                  ),
+                ),
+                    
               );
             }
           )
@@ -268,7 +706,7 @@ class TripState extends State<Trip> {
               destination['start_date'] == 0 || destination['end_date'] == 0 ? 
                 InkWell(
                   onTap: () {
-                    _showDateModal(context, destination, color);
+                    showDateModal(context, destination, color, this.tripId);
                   },
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 10), 
@@ -286,7 +724,7 @@ class TripState extends State<Trip> {
               :
               InkWell(
                 onTap: () {
-                  _showDateModal(context, destination, color);
+                  showDateModal(context, destination, color, this.tripId);
                 },
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 10), 
@@ -311,32 +749,14 @@ class TripState extends State<Trip> {
     );
   }
 
-  _showDateModal(BuildContext context, dynamic destination, Color color) {
-    showGeneralDialog(
+  
+
+  showDestinationsModal(BuildContext context, dynamic destinations, Color color) {
+    return showGeneralDialog(
       context: context,
       pageBuilder: (BuildContext buildContext, Animation<double> animation,
         Animation<double> secondaryAnimation) {
-        return Dialog(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(top: 40, bottom: 20),
-                child: Text(
-                  'Arrival and Departure',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w300
-                  ),
-                )
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 20),
-                child: _buildDatesModal(buildContext, destination, color)
-              )
-            ],
-          )
-        );
+        return TripsDialogContent(color: color, tripId: this.tripId, destinations:destinations);
       },
       transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
         return new FadeTransition(
@@ -348,198 +768,6 @@ class TripState extends State<Trip> {
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       barrierColor: Colors.black.withOpacity(0.5),
       transitionDuration: const Duration(milliseconds: 300),
-    );
-  }
-  _buildDatesModal(BuildContext context, dynamic destination, Color color){
-    var dateFormat = DateFormat("EEE, MMM d, yyyy");
-    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    var arrival = 0;
-    var departure = 0;
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: <Widget>[
-          Container(
-            margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
-            child:DateTimePickerFormField(
-              format: dateFormat,
-              dateOnly: true,
-              initialValue: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : null,
-              firstDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
-              initialDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
-              decoration: InputDecoration(
-                hintText: 'Arrival date', 
-                contentPadding: EdgeInsets.symmetric(vertical:20.0),
-                prefixIcon: Padding(
-                  padding:EdgeInsets.only(left:20.0, right: 5.0), 
-                  child:Icon(
-                    Icons.calendar_today,
-                    size: 18,
-                  )
-                ), 
-                //fillColor: Colors.blueGrey.withOpacity(0.5),
-                filled: true,
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-              ),
-              onChanged: (dt){ 
-                if(dt != null) {
-                  var startDate = dt.millisecondsSinceEpoch/1000;
-                  arrival =  startDate.toInt();
-                }
-              },
-              validator: (value) {
-                if (value == null) {
-                  return 'Please select an arrival date';
-                }
-              },
-            )
-          ),
-          Container(
-            margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
-            child: DateTimePickerFormField(
-              format: dateFormat,
-              dateOnly: true,
-              initialValue: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : null,
-              firstDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
-              initialDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
-              decoration: InputDecoration(
-                hintText: 'Departure date', 
-                contentPadding: EdgeInsets.symmetric(vertical:20.0),
-                prefixIcon: Padding(
-                  padding:EdgeInsets.only(left:20.0, right: 5.0), 
-                  child:Icon(
-                    Icons.calendar_today,
-                    size: 18,
-                  )
-                ), 
-                //fillColor: Colors.blueGrey.withOpacity(0.5),
-                filled: true,
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-              ),
-              onChanged: (dt){
-                if(dt != null) {
-                  var endDate = dt.millisecondsSinceEpoch/1000;
-                  departure =  endDate.toInt();
-                }
-              },
-              validator: (value) {
-                if (value == null) {
-                  return 'Please select a departure date';
-                } else if(departure < arrival){
-                  return "Please choose a later departure date";
-                }
-              },
-            )
-          ),
-          Container(
-            width:double.infinity,
-            margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom:20),
-            child: FlatButton(
-              color: color.withOpacity(0.8),
-              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: Text(
-                  'Submit',
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white
-                  )
-                )
-              ),
-              onPressed: () async {
-                if(_formKey.currentState.validate() ){
-                  destination["start_date"] =  arrival;
-                  destination["end_date"] = departure;
-                  var response = await putUpdateTrip(this.tripId, destination['id'], destination);
-                  if(response.success == true){
-                    setState(() {
-                      destination["start_date"] =  arrival;
-                      destination["end_date"] = departure;
-                      Navigator.pop(context);   
-                    });
-                  }
-
-                }
-              },
-            )
-          ),
-          Container(
-            width:double.infinity,
-            margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-            child: FlatButton(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child:Text(
-                  'Close',
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w300
-                  )
-                )
-              ),
-              onPressed: (){
-                Navigator.pop(context);  
-              },
-            )
-          )
-        ]
-      )
     );
   }
 

@@ -99,7 +99,7 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
         "end_date": null,
       };
 
-      var response = await postAddTrip(item['id'], data);
+      var response = await postAddToTrip(item['id'], data);
       if(response.exist == false){
         Scaffold
           .of(context)

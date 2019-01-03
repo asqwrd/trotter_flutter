@@ -82,17 +82,32 @@ class CreateTripState extends State<CreateTrip> {
     nameController.addListener(_printLatestValue);
     this.fields = [
       _buildDestField(0,this.param),
-      Container(
-        margin: EdgeInsets.symmetric(vertical: 0.0),
-        child:IconButton(
-          icon: Icon(Icons.add),
-          tooltip: 'Add Destination',
-          onPressed: () { 
-            setState(() { 
-              this.destinationsCount = this.destinationsCount + 1;
-              this.fields.insert(this.destinationsCount - 1, _buildDestField(this.destinationsCount - 1));
-            }); 
-          },
+      Align(
+        alignment:Alignment.center, 
+        child:Container(
+          margin: EdgeInsets.symmetric(vertical: 0.0),
+          child:FlatButton(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.add, size:25),
+                  Text(
+                    ' Add destination',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w300
+                    )
+                  )
+              ]
+            ),
+            onPressed: () { 
+              setState(() { 
+                this.destinationsCount = this.destinationsCount + 1;
+                this.fields.insert(this.destinationsCount - 1, _buildDestField(this.destinationsCount - 1));
+              }); 
+            },
+          )
         )
       ),
       _buildDivider(),
@@ -178,7 +193,7 @@ class CreateTripState extends State<CreateTrip> {
               }
             },
             child: Text(
-              'Submit', 
+              'Create trip', 
               style: TextStyle(
                 fontSize: 25,
                 fontWeight: FontWeight.w300,

@@ -211,7 +211,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
               if(_formKey.currentState.validate() ){
                 destination["start_date"] =  arrival;
                 destination["end_date"] = departure;
-                var response = await putUpdateTrip(tripId, destination['id'], destination);
+                var response = await putUpdateTripDestination(tripId, destination['id'], destination);
                 if(response.success == true){
                   //setState(() {
                     destination["start_date"] =  arrival;
@@ -261,8 +261,8 @@ Future<TripData> fetchTrip(String id) async {
   
 }
 
-class TripsDialogContent extends StatefulWidget {
-   TripsDialogContent({
+class TripDestinationDialogContent extends StatefulWidget {
+   TripDestinationDialogContent({
     Key key,
     this.destinations,
     this.color,
@@ -272,25 +272,185 @@ class TripsDialogContent extends StatefulWidget {
   final String tripId;
   final Color color;
   @override
-  _TripsDialogContentState createState() => new _TripsDialogContentState(color: this.color, tripId: this.tripId, destinations: this.destinations);
+  _TripDestinationDialogContentState createState() => new _TripDestinationDialogContentState(color: this.color, tripId: this.tripId, destinations: this.destinations);
 
 }
+
+class TripNameDialogContent extends StatefulWidget {
+   TripNameDialogContent({
+    Key key,
+    this.trip,
+    this.color,
+    @required this.tripId
+  }): super(key: key);
+  final dynamic trip;
+  final String tripId;
+  final Color color;
+  @override
+  _TripNameDialogContentState createState() => new _TripNameDialogContentState(color: this.color, tripId: this.tripId, trip: this.trip);
+
+}
+
+class _TripNameDialogContentState extends State<TripNameDialogContent> {
+  _TripNameDialogContentState({this.color,this.tripId,this.trip});
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController _nameControllerModal = TextEditingController();
+    
+  
+  final dynamic trip;
+  final String tripId;
+  final Color color;
+  @override
+  void initState(){
+    _nameControllerModal.text = this.trip['name'];
+    super.initState();
+  }
+
+   @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: this._formKey,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal:0.0, vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(top:20, bottom: 30),
+              child:Text(
+              'Update trip name',
+              style: TextStyle(
+                fontSize: 23,
+                fontWeight: FontWeight.w300
+              )
+            )),
+            Container(
+              margin:EdgeInsets.symmetric(horizontal: 20),
+              child: TextFormField(
+                maxLength: 20,
+                maxLengthEnforced: true,
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(vertical:20.0),
+                  prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
+                  //fillColor: Colors.blueGrey.withOpacity(0.5),
+                  filled: true,
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 1.0,
+                      color: Colors.red
+                    )
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 1.0,
+                      color: Colors.red
+                    )
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 0.0,
+                      color: Colors.transparent
+                    )
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    borderSide: BorderSide(
+                      width: 0.0,
+                      color: Colors.transparent
+                    )
+                  ),
+                  hintText: 'Name your trip',
+                ),
+                controller: _nameControllerModal,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please name your trip.';
+                  }
+                },
+              )
+            ),
+            Container(
+              width:double.infinity,
+              margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom:20),
+              child: FlatButton(
+                color: color.withOpacity(0.8),
+                shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  child: Text(
+                    'Update',
+                    style: TextStyle(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white
+                    )
+                  )
+                ),
+                onPressed: () async {
+                  if(_formKey.currentState.validate() ){
+                    var response = await putUpdateTrip(tripId, {"name": _nameControllerModal.text});
+                    if(response.success == true){
+                      setState(() {
+                        this.trip['name'] = _nameControllerModal.text; 
+                        Navigator.pop(context);
+
+                      });
+                    }
+
+                  }
+                },
+              )
+            ),
+            Container(
+              width:double.infinity,
+              margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+              child: FlatButton(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 15),
+                  child:Text(
+                    'Close',
+                    style: TextStyle(
+                      fontSize: 23,
+                      fontWeight: FontWeight.w300
+                    )
+                  )
+                ),
+                onPressed: (){
+                  Navigator.pop(context,{"closed":true});  
+                },
+              )
+            )
+          ],
+        )
+      )
+    ); 
+  }
+}
+
+
 class AddButtonModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
-        child: Text("Button moved to separate widget"),
-        onPressed: () {
-          Scaffold.of(context).showSnackBar(SnackBar(
-                content: Text('Button moved to separate widget'),
-                duration: Duration(seconds: 3),
-              ));
-        });
+      child: Text("Button moved to separate widget"),
+      onPressed: () {
+        Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text('Button moved to separate widget'),
+            duration: Duration(seconds: 3),
+          )
+        );
+      }
+    );
   }
 }
 
-class _TripsDialogContentState extends State<TripsDialogContent> {
-  _TripsDialogContentState({this.color,this.tripId,this.destinations});
+
+
+class _TripDestinationDialogContentState extends State<TripDestinationDialogContent> {
+  _TripDestinationDialogContentState({this.color,this.tripId,this.destinations});
   
   final List<dynamic> destinations;
   final String tripId;
@@ -455,8 +615,6 @@ class _TripsDialogContentState extends State<TripsDialogContent> {
                                 );                           
                               });
                             }
-                            
-
                           }        
                         ),
                       ]
@@ -511,6 +669,7 @@ class TripState extends State<Trip> {
   GoogleMapController mapController;
   Color color = Colors.blueGrey;
   List<dynamic> destinations;
+  dynamic trip;
   
   Future<TripData> data;
 
@@ -527,6 +686,7 @@ class TripState extends State<Trip> {
   });
 
   bottomSheetModal(BuildContext context, dynamic data){
+    
   return showModalBottomSheet(context: context,
     builder: (BuildContext context) {
       return new Column(
@@ -537,6 +697,25 @@ class TripState extends State<Trip> {
             title: new Text('Trip name'),
             onTap: () {
               Navigator.pop(context);
+              return showGeneralDialog(
+                context: context,
+                pageBuilder: (BuildContext buildContext, Animation<double> animation,
+                  Animation<double> secondaryAnimation) {
+                  return Dialog(
+                    child: TripNameDialogContent(tripId:this.tripId, trip:data, color:this.color)
+                  );
+                },
+                transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+                  return new FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                },
+                barrierDismissible: true,
+                barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                barrierColor: Colors.black.withOpacity(0.5),
+                transitionDuration: const Duration(milliseconds: 300),
+              );
               
             }   
           ),
@@ -565,6 +744,9 @@ class TripState extends State<Trip> {
       setState(() {
         this.color = Color(hexStringToHexInt(data.trip['color']));
         this.destinations = data.destinations;
+        this.trip = data.trip;
+        
+        //print(this.name);
       });
       
     });
@@ -572,7 +754,7 @@ class TripState extends State<Trip> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: this.color,
         onPressed: () { 
-          bottomSheetModal(context, this.destinations);
+          bottomSheetModal(context, this.trip);
         },
         tooltip: 'Create trip',
         child: Icon(Icons.edit),
@@ -603,7 +785,8 @@ class TripState extends State<Trip> {
 
     }));
     var trip = snapshot.data.trip;
-    var name = snapshot.data.trip['name'];
+    //var name = snapshot.data.trip['name'];
+    //this.name = name;
     var destinations = snapshot.data.destinations;
     var destTable = new Collection<dynamic>(destinations);
     var result2 = destTable.groupBy<dynamic>((destination) => destination['country_id']);
@@ -692,7 +875,7 @@ class TripState extends State<Trip> {
                             fit: BoxFit.contain
                           )
                         ),
-                        Text(name,
+                        Text(this.trip['name'],
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
@@ -815,7 +998,7 @@ class TripState extends State<Trip> {
       context: context,
       pageBuilder: (BuildContext buildContext, Animation<double> animation,
         Animation<double> secondaryAnimation) {
-        return TripsDialogContent(color: color, tripId: this.tripId, destinations:destinations);
+        return TripDestinationDialogContent(color: color, tripId: this.tripId, destinations:destinations);
       },
       transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
         return new FadeTransition(

@@ -25,8 +25,22 @@ Future<dynamic> postAddToTrip(String tripId, dynamic data) async {
   
 }
 
-Future<dynamic> putUpdateTrip(String tripId, String destinationId, dynamic data) async {
+Future<dynamic> putUpdateTripDestination(String tripId, String destinationId, dynamic data) async {
   final response = await http.put('http://localhost:3002/api/trips/update/$tripId/destination/$destinationId', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return UpdateTripData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    return {
+      "success": false
+    };
+  }
+  
+}
+
+Future<dynamic> putUpdateTrip(String tripId, dynamic data) async {
+  final response = await http.put('http://localhost:3002/api/trips/update/trip/$tripId', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     return UpdateTripData.fromJson(json.decode(response.body));

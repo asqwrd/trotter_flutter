@@ -9,6 +9,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:trotter_flutter/tab_navigator.dart';
+
 
 
 Future<TripsData> fetchTrips() async {
@@ -65,9 +67,6 @@ class TripsState extends State<Trips> {
   Future<Null> _handleRefresh() async {
     await new Future.delayed(new Duration(seconds: 3));
     data = fetchTrips();
-    setState(() {
-
-    });
     await data;
     return null;
   }
@@ -90,10 +89,28 @@ class TripsState extends State<Trips> {
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return _buildLoadedBody(context,snapshot);
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return Text('Press button to start.');
+            case ConnectionState.active:
+            case ConnectionState.waiting:
+              return Stack(
+                children:<Widget>[
+                  _buildLoadedBody(context, snapshot),
+                  new Center(
+                  child: new RefreshProgressIndicator(
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                ]
+              );
+            case ConnectionState.done:
+              if (snapshot.hasData) {
+                return _buildLoadedBody(context,snapshot);
+              } else if(snapshot.hasError) {
+                return Text('No Connection');
+              }
           }
-          return _buildLoadingBody(context);
         }
       )
     );
@@ -208,8 +225,13 @@ class TripsState extends State<Trips> {
             //print(trips[index]['start_date']);
             
             return InkWell(
-              onTap: () {
-                onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
+              onTap: () async {
+                var refresh =  await TabNavigator().push(context,{'id':trips[index]['id'].toString(), 'level':'trip'});
+                print(refresh);
+                setState((){
+                  data = fetchTrips();
+                });
+                
               },
               child:Card(
                 semanticContainer: true,

@@ -114,6 +114,8 @@ class CreateTripState extends State<CreateTrip> {
       Container(
         margin:EdgeInsets.symmetric(horizontal: 20),
         child: TextFormField(
+          maxLength: 20,
+          maxLengthEnforced: true,
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(vertical:20.0),
             prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 

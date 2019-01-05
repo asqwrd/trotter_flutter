@@ -91,7 +91,7 @@ class TabNavigator extends StatelessWidget {
 
 
     if(data['from'] != null && (data['from'] == 'search' || data['from'] == 'createtrip')) {
-      Navigator.pushReplacement(
+      return Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (context, _, __) => routeBuilders[goTo](context),
@@ -106,7 +106,7 @@ class TabNavigator extends StatelessWidget {
         }),
       );
     } else {
-       goTo == TabNavigatorRoutes.search || goTo == TabNavigatorRoutes.createtrip ? Navigator.push(
+       return goTo == TabNavigatorRoutes.search || goTo == TabNavigatorRoutes.createtrip ? Navigator.push(
         context,
         MaterialPageRoute(
             fullscreenDialog: true,

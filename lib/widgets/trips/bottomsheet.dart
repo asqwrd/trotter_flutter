@@ -100,7 +100,7 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
       };
 
       var response = await postAddToTrip(item['id'], data);
-      if(response.exist == false){
+      if(response.exists == false){
         Scaffold
           .of(context)
           .showSnackBar(SnackBar(content: Text('${destination['name']} added to ${item['name']}')));

@@ -12,240 +12,241 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'trip-api.dart';
+import 'add-destination-modal.dart';
 
 showDateModal(BuildContext context, dynamic destination, Color color,String tripId) {
-    return showGeneralDialog(
-      context: context,
-      pageBuilder: (BuildContext buildContext, Animation<double> animation,
-        Animation<double> secondaryAnimation) {
-        return Dialog(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(top: 40, bottom: 20),
-                child: Text(
-                  'Arrival and Departure',
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w300
-                  ),
-                )
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 20),
-                child: _buildDatesModal(buildContext, destination, color, tripId)
+  return showGeneralDialog(
+    context: context,
+    pageBuilder: (BuildContext buildContext, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
+      return Dialog(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(top: 40, bottom: 20),
+              child: Text(
+                'Arrival and Departure',
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w300
+                ),
               )
-            ],
-          )
-        );
-      },
-      transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-        return new FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-      },
-      barrierDismissible: true,
-      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: Colors.black.withOpacity(0.5),
-      transitionDuration: const Duration(milliseconds: 300),
-    );
-  }
-  _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
-    var dateFormat = DateFormat("EEE, MMM d, yyyy");
-    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    var arrival = destination['start_date'];
-    var departure = destination['end_date'];
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: <Widget>[
-          Container(
-            margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
-            child:DateTimePickerFormField(
-              format: dateFormat,
-              dateOnly: true,
-              editable: false,
-              initialValue: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : null,
-              //firstDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
-              initialDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
-              decoration: InputDecoration(
-                hintText: 'Arrival date', 
-                contentPadding: EdgeInsets.symmetric(vertical:20.0),
-                prefixIcon: Padding(
-                  padding:EdgeInsets.only(left:20.0, right: 5.0), 
-                  child:Icon(
-                    Icons.calendar_today,
-                    size: 18,
-                  )
-                ), 
-                //fillColor: Colors.blueGrey.withOpacity(0.5),
-                filled: true,
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-              ),
-              onChanged: (dt){ 
-                if(dt != null) {
-                  var startDate = dt.millisecondsSinceEpoch/1000;
-                  arrival =  startDate.toInt();
-                }
-              },
-              validator: (value) {
-                if (value == null) {
-                  return 'Please select an arrival date';
-                }
-              },
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20),
+              child: _buildDatesModal(buildContext, destination, color, tripId)
             )
-          ),
-          Container(
-            margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
-            child: DateTimePickerFormField(
-              format: dateFormat,
-              dateOnly: true,
-              editable: false,
-              initialValue: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : null,
-              //firstDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
-              initialDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
-              decoration: InputDecoration(
-                hintText: 'Departure date', 
-                contentPadding: EdgeInsets.symmetric(vertical:20.0),
-                prefixIcon: Padding(
-                  padding:EdgeInsets.only(left:20.0, right: 5.0), 
-                  child:Icon(
-                    Icons.calendar_today,
-                    size: 18,
-                  )
-                ), 
-                //fillColor: Colors.blueGrey.withOpacity(0.5),
-                filled: true,
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 1.0,
-                    color: Colors.red
-                  )
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(
-                    width: 0.0,
-                    color: Colors.transparent
-                  )
-                ),
-              ),
-              onChanged: (dt){
-                if(dt != null) {
-                  var endDate = dt.millisecondsSinceEpoch/1000;
-                  departure =  endDate.toInt();
-                }
-              },
-              validator: (value) {
-                if (value == null) {
-                  return 'Please select a departure date';
-                } else if(departure < arrival){
-                  return "Please choose a later departure date";
-                }
-              },
-            )
-          ),
-          Container(
-            width:double.infinity,
-            margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom:20),
-            child: FlatButton(
-              color: color.withOpacity(0.8),
-              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: Text(
-                  'Change date',
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w300,
-                    color: Colors.white
-                  )
+          ],
+        )
+      );
+    },
+    transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+      return new FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+    },
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    barrierColor: Colors.black.withOpacity(0.5),
+    transitionDuration: const Duration(milliseconds: 300),
+  );
+}
+_buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
+  var dateFormat = DateFormat("EEE, MMM d, yyyy");
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  var arrival = destination['start_date'];
+  var departure = destination['end_date'];
+  return Form(
+    key: _formKey,
+    child: Column(
+      children: <Widget>[
+        Container(
+          margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
+          child:DateTimePickerFormField(
+            format: dateFormat,
+            dateOnly: true,
+            editable: false,
+            initialValue: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : null,
+            //firstDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
+            initialDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
+            decoration: InputDecoration(
+              hintText: 'Arrival date', 
+              contentPadding: EdgeInsets.symmetric(vertical:20.0),
+              prefixIcon: Padding(
+                padding:EdgeInsets.only(left:20.0, right: 5.0), 
+                child:Icon(
+                  Icons.calendar_today,
+                  size: 18,
+                )
+              ), 
+              //fillColor: Colors.blueGrey.withOpacity(0.5),
+              filled: true,
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 1.0,
+                  color: Colors.red
                 )
               ),
-              onPressed: () async {
-                if(_formKey.currentState.validate() ){
-                  destination["start_date"] =  arrival;
-                  destination["end_date"] = departure;
-                  var response = await putUpdateTrip(tripId, destination['id'], destination);
-                  if(response.success == true){
-                    //setState(() {
-                      destination["start_date"] =  arrival;
-                      destination["end_date"] = departure;
-                      Navigator.pop(context,{"arrival": arrival, "departure": departure});   
-                    //});
-                  }
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 1.0,
+                  color: Colors.red
+                )
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 0.0,
+                  color: Colors.transparent
+                )
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 0.0,
+                  color: Colors.transparent
+                )
+              ),
+            ),
+            onChanged: (dt){ 
+              if(dt != null) {
+                var startDate = dt.millisecondsSinceEpoch/1000;
+                arrival =  startDate.toInt();
+              }
+            },
+            validator: (value) {
+              if (value == null) {
+                return 'Please select an arrival date';
+              }
+            },
+          )
+        ),
+        Container(
+          margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
+          child: DateTimePickerFormField(
+            format: dateFormat,
+            dateOnly: true,
+            editable: false,
+            initialValue: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : null,
+            //firstDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
+            initialDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
+            decoration: InputDecoration(
+              hintText: 'Departure date', 
+              contentPadding: EdgeInsets.symmetric(vertical:20.0),
+              prefixIcon: Padding(
+                padding:EdgeInsets.only(left:20.0, right: 5.0), 
+                child:Icon(
+                  Icons.calendar_today,
+                  size: 18,
+                )
+              ), 
+              //fillColor: Colors.blueGrey.withOpacity(0.5),
+              filled: true,
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 1.0,
+                  color: Colors.red
+                )
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 1.0,
+                  color: Colors.red
+                )
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 0.0,
+                  color: Colors.transparent
+                )
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(
+                  width: 0.0,
+                  color: Colors.transparent
+                )
+              ),
+            ),
+            onChanged: (dt){
+              if(dt != null) {
+                var endDate = dt.millisecondsSinceEpoch/1000;
+                departure =  endDate.toInt();
+              }
+            },
+            validator: (value) {
+              if (value == null) {
+                return 'Please select a departure date';
+              } else if(departure < arrival){
+                return "Please choose a later departure date";
+              }
+            },
+          )
+        ),
+        Container(
+          width:double.infinity,
+          margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom:20),
+          child: FlatButton(
+            color: color.withOpacity(0.8),
+            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              child: Text(
+                'Change date',
+                style: TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white
+                )
+              )
+            ),
+            onPressed: () async {
+              if(_formKey.currentState.validate() ){
+                destination["start_date"] =  arrival;
+                destination["end_date"] = departure;
+                var response = await putUpdateTrip(tripId, destination['id'], destination);
+                if(response.success == true){
+                  //setState(() {
+                    destination["start_date"] =  arrival;
+                    destination["end_date"] = departure;
+                    Navigator.pop(context,{"arrival": arrival, "departure": departure});   
+                  //});
+                }
 
-                }
-              },
-            )
-          ),
-          Container(
-            width:double.infinity,
-            margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-            child: FlatButton(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child:Text(
-                  'Close',
-                  style: TextStyle(
-                    fontSize: 23,
-                    fontWeight: FontWeight.w300
-                  )
-                )
-              ),
-              onPressed: (){
-                Navigator.pop(context,{"arrival": arrival, "departure": departure, "closed":true});  
-              },
-            )
+              }
+            },
           )
-        ]
-      )
-    );
-  }
+        ),
+        Container(
+          width:double.infinity,
+          margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+          child: FlatButton(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 15),
+              child:Text(
+                'Close',
+                style: TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w300
+                )
+              )
+            ),
+            onPressed: (){
+              Navigator.pop(context,{"arrival": arrival, "departure": departure, "closed":true});  
+            },
+          )
+        )
+      ]
+    )
+  );
+}
 
 Future<TripData> fetchTrip(String id) async {
   final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
@@ -274,6 +275,19 @@ class TripsDialogContent extends StatefulWidget {
   _TripsDialogContentState createState() => new _TripsDialogContentState(color: this.color, tripId: this.tripId, destinations: this.destinations);
 
 }
+class AddButtonModal extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return RaisedButton(
+        child: Text("Button moved to separate widget"),
+        onPressed: () {
+          Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text('Button moved to separate widget'),
+                duration: Duration(seconds: 3),
+              ));
+        });
+  }
+}
 
 class _TripsDialogContentState extends State<TripsDialogContent> {
   _TripsDialogContentState({this.color,this.tripId,this.destinations});
@@ -286,139 +300,184 @@ class _TripsDialogContentState extends State<TripsDialogContent> {
     super.initState();
   }
 
+  
+
    @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            brightness: Brightness.light,
+      floatingActionButton: Builder( builder: (BuildContext builderContext) => FloatingActionButton(
+        backgroundColor: this.color,
+        onPressed: () async { 
+          var data = await showGeneralDialog(
+            context: builderContext,
+            pageBuilder: (BuildContext buildContext, Animation<double> animation,
+              Animation<double> secondaryAnimation) {
+              return Dialog(
+                child: AddDestinationModal(tripId: this.tripId,color: this.color)
+              );
+            },
+            transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+              return new FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+            },
+            barrierDismissible: true,
+            barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+            barrierColor: Colors.black.withOpacity(0.5),
+            transitionDuration: const Duration(milliseconds: 300),
+          );
+          if(data != null){
+            var response = await postAddToTrip(this.tripId, data);
+            if(response.destination != null) {
+              data['id'] = response.destination['ID'];
+              setState(() {
+                this.destinations.add(data);
+                Scaffold.of(builderContext).showSnackBar(SnackBar(content: Text('${data['destination_name']}\'s has been added')));
+              });
+            } else if(response.exists == true){
+              setState(() {
+                Scaffold.of(builderContext).showSnackBar(SnackBar(content: Text('${data['destination_name']}\'s already exist for this trip.')));
+              });
+            }
+          }
+        },
+        tooltip: 'Add destination',
+        child: Icon(Icons.add),
+        elevation: 5.0,
+      )
+      ),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        brightness: Brightness.light,
+        title: Text(
+          'Destinations',
+          style: TextStyle(
+            fontSize: 20,
+            color: Colors.black,
+            fontWeight: FontWeight.w300
+          ),
+        ),
+        centerTitle: true,
+        leading: IconButton(
+          iconSize: 25,
+          color: Colors.black,
+          icon: Icon(Icons.close),
+          onPressed: (){
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: ListView.separated(
+        separatorBuilder: (BuildContext serperatorContext, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+        padding: EdgeInsets.all(20.0),
+        itemCount: destinations.length,
+        shrinkWrap: true,
+        primary: false,
+        itemBuilder: (BuildContext listContext, int index){
+          var startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['start_date']*1000));
+          var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['end_date']*1000));
+          var arrival = destinations[index]['start_date'];
+          var departure = destinations[index]['end_date'];
+          var name = destinations[index]['destination_name'];
+          return ListTile(
+            subtitle: Text(
+              arrival == 0 || departure == 0 ? 'No dates given' : '$startDate - $endDate',
+            ),
+            trailing: IconButton(
+              onPressed: (){
+                showModalBottomSheet(context: listContext,
+                  builder: (BuildContext modalcontext) {
+                    return new Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new ListTile(
+                          contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                          leading: new Icon(Icons.calendar_today, size:22),
+                          title: new Text(
+                            'Change arrival and departure dates',
+                          ),
+                          onTap: () async{
+                            Navigator.pop(context);
+                            var update = await showDateModal(context,destinations[index],this.color, this.tripId);
+                            setState(() {
+                              if(update['closed'] == null){
+                                startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['arrival']*1000));
+                                endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['departure']*1000));
+                                Scaffold
+                                .of(listContext)
+                                .showSnackBar(SnackBar(content: Text('${destinations[index]['destination_name']}\'s dates updated')));
+                              }
+
+                            });
+                            
+                          }   
+                        ),
+                        new ListTile(
+                          contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                          leading: new Icon(Icons.delete, size:22),
+                          title: new Text(
+                            'Delete $name',
+                          ),
+                          onTap: () async {
+                            var response = await deleteDestination(this.tripId, this.destinations[index]['id']);
+                            if(response.success == true){
+                              Navigator.pop(modalcontext);
+                              setState(() {
+                                var undoDestination = this.destinations[index];
+                                this.destinations.removeAt(index);
+                                Scaffold
+                                .of(listContext)
+                                .showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '$name\'s was deleted.',
+                                      style: TextStyle(
+                                        fontSize: 18
+                                      )
+                                    ),
+                                    action: SnackBarAction(
+                                      label: 'Undo',
+                                      textColor: this.color,
+                                      onPressed: () async {
+                                        var response = await postAddToTrip(this.tripId, undoDestination);
+                                        if(response.destination != null) {
+                                          undoDestination['id'] = response.destination['ID'];
+                                          setState(() {
+                                            this.destinations.insert(index, undoDestination);
+                                            Scaffold.of(listContext).removeCurrentSnackBar();
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  )
+                                );                           
+                              });
+                            }
+                            
+
+                          }        
+                        ),
+                      ]
+                    );
+                  }
+                );
+              },
+              icon:Icon(Icons.more_vert)
+            ),
             title: Text(
-              'Destinations',
+              destinations[index]['destination_name'],
               style: TextStyle(
-                fontSize: 20,
-                color: Colors.black,
+                fontSize: 25,
                 fontWeight: FontWeight.w300
               ),
             ),
-            centerTitle: true,
-            leading: IconButton(
-              iconSize: 20,
-              color: Colors.black,
-              icon: Icon(Icons.close),
-              onPressed: (){
-                Navigator.pop(context);
-              },
-            ),
-          ),
-          body: ListView.separated(
-            separatorBuilder: (BuildContext serperatorContext, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-            padding: EdgeInsets.all(20.0),
-            itemCount: destinations.length,
-            shrinkWrap: true,
-            primary: false,
-            itemBuilder: (BuildContext listContext, int index){
-              var startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['start_date']*1000));
-              var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['end_date']*1000));
-              var arrival = destinations[index]['start_date'];
-              var departure = destinations[index]['end_date'];
-              var name = destinations[index]['destination_name'];
-              return ListTile(
-                subtitle: Text(
-                  arrival == 0 || departure == 0 ? 'No dates given' : '$startDate - $endDate',
-                ),
-                trailing: IconButton(
-                  onPressed: (){
-                    showModalBottomSheet(context: listContext,
-                      builder: (BuildContext modalcontext) {
-                        return new Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            new ListTile(
-                              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-                              leading: new Icon(Icons.calendar_today, size:22),
-                              title: new Text(
-                                'Change arrival and departure dates',
-                              ),
-                              onTap: () async{
-                                Navigator.pop(context);
-                                var update = await showDateModal(context,destinations[index],this.color, this.tripId);
-                                setState(() {
-                                  if(update['closed'] == null){
-                                    startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['arrival']*1000));
-                                    endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['departure']*1000));
-                                    Scaffold
-                                    .of(listContext)
-                                    .showSnackBar(SnackBar(content: Text('${destinations[index]['destination_name']}\'s dates updated')));
-                                  }
-
-                                });
-                                
-                              }   
-                            ),
-                            new ListTile(
-                              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
-                              leading: new Icon(Icons.delete, size:22),
-                              title: new Text(
-                                'Delete $name',
-                              ),
-                              onTap: () async {
-                                var response = await deleteDestination(this.tripId, this.destinations[index]['id']);
-                                if(response.success == true){
-                                  Navigator.pop(modalcontext);
-                                  setState(() {
-                                    var undoDestination = this.destinations[index];
-                                    this.destinations.removeAt(index);
-                                    Scaffold
-                                    .of(listContext)
-                                    .showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          '$name\'s was deleted.',
-                                          style: TextStyle(
-                                            fontSize: 18
-                                          )
-                                        ),
-                                        action: SnackBarAction(
-                                          label: 'Undo',
-                                          textColor: this.color,
-                                          onPressed: () async {
-                                            var response = await postAddToTrip(this.tripId, undoDestination);
-                                            if(response.destination != null) {
-                                              undoDestination['id'] = response.destination['ID'];
-                                              setState(() {
-                                                this.destinations.insert(index, undoDestination);
-                                                Scaffold.of(listContext).removeCurrentSnackBar();
-                                              });
-                                            }
-                                          },
-                                        ),
-                                      )
-                                    );                           
-                                  });
-                                }
-                                
-
-                              }        
-                            ),
-                          ]
-                        );
-                      }
-                    );
-                  },
-                  icon:Icon(Icons.more_vert)
-                ),
-                title: Text(
-                  destinations[index]['destination_name'],
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w300
-                  ),
-                ),
-                    
-              );
-            },
-          )
-        );
+                
+          );
+        },
+      )
+    );
   }
 }
 

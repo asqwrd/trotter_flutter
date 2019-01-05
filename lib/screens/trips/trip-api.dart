@@ -55,14 +55,14 @@ Future<dynamic> deleteDestination(String tripId, String destinationId) async {
 
 class AddTripData {
   final dynamic destination; 
-  final bool exist;
+  final bool exists;
 
-  AddTripData({this.destination, this.exist});
+  AddTripData({this.destination, this.exists});
 
   factory AddTripData.fromJson(Map<String, dynamic> json) {
     return AddTripData(
       destination: json['destination'],
-      exist: false
+      exists: false
     );
   }
 }
@@ -80,14 +80,16 @@ class UpdateTripData {
 }
 
 class AddTripErrorData {
-  final bool exist; 
+  final bool exists; 
   final String message; 
+  final dynamic destination;
 
-  AddTripErrorData({this.exist, this.message});
+  AddTripErrorData({this.exists, this.message, this.destination});
 
   factory AddTripErrorData.fromJson(Map<String, dynamic> json) {
     return AddTripErrorData(
-      exist: json['exist'],
+      exists: json['exists'],
+      destination: null,
       message: json['message'],
     );
   }

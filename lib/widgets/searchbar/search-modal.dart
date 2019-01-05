@@ -206,7 +206,6 @@ class SearchModalState extends State<SearchModal> {
                       
                     }
                     timer = new Timer(const Duration(milliseconds: 500), (){
-                      print('Print $value');
                       setState(() {
                         data = fetchSearchModal(value,this.id,selectId);             
                       });

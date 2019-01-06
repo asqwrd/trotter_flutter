@@ -81,7 +81,7 @@ class TripsState extends State<Trips> {
 
     var color = Colors.blueGrey;
 
-    if(loading)
+    if(loading == true)
       return _buildLoadingBody(context);
 
 
@@ -289,11 +289,20 @@ class TripsState extends State<Trips> {
                   fontSize: 18,
                 )
               ),
+              destination['start_date'] > 0 && destination['end_date'] > 0 ? 
               Text(
                 ' ${new HtmlUnescape().convert('&bull;')} $startDate - $endDate',
                 style: TextStyle(
                   fontWeight: FontWeight.w300,
                   color: Colors.blueGrey,
+                  fontSize: 18
+                )
+              ):
+              Text(
+                ' ${new HtmlUnescape().convert('&bull;')} Dates have not been set',
+                style: TextStyle(
+                  fontWeight: FontWeight.w300,
+                  color: Colors.red,
                   fontSize: 18
                 )
               ),

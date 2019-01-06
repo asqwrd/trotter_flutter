@@ -397,9 +397,10 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                     var response = await putUpdateTrip(tripId, {"name": _nameControllerModal.text});
                     if(response.success == true){
                       setState(() {
+                        var oldName = this.trip['name'];
                         this.trip['name'] = _nameControllerModal.text;
                         StoreProvider.of<AppState>(context).dispatch(UpdateTripsFromTripAction(this.trip)); 
-                        Navigator.pop(context);
+                        Navigator.pop(context, oldName);
 
                       });
                     }
@@ -498,6 +499,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
               data['id'] = response.destination['ID'];
               setState(() {
                 this.destinations.add(data);
+                StoreProvider.of<AppState>(context).dispatch(UpdateTripsDestinationAction(this.tripId, data)); 
                 Scaffold.of(builderContext).showSnackBar(SnackBar(content: Text('${data['destination_name']}\'s has been added')));
               });
             } else if(response.exists == true){
@@ -689,9 +691,9 @@ class TripState extends State<Trip> {
     this.tripId
   });
 
-  bottomSheetModal(BuildContext context, dynamic data){
+  bottomSheetModal(BuildContext topcontext, dynamic data){
     
-  return showModalBottomSheet(context: context,
+  return showModalBottomSheet(context: topcontext,
     builder: (BuildContext context) {
       return new Column(
         mainAxisSize: MainAxisSize.min,
@@ -699,9 +701,9 @@ class TripState extends State<Trip> {
           new ListTile(
             leading: new Icon(Icons.card_travel),
             title: new Text('Trip name'),
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              return showGeneralDialog(
+              var oldName = await showGeneralDialog(
                 context: context,
                 pageBuilder: (BuildContext buildContext, Animation<double> animation,
                   Animation<double> secondaryAnimation) {
@@ -720,6 +722,13 @@ class TripState extends State<Trip> {
                 barrierColor: Colors.black.withOpacity(0.5),
                 transitionDuration: const Duration(milliseconds: 300),
               );
+              if(oldName != null){
+                Scaffold.of(topcontext).showSnackBar(SnackBar(
+                    content: Text('$oldName has been changed to ${this.trip['name']}'),
+                    duration: Duration(seconds: 3),
+                  )
+                );
+              }
               
             }   
           ),

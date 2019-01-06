@@ -9,24 +9,21 @@ import 'dart:convert';
 class ViewModel {
   //final List<dynamic> trips;
   final Function() onGetTrips;
+  final Function(dynamic) onUpdateTripsFromTrip;
   //final bool loading;
 
 
   ViewModel({
     //this.trips,
     this.onGetTrips,
+    this.onUpdateTripsFromTrip
     //this.loading
   });
 
   factory ViewModel.create(Store<AppState> store) {
     _onGetTrips() async {
       
-        var data = await fetchTrips(store);  
-        store.dispatch(
-          new GetTripsAction(
-            data.trips, 
-          )
-        );
+        await fetchTrips(store);  
       //}
     }
     

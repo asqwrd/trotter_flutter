@@ -84,9 +84,7 @@ class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: StoreConnector <AppState, ViewModel>(
-        converter: (store) => ViewModel.create(store),
-        builder: (context, ViewModel viewModel)=>FutureBuilder(
+      body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -94,7 +92,7 @@ class HomeState extends State<Home> {
           }
           return _buildLoadingBody(context);
         }
-      ))
+      )
     );
   }
 

@@ -29,6 +29,13 @@ class UpdateTripsFromTripAction {
   UpdateTripsFromTripAction(this.trip);
 }
 
+class UpdateTripsDestinationAction {
+  final String tripId;
+  final dynamic destination;
+  
+  UpdateTripsDestinationAction(this.tripId, this.destination);
+}
+
 class SetLoadingAction {
   final bool loading;
   SetLoadingAction(this.loading);
@@ -48,6 +55,14 @@ List<dynamic> updateTripsFromTripReducer(dynamic state, dynamic action) {
   return trips;
 }
 
+List<dynamic> updateTripsDestinationReducer(dynamic state, dynamic action) {
+  var tripIndex = state.indexWhere((trip)=> trip['id'] == action.tripId);
+  var trips = []..addAll(state);
+  trips[tripIndex]['destinations'].add(action.destination);
+
+  return trips;
+}
+
 AppState appStateReducer(AppState state, action) {
   return AppState(
     trips: tripsReducer(state.trips,action),
@@ -58,6 +73,7 @@ AppState appStateReducer(AppState state, action) {
 final Reducer <List<dynamic>> tripsReducer = combineReducers <List<dynamic>>([
   new TypedReducer<List<dynamic>, GetTripsAction>(getTripsReducer),
   new TypedReducer<List<dynamic>, UpdateTripsFromTripAction>(updateTripsFromTripReducer),
+  new TypedReducer<List<dynamic>, UpdateTripsDestinationAction>(updateTripsDestinationReducer),
 ]);
 
 bool loadingReducer(dynamic state, action) {

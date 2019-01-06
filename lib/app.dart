@@ -70,14 +70,18 @@ class AppStateWidget extends State<App> {
         backgroundColor: Colors.white,
         body: Stack(children: <Widget>[
           FocusScope(node: _focusA,  child:_buildOffstageNavigator(TabItem.explore)),
-          FocusScope(node: _focusB, child: StoreConnector <AppState, AppState>(
-            onInit: (store) async{ 
-              print('init');
-              await fetchTrips(store);
-              store.dispatch(SetLoadingAction(false));
-            },
-            converter: (store) => store.state,
-            builder: (context, state)=> _buildOffstageNavigator(TabItem.trips))
+          FocusScope(node: _focusB, child: 
+            StoreConnector <AppState, AppState>(
+              onInit: (store) async{ 
+                print('init');
+                if(store != null){
+                  await fetchTrips(store);
+                  store.dispatch(SetLoadingAction(false));
+                }
+              },
+              converter: (store) => store.state,
+              builder: (context, state)=> _buildOffstageNavigator(TabItem.trips)
+            )
           ),
           FocusScope(node: _focusC, child:_buildOffstageNavigator(TabItem.profile)),
         ]),

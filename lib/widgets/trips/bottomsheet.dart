@@ -94,11 +94,12 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
         "level": destination['level'],
         "country_id": destination['country_id'],
         "country_name": destination["country_name"],
-        "start_date":  null,
-        "end_date": null,
+        "start_date":  0,
+        "end_date": 0,
       };
 
       var response = await postAddToTrip(item['id'], data);
+      StoreProvider.of<AppState>(context).dispatch(UpdateTripsDestinationAction(item['id'], data)); 
       if(response.exists == false){
         Scaffold
           .of(context)

@@ -13,9 +13,8 @@ import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'trip-api.dart';
 import 'add-destination-modal.dart';
-import 'package:trotter_flutter/store/index.dart';
+import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
 
 showDateModal(BuildContext context, dynamic destination, Color color,String tripId) {
   return showGeneralDialog(

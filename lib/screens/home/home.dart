@@ -7,8 +7,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/store/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 
 
 

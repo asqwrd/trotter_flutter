@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app.dart';
 import 'package:flutter/services.dart';
-import 'package:trotter_flutter/store/index.dart';
+import 'package:trotter_flutter/redux/index.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 

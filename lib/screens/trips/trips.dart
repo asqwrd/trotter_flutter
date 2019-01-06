@@ -8,7 +8,7 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
-import 'package:trotter_flutter/store/index.dart';
+import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
 
@@ -59,7 +59,11 @@ class TripsState extends State<Trips> {
       ),
       body: StoreConnector <AppState, ViewModel>(
         converter: (store) => ViewModel.create(store),
-        onInit: (store)=>store.dispatch(new SetLoadingAction(true)),
+        onInit: (store) async {
+          store.dispatch(new SetTripsLoadingAction(true));
+          await fetchTrips(store);
+          store.dispatch(SetTripsLoadingAction(false));
+        },
         builder: (context, viewModel)=> _buildLoadedBody(context, viewModel)
       )
     );
@@ -77,7 +81,7 @@ class TripsState extends State<Trips> {
 
     }));
     var trips = StoreProvider.of<AppState>(context).state.trips;
-    var loading = StoreProvider.of<AppState>(context).state.loading;
+    var loading = StoreProvider.of<AppState>(context).state.tripLoading;
 
     var color = Colors.blueGrey;
 

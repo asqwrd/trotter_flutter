@@ -1,11 +1,20 @@
 
-import 'package:trotter_flutter/store/index.dart';
 import 'package:redux/redux.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux_thunk/redux_thunk.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import '../middleware/index.dart';
 
+
+class AppState {
+  final List<dynamic> trips;
+  final bool tripLoading;
+  AppState({
+    @required this.trips,
+    @required this.tripLoading
+  });
+  AppState.initialState()
+    : trips = List.unmodifiable(<dynamic>[]),
+    tripLoading = false;
+}
 class ViewModel {
   //final List<dynamic> trips;
   final Function() onGetTrips;

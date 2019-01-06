@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
-import 'package:trotter_flutter/store/index.dart';
-import 'package:redux/redux.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-
-
 
 class App extends StatefulWidget {
   @override
@@ -71,17 +66,7 @@ class AppStateWidget extends State<App> {
         body: Stack(children: <Widget>[
           FocusScope(node: _focusA,  child:_buildOffstageNavigator(TabItem.explore)),
           FocusScope(node: _focusB, child: 
-            StoreConnector <AppState, AppState>(
-              onInit: (store) async{ 
-                print('init');
-                if(store != null){
-                  await fetchTrips(store);
-                  store.dispatch(SetLoadingAction(false));
-                }
-              },
-              converter: (store) => store.state,
-              builder: (context, state)=> _buildOffstageNavigator(TabItem.trips)
-            )
+            _buildOffstageNavigator(TabItem.trips)
           ),
           FocusScope(node: _focusC, child:_buildOffstageNavigator(TabItem.profile)),
         ]),

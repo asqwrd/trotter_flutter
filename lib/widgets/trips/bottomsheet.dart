@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:shimmer/shimmer.dart';
-import 'dart:convert';
 import 'package:trotter_flutter/tab_navigator.dart';
-import 'package:trotter_flutter/store/index.dart';
+import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
-
-
 
 void showTripsBottomSheet(context, dynamic destination){
   showModalBottomSheet(

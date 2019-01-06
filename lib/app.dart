@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
+import 'package:trotter_flutter/store/index.dart';
+import 'package:redux/redux.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+
 
 
 class App extends StatefulWidget {
   @override
-  State<StatefulWidget> createState() => AppState();
+  State<StatefulWidget> createState() => AppStateWidget();
 }
 
-class AppState extends State<App> {
+class AppStateWidget extends State<App> {
   TabItem currentTab = TabItem.explore;
   Map<TabItem, GlobalKey<NavigatorState>> navigatorKeys = {
     TabItem.explore: GlobalKey<NavigatorState>(),
@@ -58,6 +62,7 @@ class AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+
     return WillPopScope(
       onWillPop: () async =>
           !await navigatorKeys[currentTab].currentState.maybePop(),
@@ -65,7 +70,15 @@ class AppState extends State<App> {
         backgroundColor: Colors.white,
         body: Stack(children: <Widget>[
           FocusScope(node: _focusA,  child:_buildOffstageNavigator(TabItem.explore)),
-          FocusScope(node: _focusB, child:_buildOffstageNavigator(TabItem.trips)),
+          FocusScope(node: _focusB, child: StoreConnector <AppState, AppState>(
+            onInit: (store) async{ 
+              print('init');
+              await fetchTrips(store);
+              store.dispatch(SetLoadingAction(false));
+            },
+            converter: (store) => store.state,
+            builder: (context, state)=> _buildOffstageNavigator(TabItem.trips))
+          ),
           FocusScope(node: _focusC, child:_buildOffstageNavigator(TabItem.profile)),
         ]),
         bottomNavigationBar: BottomNavigation(

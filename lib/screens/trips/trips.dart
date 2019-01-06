@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
@@ -10,33 +8,9 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
+import 'package:trotter_flutter/store/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
-
-
-Future<TripsData> fetchTrips() async {
-  final response = await http.get('http://localhost:3002/api/trips/all/', headers:{'Authorization':'security'});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return TripsData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
-  }
-  
-}
-
-class TripsData {
-  final List<dynamic> trips; 
-
-  TripsData({this.trips});
-
-  factory TripsData.fromJson(Map<String, dynamic> json) {
-    return TripsData(
-      trips: json['trips'],
-    );
-  }
-}
 
 
 class Trips extends StatefulWidget {
@@ -56,7 +30,6 @@ class TripsState extends State<Trips> {
   @override
   void initState() {
     super.initState();
-    data = fetchTrips();
     
   }
 
@@ -64,10 +37,8 @@ class TripsState extends State<Trips> {
     this.onPush
   });
 
-  Future<Null> _handleRefresh() async {
+  Future<TripsData> _handleRefresh() async {
     await new Future.delayed(new Duration(seconds: 3));
-    data = fetchTrips();
-    await data;
     return null;
   }
 
@@ -86,50 +57,33 @@ class TripsState extends State<Trips> {
         child: Icon(Icons.add),
         elevation: 5.0,
       ),
-      body: FutureBuilder(
-        future: data,
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.none:
-              return Text('Press button to start.');
-            case ConnectionState.active:
-            case ConnectionState.waiting:
-              return Stack(
-                children:<Widget>[
-                  _buildLoadedBody(context, snapshot),
-                  new Center(
-                  child: new RefreshProgressIndicator(
-                    backgroundColor: Colors.white,
-                  ),
-                ),
-                ]
-              );
-            case ConnectionState.done:
-              if (snapshot.hasData) {
-                return _buildLoadedBody(context,snapshot);
-              } else if(snapshot.hasError) {
-                return Text('No Connection');
-              }
-          }
-        }
+      body: StoreConnector <AppState, ViewModel>(
+        converter: (store) => ViewModel.create(store),
+        onInit: (store)=>store.dispatch(new SetLoadingAction(true)),
+        builder: (context, viewModel)=> _buildLoadedBody(context, viewModel)
       )
     );
   }
   
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(BuildContext ctxt, ViewModel viewModel) {
     final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 300;
-
 
     _scrollController.addListener(() => setState(() {
       _showTitle =_scrollController.hasClients &&
       _scrollController.offset > kExpandedHeight - kToolbarHeight;
 
     }));
-    var trips = snapshot.data.trips;
+    var trips = StoreProvider.of<AppState>(context).state.trips;
+    var loading = StoreProvider.of<AppState>(context).state.loading;
+
     var color = Colors.blueGrey;
+
+    if(loading)
+      return _buildLoadingBody(context);
+
 
     return NestedScrollView(
       controller: _scrollController,
@@ -215,7 +169,7 @@ class TripsState extends State<Trips> {
         margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.white),
         child: RefreshIndicator(
-          onRefresh: _handleRefresh,
+          onRefresh: () => viewModel.onGetTrips(),
           child:ListView.builder(
           shrinkWrap: true,
           itemCount: trips.length,
@@ -226,11 +180,12 @@ class TripsState extends State<Trips> {
             
             return InkWell(
               onTap: () async {
-                var refresh =  await TabNavigator().push(context,{'id':trips[index]['id'].toString(), 'level':'trip'});
-                print(refresh);
-                setState((){
+               // var refresh =  await TabNavigator().push(context,{'id':trips[index]['id'].toString(), 'level':'trip'});
+                //print(refresh);
+                /*setState((){
                   data = fetchTrips();
-                });
+                });*/
+                onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
                 
               },
               child:Card(

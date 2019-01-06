@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:trotter_flutter/store/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 
 
@@ -82,7 +84,9 @@ class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: FutureBuilder(
+      body: StoreConnector <AppState, ViewModel>(
+        converter: (store) => ViewModel.create(store),
+        builder: (context, ViewModel viewModel)=>FutureBuilder(
         future: data,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -90,7 +94,7 @@ class HomeState extends State<Home> {
           }
           return _buildLoadingBody(context);
         }
-      )
+      ))
     );
   }
 

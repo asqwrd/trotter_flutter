@@ -31,6 +31,9 @@ dependencies:
   flutter_typeahead: ^0.4.1
   datetime_picker_formfield: ^0.1.7
   queries: ^0.1.4
+  flutter_redux: ^0.5.2
+  redux_thunk: ^0.2.1
+
 
 
 

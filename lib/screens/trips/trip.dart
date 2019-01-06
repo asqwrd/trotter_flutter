@@ -13,6 +13,9 @@ import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'trip-api.dart';
 import 'add-destination-modal.dart';
+import 'package:trotter_flutter/store/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
 showDateModal(BuildContext context, dynamic destination, Color color,String tripId) {
   return showGeneralDialog(
@@ -394,7 +397,8 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                     var response = await putUpdateTrip(tripId, {"name": _nameControllerModal.text});
                     if(response.success == true){
                       setState(() {
-                        this.trip['name'] = _nameControllerModal.text; 
+                        this.trip['name'] = _nameControllerModal.text;
+                        StoreProvider.of<AppState>(context).dispatch(UpdateTripsFromTripAction(this.trip)); 
                         Navigator.pop(context);
 
                       });
@@ -745,6 +749,7 @@ class TripState extends State<Trip> {
         this.color = Color(hexStringToHexInt(data.trip['color']));
         this.destinations = data.destinations;
         this.trip = data.trip;
+        this.trip['destinations'] = this.destinations;
         
         //print(this.name);
       });
@@ -823,11 +828,12 @@ class TripState extends State<Trip> {
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Search',
-              leading: SvgPicture.asset("images/search-icon.svg",
-                width: 55.0,
-                height: 55.0,
+              leading: IconButton(
+                padding: EdgeInsets.all(0),
+                icon:  Icon(Icons.arrow_back),
+                onPressed: () {  Navigator.pop(context);},
+                iconSize: 30,
                 color: Colors.black,
-                fit: BoxFit.contain
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});

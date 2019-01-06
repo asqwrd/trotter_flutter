@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'app.dart';
 import 'package:flutter/services.dart';
+import 'package:trotter_flutter/store/index.dart';
+import 'package:redux/redux.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 
 class MyBehavior extends ScrollBehavior {
@@ -27,9 +30,14 @@ class Routes {
       TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
       TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
     };
+    final Store store = Store<AppState>(
+      appStateReducer,
+      initialState: AppState.initialState()
+    );
     
     runApp(
-      new AnnotatedRegion<SystemUiOverlayStyle>(
+      StoreProvider<AppState>(
+      store: store,child:new AnnotatedRegion<SystemUiOverlayStyle>(
         value:mySystemTheme,
         child:new MaterialApp(
           theme: ThemeData(
@@ -44,7 +52,7 @@ class Routes {
           },
           home: new App()
         )
-      )
+      ))
     );
   }
     

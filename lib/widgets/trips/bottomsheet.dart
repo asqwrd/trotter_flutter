@@ -3,6 +3,9 @@ import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:shimmer/shimmer.dart';
 import 'dart:convert';
 import 'package:trotter_flutter/tab_navigator.dart';
+import 'package:trotter_flutter/store/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
 
 
@@ -10,23 +13,19 @@ void showTripsBottomSheet(context, dynamic destination){
   showModalBottomSheet(
     context: context,
     builder: (BuildContext bc){
-      var data = fetchTrips();
-      return FutureBuilder(
-        future: data,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return _buildLoadedList(context,snapshot, destination);
-          }
-          return _buildLoadingList();
-        }
-      );
-    }
+      return StoreConnector <AppState, AppState>(
+          converter: (store) => store.state,
+          builder: (context, trips)=> _buildLoadedList(context,trips,destination)
+        );
+      }
   );
 }
 
 
-_buildLoadedList(BuildContext context, AsyncSnapshot snapshot, dynamic destination) {
-  var trips = snapshot.data.trips;
+_buildLoadedList(BuildContext context, AppState snapshot, dynamic destination) {
+  //snapshot.onGetTrips(false);
+  //print(snapshot.trips);
+  var trips = snapshot.trips;
   //var color = Colors.blueGrey;
   return Container(
       margin: EdgeInsets.symmetric(vertical: 20.0), 

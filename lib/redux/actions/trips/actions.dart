@@ -12,6 +12,11 @@ class UpdateTripsFromTripAction {
   UpdateTripsFromTripAction(this.trip);
 }
 
+class UpdateTripsAfterCreateAction {
+  final Map<String,dynamic> trip;
+  UpdateTripsAfterCreateAction(this.trip);
+}
+
 class UpdateTripsDestinationAction {
   final String tripId;
   final dynamic destination;

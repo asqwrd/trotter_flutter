@@ -71,7 +71,7 @@ Future<CreateTripData> postCreateTrip(Store<AppState> store, dynamic data, [int 
         )
       );
     }
-    return CreateTripData.fromJson(trip);
+    return CreateTripData(trip: trip, success: true);
   } else {
     // If that response was not OK, throw an error.
     var msg = response.statusCode;

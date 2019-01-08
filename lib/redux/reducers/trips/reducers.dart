@@ -14,6 +14,12 @@ List<dynamic> updateTripsFromTripReducer(dynamic state, dynamic action) {
   return trips;
 }
 
+List<dynamic> updateTripsAfterCreateReducer(dynamic state, dynamic action) {
+  var trips = []..addAll(state);
+  trips.insert(0, action.trip);
+  return trips;
+}
+
 List<dynamic> updateTripsDestinationReducer(dynamic state, dynamic action) {
   var tripIndex = state.indexWhere((trip)=> trip['id'] == action.tripId);
   var trips = []..addAll(state);
@@ -49,6 +55,7 @@ List<dynamic> undoDeleteTripReducer(dynamic state, action) {
 final Reducer <List<dynamic>> tripsReducer = combineReducers <List<dynamic>>([
   new TypedReducer<List<dynamic>, GetTripsAction>(getTripsReducer),
   new TypedReducer<List<dynamic>, UpdateTripsFromTripAction>(updateTripsFromTripReducer),
+  new TypedReducer<List<dynamic>, UpdateTripsAfterCreateAction>(updateTripsAfterCreateReducer),
   new TypedReducer<List<dynamic>, UpdateTripsDestinationAction>(updateTripsDestinationReducer),
   new TypedReducer<List<dynamic>, DeleteTripAction>(deleteTripReducer),
   new TypedReducer<List<dynamic>, UndoTripDeleteAction>(undoDeleteTripReducer),

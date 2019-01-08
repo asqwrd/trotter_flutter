@@ -28,7 +28,7 @@ class AddDestinationModal extends StatefulWidget {
 
 class _AddDestinationModal extends State<AddDestinationModal> {
  _AddDestinationModal({this.color,this.tripId,this.destination});
-   TextEditingController _typeAheadController = TextEditingController();
+  TextEditingController _typeAheadController = TextEditingController();
 
   
   dynamic destination;

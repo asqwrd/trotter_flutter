@@ -442,7 +442,11 @@ class AddButtonModal extends StatelessWidget {
       child: Text("Button moved to separate widget"),
       onPressed: () {
         Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text('Button moved to separate widget'),
+            content: Text(
+              'Button moved to separate widget',
+              style: TextStyle(
+                fontSize: 18
+              )),
             duration: Duration(seconds: 3),
           )
         );
@@ -499,11 +503,27 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
               setState(() {
                 this.destinations.add(data);
                 StoreProvider.of<AppState>(context).dispatch(UpdateTripsDestinationAction(this.tripId, data)); 
-                Scaffold.of(builderContext).showSnackBar(SnackBar(content: Text('${data['destination_name']}\'s has been added')));
+                Scaffold.of(builderContext).showSnackBar(SnackBar(
+                  content: Text(
+                        '${data['destination_name']}\'s has been added',
+                          style: TextStyle(
+                            fontSize: 18
+                          )
+                        )
+                      )
+                    )
+                  ;
               });
             } else if(response.exists == true){
               setState(() {
-                Scaffold.of(builderContext).showSnackBar(SnackBar(content: Text('${data['destination_name']}\'s already exist for this trip.')));
+                Scaffold.of(builderContext).showSnackBar(SnackBar(content: Text(
+                      '${data['destination_name']}\'s already exist for this trip.',
+                       style: TextStyle(
+                          fontSize: 18
+                        )
+                      )
+                    )
+                  );
               });
             }
           }
@@ -572,7 +592,14 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                 endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['departure']*1000));
                                 Scaffold
                                 .of(listContext)
-                                .showSnackBar(SnackBar(content: Text('${destinations[index]['destination_name']}\'s dates updated')));
+                                .showSnackBar(SnackBar(content: Text(
+                                      '${destinations[index]['destination_name']}\'s dates updated',
+                                        style: TextStyle(
+                                          fontSize: 18
+                                        )
+                                      )
+                                    )
+                                  );
                               }
 
                             });
@@ -723,7 +750,12 @@ class TripState extends State<Trip> {
               );
               if(oldName != null){
                 Scaffold.of(topcontext).showSnackBar(SnackBar(
-                    content: Text('$oldName has been changed to ${this.trip['name']}'),
+                    content: Text(
+                      '$oldName has been changed to ${this.trip['name']}',
+                      style: TextStyle(
+                        fontSize: 18
+                      )
+                    ),
                     duration: Duration(seconds: 3),
                   )
                 );

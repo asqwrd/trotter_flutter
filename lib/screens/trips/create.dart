@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:core';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,35 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
-
-
-Future<CreateTripData> postCreateTrip(dynamic data) async {
-  final response = await http.post('http://localhost:3002/api/trips/create/', body: data, headers:{'Authorization':'security',"Content-Type": "application/json"});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return CreateTripData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
-  }
-  
-}
-
-class CreateTripData {
-  final Map<String, dynamic> trip; 
-  final List<dynamic> destIds; 
-
-  CreateTripData({this.trip, this.destIds});
-
-  factory CreateTripData.fromJson(Map<String, dynamic> json) {
-    return CreateTripData(
-      trip: json['doc'],
-      destIds: json['dest_ids']
-    );
-  }
-}
-
+import 'package:trotter_flutter/redux/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 class CreateTrip extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
@@ -72,140 +44,9 @@ class CreateTripState extends State<CreateTrip> {
     super.dispose();
   }
 
-  _printLatestValue() {
-    this.name = nameController.text;
-  }
-
 
   @override
   void initState() {
-    nameController.addListener(_printLatestValue);
-    this.fields = [
-      _buildDestField(0,this.param),
-      Align(
-        alignment:Alignment.center, 
-        child:Container(
-          margin: EdgeInsets.symmetric(vertical: 0.0),
-          child:FlatButton(
-            padding: EdgeInsets.all(20),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Icon(Icons.add, size:25),
-                  Text(
-                    ' Add destination',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w300
-                    )
-                  )
-              ]
-            ),
-            onPressed: () { 
-              setState(() { 
-                this.destinationsCount = this.destinationsCount + 1;
-                this.fields.insert(this.destinationsCount - 1, _buildDestField(this.destinationsCount - 1));
-              }); 
-            },
-          )
-        )
-      ),
-      _buildDivider(),
-      Container(
-        margin:EdgeInsets.symmetric(horizontal: 20),
-        child: TextFormField(
-          maxLength: 20,
-          maxLengthEnforced: true,
-          decoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(vertical:20.0),
-            prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
-            //fillColor: Colors.blueGrey.withOpacity(0.5),
-            filled: true,
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(
-                width: 1.0,
-                color: Colors.red
-              )
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(
-                width: 1.0,
-                color: Colors.red
-              )
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(
-                width: 0.0,
-                color: Colors.transparent
-              )
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              borderSide: BorderSide(
-                width: 0.0,
-                color: Colors.transparent
-              )
-            ),
-            hintText: 'Name your trip',
-          ),
-          controller: nameController,
-          onSaved: (String value) {
-            // This optional block of code can be used to run
-            // code when the user saves the form.
-            print(value);
-
-          },
-          validator: (value) {
-            if (value.isEmpty) {
-              return 'Please name your trip.';
-            }
-          },
-        )
-      ),
-      Align(
-        alignment:Alignment.center, 
-        child:Container(
-          margin: EdgeInsets.symmetric(vertical: 25, horizontal: 20),
-          width: double.infinity,
-          child: FlatButton(
-            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
-            padding: EdgeInsets.symmetric(vertical: 15),
-            color: Colors.blueGrey,
-            onPressed: () async {
-              // Validate will return true if the form is valid, or false if
-              // the form is invalid.
-              if (this._formKey.currentState.validate()) {
-                // If the form is valid, display a snackbar. In the real world, you'd
-                // often want to call a server or save the information in a database
-                var data = {
-                  "trip":{
-                    "image": this._destinationImages[0],
-                    "name": this.name
-                  },
-                  "destinations": this._destinations
-                };
-                var response = await postCreateTrip(json.encode(data));
-                Scaffold
-                    .of(context)
-                    .showSnackBar(SnackBar(content: Text('Trip created!')));
-                onPush({"id": response.trip['ID'].toString(),"level":"trip", 'from':'createtrip'});
-              }
-            },
-            child: Text(
-              'Create trip', 
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w300,
-                color: Colors.white
-              )
-            ),
-          )
-        )
-      )
-    ];
     if(this.param != null){
       var destination = {
         "location": this.param['location'],
@@ -234,9 +75,12 @@ class CreateTripState extends State<CreateTrip> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      resizeToAvoidBottomPadding: false,
-      body: _buildForm(context)
+    return StoreConnector <AppState, TripViewModel>(
+      converter: (store) => TripViewModel.create(store),
+      builder: (context, viewModel)=> new Scaffold(
+        resizeToAvoidBottomPadding: false,
+        body: _buildForm(context, viewModel)
+      )
     );
       
   }
@@ -496,7 +340,141 @@ class CreateTripState extends State<CreateTrip> {
   
 
 // function for rendering view after data is loaded
-  Widget _buildForm(BuildContext ctxt) {
+  Widget _buildForm(BuildContext ctxt, TripViewModel viewModel) {
+    this.fields = [
+      _buildDestField(0,this.param),
+      Align(
+        alignment:Alignment.center, 
+        child:Container(
+          margin: EdgeInsets.symmetric(vertical: 0.0),
+          child:FlatButton(
+            padding: EdgeInsets.all(20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Icon(Icons.add, size:25),
+                  Text(
+                    ' Add destination',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w300
+                    )
+                  )
+              ]
+            ),
+            onPressed: () { 
+              setState(() { 
+                this.destinationsCount = this.destinationsCount + 1;
+                this.fields.insert(this.destinationsCount - 1, _buildDestField(this.destinationsCount - 1));
+              }); 
+            },
+          )
+        )
+      ),
+      _buildDivider(),
+      Container(
+        margin:EdgeInsets.symmetric(horizontal: 20),
+        child: TextFormField(
+          maxLength: 20,
+          maxLengthEnforced: true,
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(vertical:20.0),
+            prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
+            //fillColor: Colors.blueGrey.withOpacity(0.5),
+            filled: true,
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(
+                width: 1.0,
+                color: Colors.red
+              )
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(
+                width: 1.0,
+                color: Colors.red
+              )
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(
+                width: 0.0,
+                color: Colors.transparent
+              )
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(
+                width: 0.0,
+                color: Colors.transparent
+              )
+            ),
+            hintText: 'Name your trip',
+          ),
+          controller: nameController,
+          onSaved: (String value) {
+            // This optional block of code can be used to run
+            // code when the user saves the form.
+            print(value);
+
+          },
+          validator: (value) {
+            if (value.isEmpty) {
+              return 'Please name your trip.';
+            }
+          },
+        )
+      ),
+      Align(
+        alignment:Alignment.center, 
+        child:Container(
+          margin: EdgeInsets.symmetric(vertical: 25, horizontal: 20),
+          width: double.infinity,
+          child: FlatButton(
+            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+            padding: EdgeInsets.symmetric(vertical: 15),
+            color: Colors.blueGrey,
+            onPressed: () async {
+              // Validate will return true if the form is valid, or false if
+              // the form is invalid.
+              if (this._formKey.currentState.validate()) {
+                // If the form is valid, display a snackbar. In the real world, you'd
+                // often want to call a server or save the information in a database
+                var data = {
+                  "trip":{
+                    "image": this._destinationImages[0],
+                    "name": this.name
+                  },
+                  "destinations": this._destinations
+                };
+                var response = await viewModel.onCreateTrip(data);
+                Scaffold
+                    .of(context)
+                    .showSnackBar(SnackBar(
+                      content: Text(
+                        'Trip created!',
+                        style: TextStyle(
+                            fontSize: 18
+                          )
+                        )
+                      )
+                    );
+                onPush({"id": response.trip['id'].toString(),"level":"trip", 'from':'createtrip'});
+              }
+            },
+            child: Text(
+              'Create trip', 
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.w300,
+                color: Colors.white
+              )
+            ),
+          )
+        )
+      )
+    ];
     final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 300;
 

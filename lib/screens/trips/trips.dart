@@ -7,7 +7,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
-import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
@@ -22,6 +21,7 @@ class Trips extends StatefulWidget {
 
 class TripsState extends State<Trips> {
   bool _showTitle = false;
+  bool refreshing = false;
   final ValueChanged<dynamic> onPush;
    GoogleMapController mapController;
   
@@ -57,8 +57,8 @@ class TripsState extends State<Trips> {
         child: Icon(Icons.add),
         elevation: 5.0,
       ),
-      body: StoreConnector <AppState, ViewModel>(
-        converter: (store) => ViewModel.create(store),
+      body: StoreConnector <AppState, TripViewModel>(
+        converter: (store) => TripViewModel.create(store),
         onInit: (store) async {
           store.dispatch(new SetTripsLoadingAction(true));
           await fetchTrips(store);
@@ -71,7 +71,7 @@ class TripsState extends State<Trips> {
   
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, ViewModel viewModel) {
+  Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel) {
     final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 300;
 
@@ -85,6 +85,7 @@ class TripsState extends State<Trips> {
 
     var color = Colors.blueGrey;
 
+
     if(loading == true)
       return _buildLoadingBody(context);
 
@@ -97,7 +98,7 @@ class TripsState extends State<Trips> {
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: _showTitle ? Colors.blueGrey : Colors.transparent,
+            backgroundColor: _showTitle ? Colors.blueGrey : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Search',
@@ -172,102 +173,189 @@ class TripsState extends State<Trips> {
       body: Container(
         margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.white),
-        child: RefreshIndicator(
-          onRefresh: () => viewModel.onGetTrips(),
-          child:ListView.builder(
-          shrinkWrap: true,
-          itemCount: trips.length,
-          //itemExtent: 300,
-          itemBuilder: (BuildContext context, int index) {
-            var color = Color(hexStringToHexInt(trips[index]['color']));
-            //print(trips[index]['start_date']);
-            
-            return InkWell(
-              onTap: () async {
-               // var refresh =  await TabNavigator().push(context,{'id':trips[index]['id'].toString(), 'level':'trip'});
-                //print(refresh);
-                /*setState((){
-                  data = fetchTrips();
-                });*/
-                onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
-                
-              },
-              child:Card(
-                semanticContainer: true,
-                color: Colors.white,
-                clipBehavior: Clip.antiAliasWithSaveLayer,
-                child: Column(
-                  children: <Widget>[  
-                    Container(
-                      height: 450.0,
-                      width: double.infinity,
-                      color: Colors.white,
-                      child: Stack(
-                        children: <Widget>[
-                          Positioned.fill(
-                            top:0,
-                            left:0,
-                            
-                            child: ClipPath( 
-                              clipper: BottomWaveClipper(),
-                              child: Image.network(
-                                trips[index]['image'],
-                                fit: BoxFit.cover
+        child: Stack(
+          children: <Widget>[
+            Positioned.fill(
+              child: RefreshIndicator(
+                onRefresh: () => viewModel.onGetTrips(),
+                child:ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: trips.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    var color = Color(hexStringToHexInt(trips[index]['color']));            
+                    return InkWell(
+                      onTap: () async {
+                        onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
+                      },
+                      onLongPress: () async {                
+                        var undoData = {
+                          "trip":{
+                            "image": trips[index]['image'],
+                            "name": trips[index]['name']
+                          },
+                          "destinations": trips[index]['destinations']
+                        };
+                        setState(() {
+                          this.refreshing = true;                                
+                        });
+                        var response = await viewModel.onDeleteTrip(trips[index]['id']);
+                        setState(() {
+                          this.refreshing = false;                                
+                        });
+                        if(response.success == true) {
+                          Scaffold
+                          .of(context)
+                          .showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${trips[index]['name']}\'s was deleted.',
+                                style: TextStyle(
+                                  fontSize: 18
+                                )
+                              ),
+                              action: SnackBarAction(
+                                label: 'Undo',
+                                textColor: Colors.blueGrey,
+                                onPressed: () async {
+                                  setState(() {
+                                    this.refreshing = true;                                
+                                  });
+                                  var response = await viewModel.undoDeleteTrip(undoData, index);
+                                  setState(() {
+                                    this.refreshing = false;                                
+                                  });
+                                  if(response.success == true){
+                                    Scaffold.of(context).removeCurrentSnackBar();
+                                    Scaffold
+                                    .of(context)
+                                    .showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Undo successful!',
+                                          style: TextStyle(
+                                            fontSize: 18
+                                          )
+                                        )
+                                      )
+                                    ); 
+                                  } else {
+                                    Scaffold.of(context).removeCurrentSnackBar();
+                                    Scaffold
+                                    .of(context)
+                                    .showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Sorry the undo failed!',
+                                          style: TextStyle(
+                                            fontSize: 18
+                                          )
+                                        )
+                                      )
+                                    ); 
+                                  }
+
+                                },
                               ),
                             )
-                          ),
-                          Positioned.fill(
-                            top:0,
-                            left: 0,
-                            child: ClipPath( 
-                              clipper: BottomWaveClipper(),
-                              child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [Colors.transparent, Colors.transparent,Colors.black.withOpacity(0.8)], // whitish to gray
-                                  tileMode: TileMode.repeated, // repeats the gradient over the canvas
-                                ),
-                              ) 
-                            ))
-                          )
-                        ],
-                      )                        
-                    ),
-                    ListView(
-                      shrinkWrap: true,
-                      primary: false,
-                      children:<Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(top: 10.0, bottom: 10),
-                          child: Text(
-                            trips[index]['name'].toUpperCase(),
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: color,
-                              fontSize: 25.0,
-                              fontWeight: FontWeight.w500
-                              
+                          ); 
+                        } else {
+                          Scaffold
+                          .of(context)
+                          .showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${trips[index]['name']} failed to be deleted.',
+                                style: TextStyle(
+                                  fontSize: 18
+                                )
+                              )
+                            )
+                          ); 
+                        }
+                      },
+                      child:Card(
+                        semanticContainer: true,
+                        color: Colors.white,
+                        clipBehavior: Clip.antiAliasWithSaveLayer,
+                        child: Column(
+                          children: <Widget>[  
+                            Container(
+                              height: 450.0,
+                              width: double.infinity,
+                              color: Colors.white,
+                              child: Stack(
+                                children: <Widget>[
+                                  Positioned.fill(
+                                    top:0,
+                                    left:0,
+                                    
+                                    child: ClipPath( 
+                                      clipper: BottomWaveClipper(),
+                                      child: Image.network(
+                                        trips[index]['image'],
+                                        fit: BoxFit.cover
+                                      ),
+                                    )
+                                  ),
+                                  Positioned.fill(
+                                    top:0,
+                                    left: 0,
+                                    child: ClipPath( 
+                                      clipper: BottomWaveClipper(),
+                                      child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [Colors.transparent, Colors.transparent,Colors.black.withOpacity(0.8)], // whitish to gray
+                                          tileMode: TileMode.repeated, // repeats the gradient over the canvas
+                                        ),
+                                      ) 
+                                    ))
+                                  )
+                                ],
+                              )                        
                             ),
-                          )
+                            ListView(
+                              shrinkWrap: true,
+                              primary: false,
+                              children:<Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(top: 10.0, bottom: 10),
+                                  child: Text(
+                                    trips[index]['name'].toUpperCase(),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: color,
+                                      fontSize: 25.0,
+                                      fontWeight: FontWeight.w500
+                                      
+                                    ),
+                                  )
+                                ),
+                                _buildDestinationInfo(trips[index]['destinations'])
+                              ] 
+                            ),
+                            SizedBox(height: 20)
+                          ]
                         ),
-                        _buildDestinationInfo(trips[index]['destinations'])
-                      ] 
-                    ),
-                    SizedBox(height: 20)
-                  ]
-                ),
-                
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                elevation:1,
-                margin: EdgeInsets.only(top:20, left:20, right:20, bottom:20),
+                        
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        elevation:1,
+                        margin: EdgeInsets.only(top:20, left:20, right:20, bottom:20),
+                      )
+                    );
+                  },
+                )
               )
-            );
-          },
-        ))
+            ),
+            this.refreshing == true ? Center(
+              child: RefreshProgressIndicator()
+            ) : Container()
+          ]
+        )
       ),
     );
   }

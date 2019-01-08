@@ -99,13 +99,35 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
       if(response.exists == false){
         Scaffold
           .of(context)
-          .showSnackBar(SnackBar(content: Text('${destination['name']} added to ${item['name']}')));
-          
-          TabNavigator().push(context,{"id": item['id'].toString(),"level":"trip"});
+          .showSnackBar(
+            SnackBar(
+              content: Text(
+                '${destination['name']} added to ${item['name']}',
+                style: TextStyle(
+                  fontSize: 18
+                )
+              ),
+              action: SnackBarAction(
+                label: 'View',
+                textColor: Colors.blueGrey,
+                onPressed: () {
+                  TabNavigator().push(context,{"id": item['id'].toString(),"level":"trip"});
+                  Scaffold.of(context).removeCurrentSnackBar();
+                },
+              ),
+            )
+          );
       } else {
          Scaffold
           .of(context)
-          .showSnackBar(SnackBar(content: Text('${destination['name']} was already added to ${item['name']}')));
+          .showSnackBar(SnackBar(content: Text(
+                '${destination['name']} was already added to ${item['name']}',
+                style: TextStyle(
+                  fontSize: 18
+                )
+              )
+            )
+          );
       }
       
 

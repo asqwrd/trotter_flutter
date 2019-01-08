@@ -36,6 +36,7 @@ class CreateTripState extends State<CreateTrip> {
   var destinationsCount = 0;
   List<Widget> fields;
   final nameController = TextEditingController();
+  bool loading;
 
   @override
   void dispose() {
@@ -47,13 +48,14 @@ class CreateTripState extends State<CreateTrip> {
 
   @override
   void initState() {
+    loading = false;
     this.fields = [
       _buildDestField(0,this.param),
       Align(
         alignment:Alignment.center, 
         child:Container(
           margin: EdgeInsets.symmetric(vertical: 0.0),
-          child:FlatButton(
+          child: FlatButton(
             padding: EdgeInsets.all(20),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -81,12 +83,11 @@ class CreateTripState extends State<CreateTrip> {
       Container(
         margin:EdgeInsets.symmetric(horizontal: 20),
         child: TextFormField(
-          maxLength: 20,
+          maxLength: 30,
           maxLengthEnforced: true,
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(vertical:20.0),
             prefixIcon: Padding(padding:EdgeInsets.only(left:20.0, right: 5.0), child:Icon(Icons.label)), 
-            //fillColor: Colors.blueGrey.withOpacity(0.5),
             filled: true,
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
@@ -119,12 +120,6 @@ class CreateTripState extends State<CreateTrip> {
             hintText: 'Name your trip',
           ),
           controller: nameController,
-          onSaved: (String value) {
-            // This optional block of code can be used to run
-            // code when the user saves the form.
-            print(value);
-
-          },
           validator: (value) {
             if (value.isEmpty) {
               return 'Please name your trip.';
@@ -154,7 +149,13 @@ class CreateTripState extends State<CreateTrip> {
                   },
                   "destinations": this._destinations
                 };
+                setState(() {
+                  this.loading = true;                
+                });
                 var response = await postCreateTrip(StoreProvider.of<AppState>(context),data);
+                setState(() {
+                  this.loading = false;                
+                });
                 if(response.success == true) {
                   StoreProvider.of<AppState>(context).dispatch(UpdateTripsAfterCreateAction(response.trip)); 
                   Scaffold
@@ -165,7 +166,8 @@ class CreateTripState extends State<CreateTrip> {
                       style: TextStyle(
                           fontSize: 18
                         )
-                      )
+                      ),
+                      duration: Duration(seconds: 2)
                     )
                   );
                   onPush({"id": response.trip['id'].toString(),"level":"trip", 'from':'createtrip'});
@@ -174,12 +176,14 @@ class CreateTripState extends State<CreateTrip> {
                 Scaffold
                   .of(context)
                   .showSnackBar(SnackBar(
+                    backgroundColor: Colors.red,
                     content: Text(
                       'Trip failed to get created!',
                       style: TextStyle(
                           fontSize: 18
                         )
-                      )
+                      ),
+                      duration: Duration(seconds: 2),
                     )
                   );
               }
@@ -228,7 +232,18 @@ class CreateTripState extends State<CreateTrip> {
       converter: (store) => TripViewModel.create(store),
       builder: (context, viewModel)=> new Scaffold(
         resizeToAvoidBottomPadding: false,
-        body: _buildForm(context, viewModel)
+        body: Stack(
+          children: <Widget>[
+            Positioned.fill(
+              child: IgnorePointer(
+                ignoring: this.loading, 
+                child:_buildForm(context, viewModel)
+              )
+            ),
+            this.loading ? Center(child: RefreshProgressIndicator()) : Container()
+
+          ]
+        )
       )
     );
       
@@ -308,7 +323,7 @@ class CreateTripState extends State<CreateTrip> {
               if(suggestion != null){
                 _destinationTextController.text = suggestion['country_id'] == 'United_States' ? '${suggestion['name']}, ${suggestion['parent_name']}' :'${suggestion['name']}, ${suggestion['country_name']}';          
               
-                if(this._destinations.length > 0 && this._destinations[index] != null) {
+                if(this._destinations.length == (index + 1)) {
                   this._destinations.replaceRange(index,index+1,[{
                     "location": suggestion['location'],
                     "destination_id": suggestion['id'],

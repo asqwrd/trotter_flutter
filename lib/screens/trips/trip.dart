@@ -11,7 +11,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'trip-api.dart';
 import 'add-destination-modal.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -447,7 +446,7 @@ class AddButtonModal extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18
               )),
-            duration: Duration(seconds: 3),
+            duration: Duration(seconds: 2),
           )
         );
       }
@@ -509,7 +508,8 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                           style: TextStyle(
                             fontSize: 18
                           )
-                        )
+                        ),
+                        duration: Duration(seconds: 2)
                       )
                     )
                   ;
@@ -521,7 +521,8 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                        style: TextStyle(
                           fontSize: 18
                         )
-                      )
+                      ),
+                      duration: Duration(seconds: 2)
                     )
                   );
               });
@@ -597,7 +598,8 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                         style: TextStyle(
                                           fontSize: 18
                                         )
-                                      )
+                                      ),
+                                      duration: Duration(seconds: 2)
                                     )
                                   );
                               }
@@ -629,6 +631,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                         fontSize: 18
                                       )
                                     ),
+                                    duration: Duration(seconds: 2),
                                     action: SnackBarAction(
                                       label: 'Undo',
                                       textColor: this.color,
@@ -726,7 +729,7 @@ class TripState extends State<Trip> {
         children: <Widget>[
           new ListTile(
             leading: new Icon(Icons.card_travel),
-            title: new Text('Trip name'),
+            title: new Text('Edit trip name'),
             onTap: () async {
               Navigator.pop(context);
               var oldName = await showGeneralDialog(
@@ -756,7 +759,7 @@ class TripState extends State<Trip> {
                         fontSize: 18
                       )
                     ),
-                    duration: Duration(seconds: 3),
+                    duration: Duration(seconds: 2),
                   )
                 );
               }
@@ -765,7 +768,7 @@ class TripState extends State<Trip> {
           ),
           new ListTile(
             leading: new Icon(Icons.pin_drop),
-            title: new Text('Destinations'),
+            title: new Text('Manage destinations'),
             onTap: () { 
               Navigator.pop(context);
               showDestinationsModal(context,this.destinations, this.color);

@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:trotter_flutter/utils/index.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:html_unescape/html_unescape.dart';
-import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'trip-api.dart';
 
 class AddDestinationModal extends StatefulWidget {
    AddDestinationModal({

@@ -84,6 +84,7 @@ flutter:
   - images/L.png
   - images/M.png
   - images/N.png
+  - images/trips-empty.png
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

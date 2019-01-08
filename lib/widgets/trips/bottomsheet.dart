@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:trotter_flutter/redux/index.dart';
@@ -18,25 +17,76 @@ void showTripsBottomSheet(context, dynamic destination){
 }
 
 
-_buildLoadedList(BuildContext context, AppState snapshot, dynamic destination) {
-  //snapshot.onGetTrips(false);
-  //print(snapshot.trips);
-  var trips = snapshot.trips;
-  //var color = Colors.blueGrey;
-  return Container(
+_buildLoadedList(BuildContext context, AppState store, dynamic destination) {
+  var trips = store.trips;
+  var loading = store.tripLoading;
+  return IgnorePointer(
+    ignoring: loading,
+    child:Container(
       margin: EdgeInsets.symmetric(vertical: 20.0), 
-      child:Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
+      child: loading == true && trips.length == 0 ? _buildLoadingList() : 
+      trips.length == 0 ? 
+      Container(
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Image.asset('images/trips-empty.png', width:170, height: 170, fit: BoxFit.contain),
+            Text(
+              'No trips planned yet?',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 35,
+                color: Colors.blueGrey,
+                fontWeight: FontWeight.w300
+                
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Create a trip to start planning your next adventure!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 25,
+                color: Colors.blueGrey,
+                fontWeight: FontWeight.w200
+              ),
+            ),
+            SizedBox(height: 30),
+            FlatButton(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+              child:Text(
+                'Start planning',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w200
+                ),
+              ),
+              color: Colors.blueGrey,
+              onPressed: (){
+                TabNavigator().push(context,{'level':'createtrip'});
+              },
+            )
+          ],
+        )
+      ) 
+      : 
+      Wrap(
+        children: <Widget>[
+        Stack(
         children:<Widget>[          
           SingleChildScrollView(
-            primary: false,
-            scrollDirection: Axis.horizontal,
-            child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(context,trips, destination)))
-          )
+              primary: false,
+              scrollDirection: Axis.horizontal,
+              child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(context,trips, destination)))
+            ),
+          
+          loading ? Center(child:RefreshProgressIndicator()) : Container()
         ]
-      )
-    );
+      )])
+    ));
 }
 
 _buildLoadingList(){
@@ -93,10 +143,11 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
         "start_date":  0,
         "end_date": 0,
       };
-
+      StoreProvider.of<AppState>(context).dispatch(SetTripsLoadingAction(true)); 
       var response = await postAddToTrip(item['id'], data);
-      StoreProvider.of<AppState>(context).dispatch(UpdateTripsDestinationAction(item['id'], data)); 
       if(response.exists == false){
+      StoreProvider.of<AppState>(context).dispatch(UpdateTripsDestinationAction(item['id'], data));
+      StoreProvider.of<AppState>(context).dispatch(SetTripsLoadingAction(false));  
         Scaffold
           .of(context)
           .showSnackBar(
@@ -107,6 +158,7 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
                   fontSize: 18
                 )
               ),
+              duration: Duration(seconds: 2),
               action: SnackBarAction(
                 label: 'View',
                 textColor: Colors.blueGrey,
@@ -118,6 +170,7 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
             )
           );
       } else {
+        StoreProvider.of<AppState>(context).dispatch(SetTripsLoadingAction(false));  
          Scaffold
           .of(context)
           .showSnackBar(SnackBar(content: Text(
@@ -125,7 +178,8 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
                 style: TextStyle(
                   fontSize: 18
                 )
-              )
+              ),
+              duration: Duration(seconds: 2)
             )
           );
       }
@@ -133,7 +187,6 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
 
     },
     child:Container(
-      //height:210.0,
       child:Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,

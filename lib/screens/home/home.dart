@@ -121,7 +121,7 @@ class HomeState extends State<Home> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 280;
 
      _scrollController.addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&
@@ -149,7 +149,7 @@ class HomeState extends State<Home> {
                   
             ),
             centerTitle: true,
-            backgroundColor: _showTitle ? Color.fromRGBO(194, 121, 73, 1) : Colors.white,
+            backgroundColor: this._showTitle ? Color.fromRGBO(194, 121, 73, 1) : Colors.white,
             automaticallyImplyLeading: false,
             bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
@@ -255,7 +255,7 @@ class HomeState extends State<Home> {
   }
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 280;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
        _showTitle =_scrollController.hasClients &&

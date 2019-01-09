@@ -60,6 +60,8 @@ flutter:
   - images/header.svg
   - images/logo_nw.png
   - images/trotter-logo.svg
+  - images/edit-icon.svg
+  - images/delete-icon.svg
   - images/logo_nw_black.png
   - images/vaccines.png
   - images/risk.png

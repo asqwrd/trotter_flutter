@@ -56,11 +56,7 @@ class TripsState extends State<Trips> {
     this.onPush
   });
 
-  Future<TripsData> _handleRefresh() async {
-    await new Future.delayed(new Duration(seconds: 3));
-    return null;
-  }
-
+ 
   @override
   Widget build(BuildContext context) {
     this.context = context;
@@ -97,7 +93,7 @@ class TripsState extends State<Trips> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel) {
     final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 280;
 
     _scrollController.addListener(() => setState(() {
       _showTitle =_scrollController.hasClients &&
@@ -110,7 +106,7 @@ class TripsState extends State<Trips> {
     var color = Colors.blueGrey;
 
     if(loading == true)
-      return _buildLoadingBody(context);
+      return _buildLoadingBody(context, viewModel);
     
     if(trips.length == 0) {
       return Stack(
@@ -164,10 +160,14 @@ class TripsState extends State<Trips> {
                 ],
               )
             )
-          )
+          ),
+          this.refreshing == true ? Center(
+              child: RefreshProgressIndicator()
+            ) : Container()
         ]
       ); 
     }
+   
 
 
     return NestedScrollView(
@@ -178,7 +178,7 @@ class TripsState extends State<Trips> {
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: !_showTitle ? Colors.white : Colors.blueGrey,
+            backgroundColor: this._showTitle ? Colors.blueGrey : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Search',
@@ -308,7 +308,116 @@ class TripsState extends State<Trips> {
                                             ),
                                           ) 
                                         ))
-                                      )
+                                      ),
+                                      Positioned(
+                                        top:375,
+                                        right: 30,
+                                        child: FloatingActionButton(
+                                          backgroundColor: color,
+                                          onPressed: () async {
+                                            var undoData = {
+                                              "trip":{
+                                                "image": trips[index]['image'],
+                                                "name": trips[index]['name']
+                                              },
+                                              "destinations": trips[index]['destinations']
+                                            };
+                                            setState(() {
+                                              this.refreshing = true;                                
+                                            });
+                                            var response = await viewModel.onDeleteTrip(trips[index]['id']);
+                                            setState(() {
+                                              this.refreshing = false;                           
+                                            });
+                                            if(response.success == true) {
+                                              this.context = context;
+                                              setState(() {
+                                                if(StoreProvider.of<AppState>(context).state.trips.length == 0){
+                                                  this._showTitle = false;
+                                                }                                
+                                              });
+                                              Scaffold
+                                              .of(context)
+                                              .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '${trips[index]['name']}\'s was deleted.',
+                                                    style: TextStyle(
+                                                      fontSize: 18
+                                                    )
+                                                  ),
+                                                  duration: Duration(seconds: 2),
+                                                  action: SnackBarAction(
+                                                    label: 'Undo',
+                                                    textColor: Colors.blueGrey,
+                                                    onPressed: () async {
+                                                      setState(() {
+                                                        this.refreshing = true;                               
+                                                      });
+                                                      var response = await viewModel.undoDeleteTrip(undoData, index);
+                                                      setState(() {
+                                                        this.refreshing = false;
+                                                      });
+                                                      if(response.success == true){
+                                                        Scaffold.of(this.context).removeCurrentSnackBar();
+                                                        Scaffold
+                                                        .of(this.context)
+                                                        .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Undo successful!',
+                                                              style: TextStyle(
+                                                                fontSize: 18
+                                                              )
+                                                            ),
+                                                            duration: Duration(seconds: 2),
+                                                          )
+                                                        ); 
+                      
+                                                      } else {
+                                                        Scaffold.of(this.context).removeCurrentSnackBar();
+                                                        Scaffold
+                                                        .of(this.context)
+                                                        .showSnackBar(
+                                                          SnackBar(
+                                                            content: Text(
+                                                              'Sorry the undo failed!',
+                                                              style: TextStyle(
+                                                                fontSize: 18
+                                                              )
+                                                            ),
+                                                            duration: Duration(seconds: 2)
+                                                          )
+                                                        ); 
+                                                      }
+
+                                                    },
+                                                  ),
+                                                )
+                                              ); 
+                                            } else {
+                                              Scaffold
+                                              .of(context)
+                                              .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '${trips[index]['name']} failed to be deleted.',
+                                                    style: TextStyle(
+                                                      fontSize: 18
+                                                    )
+                                                  ),
+                                                  duration: Duration(seconds: 2)
+                                                )
+                                              ); 
+                                            }
+                                          },
+                                          child: SvgPicture.asset(
+                                            'images/delete-icon.svg',
+                                            width: 35,
+                                            height: 35
+                                          ),
+                                        )
+                                      ),
                                     ],
                                   )                        
                                 ),
@@ -332,117 +441,7 @@ class TripsState extends State<Trips> {
                                     _buildDestinationInfo(trips[index]['destinations'])
                                   ] 
                                 ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Container(),
-                                    PopupMenuButton<CardActions>(
-                                      offset: Offset(0, 40),
-                                      onSelected: (CardActions result) async {                
-                                        var undoData = {
-                                          "trip":{
-                                            "image": trips[index]['image'],
-                                            "name": trips[index]['name']
-                                          },
-                                          "destinations": trips[index]['destinations']
-                                        };
-                                        setState(() {
-                                          this.refreshing = true;                                
-                                        });
-                                        var response = await viewModel.onDeleteTrip(trips[index]['id']);
-                                        setState(() {
-                                          this.refreshing = false;                           
-                                        });
-                                        if(response.success == true) {
-                                          this.context = context;
-                                          Scaffold
-                                          .of(context)
-                                          .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                '${trips[index]['name']}\'s was deleted.',
-                                                style: TextStyle(
-                                                  fontSize: 18
-                                                )
-                                              ),
-                                              duration: Duration(seconds: 2),
-                                              action: SnackBarAction(
-                                                label: 'Undo',
-                                                textColor: Colors.blueGrey,
-                                                onPressed: () async {
-                                                  setState(() {
-                                                    this.refreshing = true;                                
-                                                  });
-                                                  var response = await viewModel.undoDeleteTrip(undoData, index);
-                                                  setState(() {
-                                                    this.refreshing = false;
-                                                    if(trips.length == 0){
-                                                      this._showTitle = false;
-                                                    }                                
-                                                  });
-                                                  if(response.success == true){
-                                                    Scaffold.of(this.context).removeCurrentSnackBar();
-                                                    Scaffold
-                                                    .of(this.context)
-                                                    .showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          'Undo successful!',
-                                                          style: TextStyle(
-                                                            fontSize: 18
-                                                          )
-                                                        ),
-                                                        duration: Duration(seconds: 2),
-                                                      )
-                                                    ); 
-                                                  } else {
-                                                    Scaffold.of(this.context).removeCurrentSnackBar();
-                                                    Scaffold
-                                                    .of(this.context)
-                                                    .showSnackBar(
-                                                      SnackBar(
-                                                        content: Text(
-                                                          'Sorry the undo failed!',
-                                                          style: TextStyle(
-                                                            fontSize: 18
-                                                          )
-                                                        ),
-                                                        duration: Duration(seconds: 2)
-                                                      )
-                                                    ); 
-                                                  }
-
-                                                },
-                                              ),
-                                            )
-                                          ); 
-                                        } else {
-                                          Scaffold
-                                          .of(context)
-                                          .showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                '${trips[index]['name']} failed to be deleted.',
-                                                style: TextStyle(
-                                                  fontSize: 18
-                                                )
-                                              ),
-                                              duration: Duration(seconds: 2)
-                                            )
-                                          ); 
-                                        }
-                                      },
-                                      itemBuilder: (BuildContext context) => <PopupMenuEntry<CardActions>>[
-                                        const PopupMenuItem<CardActions>(
-                                          value: CardActions.delete,
-                                          child: Text('Delete'),
-                                        )
-                                      ],
-                                    )
-                                  ]
-                                ),
-                               // SizedBox(height: 20)
+                                SizedBox(height: 20)
                               ]
                             ),
                             
@@ -517,7 +516,7 @@ class TripsState extends State<Trips> {
   }
   
   // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
+  Widget _buildLoadingBody(BuildContext ctxt, TripViewModel viewModel) {
     var kExpandedHeight = 300;
     final ScrollController _scrollController = ScrollController();
      _scrollController..addListener(() => setState(() {
@@ -546,8 +545,8 @@ class TripsState extends State<Trips> {
         ];
       },
       body: RefreshIndicator(
-          onRefresh: _handleRefresh,
-          child: Container(
+        onRefresh: ()=> viewModel.onGetTrips(),
+        child: Container(
         padding: EdgeInsets.only(top: 40.0),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(

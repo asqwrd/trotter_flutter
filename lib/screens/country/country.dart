@@ -117,7 +117,7 @@ class CountryState extends State<Country> {
     bool _showVisaNotes = false;
     bool _showVisaPassportValid = false;
     bool _showVisaBlankPages = false;
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 280;
 
 
     _scrollController.addListener(() => setState(() {
@@ -364,19 +364,34 @@ class CountryState extends State<Country> {
 
                   buildDivider(),
 
-                  Container(
-                    padding:EdgeInsets.all(20.0),
-                    margin: EdgeInsets.only(left: 20.0, right:20.0, top: 40.0, bottom: 40.0 ),
-                    decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
-                    border: Border.all(
-                        color: Colors.black,
-                          width: 0.8,
-                      )                
-                    ),
-                    child:Wrap(
-                      children: _getPlugs(plugs, name)
-                    )
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(left: 20.0, right:20.0, top: 40.0, bottom: 20.0 ),
+                        child:Text(
+                          'Sockets & Plugs',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 20.0
+                          ),
+                        )
+                      ),
+                      Container(
+                        padding:EdgeInsets.all(20.0),
+                        margin: EdgeInsets.only(left: 20.0, right:20.0, top: 0.0, bottom: 40.0 ),
+                        decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.0),
+                        border: Border.all(
+                            color: Colors.black,
+                              width: 0.8,
+                          )                
+                        ),
+                        child:Wrap(
+                          children: _getPlugs(plugs, name)
+                        )
+                      ),
+                    ]
                   ),
 
                   TopList(
@@ -414,7 +429,7 @@ class CountryState extends State<Country> {
     for (var plug in plugsData) {
       plugs.add(
         Padding(
-          padding: EdgeInsets.only(right: 20.0),
+          padding: EdgeInsets.only(bottom:20, right: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[

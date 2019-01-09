@@ -768,7 +768,7 @@ class TripState extends State<Trip> {
           ),
           new ListTile(
             leading: new Icon(Icons.pin_drop),
-            title: new Text('Manage destinations'),
+            title: new Text('Edit destinations'),
             onTap: () { 
               Navigator.pop(context);
               showDestinationsModal(context,this.destinations, this.color);
@@ -805,7 +805,11 @@ class TripState extends State<Trip> {
           bottomSheetModal(context, this.trip);
         },
         tooltip: 'Create trip',
-        child: Icon(Icons.edit),
+        child: SvgPicture.asset(
+          'images/edit-icon.svg',
+          width: 30,
+          height: 30
+        ),
         elevation: 5.0,
       ),
       body: FutureBuilder(
@@ -824,7 +828,7 @@ class TripState extends State<Trip> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 280;
 
 
     _scrollController.addListener(() => setState(() {

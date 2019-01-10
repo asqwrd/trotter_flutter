@@ -16,10 +16,13 @@ Future<HomeData> fetchHome() async {
     return HomeData.fromJson(json.decode(cacheData));
   } else {
     final response = await http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
-    if (response.statusCode == 200) {
+    final response2 = await http.get('http://localhost:3002/api/itineraries/all/', headers:{'Authorization':'security'});
+    if (response.statusCode == 200 && response2.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('home', response.body);
-      return HomeData.fromJson(json.decode(response.body));
+      var homeData = json.decode(response.body);
+      homeData['itineraries'] = json.decode(response2.body)['itineraries'];
+      return HomeData.fromJson(homeData);
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
@@ -33,9 +36,10 @@ class HomeData {
   final List<dynamic> popularCities;
   //final List<dynamic> popularCountries;
   final List<dynamic> popularIslands;
+  final List<dynamic> itineraries;
  
 
-  HomeData({this.popularCities, this.popularIslands});
+  HomeData({this.popularCities, this.popularIslands, this.itineraries});
 
   factory HomeData.fromJson(Map<String, dynamic> json) {
     return HomeData(
@@ -43,6 +47,7 @@ class HomeData {
       popularCities: json['popular_cities'],
       //popularCountries: json['popular_countries'],
       popularIslands: json['popular_islands'],
+      itineraries: json['itineraries'],
     );
   }
 }

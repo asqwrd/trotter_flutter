@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
+import 'package:trotter_flutter/widgets/itinerary-card/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
 import 'package:http/http.dart' as http;
@@ -15,8 +16,11 @@ Future<HomeData> fetchHome() async {
     await Future.delayed(const Duration(seconds: 1));
     return HomeData.fromJson(json.decode(cacheData));
   } else {
-    final response = await http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
-    final response2 = await http.get('http://localhost:3002/api/itineraries/all/', headers:{'Authorization':'security'});
+    final getData =  http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
+    final getData2 =  http.get('http://localhost:3002/api/itineraries/all/', headers:{'Authorization':'security'});
+    var responses = await Future.wait([getData, getData2]);
+    var response = responses[0];
+    var response2 = responses[1];
     if (response.statusCode == 200 && response2.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('home', response.body);
@@ -96,42 +100,76 @@ class HomeState extends State<Home> {
   }
 
   bottomSheetModal(BuildContext context, dynamic data){
-  return showModalBottomSheet(context: context,
-    builder: (BuildContext context) {
-      return new Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          new ListTile(
-            leading: new Icon(Icons.trip_origin),
-            title: new Text('Create Trip'),
-            onTap: () {
-              Navigator.pop(context);
-              onPush({'level':'createtrip', 'param':data}); 
-              
-            }   
-          ),
-          new ListTile(
-            leading: new Icon(Icons.add_circle),
-            title: new Text('Add to Trip'),
-            onTap: () { 
-              Navigator.pop(context);
-              showTripsBottomSheet(context, data); 
-            }        
-          ),
-        ]
-      );
-  });
-}
+    return showModalBottomSheet(context: context,
+      builder: (BuildContext context) {
+        return new Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            new ListTile(
+              leading: new Icon(Icons.trip_origin),
+              title: new Text('Create Trip'),
+              onTap: () {
+                Navigator.pop(context);
+                onPush({'level':'createtrip', 'param':data}); 
+                
+              }   
+            ),
+            new ListTile(
+              leading: new Icon(Icons.add_circle),
+              title: new Text('Add to Trip'),
+              onTap: () { 
+                Navigator.pop(context);
+                showTripsBottomSheet(context, data); 
+              }        
+            ),
+          ]
+        );
+      }
+    );
+  } 
 
-// function for rendering view after data is loaded
+  // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 280;
 
-     _scrollController.addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
+    _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+    }));
+    List<Widget> widgets = [
+      Padding(
+        padding: EdgeInsets.only(bottom: 10, top: 50, left: 20, right: 20),
+        child: Text(
+        'Get inspired by itineraries!',
+        style: TextStyle(
+          fontSize: 25,
+          color: Color.fromRGBO(194, 121, 73, 1),
+          fontWeight: FontWeight.w500
+        ),
+      )),
+      Padding(
+        padding: EdgeInsets.only(bottom: 10, top: 0, left: 20, right: 20),
+        child: Text(
+        'Trotter is for people who love to travel and those who need help planning. Itineraries are helpful in organizing your trips.',
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w300
+        ),
+      ))
+    ];
+    for (var itinerary in snapshot.data.itineraries) {
+      widgets.add(
+        ItineraryCard(
+          item: itinerary,
+          color:Color.fromRGBO(194, 121, 73, 1),
+          onPressed: (data){
+            //onPush({'id':data['id'], 'level':data['level']});
+          },
+        )
+      );
+    }
+
     return NestedScrollView(
       controller: _scrollController,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -215,14 +253,6 @@ class HomeState extends State<Home> {
         child: ListView(
           shrinkWrap: true,
           children: <Widget>[
-            /*TopList(
-              items: snapshot.data.popularCountries,
-              onPressed: (data){
-                print("Clicked ${data['id']}");
-                onPush({'id':data['id'], 'level':data['level']});
-              },
-              header: "Trending countries"
-            ),*/
             TopList(
               items: snapshot.data.popularCities,
               onPressed: (data){
@@ -234,14 +264,6 @@ class HomeState extends State<Home> {
               },
               header: "Trending cities"
             ),
-            /*TopList(
-              items: snapshot.data.nationalParks,
-              onPressed: (data){
-                print("Clicked ${data['id']}");
-                onPush({'id':data['id'], 'level':data['level']});
-              },
-              header: "Explore national parks"
-            ),*/
             TopList(
               items: snapshot.data.popularIslands,
               onPressed: (data){
@@ -253,7 +275,7 @@ class HomeState extends State<Home> {
               },
               header: "Explore the island life"
             )
-          ],
+          ]..addAll(widgets),
         )
       ),
     );

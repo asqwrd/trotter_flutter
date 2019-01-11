@@ -90,7 +90,7 @@ class TopList extends StatelessWidget {
               margin:EdgeInsets.only(right:20),
               decoration: BoxDecoration(
                 color: Color.fromRGBO(240, 240, 240, 0.8),
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
                   image: item['image'] != null ? NetworkImage(item['image']) : AssetImage('images/placeholder.jpg'),
                   fit: BoxFit.cover

@@ -66,13 +66,28 @@ class PoiState extends State<Poi> {
    GoogleMapController mapController;
   
   Future<PoiData> data;
+  final ScrollController _scrollController = ScrollController();
+    var kExpandedHeight = 300;
+
 
   @override
   void initState() {
+    _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     super.initState();
     data = fetchPoi(this.poiId);
     
   }
+
+  @override
+  void dispose(){
+    _scrollController.dispose();
+    super.dispose();
+  }
+
 
   PoiState({
     this.poiId,
@@ -100,15 +115,7 @@ class PoiState extends State<Poi> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
-
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+    
     var name = snapshot.data.poi['name'];
     var poi = snapshot.data.poi;
     var properties = poi['properties'];
@@ -261,13 +268,6 @@ _buildProperties(List<dynamic> properties, int index){
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = 300;
-    final ScrollController _scrollController = ScrollController();
-     _scrollController..addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
-
     return NestedScrollView(
       //controller: _scrollControllerPoi,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {

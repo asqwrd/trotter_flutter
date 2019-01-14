@@ -37,11 +37,17 @@ class CreateTripState extends State<CreateTrip> {
   List<Widget> fields;
   final nameController = TextEditingController();
   bool loading;
+  final ScrollController _scrollController = ScrollController();
+  var kExpandedHeight = 280;
+
+
+    
 
   @override
   void dispose() {
     // Clean up the controller when the Widget is removed from the Widget tree
     nameController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -49,6 +55,11 @@ class CreateTripState extends State<CreateTrip> {
   @override
   void initState() {
     loading = false;
+    _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     this.fields = [
       _buildDestField(0,this.param),
       Align(
@@ -505,17 +516,7 @@ class CreateTripState extends State<CreateTrip> {
   
 
 // function for rendering view after data is loaded
-  Widget _buildForm(BuildContext ctxt, TripViewModel viewModel) {
-    final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
-
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
-    
+  Widget _buildForm(BuildContext ctxt, TripViewModel viewModel) {    
 
     var color = Colors.blueGrey;
   

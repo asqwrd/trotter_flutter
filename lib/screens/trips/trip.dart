@@ -466,6 +466,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
   void initState(){
     super.initState();
   }
+  
 
   
 
@@ -707,13 +708,30 @@ class TripState extends State<Trip> {
   dynamic trip;
   
   Future<TripData> data;
+  final ScrollController _scrollController = ScrollController();
+    var kExpandedHeight = 280;
+
+
+   
 
   @override
   void initState() {
+     _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     super.initState();
     data = fetchTrip(this.tripId);
     
   }
+
+  @override
+  void dispose(){
+    _scrollController.dispose();
+    super.dispose();
+  }
+
 
   TripState({
     this.onPush,
@@ -827,15 +845,7 @@ class TripState extends State<Trip> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 280;
-
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+    
     var trip = snapshot.data.trip;
     //var name = snapshot.data.trip['name'];
     //this.name = name;
@@ -1070,12 +1080,6 @@ class TripState extends State<Trip> {
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = 300;
-    final ScrollController _scrollController = ScrollController();
-     _scrollController..addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
 
     return NestedScrollView(
       //controller: _scrollControllerTrip,

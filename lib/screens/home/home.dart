@@ -13,8 +13,17 @@ Future<HomeData> fetchHome() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
   if(cacheData != null) {
-    await Future.delayed(const Duration(seconds: 1));
-    return HomeData.fromJson(json.decode(cacheData));
+    final response =  await http.get('http://localhost:3002/api/itineraries/all/', headers:{'Authorization':'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var homeData = json.decode(cacheData);
+      homeData['itineraries'] = json.decode(response.body)['itineraries'];
+      return HomeData.fromJson(homeData);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      throw Exception('Response> $msg');
+    }
   } else {
     final getData =  http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
     final getData2 =  http.get('http://localhost:3002/api/itineraries/all/', headers:{'Authorization':'security'});
@@ -69,11 +78,25 @@ class HomeState extends State<Home> {
   bool _showTitle = false;
   final String2VoidFunc onPush;
 
+  final ScrollController _scrollController = ScrollController();
+    var kExpandedHeight = 280;
+
+    
+
   @override
   void initState() {
+    _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+    }));
     super.initState();
     
-    //_scrollController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose(){
+    _scrollController.dispose();
+    super.dispose();
   }
 
   final Future<HomeData> data = fetchHome();
@@ -130,13 +153,7 @@ class HomeState extends State<Home> {
 
   // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 280;
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-    }));
+    
     List<Widget> widgets = [
       Padding(
         padding: EdgeInsets.only(bottom: 10, top: 50, left: 20, right: 20),
@@ -282,12 +299,6 @@ class HomeState extends State<Home> {
   }
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = 280;
-    final ScrollController _scrollController = ScrollController();
-     _scrollController..addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
      
     return NestedScrollView(
       controller: _scrollController,

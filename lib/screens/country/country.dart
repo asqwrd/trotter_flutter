@@ -76,13 +76,29 @@ class CountryState extends State<Country> {
   final ValueChanged<dynamic> onPush;
   
   Future<CountryData> data;
+  var kExpandedHeight = 280;
+
+  final ScrollController _scrollController = ScrollController();
+   
 
   @override
   void initState() {
+     _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     super.initState();
     data = fetchCountry(this.countryId);
     
   }
+
+  @override
+  void dispose(){
+    _scrollController.dispose();
+    super.dispose();
+  }
+
 
   CountryState({
     this.countryId,
@@ -110,21 +126,14 @@ class CountryState extends State<Country> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    final ScrollController _scrollController = ScrollController();
+    
     bool _showVisaTextual = false;
     bool _showVisaAllowedStay = false;
     bool _showVisa = false;
     bool _showVisaNotes = false;
     bool _showVisaPassportValid = false;
     bool _showVisaBlankPages = false;
-    var kExpandedHeight = 280;
-
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+    
     var name = snapshot.data.country['name'];
     var image = snapshot.data.country['image'];
     var visa = snapshot.data.visa;
@@ -535,13 +544,7 @@ class CountryState extends State<Country> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = 300;
-    final ScrollController _scrollController = ScrollController();
-     _scrollController..addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
-
+ 
     return NestedScrollView(
       //controller: _scrollControllerCountry,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {

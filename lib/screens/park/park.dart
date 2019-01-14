@@ -69,10 +69,18 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
   Future<ParkData> data;
   TabController _tabController;
   final ValueChanged<dynamic> onPush;
-
+  var kExpandedHeight = 200;
+    final ScrollController _scrollController = ScrollController();
+    
+    
 
   @override
   void initState() {
+    _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     super.initState();
     _tabController = TabController(vsync: this, length: 8);
     data = fetchPark(this.parkId);
@@ -86,6 +94,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
 
  @override
   void dispose() {
+    _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -108,14 +117,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
   }
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var kExpandedHeight = 200;
-    final ScrollController _scrollController = ScrollController();
     
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
     var name = snapshot.data.park['name'];
     var image = snapshot.data.park['image'];
     var descriptionShort = snapshot.data.park['description_short'];
@@ -311,12 +313,6 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = 300;
-    final ScrollController _scrollController = ScrollController();
-     _scrollController..addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
 
     return NestedScrollView(
       //controller: _scrollControllerPark,

@@ -45,12 +45,27 @@ class TripsState extends State<Trips> {
   final ValueChanged<dynamic> onPush;
   
   Future<TripsData> data;
+  final ScrollController _scrollController = ScrollController();
+    var kExpandedHeight = 280;
+
+    
 
   @override
   void initState() {
+    _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     super.initState();
     
   }
+  @override
+  void dispose(){
+    _scrollController.dispose();
+    super.dispose();
+  }
+
 
   TripsState({
     this.onPush
@@ -92,14 +107,7 @@ class TripsState extends State<Trips> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel) {
-    final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 280;
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+    ;
     var trips = StoreProvider.of<AppState>(context).state.trips;
     var loading = StoreProvider.of<AppState>(context).state.tripLoading;
 
@@ -517,13 +525,6 @@ class TripsState extends State<Trips> {
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt, TripViewModel viewModel) {
-    var kExpandedHeight = 300;
-    final ScrollController _scrollController = ScrollController();
-     _scrollController..addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
-
     return NestedScrollView(
       //controller: _scrollControllerTrips,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {

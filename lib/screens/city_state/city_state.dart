@@ -119,10 +119,20 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
   Future<CityStateData> data;
   TabController _tabController;
   final ValueChanged<dynamic> onPush;
+  var kExpandedHeight = 200;
+    final ScrollController _scrollController = ScrollController();
+    
+      
+  
 
 
   @override
   void initState() {
+    _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     super.initState();
     _tabController = TabController(vsync: this, length: 8);
     data = fetchCityState(this.cityStateId);
@@ -136,6 +146,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
 
  @override
   void dispose() {
+    _scrollController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -159,15 +170,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
   }
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var kExpandedHeight = 200;
-    final ScrollController _scrollController = ScrollController();
     
-      
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
 
     var name = snapshot.data.cityState['name'];
     var image = snapshot.data.cityState['image'];
@@ -778,13 +781,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    var kExpandedHeight = 300;
-    final ScrollController _scrollController = ScrollController();
-     _scrollController..addListener(() => setState(() {
-       _showTitle =_scrollController.hasClients &&
-        _scrollController.offset > kExpandedHeight - kToolbarHeight;
-     }));
-
+ 
     return NestedScrollView(
       //controller: _scrollControllerCityState,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {

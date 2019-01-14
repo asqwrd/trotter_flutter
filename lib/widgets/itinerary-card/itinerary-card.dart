@@ -82,10 +82,11 @@ class ItineraryCard extends StatelessWidget {
             ),
             Container(
               padding: EdgeInsets.symmetric(vertical: 10.0),
-              //width: 150.0,
+              //width: double.infinity,
               child: Row(
+                mainAxisSize: MainAxisSize.max,
                 children:<Widget>[
-                  Text(
+                  Flexible(child:Text(
                     item['name'], 
                     textAlign: TextAlign.left, 
                     overflow: TextOverflow.ellipsis,
@@ -95,17 +96,18 @@ class ItineraryCard extends StatelessWidget {
                       fontWeight: FontWeight.w400,
                       color: this.color
                     ),
-                  ),
-                  Text(
-                    ' ${new HtmlUnescape().convert('&bull;')} ${item['destination_name']}, ${item['destination_country']}', 
+                  )),
+                  Flexible(child:Text(
+                    ' ${new HtmlUnescape().convert('&bull;')} ${item['destination_name']}, ${item['destination_country_name']}', 
                     textAlign: TextAlign.left, 
+
                     overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
+                    maxLines: 1,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w300
                     ),
-                  ),
+                  )),
                 ]
               )
             )

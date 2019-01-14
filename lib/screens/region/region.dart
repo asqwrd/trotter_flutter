@@ -11,13 +11,13 @@ import 'package:trotter_flutter/utils/index.dart';
 
 
 
-Future<CityData> fetchCity(String id) async {
+Future<RegionData> fetchRegion(String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('city_$id') ?? null;
   if(cacheData != null) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
-    return CityData.fromJson(json.decode(cacheData));
+    return RegionData.fromJson(json.decode(cacheData));
   } else {
     print('no-cached');
     print(id);
@@ -25,7 +25,7 @@ Future<CityData> fetchCity(String id) async {
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('city_$id', response.body);
-      return CityData.fromJson(json.decode(response.body));
+      return RegionData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
@@ -34,9 +34,9 @@ Future<CityData> fetchCity(String id) async {
   }
 }
 
-class CityData {
+class RegionData {
   final String color;
-  final Map<String, dynamic> city;
+  final Map<String, dynamic> region;
   final List<dynamic> discover;
   final List<dynamic> discoverLocations;
   final List<dynamic> eat;
@@ -53,9 +53,9 @@ class CityData {
   final List<dynamic> shopLocations;
  
 
-  CityData({
+  RegionData({
     this.color, 
-    this.city, 
+    this.region, 
     this.discover, 
     this.eat,
     this.nightlife, 
@@ -72,10 +72,10 @@ class CityData {
     this.shopLocations,
   });
 
-  factory CityData.fromJson(Map<String, dynamic> json) {
-    return CityData(
+  factory RegionData.fromJson(Map<String, dynamic> json) {
+    return RegionData(
       color: json['color'],
-      city: json['city'],
+      region: json['city'],
       discover: json['discover'],
       eat: json['eat'],
       nightlife: json['nightlife'],
@@ -87,19 +87,19 @@ class CityData {
   }
 }
 
-class City extends StatefulWidget {
-  final String cityId;
+class Region extends StatefulWidget {
+  final String regionId;
   final ValueChanged<dynamic> onPush;
-  City({Key key, @required this.cityId, this.onPush}) : super(key: key);
+  Region({Key key, @required this.regionId, this.onPush}) : super(key: key);
   @override
-  CitiesState createState() => new CitiesState(cityId:this.cityId, onPush:this.onPush);
+  RegionsState createState() => new RegionsState(regionId:this.regionId, onPush:this.onPush);
 }
 
-class CitiesState extends State<City> with SingleTickerProviderStateMixin{
+class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
   bool _showTitle = false;
   static String id;
-  final String cityId;
-  Future<CityData> data;
+  final String regionId;
+  Future<RegionData> data;
   TabController _tabController;
   final ValueChanged<dynamic> onPush;
   var kExpandedHeight = 200;
@@ -110,26 +110,28 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
 
   @override
   void initState() {
+    super.initState();
+    _tabController = TabController(vsync: this, length: 8);
      _scrollController.addListener(() => setState(() {
       _showTitle =_scrollController.hasClients &&
       _scrollController.offset > kExpandedHeight - kToolbarHeight;
 
     }));
-    super.initState();
-    _tabController = TabController(vsync: this, length: 8);
-    data = fetchCity(this.cityId);
+    data = fetchRegion(this.regionId);
+
     
   }
 
-  CitiesState({
-    this.cityId,
+  RegionsState({
+    this.regionId,
     this.onPush
   });
+  
 
  @override
   void dispose() {
-    _scrollController.dispose();
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
   
@@ -152,9 +154,9 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     
-    var name = snapshot.data.city['name'];
-    var image = snapshot.data.city['image'];
-    var descriptionShort = snapshot.data.city['description_short'];
+    var name = snapshot.data.region['name'];
+    var image = snapshot.data.region['image'];
+    var descriptionShort = snapshot.data.region['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
     var discover = snapshot.data.discover;
     var see = snapshot.data.see;
@@ -194,7 +196,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                 color: Colors.black,
               ),
               onPressed: (){
-                onPush({'query':'', 'level':'search', 'id':this.cityId, 'location':name.toString()});
+                onPush({'query':'', 'level':'search', 'id':this.regionId, 'location':name.toString()});
               },
                   
             ),
@@ -478,8 +480,9 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-  
+
     return NestedScrollView(
+      //controller: _scrollControllerRegion,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(

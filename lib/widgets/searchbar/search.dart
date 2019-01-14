@@ -66,14 +66,31 @@ class SearchState extends State<Search> {
   
   Future<SearchData> data;
   var txt = new TextEditingController();
+   final ScrollController _scrollController = ScrollController();
+    var kExpandedHeight = 300;
+    var timer;
+
+   
 
   @override
   void initState() {
+     _scrollController.addListener(() => setState(() {
+      _showTitle =_scrollController.hasClients &&
+      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+
+    }));
     super.initState();
     txt.text = '';
     selectId = this.id != null && this.id.isNotEmpty ? true : false;
     data = fetchSearch('',this.id,selectId);
     
+  }
+
+  @override
+  void dispose(){
+    txt.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
   
 
@@ -114,15 +131,7 @@ class SearchState extends State<Search> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading, String id) {
-    final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
-    var timer;
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+   
     var recentSearch = snapshot.hasData ? snapshot.data.recentSearch : null;
     var results = snapshot.hasData ? snapshot.data.results : null;
     var chips = [

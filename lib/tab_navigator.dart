@@ -8,6 +8,7 @@ import 'package:trotter_flutter/screens/poi/index.dart';
 import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/screens/region/index.dart';
+import 'package:trotter_flutter/screens/itinerary/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
 
@@ -22,6 +23,7 @@ class TabNavigatorRoutes {
   static const String island = '/island';
   static const String park = '/park';
   static const String trip = '/trip';
+  static const String itinerary = '/itinerary';
   static const String createtrip = '/trip/create';
 }
 
@@ -44,6 +46,9 @@ class TabNavigator extends StatelessWidget {
         break;
       case 'city':
         goTo = TabNavigatorRoutes.city;
+        break;
+      case 'itinerary':
+        goTo = TabNavigatorRoutes.itinerary;
         break;
       case 'region':
         goTo = TabNavigatorRoutes.region;
@@ -172,6 +177,10 @@ class TabNavigator extends StatelessWidget {
       ),
       TabNavigatorRoutes.trip: (context) => Trip(
         tripId: data['id'], 
+        onPush: (data) => push(context, data)
+      ),
+      TabNavigatorRoutes.itinerary: (context) => Itinerary(
+        itineraryId: data['id'], 
         onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(

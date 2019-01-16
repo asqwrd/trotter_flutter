@@ -38,8 +38,7 @@ class ItineraryCard extends StatelessWidget {
   return new InkWell ( 
     onTap: (){
       var id = item['id'];
-      var level = item['level'];
-      this.onPressed({'id': id, 'level': level});
+      this.onPressed({'id': id, 'level': 'itinerary'});
     },
     onLongPress: () {
       this.onLongPressed({'item': item});

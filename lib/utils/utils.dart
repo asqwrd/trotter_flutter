@@ -12,6 +12,18 @@ class PixelRatioDivider {
   }
 }
 
+String ordinalNumber(final int n) {
+    if (n >= 11 && n <= 13) {
+        return "${n}th";
+    }
+    switch (n % 10) {
+        case 1:  return "${n}st";
+        case 2:  return "${n}nd";
+        case 3:  return "${n}rd";
+        default: return "${n}th";
+    }
+}
+
 class BottomWaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

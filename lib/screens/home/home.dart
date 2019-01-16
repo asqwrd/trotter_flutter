@@ -181,7 +181,7 @@ class HomeState extends State<Home> {
           item: itinerary,
           color:Color.fromRGBO(194, 121, 73, 1),
           onPressed: (data){
-            //onPush({'id':data['id'], 'level':data['level']});
+            onPush({'id':data['id'].toString(), 'level':data['level'].toString()});
           },
         )
       );

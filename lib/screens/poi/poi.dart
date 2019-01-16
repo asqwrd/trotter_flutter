@@ -154,12 +154,13 @@ class PoiState extends State<Poi> {
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Search',
+              fillColor: !_showTitle ? color : Colors.white,
               leading: IconButton(
                 padding: EdgeInsets.all(0),
                 icon:  Icon(Icons.arrow_back),
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
-                color: Colors.black,
+                color: !_showTitle ? fontContrast(color) : Colors.black,
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search', 'id':poi['location_id'].toString()});

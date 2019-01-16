@@ -128,7 +128,7 @@ hexStringToHexInt(String hex) {
 }
 
 Color fontContrast(Color color){
-  if(color.computeLuminance() < 0.5){
+  if(color != null && color.computeLuminance() < 0.5){
     return Colors.white;
   }
 

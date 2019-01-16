@@ -28,7 +28,7 @@ class ItineraryCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 20.0), 
       child: Container(
-        margin: EdgeInsets.only(left: 20.0, right:20.0, bottom:20.0),
+        margin: EdgeInsets.only(left: 20.0, right:20.0, bottom:0.0),
         child: buildBody(context, this.item)
       )
     );
@@ -57,7 +57,7 @@ class ItineraryCard extends StatelessWidget {
                 )
               ),
               width: double.infinity,
-              height: 300,
+              height: 250,
               child: Stack(
                 children: <Widget>[
                   Positioned.fill(

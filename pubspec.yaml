@@ -33,6 +33,7 @@ dependencies:
   queries: ^0.1.4
   flutter_redux: ^0.5.2
   redux_thunk: ^0.2.1
+  recase: ^2.0.0+1
 
 
 

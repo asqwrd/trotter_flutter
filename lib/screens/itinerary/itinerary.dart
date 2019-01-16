@@ -30,13 +30,16 @@ Future<ItineraryData> fetchItinerary(String id) async {
 class ItineraryData {
   final String color;
   final Map<String, dynamic> itinerary; 
+  final Map<String, dynamic> destination; 
 
-  ItineraryData({this.color, this.itinerary});
+  ItineraryData({this.color, this.itinerary, this.destination});
 
   factory ItineraryData.fromJson(Map<String, dynamic> json) {
     return ItineraryData(
      // color: json['color'],
       itinerary: json['itinerary'],
+      destination: json['destination'],
+      color: json['color']
     );
   }
 }
@@ -112,62 +115,123 @@ class ItineraryState extends State<Itinerary> {
     var name = itinerary['name'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
-    var location = itinerary['location'];
     var days = itinerary['days'];
-    //var color = Color(hexStringToHexInt(snapshot.data.color));
-    var color = Colors.blueGrey;
+    var destination = snapshot.data.destination;
+    var color = Color(hexStringToHexInt(snapshot.data.color));
 
-    void _onMapCreated(GoogleMapController controller) {
-      setState(() { 
-        mapController = controller; 
-        mapController.addMarker(
-          MarkerOptions(
-            position: LatLng(itinerary['location']['lat'], itinerary['location']['lng']),
-          )
-        );
-        /*mapController.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(
-            bearing: 0.0,
-            target: LatLng(itinerary['location']['lat'], itinerary['location']['lng']),
-            tilt: 0.0,
-            zoom: 10.0,
+
+    return  NestedScrollView(
+      controller: _scrollController,
+      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+        return <Widget>[
+          SliverAppBar(
+            expandedHeight: 350,
+            floating: false,
+            pinned: true,
+            backgroundColor: _showTitle ? color : Colors.white,
+            automaticallyImplyLeading: false,
+            title: SearchBar(
+              placeholder: 'Search',
+              leading: IconButton(
+                padding: EdgeInsets.all(0),
+                icon:  Icon(Icons.arrow_back),
+                onPressed: () {  Navigator.pop(context);},
+                iconSize: 30,
+                color: Colors.black,
+              ),
+              onPressed: (){
+                onPush({'query':'', 'level':'search'});
+              },
+                  
+            ),
+            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
+            flexibleSpace: FlexibleSpaceBar(
+                centerTitle: true,
+                collapseMode: CollapseMode.parallax,
+                background: Stack(children: <Widget>[
+                  Positioned.fill(
+                      top: 0,
+                      child: ClipPath(
+                        clipper: BottomWaveClipperSlant(),
+                        child: Image.network(
+                        destination['image'],
+                        fit: BoxFit.cover,
+                      )
+                    )
+                  ),
+                  Positioned.fill(
+                      top: 0,
+                      left: 0,
+                      child: ClipPath(
+                        clipper:BottomWaveClipperSlant(),
+                        child: Container(
+                        color: color.withOpacity(0.5),
+                      )
+                    )
+                  ),
+                  Positioned(
+                    left: 0,
+                    top: 150,
+                    width: MediaQuery.of(context).size.width,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children:<Widget>[
+                            Container(
+                              margin: EdgeInsets.only(right:10.0),
+                              child: SvgPicture.asset("images/trotter-logo.svg",
+                                width: 50.0,
+                                height: 50.0,
+                                fit: BoxFit.contain
+                              )
+                            ),
+                            Text('$name',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                                fontWeight: FontWeight.w300
+                              )
+                            )
+                          ]
+                        ),
+                        Container(
+                          child:Text(
+                            '$destinationName, $destinationCountryName',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 25,
+                              fontWeight: FontWeight.w300
+                            )
+                          )
+                        )
+                      ]
+                    )
+                  ),
+                ]
+              )
+            ),
           ),
-        ));*/
-      });
-    }
+        ];
+      },
+      body:  _buildDay(days, destinationName, color)
+    );
+  }
 
-
-
-    return Scaffold(
-      resizeToAvoidBottomPadding: false,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: SearchBar(
-          placeholder: 'Explore the world',
-          leading: SvgPicture.asset("images/search-icon.svg",
-            width: 55.0,
-            height: 55.0,
-            color: Colors.black,
-            fit: BoxFit.contain
-          ),
-          onPressed: (){
-            onPush({'query':'', 'level':'search'});
-          },
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.blueGrey,
-        brightness: Brightness.dark,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(15), 
-          child: Container()
-        ),
-      ),
-      body: ListView.separated(
+  
+_buildDay(List<dynamic> days, String destinationName, Color color){
+  return ListView.separated(
         separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.only(bottom: 40, top: 40), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
         padding: EdgeInsets.all(20.0),
         itemCount: days.length,
         shrinkWrap: true,
-        primary: false,
+        primary: true,
         itemBuilder: (BuildContext listContext, int dayIndex){
           var itineraryItems = days[dayIndex]['itinerary_items'];
           
@@ -175,9 +239,7 @@ class ItineraryState extends State<Itinerary> {
           for(var item in itineraryItems){
             pois.add(item['poi']);
           }
-          var itineraryItem = itineraryItems[0];
-          var time = itineraryItems[0]['time'];
-          var image = itineraryItem['image'];
+          
           return  Column(
             children: <Widget>[
               Column(
@@ -189,7 +251,7 @@ class ItineraryState extends State<Itinerary> {
                         'Your ${ordinalNumber(dayIndex + 1)} day in $destinationName',
                         style: TextStyle(
                           fontSize: 30,
-                          fontWeight: FontWeight.w300
+                          fontWeight: FontWeight.w400
                         ),
                       )
                     )
@@ -206,98 +268,24 @@ class ItineraryState extends State<Itinerary> {
                         ),
                       )
                     )
-                  ),
-                  Container(
-                    height: 300,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      image: DecorationImage(
-                        image: NetworkImage(image),
-                        fit: BoxFit.cover
-                      )
-                    )
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    child: Column(
-                      children: <Widget>[
-                        Align(
-                          alignment: Alignment.topLeft, 
-                          child:Text(
-                            itineraryItem['title'],
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w400
-                            )
-                          )
-                        ),
-                        Align(
-                          alignment: Alignment.topLeft, 
-                          child:Text(
-                            time['unit'].toString().isEmpty == false ? 'Estimated time ${new HtmlUnescape().convert('&bull;')} ${time['value']} ${time['unit']}' : 'Estimated time ${new HtmlUnescape().convert('&bull;')} 1 hour',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w300
-                            )
-                          )
-                        ),
-                      ],
-                    )
                   )
                 ]
               ), 
-              itineraryItems.length > 1 ? 
               Container(
-                margin: EdgeInsets.only(top:20),
+                margin: EdgeInsets.only(top:0),
                 child: ItineraryList(
-                  items: itineraryItems.sublist(1,itineraryItems.length),
+                  items: itineraryItems,
+                  color: color,
                   onPressed: (data){
                     print("Clicked ${data['id']}");
                     onPush({'id':data['id'], 'level':data['level']});
                   },
                 )
-              ) : Container()
+              )
             ]
           );
         },
-      )
-    );
-  }
-
-  
-_buildDay(List<dynamic> days, int index){
-  return Container(
-    width: double.infinity,
-    padding: EdgeInsets.symmetric(vertical: 20),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-        Container(
-          margin: EdgeInsets.only(right: 10.0),
-          child:Text(
-            '${days[index]['day']}:',
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.w500
-            ),
-          )
-        ),
-        Flexible(
-          child:Text(
-            days[index]['date'].toString(),
-            //maxLines: 2,
-            //overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.w300
-            ),
-          )
-        ),
-      ],
-    )
-  );
+      );
 }
   
   // function for rendering while data is loading

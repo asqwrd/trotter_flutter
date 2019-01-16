@@ -82,7 +82,6 @@ class HomeState extends State<Home> {
     var kExpandedHeight = 280;
 
     
-
   @override
   void initState() {
     _scrollController.addListener(() => setState(() {
@@ -99,10 +98,20 @@ class HomeState extends State<Home> {
     super.dispose();
   }
 
-  final Future<HomeData> data = fetchHome();
+  Future<HomeData> data = fetchHome();
   HomeState({
     this.onPush,
   });
+
+  Future<Null> _refreshData() async {
+    await new Future.delayed(new Duration(seconds: 2));
+
+    setState(() {
+      data = fetchHome();
+    });
+
+    return null;
+  }
 
   
 
@@ -267,32 +276,35 @@ class HomeState extends State<Home> {
       },
       body: Container(
         decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          shrinkWrap: true,
-          children: <Widget>[
-            TopList(
-              items: snapshot.data.popularCities,
-              onPressed: (data){
-                print("Clicked ${data['level']}");
-                onPush({'id':data['id'], 'level':data['level']});
-              },
-              onLongPressed: (data){
-                bottomSheetModal(context, data['item']);
-              },
-              header: "Trending cities"
-            ),
-            TopList(
-              items: snapshot.data.popularIslands,
-              onPressed: (data){
-                print("Clicked ${data['id']}");
-                onPush({'id':data['id'], 'level':data['level']});
-              },
-              onLongPressed: (data){
-                bottomSheetModal(context, data['item']);
-              },
-              header: "Explore the island life"
-            )
-          ]..addAll(widgets),
+        child: RefreshIndicator(
+          onRefresh: () => _refreshData(),
+          child: ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              TopList(
+                items: snapshot.data.popularCities,
+                onPressed: (data){
+                  print("Clicked ${data['level']}");
+                  onPush({'id':data['id'], 'level':data['level']});
+                },
+                onLongPressed: (data){
+                  bottomSheetModal(context, data['item']);
+                },
+                header: "Trending cities"
+              ),
+              TopList(
+                items: snapshot.data.popularIslands,
+                onPressed: (data){
+                  print("Clicked ${data['id']}");
+                  onPush({'id':data['id'], 'level':data['level']});
+                },
+                onLongPressed: (data){
+                  bottomSheetModal(context, data['item']);
+                },
+                header: "Explore the island life"
+              )
+            ]..addAll(widgets),
+          )
         )
       ),
     );

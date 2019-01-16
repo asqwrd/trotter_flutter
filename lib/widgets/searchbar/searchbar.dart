@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/utils/index.dart';
+
 
 
 class SearchBar extends StatelessWidget {
@@ -41,7 +43,7 @@ class SearchBar extends StatelessWidget {
                 this.placeholder,
                 style: TextStyle(
                   fontSize: 20.0,
-                  color: Colors.black,
+                  color: fontContrast(this.fillColor),
                   fontWeight: FontWeight.w400
                 )
               ),

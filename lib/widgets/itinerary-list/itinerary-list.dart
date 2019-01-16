@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:html_unescape/html_unescape.dart';
+import 'package:recase/recase.dart';
 
 
 class ItineraryList extends StatelessWidget {
   final String2VoidFunc onPressed;
   final ValueChanged onLongPressed;
   final String name;
+  final Color color;
   final List<dynamic> items;
   final Function(String) callback;
-
 
   //passing props in react style
   ItineraryList({
@@ -16,95 +18,110 @@ class ItineraryList extends StatelessWidget {
     this.onPressed,
     this.onLongPressed,
     this.items,
-    this.callback
+    this.callback,
+    this.color
   });
 
   @override
-  
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 0.0), 
-      child:Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children:<Widget>[
-          SingleChildScrollView(
-            primary: false,
-            scrollDirection: Axis.horizontal,
-            child: Container(margin:EdgeInsets.only(left:0.0), child:buildRow(buildItems(this.items)))
-          )
-        ]
-      )
-    );
+        margin: EdgeInsets.symmetric(vertical: 0.0),
+        child: buildRow(buildItems(context,this.items)));
   }
 
-  buildItems(items) {
-    var widgets = List<Widget>();
-    for (var item in items) {
-      widgets.add(buildBody(item));
-        
+  buildItems(BuildContext context, List<dynamic> items) {
+    var widgets = <Widget>[];
+    for(int i=0;i<items.length;i++){
+      widgets.add(buildBody(context, items[i], i, items.length));
     }
     return widgets;
   }
 
   buildRow(List<Widget> widgets) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      direction: Axis.horizontal,
+      alignment: WrapAlignment.start,
+      spacing: 20,
+      runSpacing: 40,
       children: widgets,
     );
   }
 
-  Widget buildBody(dynamic item) {
-  return new InkWell ( 
-    onTap: (){
-      var id = item['id'];
-      var level = 'poi';
-      this.onPressed({'id': id, 'level': level});
-    },
-    onLongPress: () {
-      this.onLongPressed({'item': item});
-    },
-    child:Container(
-      //height:210.0,
-      child:Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget buildBody(BuildContext context, dynamic item, int index, int count) {
+    var time = item['time'];
+    var image = !item['image'].isEmpty ? item['image'] : 'images/placeholder.jpg';
+    var title = item['title'].isEmpty ? 
+      item['poi']['name'].isEmpty ? 
+        'No title given' : item['poi']['name'].trim() : item['title'].trim();
+    var usePlaceholder = item['image'].isEmpty ? true:false;
+    var width =  MediaQuery.of(context).size.width;
+    if(index + 1 == count && count.isEven && count > 2){
+      width =  MediaQuery.of(context).size.width;
+    } else if (index > 0 && count > 2 && count.isEven) {
+      width =  (MediaQuery.of(context).size.width - 60) * .5;
+    } else if(index > 0 && count > 2 && count.isOdd || count == 2){
+      width =  (MediaQuery.of(context).size.width - 60) * .5;
+    }
+    
+    return new InkWell(
+        onTap: () {
+          var id = item['poi']['id'];
+          var level = 'poi';
+          print(id);
+          this.onPressed({'id': id, 'level': level});
+        },
+        onLongPress: () {
+          this.onLongPressed({'item': item});
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Container(
-              // A fixed-height child.
-              margin:EdgeInsets.only(right:20),
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(240, 240, 240, 0.8),
-                borderRadius: BorderRadius.circular(10),
-                image: DecorationImage(
-                  image: item['image'] != null ? NetworkImage(item['image']) : AssetImage('images/placeholder.jpg'),
-                  fit: BoxFit.cover
-                )
-              ),
-              width: 140.0,
-              height: 90.0,
-            
-              
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(vertical: 10.0),
-              width: 150.0,
-              child: Text(
-                item['title'], 
-                textAlign: TextAlign.left, 
-                overflow: TextOverflow.ellipsis,
-                maxLines: 2,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w300
+          Container(
+            height: 250,
+            width: width,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Align(child:CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(color),
+                  ))
                 ),
-              )
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    image: DecorationImage(
+                        image: usePlaceholder ? AssetImage(image) : NetworkImage(image), 
+                        fit: BoxFit.cover)))
+              ],
             )
-          ]
-        )
-      )
-    );
+          ),
+          Container(
+            width: width,
+            margin: EdgeInsets.only(top:10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  ReCase(title).titleCase,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w400)),
+                Text(
+                  time['unit'].toString().isEmpty == false
+                      ? 'Estimated time ${new HtmlUnescape().convert('&bull;')} ${time['value']} ${time['unit']}'
+                      : 'Estimated time ${new HtmlUnescape().convert('&bull;')} 1 hour',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w300)),
+              ]
+            ))
+        ]));
   }
 }

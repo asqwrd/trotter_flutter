@@ -212,7 +212,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
                 icon:  Icon(Icons.arrow_back),
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
-                color: Colors.black,
+                color: Colors.white,
                 
               ),
               onPressed: (){

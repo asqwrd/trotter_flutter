@@ -180,13 +180,13 @@ class CountryState extends State<Country> {
             backgroundColor: _showTitle ? color : Colors.transparent,
             automaticallyImplyLeading: false,
             title: SearchBar(
-              placeholder: 'Explore $name',
+              placeholder: 'Explore the world',
               leading: IconButton(
                 padding: EdgeInsets.all(0),
                 icon:  Icon(Icons.arrow_back),
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
-                color: Colors.black,
+                color: Colors.white,
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});

@@ -884,13 +884,13 @@ class TripState extends State<Trip> {
             backgroundColor: _showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
-              placeholder: 'Search',
+              placeholder: 'Explore the world',
               leading: IconButton(
                 padding: EdgeInsets.all(0),
                 icon:  Icon(Icons.arrow_back),
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
-                color: Colors.black,
+                color: Colors.white,
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});

@@ -7,13 +7,16 @@ import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 
 
 
 
 
 
-Future<PoiData> fetchPoi(String id) async {
+
+
+Future<PoiData> fetchPoi(String id, [bool googlePlace, String locationId]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('poi_$id') ?? null;
   if(cacheData != null) {
@@ -22,7 +25,7 @@ Future<PoiData> fetchPoi(String id) async {
     return PoiData.fromJson(json.decode(cacheData));
   } else {
     print('no-cached');
-    final response = await http.get('http://localhost:3002/api/explore/poi/$id', headers:{'Authorization':'security'});
+    final response = await http.get('http://localhost:3002/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('poi_$id', response.body);
@@ -52,16 +55,20 @@ class PoiData {
 
 class Poi extends StatefulWidget {
   final String poiId;
+  final bool googlePlace;
+  final String locationId;
   final ValueChanged<dynamic> onPush;
-  Poi({Key key, @required this.poiId, this.onPush}) : super(key: key);
+  Poi({Key key, @required this.poiId, this.onPush, this.locationId, this.googlePlace,}) : super(key: key);
   @override
-  PoiState createState() => new PoiState(poiId:this.poiId, onPush:this.onPush);
+  PoiState createState() => new PoiState(poiId:this.poiId, onPush:this.onPush, locationId: this.locationId, googlePlace: this.googlePlace);
 }
 
 class PoiState extends State<Poi> {
   bool _showTitle = false;
   static String id;
   final String poiId;
+  final bool googlePlace;
+  final String locationId;
   final ValueChanged<dynamic> onPush;
    GoogleMapController mapController;
   
@@ -69,16 +76,16 @@ class PoiState extends State<Poi> {
   final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 300;
 
-
   @override
   void initState() {
+
     _scrollController.addListener(() => setState(() {
       _showTitle =_scrollController.hasClients &&
       _scrollController.offset > kExpandedHeight - kToolbarHeight;
 
     }));
     super.initState();
-    data = fetchPoi(this.poiId);
+    data = fetchPoi(this.poiId, this.googlePlace, this.locationId);
     
   }
 
@@ -90,6 +97,8 @@ class PoiState extends State<Poi> {
 
 
   PoiState({
+    this.locationId,
+    this.googlePlace,
     this.poiId,
     this.onPush
   });
@@ -131,14 +140,14 @@ class PoiState extends State<Poi> {
             position: LatLng(poi['location']['lat'], poi['location']['lng']),
           )
         );
-        mapController.animateCamera(CameraUpdate.newCameraPosition(
+        /*mapController.animateCamera(CameraUpdate.newCameraPosition(
           CameraPosition(
             bearing: 270.0,
             target: LatLng(poi['location']['lat'], poi['location']['lng']),
             tilt: 30.0,
             zoom: 17.0,
           ),
-        ));
+        ));*/
       });
     }
 
@@ -153,14 +162,14 @@ class PoiState extends State<Poi> {
             backgroundColor: _showTitle ? color : Colors.transparent,
             automaticallyImplyLeading: false,
             title: SearchBar(
-              placeholder: 'Search',
-              fillColor: !_showTitle ? color : Colors.white,
+              placeholder: 'Explore the world',
+              fillColor: !_showTitle ? color.withOpacity(0.8) : Colors.white,
               leading: IconButton(
                 padding: EdgeInsets.all(0),
                 icon:  Icon(Icons.arrow_back),
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
-                color: !_showTitle ? fontContrast(color) : Colors.black,
+                color: Colors.white,
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search', 'id':poi['location_id'].toString()});
@@ -176,10 +185,43 @@ class PoiState extends State<Poi> {
                     top: 0,
                     child: new Swiper(
                       itemBuilder: (BuildContext context,int index){
-                        return new Image.network(images[index]['sizes']['medium']['url'],fit: BoxFit.cover,);
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            Align(
+                              child:CircularProgressIndicator(
+                                valueColor: new AlwaysStoppedAnimation<Color>(color),
+                              )
+                            ),
+                            new Image.network(images[index]['sizes']['medium']['url'],fit: BoxFit.cover,),
+                            Container(
+                              color:Colors.black.withOpacity(0.2)
+                            )
+
+                          ]
+                        );
                       },
+                      loop: true,
+                      indicatorLayout: PageIndicatorLayout.SCALE,
                       itemCount: images.length,
-                      pagination: new SwiperPagination(),
+                      transformer: DeepthPageTransformer(),
+                      pagination: new SwiperPagination(
+                        builder: new SwiperCustomPagination(builder:
+                        (BuildContext context, SwiperPluginConfig config) {
+                          return new ConstrainedBox(
+                            child: new Align(
+                                alignment: Alignment.bottomCenter,
+                                child: new DotSwiperPaginationBuilder(
+                                        color: Colors.white,
+                                        activeColor: color,
+                                        size: 20.0,
+                                        activeSize: 20.0)
+                                    .build(context, config),
+                            ),
+                            constraints: new BoxConstraints.expand(height: 50.0),
+                          );
+                        }),
+                      ),
                     ),
                   ),
                 ]
@@ -212,6 +254,14 @@ class PoiState extends State<Poi> {
                   clipper: CornerRadiusClipper(10.0), 
                   child: GoogleMap(
                     onMapCreated: _onMapCreated,
+                    options: GoogleMapOptions(
+                      cameraPosition: CameraPosition(
+                        bearing: 0.0,
+                        target: LatLng(poi['location']['lat'], poi['location']['lng']),
+                        tilt: 30.0,
+                        zoom: 17.0,
+                      ),
+                    ),
                   )
                 ),
               )

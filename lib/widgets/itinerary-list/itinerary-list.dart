@@ -67,8 +67,8 @@ class ItineraryList extends StatelessWidget {
         onTap: () {
           var id = item['poi']['id'];
           var level = 'poi';
-          print(id);
-          this.onPressed({'id': id, 'level': level});
+          var googlePlace = item['poi']['google_place'];
+          this.onPressed({'id': id, 'level': level, 'google_place':googlePlace});
         },
         onLongPress: () {
           this.onLongPressed({'item': item});

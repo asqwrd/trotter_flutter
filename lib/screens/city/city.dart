@@ -191,7 +191,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                 icon:  Icon(Icons.arrow_back),
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
-                color: Colors.black,
+                color: Colors.white,
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search', 'id':this.cityId, 'location':name.toString()});

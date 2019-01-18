@@ -124,7 +124,7 @@ class TripsState extends State<Trips> {
             elevation: 0,
             brightness: Brightness.light,
             title: SearchBar(
-              placeholder: 'Search',
+              placeholder: 'Explore the world',
               fillColor: Colors.blueGrey.withOpacity(0.3),
               leading: SvgPicture.asset("images/search-icon.svg",
                 width: 55.0,
@@ -189,13 +189,7 @@ class TripsState extends State<Trips> {
             backgroundColor: this._showTitle ? Colors.blueGrey : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
-              placeholder: 'Search',
-              leading: SvgPicture.asset("images/search-icon.svg",
-                width: 55.0,
-                height: 55.0,
-                color: Colors.black,
-                fit: BoxFit.contain
-              ),
+              placeholder: 'Explore the world',
               onPressed: (){
                 onPush({'query':'', 'level':'search'});
               },

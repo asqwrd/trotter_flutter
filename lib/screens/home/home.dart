@@ -206,12 +206,6 @@ class HomeState extends State<Home> {
             pinned: true,
             title: SearchBar(
               placeholder: 'Explore the world',
-              leading: SvgPicture.asset("images/search-icon.svg",
-                width: 55.0,
-                height: 55.0,
-                color: Colors.black,
-                fit: BoxFit.contain
-              ),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});
               },

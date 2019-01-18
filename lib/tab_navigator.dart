@@ -10,6 +10,9 @@ import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/screens/region/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
+import 'package:transformer_page_view/transformer_page_view.dart';
+import 'package:trotter_flutter/utils/index.dart';
+
 
 
 class TabNavigatorRoutes {
@@ -145,7 +148,6 @@ class TabNavigator extends StatelessWidget {
 
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context,{Map<String, dynamic> data}) {
-    //print(this.tabItem);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
         countryId: data['id'],
@@ -168,7 +170,9 @@ class TabNavigator extends StatelessWidget {
         onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.poi: (context) => Poi(
-        poiId: data['id'], 
+        poiId: data['id'],
+        locationId: data['locationId'],
+        googlePlace: data['google_place'], 
         onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.park: (context) => Park(

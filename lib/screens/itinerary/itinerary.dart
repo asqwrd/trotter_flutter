@@ -131,13 +131,13 @@ class ItineraryState extends State<Itinerary> {
             backgroundColor: _showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
-              placeholder: 'Search',
+              placeholder: 'Explore the world',
               leading: IconButton(
                 padding: EdgeInsets.all(0),
                 icon:  Icon(Icons.arrow_back),
                 onPressed: () {  Navigator.pop(context);},
                 iconSize: 30,
-                color: Colors.black,
+                color: Colors.white,
               ),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});
@@ -220,12 +220,12 @@ class ItineraryState extends State<Itinerary> {
           ),
         ];
       },
-      body:  _buildDay(days, destinationName, color)
+      body:  _buildDay(days, destinationName, itinerary['destination'], color)
     );
   }
 
   
-_buildDay(List<dynamic> days, String destinationName, Color color){
+_buildDay(List<dynamic> days, String destinationName, String locationId, Color color){
   return ListView.separated(
         separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.only(bottom: 40, top: 40), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
         padding: EdgeInsets.all(20.0),
@@ -277,8 +277,7 @@ _buildDay(List<dynamic> days, String destinationName, Color color){
                   items: itineraryItems,
                   color: color,
                   onPressed: (data){
-                    print("Clicked ${data['id']}");
-                    onPush({'id':data['id'], 'level':data['level']});
+                    onPush({'id':data['id'], 'level':data['level'], 'google_place':data['google_place'], 'location_id':locationId});
                   },
                 )
               )

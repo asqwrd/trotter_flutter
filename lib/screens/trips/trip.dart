@@ -704,6 +704,7 @@ class TripState extends State<Trip> {
   final String tripId;
   GoogleMapController mapController;
   Color color = Colors.blueGrey;
+  bool loading = false;
   List<dynamic> destinations;
   dynamic trip;
   
@@ -855,16 +856,16 @@ class TripState extends State<Trip> {
     var color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
     var fields = [
-      {"label":"Itinerary", "icon": Icon(Icons.map, color: iconColor)},
       {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},
     ];
 
     for (var group in result2.asIterable()) {
       var key = group.key;
       for (var destination in group.asIterable()) {
-        fields.add(
+        fields.addAll([
+          {"label":"Itinerary for ${destination['destination_name']}", "icon": Icon(Icons.map, color: iconColor), "level":"itinerary", "destination": destination},
           {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
-        );
+        ]);
       }
       if(group.asIterable().first['level'] != 'city_state'){
         fields.add(
@@ -954,35 +955,77 @@ class TripState extends State<Trip> {
           ),
         ];
       },
-      body: ListView(
+      body: Stack(
+        fit: StackFit.expand,
         children: <Widget>[
-          _buildDestinationInfo(destinations, color),
-          Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-          ListView.separated(
-            shrinkWrap: true,
-            primary: false,
-            padding: EdgeInsets.all(0),
-            itemCount: fields.length,
-            separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-            itemBuilder: (BuildContext context, int index){
-              return ListTile(
-                onTap: (){
-                  if(fields[index]['id'] != null)
-                    onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
-                },
-                trailing: fields[index]['icon'],
-                title: Text(
-                  fields[index]['label'],
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.w300
-                  ),
-                ),
-                    
-              );
-            }
-          )
-        ]
+          ListView(
+            children: <Widget>[
+              _buildDestinationInfo(destinations, color),
+              Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+              ListView.separated(
+                shrinkWrap: true,
+                primary: false,
+                padding: EdgeInsets.all(0),
+                itemCount: fields.length,
+                separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                itemBuilder: (BuildContext context, int index){
+                  return ListTile(
+                    onTap: () async {
+                      dynamic destination = fields[index]['destination'];
+                      if(fields[index]['id'] != null){
+                        onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
+                      } else if(destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary'){
+                        var store =  StoreProvider.of<AppState>(context);
+                        dynamic data = {
+                          "itinerary":{
+                            "name": trip['name'],
+                            "destination": destination['destination_id'],
+                            "destination_name": destination['destination_name'],
+                            "destination_country_name": destination['country_name'],
+                            "destination_country": destination['country_id'],
+                            "location": destination['location'],
+                            "start_date": destination['start_date'],
+                            "end_date": destination['end_date'],
+                            "trip_id": trip['id']
+                          },
+                          "trip_destination_id": destination['id']
+                          
+                        };
+                        setState(() {
+                          this.loading = true;                     
+                        });
+                        var response = await postCreateItinerary(store, data);
+                        print(response);
+                        setState(() {
+                          this.loading = false;   
+                          destination['itinerary_id'] = response.id;                  
+                        });
+                        onPush({'id': response.id, 'level': fields[index]['level'].toString()});
+                      } else if(!destination['itinerary_id'].isEmpty){
+                        onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
+                      }
+                    },
+                    trailing: fields[index]['icon'],
+                    title: Text(
+                      fields[index]['label'],
+                      style: TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.w300
+                      ),
+                    ),
+                        
+                  );
+                }
+              )
+            ]
+          ),
+          this.loading ? Align(
+            alignment: Alignment.center,
+            child: CircularProgressIndicator(
+              valueColor: new AlwaysStoppedAnimation<Color>(color)
+            ),
+          ) : Container()
+        ],
       )
     );
   }

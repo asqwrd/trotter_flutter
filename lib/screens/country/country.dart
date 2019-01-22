@@ -403,14 +403,14 @@ class CountryState extends State<Country> {
                     ]
                   ),
 
-                  TopList(
+                  /*TopList(
                     items: popularDestinations,
                     onPressed: (data){
                       print("Clicked ${data['id']}");
                       onPush({'id':data['id'], 'level':data['level']});
                     },
                     header: "Popular cities"
-                  )
+                  )*/
 
                 ]
               ),
@@ -503,7 +503,7 @@ class CountryState extends State<Country> {
           Padding(
             padding: EdgeInsets.symmetric(vertical: 5.0),
             child:Text(
-              obj[key].join(' '),
+              obj[key].join(' ').trim(),
               style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.w300
@@ -530,7 +530,7 @@ class CountryState extends State<Country> {
           ),
           Padding(
             padding: EdgeInsets.symmetric(vertical: 5.0),
-            child:Text('$value $objValue',
+            child:Text('$value $objValue'.trim(),
               style: TextStyle(
                 fontSize: 20.0,
                 fontWeight: FontWeight.w300

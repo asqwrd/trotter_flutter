@@ -236,8 +236,10 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
           var itineraryItems = days[dayIndex]['itinerary_items'];
           
           var pois = [];
-          for(var item in itineraryItems){
-            pois.add(item['poi']);
+          if(itineraryItems != null){
+            for(var item in itineraryItems){
+              pois.add(item['poi']);
+            }
           }
           
           return  Column(
@@ -261,7 +263,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                     child:Container(
                       margin: EdgeInsets.only(bottom:20),
                       child: Text(
-                        '${itineraryItems.length} items(s)',
+                        itineraryItems != null ? '${itineraryItems.length} items(s)' : '0 item(s)',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w300
@@ -271,7 +273,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                   )
                 ]
               ), 
-              Container(
+              itineraryItems != null ? Container(
                 margin: EdgeInsets.only(top:0),
                 child: ItineraryList(
                   items: itineraryItems,
@@ -280,7 +282,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                     onPush({'id':data['id'], 'level':data['level'], 'google_place':data['google_place'], 'location_id':locationId});
                   },
                 )
-              )
+              ) : Container()
             ]
           );
         },

@@ -710,7 +710,7 @@ class TripState extends State<Trip> {
   
   Future<TripData> data;
   final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 280;
+  var kExpandedHeight = 280;
 
 
    
@@ -882,7 +882,7 @@ class TripState extends State<Trip> {
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: _showTitle ? color : Colors.white,
+            backgroundColor: this._showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Explore the world',

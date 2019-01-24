@@ -62,7 +62,7 @@ class ItineraryState extends State<Itinerary> {
   
   Future<ItineraryData> data;
   final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 280;
 
 
   @override
@@ -250,7 +250,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                     alignment: Alignment.topLeft,
                     child:Container(
                       child: Text(
-                        'Your ${ordinalNumber(dayIndex + 1)} day in $destinationName',
+                        'Your ${ordinalNumber(days[dayIndex]['day'] + 1)} day in $destinationName',
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w400

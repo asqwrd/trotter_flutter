@@ -51,7 +51,7 @@ class ItineraryList extends StatelessWidget {
     var time = item['time'];
     var image = !item['image'].isEmpty ? item['image'] : 'images/placeholder.jpg';
     var title = item['title'].isEmpty ? 
-      item['poi']['name'].isEmpty ? 
+      item['poi'] == null || item['poi']['name'].isEmpty ? 
         'No title given' : item['poi']['name'].trim() : item['title'].trim();
     var usePlaceholder = item['image'].isEmpty ? true:false;
     var width =  MediaQuery.of(context).size.width;

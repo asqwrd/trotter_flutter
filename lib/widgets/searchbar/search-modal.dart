@@ -197,7 +197,7 @@ class SearchModalState extends State<SearchModal> {
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                    hintText: selectId ? 'SearchModal for places in $location...' : 'Search cities to travel to...'
+                    hintText: selectId ? 'Search for places in $location...' : 'Search cities to travel to...'
                   ),
                   onChanged: (value){
                     if(timer != null){

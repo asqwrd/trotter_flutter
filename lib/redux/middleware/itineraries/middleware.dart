@@ -26,6 +26,98 @@ Future<CreateItineraryData> postCreateItinerary(Store<AppState> store, dynamic d
   
 }
 
+Future<ItineraryData> fetchItinerary(String id) async {
+  final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return ItineraryData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    var msg = response.statusCode;
+    throw Exception('Response> $msg');
+  }
+  
+}
+
+Future<DayData> fetchDay(String itineraryId, String dayId) async {
+
+  final response = await http.get('http://localhost:3002/api/itineraries/get/$itineraryId/day/$dayId', headers:{'Authorization':'security'});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return DayData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    var msg = response.statusCode;
+    throw Exception('Response> $msg');
+  }
+  
+}
+
+
+Future<AddItemData> addToDay(String itineraryId, String dayId, dynamic data) async {
+
+  final response = await http.post('http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId', body: json.encode(data), headers:{'Authorization':'security'});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return AddItemData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    var msg = response.statusCode;
+    throw Exception('Response> $msg');
+  }
+  
+}
+
+class AddItemData {
+  final Map<String, dynamic> itineraryItem; 
+  final String color;
+
+  AddItemData({this.itineraryItem, this.color});
+
+  factory AddItemData.fromJson(Map<String, dynamic> json) {
+    return AddItemData(
+      itineraryItem: json['itinerary_item'],
+      color: json['color'],
+    );
+  }
+}
+
+class DayData {
+  final Map<String, dynamic> day; 
+  final Map<String, dynamic> itinerary; 
+  final Map<String, dynamic> destination; 
+  final String color;
+
+  DayData({this.day, this.itinerary, this.color, this.destination});
+
+  factory DayData.fromJson(Map<String, dynamic> json) {
+    return DayData(
+      day: json['day'],
+      color: json['itinerary']['color'],
+      destination: json['itinerary']['destination'],
+      itinerary: json['itinerary']['itinerary']
+    );
+  }
+}
+
+class ItineraryData {
+  final String color;
+  final Map<String, dynamic> itinerary; 
+  final Map<String, dynamic> destination; 
+
+  ItineraryData({this.color, this.itinerary, this.destination});
+
+  factory ItineraryData.fromJson(Map<String, dynamic> json) {
+    return ItineraryData(
+     // color: json['color'],
+      itinerary: json['itinerary'],
+      destination: json['destination'],
+      color: json['color']
+    );
+  }
+}
+
+
 class CreateItineraryResponseData {
   final String id; 
   final List<dynamic> destinations; 

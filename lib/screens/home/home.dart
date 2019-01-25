@@ -329,26 +329,29 @@ class HomeState extends State<Home> {
           ),
         ];
       },
-      body: Container(
-        padding: EdgeInsets.only(top: 40.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          children: <Widget>[
-            Container(
-              //height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-            Container(
-              //height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-          ],
-        )
-      ),
+      body: RefreshIndicator(
+        onRefresh: () => _refreshData(),
+        child: Container( 
+          padding: EdgeInsets.only(top: 40.0),
+          decoration: BoxDecoration(color: Colors.white),
+          child: ListView(
+            children: <Widget>[
+              Container(
+                //height: 175.0,
+                width: double.infinity,
+                margin: EdgeInsets.only(bottom: 30.0),
+                child: TopListLoading()
+              ),
+              Container(
+                //height: 175.0,
+                width: double.infinity,
+                margin: EdgeInsets.only(bottom: 30.0),
+                child: TopListLoading()
+              ),
+            ]
+          )
+        ),
+      )
     );
   }
 }

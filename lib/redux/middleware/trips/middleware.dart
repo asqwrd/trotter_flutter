@@ -14,6 +14,7 @@ Future<TripsData> fetchTrips(Store<AppState> store) async {
         results.trips, 
       )
     );
+    store.dispatch(new SetTripsLoadingAction(false));
     return results;
   } else {
     // If that response was not OK, throw an error.

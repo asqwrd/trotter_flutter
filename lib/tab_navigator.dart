@@ -27,6 +27,8 @@ class TabNavigatorRoutes {
   static const String park = '/park';
   static const String trip = '/trip';
   static const String itinerary = '/itinerary';
+  static const String itinerary_builder = '/itinerary/edit';
+  static const String day_edit = '/itinerary/day/edit';
   static const String createtrip = '/trip/create';
 }
 
@@ -52,6 +54,12 @@ class TabNavigator extends StatelessWidget {
         break;
       case 'itinerary':
         goTo = TabNavigatorRoutes.itinerary;
+        break;
+      case 'itinerary/edit':
+        goTo = TabNavigatorRoutes.itinerary_builder;
+        break;
+      case 'itinerary/day/edit':
+        goTo = TabNavigatorRoutes.day_edit;
         break;
       case 'region':
         goTo = TabNavigatorRoutes.region;
@@ -148,6 +156,7 @@ class TabNavigator extends StatelessWidget {
 
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context,{Map<String, dynamic> data}) {
+    print(data);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
         countryId: data['id'],
@@ -185,6 +194,15 @@ class TabNavigator extends StatelessWidget {
       ),
       TabNavigatorRoutes.itinerary: (context) => Itinerary(
         itineraryId: data['id'], 
+        onPush: (data) => push(context, data)
+      ),
+      TabNavigatorRoutes.itinerary_builder: (context) => ItineraryBuilder(
+        itineraryId: data['id'], 
+        onPush: (data) => push(context, data)
+      ),
+      TabNavigatorRoutes.day_edit: (context) => DayEdit(
+        itineraryId: data['itineraryId'], 
+        dayId: data['dayId'], 
         onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(

@@ -71,7 +71,8 @@ flutter:
   - images/placeholder.jpg
   - images/search2.jpg
   - images/search-icon.svg
-  - images/trip-icon.svg
+  - images/trip-icon.svg 
+  - images/itinerary-icon.svg 
   - images/trips-icon.svg
   - images/explore-icon.svg
   - images/avatar-icon.svg

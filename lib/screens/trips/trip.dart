@@ -863,7 +863,7 @@ class TripState extends State<Trip> {
       var key = group.key;
       for (var destination in group.asIterable()) {
         fields.addAll([
-          {"label":"Itinerary for ${destination['destination_name']}", "icon": Icon(Icons.map, color: iconColor), "level":"itinerary", "destination": destination},
+          {"label":"Itinerary for ${destination['destination_name']}", "icon": Icon(Icons.map, color: iconColor), "level":"itinerary/edit", "destination": destination},
           {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
         ]);
       }
@@ -974,7 +974,7 @@ class TripState extends State<Trip> {
                       dynamic destination = fields[index]['destination'];
                       if(fields[index]['id'] != null){
                         onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
-                      } else if(destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary'){
+                      } else if(destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary/edit'){
                         var store =  StoreProvider.of<AppState>(context);
                         dynamic data = {
                           "itinerary":{

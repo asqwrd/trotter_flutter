@@ -107,7 +107,7 @@ class TripsState extends State<Trips> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel) {
-    ;
+    
     var trips = StoreProvider.of<AppState>(context).state.trips;
     var loading = StoreProvider.of<AppState>(context).state.tripLoading;
 

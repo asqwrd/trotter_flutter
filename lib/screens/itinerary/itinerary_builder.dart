@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/redux/index.dart';
 
 
-class Itinerary extends StatefulWidget {
+
+class ItineraryBuilder extends StatefulWidget {
   final String itineraryId;
   final ValueChanged<dynamic> onPush;
-  Itinerary({Key key, @required this.itineraryId, this.onPush}) : super(key: key);
+  ItineraryBuilder({Key key, @required this.itineraryId, this.onPush}) : super(key: key);
   @override
-  ItineraryState createState() => new ItineraryState(itineraryId:this.itineraryId, onPush:this.onPush);
+  ItineraryBuilderState createState() => new ItineraryBuilderState(itineraryId:this.itineraryId, onPush:this.onPush);
 }
 
-class ItineraryState extends State<Itinerary> {
+class ItineraryBuilderState extends State<ItineraryBuilder> {
   bool _showTitle = false;
   static String id;
   final String itineraryId;
@@ -47,7 +51,7 @@ class ItineraryState extends State<Itinerary> {
   }
 
 
-  ItineraryState({
+  ItineraryBuilderState({
     this.itineraryId,
     this.onPush
   });
@@ -197,13 +201,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
         primary: true,
         itemBuilder: (BuildContext listContext, int dayIndex){
           var itineraryItems = days[dayIndex]['itinerary_items'];
-          
-          var pois = [];
-          if(itineraryItems != null){
-            for(var item in itineraryItems){
-              pois.add(item['poi']);
-            }
-          }
+          var dayId = days[dayIndex]['id'];
           
           return  Column(
             children: <Widget>[
@@ -245,7 +243,38 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                     onPush({'id':data['id'], 'level':data['level'], 'google_place':data['google_place'], 'location_id':locationId});
                   },
                 )
-              ) : Container()
+              ) : Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(bottom:20),
+                      child: SvgPicture.asset(
+                        'images/itinerary-icon.svg',
+                        width: 100,
+                        height: 100,
+                      ),
+                    ),
+                    FlatButton(
+                      onPressed: (){
+                        onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
+                      },
+                      color: color,
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      clipBehavior: Clip.antiAliasWithSaveLayer,
+                      child: Text(
+                        'Start planning',
+                        style: TextStyle(
+                          color: fontContrast(color),
+                          fontWeight: FontWeight.w300,
+                          fontSize: 20
+                        )
+                      ),
+                    )
+                  ],
+                )
+              )
             ]
           );
         },

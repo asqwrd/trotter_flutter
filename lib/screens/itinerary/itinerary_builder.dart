@@ -240,7 +240,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                   items: itineraryItems,
                   color: color,
                   onPressed: (data){
-                    onPush({'id':data['id'], 'level':data['level'], 'google_place':data['google_place'], 'location_id':locationId});
+                    onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
                   },
                 )
               ) : Container(

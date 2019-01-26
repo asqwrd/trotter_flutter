@@ -70,14 +70,12 @@ Future<AddItemData> addToDay(String itineraryId, String dayId, dynamic data) asy
 
 class AddItemData {
   final Map<String, dynamic> itineraryItem; 
-  final String color;
 
-  AddItemData({this.itineraryItem, this.color});
+  AddItemData({this.itineraryItem});
 
   factory AddItemData.fromJson(Map<String, dynamic> json) {
     return AddItemData(
       itineraryItem: json['itinerary_item'],
-      color: json['color'],
     );
   }
 }

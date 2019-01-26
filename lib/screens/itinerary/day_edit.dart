@@ -29,7 +29,7 @@ class DayEditState extends State<DayEdit> {
   
   Future<DayData> data;
   final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
+    var kExpandedHeight = 130;
 
   @override
   void initState() {
@@ -99,6 +99,7 @@ class DayEditState extends State<DayEdit> {
 
             var response = await addToDay(this.itineraryId, this.dayId, data);
             print(response);
+            this.itineraryItems.add(response.itineraryItem);
           }
         },
         tooltip: ' Add a place',
@@ -131,7 +132,7 @@ class DayEditState extends State<DayEdit> {
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 350,
+            expandedHeight: 200,
             floating: false,
             pinned: true,
             backgroundColor: _showTitle ? color : Colors.transparent,
@@ -143,15 +144,23 @@ class DayEditState extends State<DayEdit> {
               iconSize: 30,
               color: Colors.white,
             ),      
-            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
+            //bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,
+                title: Text(
+                  'Your ${ordinalNumber(day['day'] + 1)} day in $destinationName',
+                  style: TextStyle(
+                    fontSize: 25,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300
+                  ),
+                ),
                 collapseMode: CollapseMode.parallax,
                 background: Stack(children: <Widget>[
                   Positioned.fill(
                       top: 0,
                       child: ClipPath(
-                        clipper: BottomWaveClipperSlant(),
+                        //clipper: BottomWaveClipperSlant(),
                         child: Image.network(
                         destination['image'],
                         fit: BoxFit.cover,
@@ -162,13 +171,13 @@ class DayEditState extends State<DayEdit> {
                       top: 0,
                       left: 0,
                       child: ClipPath(
-                        clipper:BottomWaveClipperSlant(),
+                        //clipper:BottomWaveClipperSlant(),
                         child: Container(
                         color: color.withOpacity(0.5),
                       )
                     )
                   ),
-                  Positioned.fill(
+                  /*Positioned.fill(
                     top: 0,
                     child: Center(
                       child: Container(
@@ -182,7 +191,7 @@ class DayEditState extends State<DayEdit> {
                         ),
                       ))
                     ),
-                  ),
+                  ),*/
                 ]
               )
             ),
@@ -192,19 +201,83 @@ class DayEditState extends State<DayEdit> {
       body: Container(
         margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(bottom: 40.0, left:20.0, right: 20.0),
-              child: Text(
-                'Test', 
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.w300
-                )
+        child: ListView.builder(
+          itemCount: itineraryItems.length,
+          itemBuilder: (BuildContext context, int index){
+            var color = Color(hexStringToHexInt(itineraryItems[index]['color']));
+            var poi = itineraryItems[index]['poi'];
+            var item = itineraryItems[index];
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child:Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.only(right: 0),
+                    width:40,
+                    child: Icon(
+                            Icons.blur_circular,
+                            color:Colors.grey,
+                            size: 30,
+                            
+                          ),
+                  ),
+                  Flexible(
+                    //width:200,
+                    child: Card(
+                      color: color,
+                      elevation: 0,
+                      margin: EdgeInsets.only(left: 10, right: 10, bottom: 40),
+                      child: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Row(
+                              children: <Widget>[
+                                Container(
+                                  margin: EdgeInsets.only(right:10),
+                                  child:Icon(
+                                    Icons.place,
+                                    color:fontContrast(color),
+                                    size: 16,
+                                    
+                                  )
+                                ),
+                                Text(
+                                  poi['name'],
+                                  style: TextStyle(
+                                    color: fontContrast(color),
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w300
+                                  )
+                                ),
+                              ]
+                            )
+                          ),
+                          Opacity(
+                            opacity: 0.75,
+                            child: Container(
+                              height: 380,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(item['image']),
+                                  fit: BoxFit.cover
+                                ),
+                                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(5), bottomRight: Radius.circular(5))
+
+                              ),
+                            )
+                          )
+
+                        ]
+                      )
+                    )
+                  )
+                  
+                ],
               )
-            ),
-          ],
+            );
+          },
         )
       ),
     );

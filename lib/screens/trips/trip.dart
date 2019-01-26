@@ -209,17 +209,17 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
               )
             ),
             onPressed: () async {
-              if(_formKey.currentState.validate() ){
+              if(_formKey.currentState.validate() && StoreProvider.of<AppState>(context).state.tripLoading == false){
                 destination["start_date"] =  arrival;
                 destination["end_date"] = departure;
+                StoreProvider.of<AppState>(context).dispatch(SetTripsLoadingAction(true)); 
                 var response = await putUpdateTripDestination(tripId, destination['id'], destination);
                 if(response.success == true){
-                  //setState(() {
                     destination["start_date"] =  arrival;
                     destination["end_date"] = departure;
                     Navigator.pop(context,{"arrival": arrival, "departure": departure});   
-                  //});
                 }
+                StoreProvider.of<AppState>(context).dispatch(SetTripsLoadingAction(false)); 
 
               }
             },
@@ -995,7 +995,6 @@ class TripState extends State<Trip> {
                           this.loading = true;                     
                         });
                         var response = await postCreateItinerary(store, data);
-                        print(response);
                         setState(() {
                           this.loading = false;   
                           destination['itinerary_id'] = response.id;                  

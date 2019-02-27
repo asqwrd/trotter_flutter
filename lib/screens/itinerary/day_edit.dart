@@ -204,7 +204,7 @@ class DayEditState extends State<DayEdit> {
         child: ListView.builder(
           itemCount: itineraryItems.length,
           itemBuilder: (BuildContext context, int index){
-            var color = Color(hexStringToHexInt(itineraryItems[index]['color']));
+            var color = itineraryItems[index]['color'].isEmpty == false ? Color(hexStringToHexInt(itineraryItems[index]['color'])) : this.color;
             var poi = itineraryItems[index]['poi'];
             var item = itineraryItems[index];
             return Padding(
@@ -260,7 +260,7 @@ class DayEditState extends State<DayEdit> {
                               height: 380,
                               decoration: BoxDecoration(
                                 image: DecorationImage(
-                                  image: NetworkImage(item['image']),
+                                  image: item['image'].isEmpty == false ? NetworkImage(item['image']) :AssetImage('images/placeholder.jpg'),
                                   fit: BoxFit.cover
                                 ),
                                 borderRadius: BorderRadius.only(bottomLeft: Radius.circular(5), bottomRight: Radius.circular(5))

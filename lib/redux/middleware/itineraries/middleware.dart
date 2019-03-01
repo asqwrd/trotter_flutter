@@ -26,11 +26,20 @@ Future<CreateItineraryData> postCreateItinerary(Store<AppState> store, dynamic d
   
 }
 
-Future<ItineraryData> fetchItinerary(String id) async {
+Future<ItineraryData> fetchItinerary(Store<AppState> store, String id) async {
   final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
-    return ItineraryData.fromJson(json.decode(response.body));
+    var results  = ItineraryData.fromJson(json.decode(response.body));
+    print("hi fetch");
+    store.dispatch(
+      new GetItineraryAction(
+        results.itinerary,
+        results.destination,
+        results.color 
+      )
+    );
+    return results;
   } else {
     // If that response was not OK, throw an error.
     var msg = response.statusCode;
@@ -59,9 +68,11 @@ Future<AddItemData> addToDay(String itineraryId, String dayId, dynamic data) asy
   final response = await http.post('http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId', body: json.encode(data), headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
+
     return AddItemData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
+    print(response);
     var msg = response.statusCode;
     throw Exception('Response> $msg');
   }
@@ -100,14 +111,15 @@ class DayData {
 
 class ItineraryData {
   final String color;
+  final bool loading;
   final Map<String, dynamic> itinerary; 
   final Map<String, dynamic> destination; 
 
-  ItineraryData({this.color, this.itinerary, this.destination});
+  ItineraryData({this.color, this.loading, this.itinerary, this.destination});
 
   factory ItineraryData.fromJson(Map<String, dynamic> json) {
     return ItineraryData(
-     // color: json['color'],
+      loading: false,
       itinerary: json['itinerary'],
       destination: json['destination'],
       color: json['color']

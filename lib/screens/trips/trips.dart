@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -126,12 +125,6 @@ class TripsState extends State<Trips> {
             title: SearchBar(
               placeholder: 'Explore the world',
               fillColor: Colors.blueGrey.withOpacity(0.3),
-              leading: SvgPicture.asset("images/search-icon.svg",
-                width: 55.0,
-                height: 55.0,
-                color: Colors.black,
-                fit: BoxFit.contain
-              ),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});
               },     

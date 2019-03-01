@@ -4,6 +4,7 @@ import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/redux/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 
 
@@ -86,7 +87,7 @@ class DayEditState extends State<DayEdit> {
             )
           );
           if(suggestion != null){
-            print(suggestion);
+           // print(suggestion['location']);
             var data = {
               "poi": suggestion,
               "title":"",
@@ -98,8 +99,8 @@ class DayEditState extends State<DayEdit> {
             };
 
             var response = await addToDay(this.itineraryId, this.dayId, data);
-            print(response);
             this.itineraryItems.add(response.itineraryItem);
+            StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, response.itineraryItem));
           }
         },
         tooltip: ' Add a place',
@@ -218,7 +219,7 @@ class DayEditState extends State<DayEdit> {
                     child: Icon(
                             Icons.blur_circular,
                             color:Colors.grey,
-                            size: 30,
+                            size: 20,
                             
                           ),
                   ),
@@ -227,12 +228,13 @@ class DayEditState extends State<DayEdit> {
                     child: Card(
                       color: color,
                       elevation: 0,
-                      margin: EdgeInsets.only(left: 10, right: 10, bottom: 40),
+                      margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
                       child: Column(
                         children: <Widget>[
                           Padding(
                             padding: EdgeInsets.all(20),
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Container(
                                   margin: EdgeInsets.only(right:10),
@@ -243,21 +245,36 @@ class DayEditState extends State<DayEdit> {
                                     
                                   )
                                 ),
-                                Text(
-                                  poi['name'],
-                                  style: TextStyle(
-                                    color: fontContrast(color),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w300
-                                  )
-                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      poi['name'],
+                                      style: TextStyle(
+                                        color: fontContrast(color),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w400
+                                      )
+                                    ),
+                                    poi['tags'] != null ? Container(
+                                      width: MediaQuery.of(context).size.width - 176,
+                                      child:Text(
+                                      tagsToString(poi['tags']),
+                                      style: TextStyle(
+                                        color: fontContrast(color),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w300,
+                                      )
+                                    )) : Container(),
+                                  ],
+                                )
                               ]
                             )
                           ),
-                          Opacity(
+                          item['image'].isEmpty == false ? Opacity(
                             opacity: 0.75,
                             child: Container(
-                              height: 380,
+                              height: 280,
                               decoration: BoxDecoration(
                                 image: DecorationImage(
                                   image: item['image'].isEmpty == false ? NetworkImage(item['image']) :AssetImage('images/placeholder.jpg'),
@@ -267,7 +284,7 @@ class DayEditState extends State<DayEdit> {
 
                               ),
                             )
-                          )
+                          ) : Container()
 
                         ]
                       )

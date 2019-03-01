@@ -36,7 +36,7 @@ class ItineraryState extends State<Itinerary> {
 
     }));
     super.initState();
-    data = fetchItinerary(this.itineraryId);
+    //data = fetchItinerary(this.itineraryId);
     
   }
 

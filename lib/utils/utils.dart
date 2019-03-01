@@ -127,6 +127,18 @@ hexStringToHexInt(String hex) {
   return val;
 }
 
+tagsToString(List<dynamic> tags){
+  String output = "";
+  for (var i = 0; i < tags.length; i++) {
+    if(i < tags.length - 1){
+      output += "${tags[i]["tag"]["name"]}, ";
+    } else {
+      output += "${tags[i]["tag"]["name"]}";
+    }
+  }
+  return output;
+}
+
 Color fontContrast(Color color){
   if(color != null && color.computeLuminance() < 0.5){
     return Colors.white;

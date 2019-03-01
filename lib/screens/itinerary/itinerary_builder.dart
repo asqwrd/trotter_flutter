@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/redux/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 
 
@@ -40,7 +41,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 
     }));
     super.initState();
-    data = fetchItinerary(this.itineraryId);
+    //data = fetchItinerary(this.itineraryId);
     
   }
 
@@ -62,29 +63,34 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: FutureBuilder(
-        future: data,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return _buildLoadedBody(context,snapshot);
-          }
-          return _buildLoadingBody(context);
+      body: StoreConnector <AppState, ItineraryViewModel>(
+        converter: (store) => ItineraryViewModel.create(store, this.itineraryId),
+        onInit: (store) async {
+          store.dispatch(new SetItineraryLoadingAction(true));
+          await fetchItinerary(store,this.itineraryId);
+          store.dispatch(SetItineraryLoadingAction(false));
+        },
+        builder: (context, viewModel){
+            return _buildLoadedBody(context, viewModel);
         }
-      )
+      ) 
     );
   }
   
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(BuildContext ctxt, ItineraryViewModel viewModel) {
+    if(StoreProvider.of<AppState>(context).state.itinerary == null || StoreProvider.of<AppState>(context).state.itinerary.loading){
+      return _buildLoadingBody(ctxt);
+    }
     
-    var itinerary = snapshot.data.itinerary;
+    var itinerary = StoreProvider.of<AppState>(context).state.itinerary.itinerary;
     var name = itinerary['name'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
-    var destination = snapshot.data.destination;
-    var color = Color(hexStringToHexInt(snapshot.data.color));
+    var destination = StoreProvider.of<AppState>(context).state.itinerary.destination;
+    var color = Color(hexStringToHexInt(StoreProvider.of<AppState>(context).state.itinerary.color));
 
 
     return  NestedScrollView(
@@ -249,7 +255,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Container(
-                      margin: EdgeInsets.only(bottom:20),
+                      margin: EdgeInsets.only(bottom:10),
                       child: SvgPicture.asset(
                         'images/itinerary-icon.svg',
                         width: 100,
@@ -260,14 +266,13 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                       onPressed: (){
                         onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
                       },
-                      color: color,
                       padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                       clipBehavior: Clip.antiAliasWithSaveLayer,
                       child: Text(
                         'Start planning',
                         style: TextStyle(
-                          color: fontContrast(color),
-                          fontWeight: FontWeight.w300,
+                          color: color,
+                          fontWeight: FontWeight.w400,
                           fontSize: 20
                         )
                       ),

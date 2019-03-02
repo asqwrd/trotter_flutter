@@ -4,6 +4,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:recase/recase.dart';
 
 
+
 class ItineraryList extends StatelessWidget {
   final String2VoidFunc onPressed;
   final ValueChanged onLongPressed;

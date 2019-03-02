@@ -15,7 +15,27 @@ ItineraryData getItineraryReducer(dynamic state, dynamic action) {
       itinerary: action.itinerary,
       color: action.color,
       destination: action.destination,
-      loading: false
+      loading: true
+    );
+  }
+  if(action is SetItineraryLoadingAction){
+    return ItineraryData(
+      itinerary: state.itinerary,
+      color: state.color,
+      destination: state.destination,
+      loading: action.loading
+    );
+  }
+  return state;
+}
+
+ItineraryData getItineraryBuilderReducer(dynamic state, dynamic action) {
+  if(action is GetItineraryBuilderAction){
+    return ItineraryData(
+      itinerary: action.itinerary,
+      color: action.color,
+      destination: action.destination,
+      loading: true
     );
   }
   if(action is UpdateDayAfterAddAction){
@@ -26,7 +46,7 @@ ItineraryData getItineraryReducer(dynamic state, dynamic action) {
       loading: state.loading
     );
   }
-  if(action is SetItineraryLoadingAction){
+  if(action is SetItineraryBuilderLoadingAction){
     return ItineraryData(
       itinerary: state.itinerary,
       color: state.color,

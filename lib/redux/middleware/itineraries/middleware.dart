@@ -36,7 +36,29 @@ Future<ItineraryData> fetchItinerary(Store<AppState> store, String id) async {
       new GetItineraryAction(
         results.itinerary,
         results.destination,
-        results.color 
+        results.color,
+      )
+    );
+    return results;
+  } else {
+    // If that response was not OK, throw an error.
+    var msg = response.statusCode;
+    throw Exception('Response> $msg');
+  }
+  
+}
+
+Future<ItineraryData> fetchItineraryBuilder(Store<AppState> store, String id) async {
+  final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    var results  = ItineraryData.fromJson(json.decode(response.body));
+    print("hi fetch");
+    store.dispatch(
+      new GetItineraryBuilderAction(
+        results.itinerary,
+        results.destination,
+        results.color,
       )
     );
     return results;

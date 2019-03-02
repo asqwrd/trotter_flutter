@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
@@ -66,9 +63,9 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       body: StoreConnector <AppState, ItineraryViewModel>(
         converter: (store) => ItineraryViewModel.create(store, this.itineraryId),
         onInit: (store) async {
-          store.dispatch(new SetItineraryLoadingAction(true));
-          await fetchItinerary(store,this.itineraryId);
-          store.dispatch(SetItineraryLoadingAction(false));
+          store.dispatch(new SetItineraryBuilderLoadingAction(true));
+          await fetchItineraryBuilder(store,this.itineraryId);
+          store.dispatch(SetItineraryBuilderLoadingAction(false));
         },
         builder: (context, viewModel){
             return _buildLoadedBody(context, viewModel);
@@ -80,17 +77,17 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, ItineraryViewModel viewModel) {
-    if(StoreProvider.of<AppState>(context).state.itinerary == null || StoreProvider.of<AppState>(context).state.itinerary.loading){
+    if(StoreProvider.of<AppState>(context).state.itineraryBuilder == null || StoreProvider.of<AppState>(context).state.itineraryBuilder.loading){
       return _buildLoadingBody(ctxt);
     }
     
-    var itinerary = StoreProvider.of<AppState>(context).state.itinerary.itinerary;
+    var itinerary = StoreProvider.of<AppState>(context).state.itineraryBuilder.itinerary;
     var name = itinerary['name'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
-    var destination = StoreProvider.of<AppState>(context).state.itinerary.destination;
-    var color = Color(hexStringToHexInt(StoreProvider.of<AppState>(context).state.itinerary.color));
+    var destination = StoreProvider.of<AppState>(context).state.itineraryBuilder.destination;
+    var color = Color(hexStringToHexInt(StoreProvider.of<AppState>(context).state.itineraryBuilder.color));
 
 
     return  NestedScrollView(
@@ -293,37 +290,49 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
+            backgroundColor: Colors.white,
             automaticallyImplyLeading: false,
             flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
-              ),
+                centerTitle: true,
+                collapseMode: CollapseMode.parallax,
+                background: Stack(children: <Widget>[
+                  Positioned.fill(
+                      top: 0,
+                      left: 0,
+                      child: ClipPath(
+                        clipper:BottomWaveClipperSlant(),
+                        child: Container(
+                        color: Color.fromRGBO(220, 220, 220, 0.8),
+                      )
+                    )
+                  ),
+                ]
+              )
             ),
           ),
         ];
       },
       body: Container(
-        padding: EdgeInsets.only(top: 40.0),
+        padding: EdgeInsets.only(top: 40.0, left:20, right:20),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           children: <Widget>[
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
+            Align(
+              alignment: Alignment.topLeft,
+              child:Container(
+                width: 200,
+                height: 20,
+                margin: EdgeInsets.only(bottom: 20),
+                color: Color.fromRGBO(220, 220, 220, 0.8),
+              )
             ),
             Container(
-              height: 175.0,
               width: double.infinity,
               margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
+              child: ItineraryListLoading()
             ),
           ],
         )

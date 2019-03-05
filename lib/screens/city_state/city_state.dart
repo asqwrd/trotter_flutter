@@ -22,7 +22,6 @@ Future<CityStateData> fetchCityState(String id) async {
     return CityStateData.fromJson(json.decode(cacheData));
   } else {
     print('no-cached');
-    print(id);
     final response = await http.get('http://localhost:3002/api/explore/city_states/$id/', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -498,7 +497,6 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
     _showVisaNotes = _showVisa && visa['visa']['notes'] != null;
     _showVisaPassportValid = _showVisa && visa['passport'] != null  && visa['passport']['passport_validity'] != null;
     _showVisaBlankPages = _showVisa && visa['passport'] != null  && visa['passport']['blank_pages'] != null;
-    //print('Amb ${emergencyNumbers['ambulance']}');
     String ambulance = arrayString(emergencyNumbers['ambulance']['all']);
     String police = arrayString(emergencyNumbers['police']['all']);
     String fire = arrayString(emergencyNumbers['fire']['all']);

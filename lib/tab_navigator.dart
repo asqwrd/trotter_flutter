@@ -160,7 +160,6 @@ class TabNavigator extends StatelessWidget {
 
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context,{Map<String, dynamic> data}) {
-    print(data);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
         countryId: data['id'],

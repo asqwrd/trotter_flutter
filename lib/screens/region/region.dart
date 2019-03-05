@@ -247,7 +247,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
                   ),
                   Positioned(
                     left: 0,
-                    top: 150,
+                    top: 180,
                     width: MediaQuery.of(context).size.width,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -261,13 +261,15 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
                             fit: BoxFit.contain
                           )
                         ),
-                        Text(name,
+                        Container(
+                          //width: MediaQuery.of(context).size.width - 100,
+                          child: Text(name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
                             fontWeight: FontWeight.w300
                           )
-                        )
+                        ))
                       ]
                     )
                   ),
@@ -282,35 +284,42 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
         children: [
           _buildTabContent(
             _buildAllTab(allTab, descriptionShort),
-            'All'
+            'All',
           ),
           _buildListView(
             discover, 
-            'Discover'
+            'Discover',
+            color
           ),
           _buildListView(
             see, 
-            'See'
+            'See',
+            color
           ),
           _buildListView(
             eat, 
-            'Eat'
+            'Eat',
+            color
           ),
           _buildListView(
             relax, 
-            'Relax'
+            'Relax',
+            color
           ),
           _buildListView(
             play, 
-            'Play'
+            'Play',
+            color
           ),
           _buildListView(
             shop, 
-            'Shop'
+            'Shop',
+            color
           ),
           _buildListView(
             nightlife, 
-            'NightLife'
+            'NightLife',
+            color
           ),
         ],
       ),
@@ -362,7 +371,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildListView(List<dynamic> items, key) {
+  _buildListView(List<dynamic> items, String key, Color color) {
     return ListView.builder(
       key: new PageStorageKey(key),
       itemCount: items.length,
@@ -379,18 +388,33 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Container(
-                  width:150,
-                  height: 90,
-                  margin: EdgeInsets.only(right: 20.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5.0),
-                    image: DecorationImage(
-                      image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
-                      fit: BoxFit.fill   
+                Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                      top:0,
+                      left:-20,
+                      //alignment: Alignment.center,
+                      child:SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: Align(child:CircularProgressIndicator(
+                        valueColor: new AlwaysStoppedAnimation<Color>(color),
+                      ))
                     )
-                  )
-                ),
+                  ),
+                  Container(
+                    width:150,
+                    height: 90,
+                    margin: EdgeInsets.only(right: 20.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5.0),
+                      image: DecorationImage(
+                        image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
+                        fit: BoxFit.fill   
+                      )
+                    )
+                  ),
+                ]),
                 Container(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

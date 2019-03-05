@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-
+import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 
 
 
@@ -27,6 +26,7 @@ class DayEditState extends State<DayEdit> {
   String destinationName;
   String destinationId;
   List<dynamic> itineraryItems = [];
+  //List<FabMiniMenuItem> _fabMiniMenuItemList = [];
   
   Future<DayData> data;
   final ScrollController _scrollController = ScrollController();
@@ -42,7 +42,14 @@ class DayEditState extends State<DayEdit> {
     }));
     super.initState();
     data = fetchDay(this.itineraryId, this.dayId);
-    
+    data.then((data){
+      setState(() {
+        this.color = Color(hexStringToHexInt(data.color));
+        this.destinationName = data.destination['name'];
+        this.destinationId = data.destination['id'].toString();
+        this.itineraryItems = data.day['itinerary_items'];
+      });
+    }); 
   }
 
   @override
@@ -58,54 +65,17 @@ class DayEditState extends State<DayEdit> {
     this.onPush
   });
 
-  
-
-
   @override
   Widget build(BuildContext context) {
-    data.then((data){
-      setState(() {
-        this.color = Color(hexStringToHexInt(data.color));
-        this.destinationName = data.destination['name'];
-        this.destinationId = data.destination['id'].toString();
-        this.itineraryItems = data.day['itinerary_items'];
-      });
-      
-    });
     return new Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: this.color,
-        onPressed: () async { 
-          var suggestion = await Navigator.push(
-            context, MaterialPageRoute(
-              fullscreenDialog: true, 
-              builder: (context) => SearchModal(
-                query:'',
-                location: this.destinationName,
-                id: this.destinationId
-              )
-            )
-          );
-          if(suggestion != null){
-           // print(suggestion['location']);
-            var data = {
-              "poi": suggestion,
-              "title":"",
-              "description":"",
-              "time":{
-                "value":"",
-                "unit":""
-              }
-            };
-
-            var response = await addToDay(this.itineraryId, this.dayId, data);
-            this.itineraryItems.add(response.itineraryItem);
-            StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, response.itineraryItem));
+      floatingActionButton: FutureBuilder(
+        future: data,
+        builder: (context, snapshot) {
+          if(snapshot.hasData){
+            return _buildFab(Color(hexStringToHexInt(snapshot.data.color)));
           }
-        },
-        tooltip: ' Add a place',
-        child: Icon(Icons.add),
-        elevation: 5.0,
+          return FloatingActionButton(onPressed: (){}, backgroundColor: Color.fromRGBO(240, 240, 240, 1),);
+        }
       ),
       body: FutureBuilder(
         future: data,
@@ -119,7 +89,62 @@ class DayEditState extends State<DayEdit> {
     );
   }
   
+  Widget _buildFab(color){
+    var items = [
+      new FabMiniMenuItem.withText(
+        new Icon(Icons.place),
+        color,
+        4.0,
+        null,
+        () async { 
+        var suggestion = await Navigator.push(
+          context, MaterialPageRoute(
+            fullscreenDialog: true, 
+            builder: (context) => SearchModal(
+              query:'',
+              location: this.destinationName,
+              id: this.destinationId
+            )
+          )
+        );
+        if(suggestion != null){
+          // print(suggestion['location']);
+          var data = {
+            "poi": suggestion,
+            "title":"",
+            "description":"",
+            "time":{
+              "value":"",
+              "unit":""
+            }
+          };
 
+          var response = await addToDay(this.itineraryId, this.dayId, data);
+          this.itineraryItems.add(response.itineraryItem);
+          StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, response.itineraryItem));
+        }
+      },
+        "Add a place",
+        color,
+        Colors.white,
+        true
+      ),
+      new FabMiniMenuItem.withText(
+        new Icon(Icons.note_add),
+        color,
+        4.0,
+        null,
+        () async { 
+          print('add reminder');
+        },
+        "Add a reminder",
+        color,
+        Colors.white,
+        true
+      ),   
+    ];
+    return new FabDialer(items, color, new Icon(Icons.add));
+  }
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     
@@ -217,11 +242,11 @@ class DayEditState extends State<DayEdit> {
                     margin: EdgeInsets.only(right: 0),
                     width:40,
                     child: Icon(
-                            Icons.blur_circular,
-                            color:Colors.grey,
-                            size: 20,
-                            
-                          ),
+                      Icons.access_time,
+                      color:Colors.grey,
+                      size: 20,
+                      
+                    ),
                   ),
                   Flexible(
                     //width:200,

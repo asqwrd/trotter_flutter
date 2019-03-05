@@ -170,7 +170,7 @@ class DayState extends State<Day> {
                         margin: EdgeInsets.only(right: 0),
                         width:40,
                         child: Icon(
-                          Icons.blur_circular,
+                          Icons.access_time,
                           color:Colors.grey,
                           size: 20,
                         ),

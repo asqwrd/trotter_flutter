@@ -196,7 +196,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
                           )
                         ),
                         Container(
-                          width: MediaQuery.of(context).size.width - 100,
+                          //width: MediaQuery.of(context).size.width - 100,
                           child:Text(name,
                           maxLines: 2,
                           overflow: TextOverflow.fade,
@@ -232,7 +232,8 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
           Flexible(  
             child:_buildListView(
               pois, 
-              'Poi'
+              'Poi',
+              color
             )
           )
         ]
@@ -240,7 +241,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildListView(List<dynamic> items, key) {
+  _buildListView(List<dynamic> items, String key, Color color) {
     return ListView.builder(
       key: new PageStorageKey(key),
       itemCount: items.length,
@@ -257,18 +258,35 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Container(
-                  width:150,
-                  height: 90,
-                  margin: EdgeInsets.only(right: 20.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5.0),
-                    image: DecorationImage(
-                      image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
-                      fit: BoxFit.fill   
-                    )
-                  )
+                Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                      top:0,
+                      left:-20,
+                      //alignment: Alignment.center,
+                      child:SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: Align(child:CircularProgressIndicator(
+                          valueColor: new AlwaysStoppedAnimation<Color>(color),
+                        ))
+                      )
+                    ),
+                    Container(
+                      width:150,
+                      height: 90,
+                      margin: EdgeInsets.only(right: 20.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5.0),
+                        image: DecorationImage(
+                          image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
+                          fit: BoxFit.fill   
+                        )
+                      )
+                    ),
+                  ]
                 ),
+                
                 Container(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

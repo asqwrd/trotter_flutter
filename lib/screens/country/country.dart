@@ -220,7 +220,7 @@ class CountryState extends State<Country> {
                   ),
                   Positioned(
                     left: 0,
-                    top: 200,
+                    top: 180,
                     width: MediaQuery.of(context).size.width,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -234,13 +234,15 @@ class CountryState extends State<Country> {
                             fit: BoxFit.contain
                           )
                         ),
-                        Text(name,
+                        Container(
+                          //width: MediaQuery.of(context).size.width - 100,
+                          child: Text(name,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
                             fontWeight: FontWeight.w300
                           )
-                        )
+                        ))
                       ]
                     )
                   ),

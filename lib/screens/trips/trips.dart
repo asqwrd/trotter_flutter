@@ -43,6 +43,7 @@ class TripsState extends State<Trips> {
   BuildContext context;
   final ValueChanged<dynamic> onPush;
   
+  
   Future<TripsData> data;
   final ScrollController _scrollController = ScrollController();
     var kExpandedHeight = 280;
@@ -74,9 +75,10 @@ class TripsState extends State<Trips> {
   @override
   Widget build(BuildContext context) {
     this.context = context;
+    var color = Color.fromRGBO(1, 155, 174, 1);
     return new Scaffold(
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blueGrey,
+        backgroundColor: color,
         onPressed: () { 
           onPush({"level": "createtrip"});
           if(StoreProvider.of<AppState>(context).state.trips.length == 0){
@@ -96,7 +98,7 @@ class TripsState extends State<Trips> {
           await fetchTrips(store);
           store.dispatch(SetTripsLoadingAction(false));
         },
-        builder: (context, viewModel)=> _buildLoadedBody(context, viewModel)
+        builder: (context, viewModel)=> _buildLoadedBody(context, viewModel, color)
       )
     );
   }
@@ -105,13 +107,10 @@ class TripsState extends State<Trips> {
   
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel) {
+  Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel, Color color) {
     
     var trips = StoreProvider.of<AppState>(context).state.trips;
     var loading = StoreProvider.of<AppState>(context).state.tripLoading;
-
-    var color = Colors.blueGrey;
-
     if(loading == true)
       return _buildLoadingBody(context, viewModel);
     
@@ -124,7 +123,7 @@ class TripsState extends State<Trips> {
             brightness: Brightness.light,
             title: SearchBar(
               placeholder: 'Explore the world',
-              fillColor: Colors.blueGrey.withOpacity(0.3),
+              fillColor: color.withOpacity(0.3),
               onPressed: (){
                 onPush({'query':'', 'level':'search'});
               },     
@@ -143,7 +142,7 @@ class TripsState extends State<Trips> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 35,
-                      color: Colors.blueGrey,
+                      color: color,
                       fontWeight: FontWeight.w300
                       
                     ),
@@ -154,7 +153,7 @@ class TripsState extends State<Trips> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 25,
-                      color: Colors.blueGrey,
+                      color: color,
                       fontWeight: FontWeight.w200
                     ),
                   )
@@ -179,7 +178,7 @@ class TripsState extends State<Trips> {
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: this._showTitle ? Colors.blueGrey : Colors.white,
+            backgroundColor: this._showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             title: SearchBar(
               placeholder: 'Explore the world',
@@ -344,7 +343,7 @@ class TripsState extends State<Trips> {
                                                   duration: Duration(seconds: 2),
                                                   action: SnackBarAction(
                                                     label: 'Undo',
-                                                    textColor: Colors.blueGrey,
+                                                    textColor: color,
                                                     onPressed: () async {
                                                       setState(() {
                                                         this.refreshing = true;                               

@@ -162,7 +162,7 @@ class HomeState extends State<Home> {
 
   // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    
+    var color = Color.fromRGBO(106,154,168,1);
     List<Widget> widgets = [
       Padding(
         padding: EdgeInsets.only(bottom: 10, top: 50, left: 20, right: 20),
@@ -170,7 +170,7 @@ class HomeState extends State<Home> {
         'Get inspired by itineraries!',
         style: TextStyle(
           fontSize: 25,
-          color: Color.fromRGBO(194, 121, 73, 1),
+          color: color,
           fontWeight: FontWeight.w500
         ),
       )),
@@ -188,7 +188,7 @@ class HomeState extends State<Home> {
       widgets.add(
         ItineraryCard(
           item: itinerary,
-          color:Color.fromRGBO(194, 121, 73, 1),
+          color:color,
           onPressed: (data){
             onPush({'id':data['id'].toString(), 'level':data['level'].toString()});
           },
@@ -212,7 +212,7 @@ class HomeState extends State<Home> {
                   
             ),
             centerTitle: true,
-            backgroundColor: this._showTitle ? Color.fromRGBO(194, 121, 73, 1) : Colors.white,
+            backgroundColor: this._showTitle ? color : Colors.white,
             automaticallyImplyLeading: false,
             bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
             flexibleSpace: FlexibleSpaceBar(
@@ -231,14 +231,14 @@ class HomeState extends State<Home> {
                     left: 0,
                     child: ClipPath(
                         child: Container(
-                        color: Color.fromRGBO(194, 121, 73, 0.5),
+                        color: color.withOpacity(0.5),
                       ),
                       clipper: BottomWaveClipper(),
                     )
                   ),
                   Positioned(
                     left: 0,
-                    top: 200,
+                    top: 180,
                     width: MediaQuery.of(context).size.width,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -252,13 +252,15 @@ class HomeState extends State<Home> {
                             fit: BoxFit.contain
                           )
                         ),
-                        Text("Trotter",
+                        Container(
+                          //width: MediaQuery.of(context).size.width - 100,
+                          child: Text("Trotter",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 40,
                             fontWeight: FontWeight.w300
                           )
-                        )
+                        ))
                       ]
                     )
                   ),
@@ -278,7 +280,6 @@ class HomeState extends State<Home> {
               TopList(
                 items: snapshot.data.popularCities,
                 onPressed: (data){
-                  print("Clicked ${data['level']}");
                   onPush({'id':data['id'], 'level':data['level']});
                 },
                 onLongPressed: (data){
@@ -289,7 +290,6 @@ class HomeState extends State<Home> {
               TopList(
                 items: snapshot.data.popularIslands,
                 onPressed: (data){
-                  print("Clicked ${data['id']}");
                   onPush({'id':data['id'], 'level':data['level']});
                 },
                 onLongPressed: (data){

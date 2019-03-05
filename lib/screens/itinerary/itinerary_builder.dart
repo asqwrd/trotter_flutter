@@ -206,78 +206,81 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
         var itineraryItems = days[dayIndex]['itinerary_items'];
         var dayId = days[dayIndex]['id'];
         
-        return Column(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Align(
-                  alignment: Alignment.topLeft,
-                  child:Container(
-                    child: Text(
-                      'Your ${ordinalNumber(days[dayIndex]['day'] + 1)} day in $destinationName',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w400
-                      ),
-                    )
-                  )
-                ),
-                Align(
-                  alignment: Alignment.topLeft,
-                  child:Container(
-                    margin: EdgeInsets.only(bottom:20),
-                    child: Text(
-                      itineraryItems != null ? '${itineraryItems.length} items(s)' : '0 item(s)',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w300
-                      ),
-                    )
-                  )
-                )
-              ]
-            ), 
-            itineraryItems != null ? Container(
-              margin: EdgeInsets.only(top:0),
-              child: ItineraryList(
-                items: itineraryItems,
-                color: color,
-                onPressed: (data){
-                  onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
-                },
-              )
-            ) : Container(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+        return GestureDetector(
+          onTap: () => onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day'}),
+          child: Column(
+            children: <Widget>[
+              Column(
                 children: <Widget>[
-                  Container(
-                    margin: EdgeInsets.only(bottom:10),
-                    child: SvgPicture.asset(
-                      'images/itinerary-icon.svg',
-                      width: 100,
-                      height: 100,
-                    ),
-                  ),
-                  FlatButton(
-                    onPressed: (){
-                      onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
-                    },
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    child: Text(
-                      'Start planning',
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.w400,
-                        fontSize: 20
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child:Container(
+                      child: Text(
+                        'Your ${ordinalNumber(days[dayIndex]['day'] + 1)} day in $destinationName',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w400
+                        ),
                       )
-                    ),
+                    )
+                  ),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child:Container(
+                      margin: EdgeInsets.only(bottom:20),
+                      child: Text(
+                        itineraryItems != null ? '${itineraryItems.length} items(s)' : '0 item(s)',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300
+                        ),
+                      )
+                    )
                   )
-                ],
+                ]
+              ), 
+              itineraryItems != null ? Container(
+                margin: EdgeInsets.only(top:0),
+                child: ItineraryList(
+                  items: itineraryItems,
+                  color: color,
+                  onPressed: (data){
+                    onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
+                  },
+                )
+              ) : Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      margin: EdgeInsets.only(bottom:10),
+                      child: SvgPicture.asset(
+                        'images/itinerary-icon.svg',
+                        width: 100,
+                        height: 100,
+                      ),
+                    ),
+                    FlatButton(
+                      onPressed: (){
+                        onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
+                      },
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      clipBehavior: Clip.antiAliasWithSaveLayer,
+                      child: Text(
+                        'Start planning',
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 20
+                        )
+                      ),
+                    )
+                  ],
+                )
               )
-            )
-          ]
+            ]
+          )
         );
       },
     );

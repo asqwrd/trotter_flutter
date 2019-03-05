@@ -31,7 +31,6 @@ Future<ItineraryData> fetchItinerary(Store<AppState> store, String id) async {
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     var results  = ItineraryData.fromJson(json.decode(response.body));
-    print("hi fetch");
     store.dispatch(
       new GetItineraryAction(
         results.itinerary,
@@ -53,7 +52,6 @@ Future<ItineraryData> fetchItineraryBuilder(Store<AppState> store, String id) as
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     var results  = ItineraryData.fromJson(json.decode(response.body));
-    print("hi fetch");
     store.dispatch(
       new GetItineraryBuilderAction(
         results.itinerary,
@@ -94,7 +92,6 @@ Future<AddItemData> addToDay(String itineraryId, String dayId, dynamic data) asy
     return AddItemData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
-    print(response);
     var msg = response.statusCode;
     throw Exception('Response> $msg');
   }

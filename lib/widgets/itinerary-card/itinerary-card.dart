@@ -48,34 +48,43 @@ class ItineraryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(240, 240, 240, 0.8),
-                borderRadius: BorderRadius.circular(10),
-                image: DecorationImage(
-                  image: item['days'][0]['itinerary_items'][0]['poi']['images'] != null ? NetworkImage(item['days'][0]['itinerary_items'][0]['poi']['images'][0]['sizes']['medium']['url']) : AssetImage('images/placeholder.jpg'),
-                  fit: BoxFit.cover
-                )
-              ),
               width: double.infinity,
               height: 250,
               child: Stack(
                 children: <Widget>[
+                  Positioned(
+                    child: Center(child:Align(child:CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(color),
+                  ))
+                  )),
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: Colors.black.withOpacity(0.15),
+                        color: Colors.black.withOpacity(0.05),
                       ),
                     ),
                   ),
-                  Positioned(
-                    child: Center(child:SvgPicture.asset(
-                      'images/trotter-logo.svg',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.contain,
-                    )
-                  ))
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(240, 240, 240, 0.8),
+                        borderRadius: BorderRadius.circular(10),
+                        image: DecorationImage(
+                          image: item['days'][0]['itinerary_items'][0]['poi']['images'] != null ? NetworkImage(item['days'][0]['itinerary_items'][0]['poi']['images'][0]['sizes']['medium']['url']) : AssetImage('images/placeholder.jpg'),
+                          fit: BoxFit.cover
+                        )
+                      ),
+                    ),
+                  )
+                  // Positioned(
+                  //   child: Center(child:SvgPicture.asset(
+                  //     'images/trotter-logo.svg',
+                  //     width: 50,
+                  //     height: 50,
+                  //     fit: BoxFit.contain,
+                  //   )
+                  // ))
                 ],
               )
             ),

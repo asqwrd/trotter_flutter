@@ -29,6 +29,7 @@ class TabNavigatorRoutes {
   static const String itinerary = '/itinerary';
   static const String itinerary_builder = '/itinerary/edit';
   static const String day_edit = '/itinerary/day/edit';
+  static const String day = '/itinerary/day';
   static const String createtrip = '/trip/create';
 }
 
@@ -57,6 +58,9 @@ class TabNavigator extends StatelessWidget {
         break;
       case 'itinerary/edit':
         goTo = TabNavigatorRoutes.itinerary_builder;
+        break;
+      case 'itinerary/day':
+        goTo = TabNavigatorRoutes.day;
         break;
       case 'itinerary/day/edit':
         goTo = TabNavigatorRoutes.day_edit;
@@ -201,6 +205,11 @@ class TabNavigator extends StatelessWidget {
         onPush: (data) => push(context, data)
       ),
       TabNavigatorRoutes.day_edit: (context) => DayEdit(
+        itineraryId: data['itineraryId'], 
+        dayId: data['dayId'], 
+        onPush: (data) => push(context, data)
+      ),
+      TabNavigatorRoutes.day: (context) => Day(
         itineraryId: data['itineraryId'], 
         dayId: data['dayId'], 
         onPush: (data) => push(context, data)

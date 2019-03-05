@@ -197,90 +197,90 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   
 _buildDay(List<dynamic> days, String destinationName, String locationId, Color color){
   return ListView.separated(
-        separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.only(bottom: 40, top: 40), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
-        padding: EdgeInsets.all(20.0),
-        itemCount: days.length,
-        shrinkWrap: true,
-        primary: true,
-        itemBuilder: (BuildContext listContext, int dayIndex){
-          var itineraryItems = days[dayIndex]['itinerary_items'];
-          var dayId = days[dayIndex]['id'];
-          
-          return  Column(
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child:Container(
-                      child: Text(
-                        'Your ${ordinalNumber(days[dayIndex]['day'] + 1)} day in $destinationName',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w400
-                        ),
-                      )
-                    )
-                  ),
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child:Container(
-                      margin: EdgeInsets.only(bottom:20),
-                      child: Text(
-                        itineraryItems != null ? '${itineraryItems.length} items(s)' : '0 item(s)',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w300
-                        ),
-                      )
+      separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.only(bottom: 40, top: 40), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
+      padding: EdgeInsets.all(20.0),
+      itemCount: days.length,
+      shrinkWrap: true,
+      primary: true,
+      itemBuilder: (BuildContext listContext, int dayIndex){
+        var itineraryItems = days[dayIndex]['itinerary_items'];
+        var dayId = days[dayIndex]['id'];
+        
+        return Column(
+          children: <Widget>[
+            Column(
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.topLeft,
+                  child:Container(
+                    child: Text(
+                      'Your ${ordinalNumber(days[dayIndex]['day'] + 1)} day in $destinationName',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w400
+                      ),
                     )
                   )
-                ]
-              ), 
-              itineraryItems != null ? Container(
-                margin: EdgeInsets.only(top:0),
-                child: ItineraryList(
-                  items: itineraryItems,
-                  color: color,
-                  onPressed: (data){
-                    onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
-                  },
-                )
-              ) : Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(bottom:10),
-                      child: SvgPicture.asset(
-                        'images/itinerary-icon.svg',
-                        width: 100,
-                        height: 100,
-                      ),
-                    ),
-                    FlatButton(
-                      onPressed: (){
-                        onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
-                      },
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      child: Text(
-                        'Start planning',
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 20
-                        )
+                ),
+                Align(
+                  alignment: Alignment.topLeft,
+                  child:Container(
+                    margin: EdgeInsets.only(bottom:20),
+                    child: Text(
+                      itineraryItems != null ? '${itineraryItems.length} items(s)' : '0 item(s)',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w300
                       ),
                     )
-                  ],
+                  )
                 )
+              ]
+            ), 
+            itineraryItems != null ? Container(
+              margin: EdgeInsets.only(top:0),
+              child: ItineraryList(
+                items: itineraryItems,
+                color: color,
+                onPressed: (data){
+                  onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
+                },
               )
-            ]
-          );
-        },
-      );
+            ) : Container(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.only(bottom:10),
+                    child: SvgPicture.asset(
+                      'images/itinerary-icon.svg',
+                      width: 100,
+                      height: 100,
+                    ),
+                  ),
+                  FlatButton(
+                    onPressed: (){
+                      onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
+                    },
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                    child: Text(
+                      'Start planning',
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w400,
+                        fontSize: 20
+                      )
+                    ),
+                  )
+                ],
+              )
+            )
+          ]
+        );
+      },
+    );
 }
   
   // function for rendering while data is loading

@@ -196,6 +196,7 @@ class ItineraryState extends State<Itinerary> {
 
   
 _buildDay(List<dynamic> days, String destinationName, String locationId, Color color){
+  
   return ListView.separated(
         separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.only(bottom: 40, top: 40), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
         padding: EdgeInsets.all(20.0),
@@ -204,7 +205,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
         primary: true,
         itemBuilder: (BuildContext listContext, int dayIndex){
           var itineraryItems = days[dayIndex]['itinerary_items'];
-          
+          var dayId = days[dayIndex]['id'];
           var pois = [];
           if(itineraryItems != null){
             for(var item in itineraryItems){
@@ -212,7 +213,9 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
             }
           }
           
-          return  Column(
+          return  GestureDetector(
+            onTap: () => onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day'}),
+            child: Column(
             children: <Widget>[
               Column(
                 children: <Widget>[
@@ -249,12 +252,12 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                   items: itineraryItems,
                   color: color,
                   onPressed: (data){
-                    onPush({'id':data['id'], 'level':data['level'], 'google_place':data['google_place'], 'location_id':locationId});
+                    onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day'});
                   },
                 )
               ) : Container()
             ]
-          );
+          ));
         },
       );
 }

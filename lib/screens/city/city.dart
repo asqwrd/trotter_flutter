@@ -284,31 +284,38 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
           ),
           _buildListView(
             discover, 
-            'Discover'
+            'Discover',
+            color
           ),
           _buildListView(
             see, 
-            'See'
+            'See',
+            color
           ),
           _buildListView(
             eat, 
-            'Eat'
+            'Eat',
+            color
           ),
           _buildListView(
             relax, 
-            'Relax'
+            'Relax',
+            color
           ),
           _buildListView(
             play, 
-            'Play'
+            'Play',
+            color
           ),
           _buildListView(
             shop, 
-            'Shop'
+            'Shop',
+            color
           ),
           _buildListView(
             nightlife, 
-            'NightLife'
+            'NightLife',
+            color
           ),
         ],
       ),
@@ -360,7 +367,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildListView(List<dynamic> items, key) {
+  _buildListView(List<dynamic> items, String key, Color color) {
     return ListView.builder(
       key: new PageStorageKey(key),
       itemCount: items.length,
@@ -377,18 +384,35 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Container(
-                  width:150,
-                  height: 90,
-                  margin: EdgeInsets.only(right: 20.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5.0),
-                    image: DecorationImage(
-                      image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
-                      fit: BoxFit.fill   
-                    )
-                  )
+                Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                      top:0,
+                      left:-20,
+                      //alignment: Alignment.center,
+                      child:SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: Align(child:CircularProgressIndicator(
+                        valueColor: new AlwaysStoppedAnimation<Color>(color),
+                      ))
+                    )),
+                    Container(
+                      width:150,
+                      height: 90,
+                      margin: EdgeInsets.only(right: 20.0),
+                      decoration: BoxDecoration(
+                        color:Color.fromRGBO(240, 240, 240, 0.8),
+                        borderRadius: BorderRadius.circular(5.0),
+                        image: DecorationImage(
+                          image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
+                          fit: BoxFit.fill   
+                        )
+                      )
+                    ),
+                  ],
                 ),
+                
                 Container(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

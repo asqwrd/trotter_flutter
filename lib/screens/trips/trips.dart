@@ -195,7 +195,7 @@ class TripsState extends State<Trips> {
                   Positioned.fill(
                       top: 0,
                       child: ClipPath(
-                        clipper: BottomWaveClipperSlant(),
+                        clipper: BottomWaveClipper(),
                         child: Image.asset(
                         'images/search2.jpg',
                         fit: BoxFit.cover,
@@ -206,7 +206,7 @@ class TripsState extends State<Trips> {
                       top: 0,
                       left: 0,
                       child: ClipPath(
-                        clipper:BottomWaveClipperSlant(),
+                        clipper:BottomWaveClipper(),
                         child: Container(
                         color: color.withOpacity(0.5),
                       )
@@ -214,7 +214,7 @@ class TripsState extends State<Trips> {
                   ),
                   Positioned(
                     left: 0,
-                    top: 150,
+                    top: 180,
                     width: MediaQuery.of(context).size.width,
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -246,6 +246,7 @@ class TripsState extends State<Trips> {
       },
       body: Container(
         margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
+        padding: EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(color: Colors.white),
         child: Stack(
           children: <Widget>[
@@ -258,21 +259,22 @@ class TripsState extends State<Trips> {
                       shrinkWrap: true,
                       itemCount: trips.length,
                       itemBuilder: (BuildContext context, int index) {
-                        var color = Color(hexStringToHexInt(trips[index]['color']));            
+                        var color = Color(hexStringToHexInt(trips[index]['color']));
+                        var maincolor = Color.fromRGBO(1, 155, 174, 1);            
                         return InkWell(
                           onTap: () async {
                             onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
                           },
                           child:Card(
                             semanticContainer: true,
-                            color: Colors.white,
+                            color: color,
                             clipBehavior: Clip.antiAliasWithSaveLayer,
                             child: Column(
                               children: <Widget>[  
                                 Container(
-                                  height: 450.0,
+                                  height: 420.0,
                                   width: double.infinity,
-                                  color: Colors.white,
+                                  color: color,
                                   child: Stack(
                                     children: <Widget>[
                                       Positioned.fill(
@@ -280,7 +282,7 @@ class TripsState extends State<Trips> {
                                         left:0,
                                         
                                         child: ClipPath( 
-                                          clipper: BottomWaveClipper(),
+                                          clipper: BottomWaveClipperSlant(),
                                           child: Image.network(
                                             trips[index]['image'],
                                             fit: BoxFit.cover
@@ -291,7 +293,7 @@ class TripsState extends State<Trips> {
                                         top:0,
                                         left: 0,
                                         child: ClipPath( 
-                                          clipper: BottomWaveClipper(),
+                                          clipper: BottomWaveClipperSlant(),
                                           child: Container(
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
@@ -304,10 +306,10 @@ class TripsState extends State<Trips> {
                                         ))
                                       ),
                                       Positioned(
-                                        top:375,
+                                        top:290,
                                         right: 30,
                                         child: FloatingActionButton(
-                                          backgroundColor: color,
+                                          backgroundColor: maincolor,
                                           onPressed: () async {
                                             var undoData = {
                                               "trip":{
@@ -420,19 +422,19 @@ class TripsState extends State<Trips> {
                                   primary: false,
                                   children:<Widget>[
                                     Padding(
-                                      padding: EdgeInsets.only(top: 10.0, bottom: 10),
+                                      padding: EdgeInsets.only(top: 0.0, bottom: 10, left:20, right:20),
                                       child: Text(
                                         trips[index]['name'].toUpperCase(),
-                                        textAlign: TextAlign.center,
+                                        textAlign: TextAlign.left,
                                         style: TextStyle(
-                                          color: color,
+                                          color: fontContrast(color),
                                           fontSize: 25.0,
                                           fontWeight: FontWeight.w500
                                           
                                         ),
                                       )
                                     ),
-                                    _buildDestinationInfo(trips[index]['destinations'])
+                                    _buildDestinationInfo(trips[index]['destinations'], color)
                                   ] 
                                 ),
                                 SizedBox(height: 20)
@@ -461,24 +463,24 @@ class TripsState extends State<Trips> {
     );
   }
 
-  _buildDestinationInfo(List<dynamic> destinations){
+  _buildDestinationInfo(List<dynamic> destinations, Color color){
     var widgets = <Widget>[];
     for (var destination in destinations){
       var startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000));
       var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
       widgets.add(
         Padding(
-          padding: EdgeInsets.only(top:0, bottom:10),
+          padding: EdgeInsets.only(top:0, bottom:10, left:20, right: 20),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Text(
                 '${destination['destination_name']}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
-                  color: Colors.blueGrey,
+                  color: fontContrast(color),
                   fontSize: 18,
                 )
               ),
@@ -487,7 +489,7 @@ class TripsState extends State<Trips> {
                 ' ${new HtmlUnescape().convert('&bull;')} $startDate - $endDate',
                 style: TextStyle(
                   fontWeight: FontWeight.w300,
-                  color: Colors.blueGrey,
+                  color: fontContrast(color),
                   fontSize: 18
                 )
               ):

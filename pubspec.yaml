@@ -38,6 +38,7 @@ dependencies:
   flutter_page_indicator: ^0.0.3
   bubble_bottom_bar: ^1.0.0
   flutter_fab_dialer: ^0.1.1
+  flutter_vector_icons: ^0.1.0
 
 
 
@@ -78,6 +79,10 @@ flutter:
   - images/trips-icon.svg
   - images/explore-icon.svg
   - images/avatar-icon.svg
+  - images/place-icon.svg
+  - images/reminder-icon.svg
+  - images/place-icon.png
+  - images/reminder-icon.png
   - images/A.png
   - images/B.png
   - images/C.png

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trotter_flutter/widgets/day-list/index.dart';
 
 
 
@@ -150,125 +148,7 @@ class DayState extends State<Day> {
           ),
         ];
       },
-      body: Container(
-        margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView.builder(
-          itemCount: itineraryItems.length,
-          itemBuilder: (BuildContext context, int index){
-            var color = itineraryItems[index]['color'].isEmpty == false ? Color(hexStringToHexInt(itineraryItems[index]['color'])) : this.color;
-            var poi = itineraryItems[index]['poi'];
-            var item = itineraryItems[index];
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child:Column(
-                children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.only(right: 0),
-                        width:40,
-                        child: Icon(
-                          Icons.access_time,
-                          color:Colors.grey,
-                          size: 20,
-                        ),
-                      ),
-                      Flexible(
-                        //width:200,
-                        child: Card(
-                          color: color,
-                          elevation: 0,
-                          margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
-                          child: Column(
-                            children: <Widget>[
-                              Padding(
-                                padding: EdgeInsets.all(20),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    Container(
-                                      margin: EdgeInsets.only(right:10),
-                                      child:Icon(
-                                        Icons.place,
-                                        color:fontContrast(color),
-                                        size: 16,
-                                        
-                                      )
-                                    ),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          poi['name'],
-                                          style: TextStyle(
-                                            color: fontContrast(color),
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w400
-                                          )
-                                        ),
-                                        poi['tags'] != null ? Container(
-                                          width: MediaQuery.of(context).size.width - 176,
-                                          child:Text(
-                                          tagsToString(poi['tags']),
-                                          style: TextStyle(
-                                            color: fontContrast(color),
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w300,
-                                          )
-                                        )) : Container(),
-                                      ],
-                                    )
-                                  ]
-                                )
-                              ),
-                              item['image'].isEmpty == false ? Opacity(
-                                opacity: 0.75,
-                                child: Container(
-                                  height: 280,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: item['image'].isEmpty == false ? NetworkImage(item['image']) :AssetImage('images/placeholder.jpg'),
-                                      fit: BoxFit.cover
-                                    ),
-                                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(5), bottomRight: Radius.circular(5))
-
-                                  ),
-                                )
-                              ) : Container(),
-                            ]
-                          )
-                        )
-                      )
-                    ],
-                  ),
-                  item['description'].isEmpty == false ? 
-                    Container(
-                      padding: EdgeInsets.all(20),
-                      margin: EdgeInsets.only(top: 0, left: 50, right:10, bottom: 20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: color,
-                          
-                        
-                        )
-                      ),
-                      child: Text(
-                        item['description'],
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w300
-                        ),
-                    )
-                  ) : Container()
-                ],
-              )
-            );
-          },
-        )
-      ),
+      body: DayList(items:itineraryItems, color: color,),
     );
   }
   

@@ -264,58 +264,53 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    return NestedScrollView(
+    return Column(
       //controller: _scrollControllerItinerary,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Colors.white,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: Stack(children: <Widget>[
-                  Positioned.fill(
-                      top: 0,
-                      left: 0,
-                      child: ClipPath(
-                        clipper:BottomWaveClipperSlant(),
-                        child: Container(
-                        color: Color.fromRGBO(220, 220, 220, 0.8),
-                      )
-                    )
-                  ),
-                ]
-              )
-            ),
-          ),
-        ];
-      },
-      body: Container(
-        padding: EdgeInsets.only(top: 40.0, left:20, right:20),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          children: <Widget>[
-            Align(
-              alignment: Alignment.topLeft,
-              child:Container(
-                width: 200,
-                height: 20,
-                margin: EdgeInsets.only(bottom: 20),
-                color: Color.fromRGBO(220, 220, 220, 0.8),
-              )
-            ),
-            Container(
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: ItineraryListLoading()
-            ),
-          ],
+      children: <Widget>[
+        Container(
+          height: 350,
+          color: Colors.white,
+          child: Stack(
+            children: <Widget>[
+              Positioned.fill(
+                top: 0,
+                left: 0,
+                child: ClipPath(
+                  clipper:BottomWaveClipperSlant(),
+                  child: Container(
+                    color: Color.fromRGBO(220, 220, 220, 0.8),
+                  )
+                )
+              ),
+            ]
+          )
+        ),
+        Flexible( 
+          child: Container(
+            padding: EdgeInsets.only(top: 40.0, left:20, right:20),
+            decoration: BoxDecoration(color: Colors.white),
+            child: ListView(
+              physics: NeverScrollableScrollPhysics(),
+              children: <Widget>[
+                Align(
+                  alignment: Alignment.topLeft,
+                  child:Container(
+                    width: 200,
+                    height: 20,
+                    margin: EdgeInsets.only(bottom: 20),
+                    color: Color.fromRGBO(220, 220, 220, 0.8),
+                  )
+                ),
+                Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(bottom: 30.0),
+                  child: ItineraryListLoading()
+                ),
+              ],
+            )
+          )
         )
-      ),
+      ]
     );
   }
 }

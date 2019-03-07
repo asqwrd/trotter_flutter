@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:core';
@@ -14,6 +13,8 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'add-destination-modal.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:shimmer/shimmer.dart';
+
 
 showDateModal(BuildContext context, dynamic destination, Color color,String tripId) {
   return showGeneralDialog(
@@ -1124,21 +1125,23 @@ class TripState extends State<Trip> {
   Widget _buildLoadingBody(BuildContext ctxt) {
 
     return NestedScrollView(
-      //controller: _scrollControllerTrip,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
         return <Widget>[
           SliverAppBar(
             expandedHeight: 350,
             floating: false,
             pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
+            backgroundColor: Colors.white,
             automaticallyImplyLeading: false,
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
-              ),
+              background: ClipPath(
+                clipper: BottomWaveClipperSlant(),
+                child: Container(
+                  color: Color.fromRGBO(240, 240, 240, 1)
+                ),
+              )
             ),
           ),
         ];
@@ -1148,20 +1151,76 @@ class TripState extends State<Trip> {
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
           children: <Widget>[
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
+            Shimmer.fromColors(
+              baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+              highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child:Container(
+                  color: Color.fromRGBO(240, 240, 240, 1),
+                  height: 20,
+                  width: 300,
+                  margin: EdgeInsets.only(bottom: 20, right: 20),
+                )
+              )
             ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
+            Shimmer.fromColors(
+              baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+              highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child:Container(
+                  color: Color.fromRGBO(240, 240, 240, 1),
+                  height: 20,
+                  width: 350,
+                  margin: EdgeInsets.only(bottom: 20, right: 20),
+                )
+              )
             ),
-          ],
-        )
+            Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+            ListView.separated(
+              shrinkWrap: true,
+              primary: false,
+              padding: EdgeInsets.all(0),
+              itemCount: 3,
+              separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+              itemBuilder: (BuildContext context, int index){
+                double width = 300;
+                if(index == 0){
+                  width = 240;
+                }
+                if(index == 1){
+                  width = 280;
+                }
+                return ListTile(
+                  trailing: Shimmer.fromColors(
+                    baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+                    highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color:Color.fromRGBO(240, 240, 240, 1),
+                        borderRadius: BorderRadius.circular(100)
+                      ),
+                    )
+                  ),
+                  title: Shimmer.fromColors(
+                    baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+                    highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child:Container(
+                      color: Color.fromRGBO(240, 240, 240, 1),
+                      height: 25,
+                      width: width
+                    )),
+                  )
+                );
+              }
+            )
+          ]
+        ) 
       ),
     );
   }

@@ -27,7 +27,6 @@ class DayList extends StatelessWidget {
   }
 
   Widget buildTimeLine(BuildContext context, List<dynamic> itineraryItems) {
-    //print(itineraryItems.length);
     return Container(
       margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
       decoration: BoxDecoration(color: Colors.white),
@@ -55,8 +54,7 @@ class DayList extends StatelessWidget {
                     child:Icon(
                     Icons.access_time,
                     color:fontContrast(color),
-                    size: 25,
-                    
+                    size: 25
                   )),
                 ),
                 Flexible(

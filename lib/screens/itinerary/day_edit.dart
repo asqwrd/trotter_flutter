@@ -205,22 +205,7 @@ class DayEditState extends State<DayEdit> {
                         color: color.withOpacity(0.5),
                       )
                     )
-                  ),
-                  /*Positioned.fill(
-                    top: 0,
-                    child: Center(
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child:Text(
-                        'Your ${ordinalNumber(day['day'] + 1)} day in $destinationName',
-                        style: TextStyle(
-                          fontSize: 35,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w300
-                        ),
-                      ))
-                    ),
-                  ),*/
+                  )
                 ]
               )
             ),
@@ -233,46 +218,17 @@ class DayEditState extends State<DayEdit> {
   
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    return NestedScrollView(
-      //controller: _scrollControllerDay,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
-              ),
-            ),
-          ),
-        ];
-      },
-      body: Container(
-        padding: EdgeInsets.only(top: 40.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          children: <Widget>[
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-          ],
+    return Column(
+      children: <Widget>[
+        Container(
+          height: 200,
+          margin: EdgeInsets.only(bottom:40),
+          color: Color.fromRGBO(240, 240, 240, 1),
+        ),
+        Flexible(
+          child: DayListLoading(),
         )
-      ),
+      ]
     );
   }
 }

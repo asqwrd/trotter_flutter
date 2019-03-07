@@ -152,48 +152,19 @@ class DayState extends State<Day> {
     );
   }
   
-  // function for rendering while data is loading
+    // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    return NestedScrollView(
-      //controller: _scrollControllerDay,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
-              ),
-            ),
-          ),
-        ];
-      },
-      body: Container(
-        padding: EdgeInsets.only(top: 40.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          children: <Widget>[
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-          ],
+    return Column(
+      children: <Widget>[
+        Container(
+          height: 200,
+          margin: EdgeInsets.only(bottom:40),
+          color: Color.fromRGBO(240, 240, 240, 1),
+        ),
+        Flexible(
+          child: DayListLoading(),
         )
-      ),
+      ]
     );
   }
 }

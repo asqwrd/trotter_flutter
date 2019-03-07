@@ -95,7 +95,7 @@ class DayEditState extends State<DayEdit> {
     var items = [
       new FabMiniMenuItem.withText(
         new Icon(EvilIcons.location),
-        color,
+        Colors.deepPurple,
         4.0,
         null,
         () async { 
@@ -127,20 +127,20 @@ class DayEditState extends State<DayEdit> {
         }
       },
         "Add a place",
-        color,
+        Colors.blueGrey,
         Colors.white,
         true
       ),
       new FabMiniMenuItem.withText(
         new Icon(EvilIcons.bell),
-        color,
+        Colors.red,
         4.0,
         null,
         () async { 
           print('add reminder');
         },
         "Add a reminder",
-        color,
+        Colors.blueGrey,
         Colors.white,
         true
       ),   

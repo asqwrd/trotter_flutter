@@ -10,12 +10,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 
 
-
-
-
-
-
-
 Future<PoiData> fetchPoi(String id, [bool googlePlace, String locationId]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('poi_$id') ?? null;
@@ -204,7 +198,8 @@ class PoiState extends State<Poi> {
                       loop: true,
                       indicatorLayout: PageIndicatorLayout.SCALE,
                       itemCount: images.length,
-                      transformer: DeepthPageTransformer(),
+                      index: 0,
+                      //transformer: DeepthPageTransformer(),
                       pagination: new SwiperPagination(
                         builder: new SwiperCustomPagination(builder:
                         (BuildContext context, SwiperPluginConfig config) {

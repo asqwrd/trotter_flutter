@@ -8,6 +8,7 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 enum CardActions { delete }
 
@@ -283,10 +284,10 @@ class TripsState extends State<Trips> {
                                         
                                         child: ClipPath( 
                                           clipper: BottomWaveClipperSlant(),
-                                          child: Image.network(
-                                            trips[index]['image'],
-                                            fit: BoxFit.cover
-                                          ),
+                                          child: CachedNetworkImage(
+                                            imageUrl: trips[index]['image'],
+                                            fit: BoxFit.cover,
+                                          )
                                         )
                                       ),
                                       Positioned.fill(

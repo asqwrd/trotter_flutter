@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -7,6 +6,7 @@ import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 
@@ -189,10 +189,9 @@ class DayEditState extends State<DayEdit> {
                       top: 0,
                       child: ClipPath(
                         //clipper: BottomWaveClipperSlant(),
-                        child: Image.network(
-                        destination['image'],
+                        child: CachedNetworkImage(
+                        imageUrl: destination['image'],
                         fit: BoxFit.cover,
-                        
                       )
                     )
                   ),

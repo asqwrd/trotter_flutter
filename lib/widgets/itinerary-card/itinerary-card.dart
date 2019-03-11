@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:html_unescape/html_unescape.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ItineraryCard extends StatelessWidget {
   final String2VoidFunc onPressed;
@@ -66,16 +67,41 @@ class ItineraryCard extends StatelessWidget {
                     ),
                   ),
                   Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(240, 240, 240, 0.8),
-                        borderRadius: BorderRadius.circular(10),
-                        image: DecorationImage(
-                          image: item['days'][0]['itinerary_items'][0]['poi']['images'] != null ? NetworkImage(item['days'][0]['itinerary_items'][0]['poi']['images'][0]['sizes']['medium']['url']) : AssetImage('images/placeholder.jpg'),
-                          fit: BoxFit.cover
-                        )
+                    child: ClipPath(
+                clipper: ShapeBorderClipper(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)
+                    )
+                  ), 
+                  child: item['days'][0]['itinerary_items'][0]['poi']['images'][0]['sizes']['medium']['url'] != null ? CachedNetworkImage(
+                    placeholder: (context, url) => SizedBox(
+                      width: 50, 
+                      height:50, 
+                      child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                        valueColor: new AlwaysStoppedAnimation<Color>(color),
+                      )
+                    )),
+                  fit: BoxFit.cover, 
+                  imageUrl: item['days'][0]['itinerary_items'][0]['poi']['images'][0]['sizes']['medium']['url'],
+                  errorWidget: (context,url, error) =>  Container( 
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image:AssetImage('images/placeholder.jpg'),
+                        fit: BoxFit.cover
                       ),
-                    ),
+                      
+                    )
+                  )
+                ) : Container( 
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image:AssetImage('images/placeholder.jpg'),
+                        fit: BoxFit.cover
+                      ),
+                      
+                    )
+                  )
+              ),
                   )
                   // Positioned(
                   //   child: Center(child:SvgPicture.asset(

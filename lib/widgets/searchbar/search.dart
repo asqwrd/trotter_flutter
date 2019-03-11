@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
@@ -260,16 +261,42 @@ class SearchState extends State<Search> {
                 child:ListTile(
                   leading: Container(
                     width: 130.0,
-                    height: 80.0, 
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      image: DecorationImage(
-                        fit: BoxFit.cover,
-                        image: results[index]['image'] != null ? NetworkImage(
-                          results[index]['image'],
-                        ) : AssetImage('images/placeholder.jpg')
-                      )
-                    ),
+                    height: 80.0,
+                    child: ClipPath(
+                      clipper: ShapeBorderClipper(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)
+                          )
+                        ), 
+                        child: results[index]['image'] != null ? CachedNetworkImage(
+                          placeholder: (context, url) => SizedBox(
+                            width: 50, 
+                            height:50, 
+                            child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                              valueColor: new AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                            )
+                          )),
+                        fit: BoxFit.cover, 
+                        imageUrl: results[index]['image'],
+                        errorWidget: (context,url, error) =>  Container( 
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image:AssetImage('images/placeholder.jpg'),
+                              fit: BoxFit.cover
+                            ),
+                            
+                          )
+                        )
+                      ) : Container( 
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image:AssetImage('images/placeholder.jpg'),
+                              fit: BoxFit.cover
+                            ),
+                            
+                          )
+                        )
+                    ), 
                   ),
                   title: Text(
                     results[index]['name'],

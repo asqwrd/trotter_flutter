@@ -8,6 +8,7 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 Future<PoiData> fetchPoi(String id, [bool googlePlace, String locationId]) async {
@@ -182,14 +183,19 @@ class PoiState extends State<Poi> {
                         return Stack(
                           fit: StackFit.expand,
                           children: <Widget>[
-                            Align(
-                              child:CircularProgressIndicator(
-                                valueColor: new AlwaysStoppedAnimation<Color>(color),
-                              )
+                            CachedNetworkImage(
+                              placeholder: (context, url) => SizedBox(
+                                width: 50, 
+                                height:50, 
+                                child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                                  valueColor: new AlwaysStoppedAnimation<Color>(color),
+                                )
+                              )),
+                              imageUrl: images[index]['sizes']['medium']['url'],
+                              fit: BoxFit.cover,
                             ),
-                            new Image.network(images[index]['sizes']['medium']['url'],fit: BoxFit.cover,),
                             Container(
-                              color:Colors.black.withOpacity(0.2)
+                              color:Colors.black.withOpacity(0.1)
                             )
 
                           ]

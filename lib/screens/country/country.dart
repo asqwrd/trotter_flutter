@@ -7,6 +7,7 @@ import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 
@@ -202,8 +203,8 @@ class CountryState extends State<Country> {
                       top: 0,
                       child: ClipPath(
                         clipper: BottomWaveClipper(),
-                        child: Image.network(
-                        image,
+                        child: CachedNetworkImage(
+                        imageUrl: image,
                         fit: BoxFit.cover,
                       )
                     )

@@ -14,6 +14,7 @@ import 'add-destination-modal.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 showDateModal(BuildContext context, dynamic destination, Color color,String tripId) {
@@ -908,8 +909,8 @@ class TripState extends State<Trip> {
                       top: 0,
                       child: ClipPath(
                         clipper: BottomWaveClipperSlant(),
-                        child: Image.network(
-                        trip['image'],
+                        child: CachedNetworkImage(
+                        imageUrl: trip['image'],
                         fit: BoxFit.cover,
                       )
                     )

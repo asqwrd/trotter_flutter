@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 
@@ -123,11 +123,11 @@ class DayState extends State<Day> {
                 collapseMode: CollapseMode.parallax,
                 background: Stack(children: <Widget>[
                   Positioned.fill(
-                      top: 0,
-                      child: ClipPath(
-                        //clipper: BottomWaveClipperSlant(),
-                        child: Image.network(
-                        destination['image'],
+                    top: 0,
+                    child: ClipPath(
+                      //clipper: BottomWaveClipperSlant(),
+                      child: CachedNetworkImage(
+                        imageUrl: destination['image'],
                         fit: BoxFit.cover,
                       )
                     )

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
@@ -194,13 +195,40 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
             Container(
               // A fixed-height child.
               margin:EdgeInsets.only(right:20),
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(240, 240, 240, 0.8),
-                borderRadius: BorderRadius.circular(5),
-                image: DecorationImage(
-                  image: item['image'] != null ? NetworkImage(item['image']) : AssetImage('images/placeholder.jpg'),
-                  fit: BoxFit.cover
-                )
+              child: ClipPath(
+                clipper: ShapeBorderClipper(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)
+                    )
+                  ), 
+                  child: item['image'] != null ? CachedNetworkImage(
+                    placeholder: (context, url) => SizedBox(
+                      width: 50, 
+                      height:50, 
+                      child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                        valueColor: new AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                      )
+                    )),
+                  fit: BoxFit.cover, 
+                  imageUrl: item['image'],
+                  errorWidget: (context,url, error) =>  Container( 
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image:AssetImage('images/placeholder.jpg'),
+                        fit: BoxFit.cover
+                      ),
+                      
+                    )
+                  )
+                ) : Container( 
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image:AssetImage('images/placeholder.jpg'),
+                        fit: BoxFit.cover
+                      ),
+                      
+                    )
+                  )
               ),
               width: 140.0,
               height: 90.0,

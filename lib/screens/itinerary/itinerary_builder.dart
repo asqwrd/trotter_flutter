@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 
@@ -123,8 +123,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                       top: 0,
                       child: ClipPath(
                         clipper: BottomWaveClipperSlant(),
-                        child: Image.network(
-                        destination['image'],
+                        child: CachedNetworkImage(
+                        imageUrl: destination['image'],
                         fit: BoxFit.cover,
                       )
                     )

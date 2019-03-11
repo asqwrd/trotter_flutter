@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:recase/recase.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 
@@ -32,7 +33,7 @@ class ItineraryList extends StatelessWidget {
 
   buildItems(BuildContext context, List<dynamic> items) {
     var widgets = <Widget>[];
-    for(int i=0;i<items.length;i++){
+    for(int i=0;i < 3;i++){
       widgets.add(buildBody(context, items[i], i, items.length));
     }
     return widgets;
@@ -50,7 +51,7 @@ class ItineraryList extends StatelessWidget {
 
   Widget buildBody(BuildContext context, dynamic item, int index, int count) {
     var time = item['time'];
-    var image = !item['image'].isEmpty ? item['image'] : 'images/placeholder.jpg';
+    var image = item['image'].isEmpty == false ? item['image'] : 'images/placeholder.jpg';
     var title = item['title'].isEmpty ? 
       item['poi'] == null || item['poi']['name'].isEmpty ? 
         'No title given' : item['poi']['name'].trim() : item['title'].trim();
@@ -63,6 +64,8 @@ class ItineraryList extends StatelessWidget {
     } else if(index > 0 && count > 2 && count.isOdd || count == 2){
       width =  (MediaQuery.of(context).size.width - 60) * .5;
     }
+
+    
     
     return new InkWell(
         onTap: () {
@@ -82,24 +85,41 @@ class ItineraryList extends StatelessWidget {
           Container(
             height: 250,
             width: width,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Align(child:CircularProgressIndicator(
-                    valueColor: new AlwaysStoppedAnimation<Color>(color),
-                  ))
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    image: DecorationImage(
-                        image: usePlaceholder ? AssetImage(image) : NetworkImage(image), 
-                        fit: BoxFit.cover)))
-              ],
-            )
+            child: ClipPath(
+                clipper: ShapeBorderClipper(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)
+                    )
+                  ), 
+                  child: usePlaceholder == false ?  CachedNetworkImage(
+                    placeholder: (context, url) => SizedBox(
+                      width: 50, 
+                      height:50, 
+                      child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                        valueColor: new AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                      )
+                    )),
+                    fit: BoxFit.cover, 
+                    imageUrl: image,
+                    errorWidget: (context,url, error) =>  Container( 
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image:AssetImage(image),
+                          fit: BoxFit.cover
+                        ),
+                        
+                      )
+                    )
+                  ) : Container( 
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image:AssetImage(image),
+                        fit: BoxFit.cover
+                      ),
+                      
+                    )
+                  )
+              ),
           ),
           Container(
             width: width,

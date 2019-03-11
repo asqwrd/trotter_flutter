@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 
 
@@ -161,8 +162,8 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
                       top: 0,
                       child: ClipPath(
                         clipper: BottomWaveClipper(),
-                        child: Image.network(
-                        image,
+                        child: CachedNetworkImage(
+                        imageUrl: image,
                         fit: BoxFit.cover,
                       )
                     )
@@ -258,33 +259,45 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Stack(
-                  children: <Widget>[
-                    Positioned.fill(
-                      top:0,
-                      left:-20,
-                      //alignment: Alignment.center,
-                      child:SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: Align(child:CircularProgressIndicator(
-                          valueColor: new AlwaysStoppedAnimation<Color>(color),
-                        ))
-                      )
-                    ),
-                    Container(
-                      width:150,
-                      height: 90,
-                      margin: EdgeInsets.only(right: 20.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5.0),
-                        image: DecorationImage(
-                          image: items[index]['image'] != null ? NetworkImage(items[index]['image']) : AssetImage('images/placeholder.jpg'),
-                          fit: BoxFit.fill   
+                Container(
+                  width: 150,
+                  height: 90,
+                  margin:EdgeInsets.only(right:20),
+                  child: ClipPath(
+                    clipper: ShapeBorderClipper(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)
+                        )
+                      ), 
+                      child: items[index]['image'] != null ? CachedNetworkImage(
+                        placeholder: (context, url) => SizedBox(
+                          width: 50, 
+                          height:50, 
+                          child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                            valueColor: new AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                          )
+                        )),
+                      fit: BoxFit.cover, 
+                      imageUrl: items[index]['image'],
+                      errorWidget: (context,url, error) =>  Container( 
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image:AssetImage('images/placeholder.jpg'),
+                            fit: BoxFit.cover
+                          ),
+                          
                         )
                       )
-                    ),
-                  ]
+                    ) : Container( 
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image:AssetImage('images/placeholder.jpg'),
+                            fit: BoxFit.cover
+                          ),
+                          
+                        )
+                      )
+                  )
                 ),
                 
                 Container(

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:html_unescape/html_unescape.dart';
-import 'package:recase/recase.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:simple_moment/simple_moment.dart';
 
 
 
@@ -24,8 +23,9 @@ class DayList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildTimeLine(context, this.items);
+    return buildTimeLine(context, this.items.sublist(1));
   }
+  
 
   Widget buildTimeLine(BuildContext context, List<dynamic> itineraryItems) {
     return Container(
@@ -38,6 +38,15 @@ class DayList extends StatelessWidget {
           var color = itineraryItems[index]['color'].isEmpty == false ? Color(hexStringToHexInt(itineraryItems[index]['color'])) : this.color;
           var poi = itineraryItems[index]['poi'];
           var item = itineraryItems[index];
+          var travelTime = itineraryItems[index]['travel'];
+          var prevIndex = index - 1;
+          var from = 'city center';
+          if(prevIndex >= 0){
+            from = itineraryItems[prevIndex]['poi']['name'];
+          }
+
+          var time = itineraryItems[index]['travel']['duration']['text'];
+          
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child:IntrinsicHeight(child:Row(
@@ -63,16 +72,34 @@ class DayList extends StatelessWidget {
                     margin: EdgeInsets.only(left: 20, right: 0, bottom: 20),
                     child: Column(
                       children: <Widget>[
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child:Container(
+                          //color: color,
+                          //padding: EdgeInsets.all(10),
+                          margin: EdgeInsets.only(top:10, bottom:20),
+                          child: Text(
+                            '${travelTime['distance']['text']} away from $from \nTravel time is $time',
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              height: 1.1
+                              
+                            ),
+                            )
+                        ))
+                        ,
                         Padding(
                           padding: EdgeInsets.all(0),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  Text(
+                                  poi == null ? Container() : Text(
                                     poi['name'],
                                     style: TextStyle(
                                       color: Colors.black,
@@ -81,7 +108,7 @@ class DayList extends StatelessWidget {
                                       
                                     )
                                   ),
-                                  poi['tags'] != null ? Container(
+                                  poi == null ? Container() : poi['tags'] != null ? Container(
                                     width: MediaQuery.of(context).size.width - 176,
                                     margin: EdgeInsets.only(top:5),
                                     child:Text(

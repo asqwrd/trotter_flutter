@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:simple_moment/simple_moment.dart';
+
 
 class PixelRatioDivider {
   double quantizedUnit;
@@ -77,6 +79,19 @@ class BottomWaveClipperTab extends CustomClipper<Path> {
   }
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
+class ShortLocaleEn extends LocaleEn {
+  String get seconds => '%is';
+
+  String get aMinute => '%im';
+  String get minutes => '%im';
+
+  String get anHour => '%ih';
+  String get hours => '%ih';
+
+  String get aDay => '%id';
+  String get days => '%id';
 }
 
 class BottomWaveClipperSlant extends CustomClipper<Path> {

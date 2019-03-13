@@ -33,7 +33,11 @@ class ItineraryList extends StatelessWidget {
 
   buildItems(BuildContext context, List<dynamic> items) {
     var widgets = <Widget>[];
-    for(int i=0;i < 3;i++){
+    var length = items.length;
+    if(length > 3){
+      length = 3;
+    }
+    for(int i=0;i < length;i++){
       widgets.add(buildBody(context, items[i], i, items.length));
     }
     return widgets;

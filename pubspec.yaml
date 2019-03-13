@@ -41,6 +41,7 @@ dependencies:
   flutter_vector_icons: ^0.1.0
   transparent_image: ^0.1.0
   cached_network_image: ^0.7.0
+  simple_moment: ^1.0.2
 
 
 

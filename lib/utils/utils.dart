@@ -59,6 +59,40 @@ class BottomWaveClipper extends CustomClipper<Path> {
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
+class CurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+
+    // Since the wave goes vertically lower than bottom left starting point,
+    // we'll have to make this point a little higher.
+    path.lineTo(0.0, size.height-60); 
+
+    var secondControlPoint =
+    Offset(size.width / 2, size.height - 140);
+    var secondEndPoint = Offset(size.width, size.height - 60);
+    path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy,
+        secondEndPoint.dx, secondEndPoint.dy);
+
+    // var secondControlPoint =
+    // Offset(size.width - (size.width / 2), size.height-130);
+    // var secondEndPoint = Offset(size.width, size.height);
+    // path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy,
+    //     secondEndPoint.dx, secondEndPoint.dy);
+
+    // The bottom right point also isn't at the same level as its left counterpart,
+    // so we'll adjust that one too.
+    path.lineTo(size.width, size.height - 60);
+    path.lineTo(size.width, 0.0);
+  
+
+    path.close();
+    return path;
+  }
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
+
 class BottomWaveClipperTab extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {

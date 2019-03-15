@@ -9,6 +9,7 @@ import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 enum CardActions { delete }
 
@@ -261,21 +262,118 @@ class TripsState extends State<Trips> {
                       itemCount: trips.length,
                       itemBuilder: (BuildContext context, int index) {
                         var color = Color(hexStringToHexInt(trips[index]['color']));
-                        var maincolor = Color.fromRGBO(1, 155, 174, 1);            
+                        //var maincolor = Color.fromRGBO(1, 155, 174, 1);            
+                        var onPressed2 = () async {
+                          var undoData = {
+                            "trip":{
+                              "image": trips[index]['image'],
+                              "name": trips[index]['name']
+                            },
+                            "destinations": trips[index]['destinations']
+                          };
+                          setState(() {
+                            this.refreshing = true;                                
+                          });
+                          var response = await viewModel.onDeleteTrip(trips[index]['id']);
+                          setState(() {
+                            this.refreshing = false;                           
+                          });
+                          if(response.success == true) {
+                            this.context = context;
+                            setState(() {
+                              if(StoreProvider.of<AppState>(context).state.trips.length == 0){
+                                this._showTitle = false;
+                              }                                
+                            });
+                            Scaffold
+                            .of(context)
+                            .showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${trips[index]['name']}\'s was deleted.',
+                                  style: TextStyle(
+                                    fontSize: 18
+                                  )
+                                ),
+                                duration: Duration(seconds: 2),
+                                action: SnackBarAction(
+                                  label: 'Undo',
+                                  textColor: color,
+                                  onPressed: () async {
+                                    setState(() {
+                                      this.refreshing = true;                               
+                                    });
+                                    var response = await viewModel.undoDeleteTrip(undoData, index);
+                                    setState(() {
+                                      this.refreshing = false;
+                                    });
+                                    if(response.success == true){
+                                      Scaffold.of(this.context).removeCurrentSnackBar();
+                                      Scaffold
+                                      .of(this.context)
+                                      .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Undo successful!',
+                                            style: TextStyle(
+                                              fontSize: 18
+                                            )
+                                          ),
+                                          duration: Duration(seconds: 2),
+                                        )
+                                      ); 
+    
+                                    } else {
+                                      Scaffold.of(this.context).removeCurrentSnackBar();
+                                      Scaffold
+                                      .of(this.context)
+                                      .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Sorry the undo failed!',
+                                            style: TextStyle(
+                                              fontSize: 18
+                                            )
+                                          ),
+                                          duration: Duration(seconds: 2)
+                                        )
+                                      ); 
+                                    }
+
+                                  },
+                                ),
+                              )
+                            ); 
+                          } else {
+                            Scaffold
+                            .of(context)
+                            .showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${trips[index]['name']} failed to be deleted.',
+                                  style: TextStyle(
+                                    fontSize: 18
+                                  )
+                                ),
+                                duration: Duration(seconds: 2)
+                              )
+                            ); 
+                          }
+                        };
                         return InkWell(
                           onTap: () async {
                             onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
                           },
                           child:Card(
                             semanticContainer: true,
-                            color: color,
+                            color: Colors.white,
                             clipBehavior: Clip.antiAliasWithSaveLayer,
                             child: Column(
                               children: <Widget>[  
                                 Container(
-                                  height: 420.0,
+                                  height: 350.0,
                                   width: double.infinity,
-                                  color: color,
+                                  color: Colors.white,
                                   child: Stack(
                                     children: <Widget>[
                                       Positioned.fill(
@@ -283,7 +381,7 @@ class TripsState extends State<Trips> {
                                         left:0,
                                         
                                         child: ClipPath( 
-                                          clipper: BottomWaveClipperSlant(),
+                                          clipper: CurveClipper(),
                                           child: CachedNetworkImage(
                                             imageUrl: trips[index]['image'],
                                             fit: BoxFit.cover,
@@ -292,126 +390,60 @@ class TripsState extends State<Trips> {
                                       ),
                                       Positioned.fill(
                                         top:0,
-                                        left: 0,
+                                        left:0,
+                                        
                                         child: ClipPath( 
-                                          clipper: BottomWaveClipperSlant(),
+                                          clipper: CurveClipper(),
                                           child: Container(
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              begin: Alignment.topCenter,
-                                              end: Alignment.bottomCenter,
-                                              colors: [Colors.transparent, Colors.transparent,Colors.black.withOpacity(0.8)], // whitish to gray
-                                              tileMode: TileMode.repeated, // repeats the gradient over the canvas
+                                            color: color.withOpacity(.3),
+                                          )
+                                        )
+                                      ),
+                                      Positioned.fill(
+                                        top:300,
+                                        left:0,
+                                        child: ListView(
+                                          shrinkWrap: true,
+                                          primary: false,
+                                          children:<Widget>[
+                                            Padding(
+                                              padding: EdgeInsets.only(top: 0.0, bottom: 10, left:20, right:20),
+                                              child: Text(
+                                                trips[index]['name'].toUpperCase(),
+                                                overflow: TextOverflow.fade,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  color: color,
+                                                  fontSize: 25.0,
+                                                  fontWeight: FontWeight.w500
+                                                  
+                                                ),
+                                              )
                                             ),
-                                          ) 
-                                        ))
+                                            Align(child:Container(
+                                              padding: EdgeInsets.symmetric(horizontal: 20),
+                                              width: 130,
+                                              child: Divider(
+                                                color: Color.fromRGBO(0, 0, 0, 0.4),
+                                                
+                                                
+                                              )
+                                            )),
+                                          ] 
+                                        ),
                                       ),
                                       Positioned(
-                                        top:290,
-                                        right: 30,
-                                        child: FloatingActionButton(
-                                          backgroundColor: maincolor,
-                                          onPressed: () async {
-                                            var undoData = {
-                                              "trip":{
-                                                "image": trips[index]['image'],
-                                                "name": trips[index]['name']
-                                              },
-                                              "destinations": trips[index]['destinations']
-                                            };
-                                            setState(() {
-                                              this.refreshing = true;                                
-                                            });
-                                            var response = await viewModel.onDeleteTrip(trips[index]['id']);
-                                            setState(() {
-                                              this.refreshing = false;                           
-                                            });
-                                            if(response.success == true) {
-                                              this.context = context;
-                                              setState(() {
-                                                if(StoreProvider.of<AppState>(context).state.trips.length == 0){
-                                                  this._showTitle = false;
-                                                }                                
-                                              });
-                                              Scaffold
-                                              .of(context)
-                                              .showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    '${trips[index]['name']}\'s was deleted.',
-                                                    style: TextStyle(
-                                                      fontSize: 18
-                                                    )
-                                                  ),
-                                                  duration: Duration(seconds: 2),
-                                                  action: SnackBarAction(
-                                                    label: 'Undo',
-                                                    textColor: color,
-                                                    onPressed: () async {
-                                                      setState(() {
-                                                        this.refreshing = true;                               
-                                                      });
-                                                      var response = await viewModel.undoDeleteTrip(undoData, index);
-                                                      setState(() {
-                                                        this.refreshing = false;
-                                                      });
-                                                      if(response.success == true){
-                                                        Scaffold.of(this.context).removeCurrentSnackBar();
-                                                        Scaffold
-                                                        .of(this.context)
-                                                        .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                              'Undo successful!',
-                                                              style: TextStyle(
-                                                                fontSize: 18
-                                                              )
-                                                            ),
-                                                            duration: Duration(seconds: 2),
-                                                          )
-                                                        ); 
-                      
-                                                      } else {
-                                                        Scaffold.of(this.context).removeCurrentSnackBar();
-                                                        Scaffold
-                                                        .of(this.context)
-                                                        .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                              'Sorry the undo failed!',
-                                                              style: TextStyle(
-                                                                fontSize: 18
-                                                              )
-                                                            ),
-                                                            duration: Duration(seconds: 2)
-                                                          )
-                                                        ); 
-                                                      }
-
-                                                    },
-                                                  ),
-                                                )
-                                              ); 
-                                            } else {
-                                              Scaffold
-                                              .of(context)
-                                              .showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    '${trips[index]['name']} failed to be deleted.',
-                                                    style: TextStyle(
-                                                      fontSize: 18
-                                                    )
-                                                  ),
-                                                  duration: Duration(seconds: 2)
-                                                )
-                                              ); 
-                                            }
-                                          },
-                                          child: SvgPicture.asset(
-                                            'images/delete-icon.svg',
-                                            width: 35,
-                                            height: 35
+                                        top:20,
+                                        right: 20,
+                                        child: GestureDetector(
+                                          onTap: onPressed2,
+                                          child: Container(
+                                            padding: EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(8),
+                                              color: fontContrast(color).withOpacity(.3)
+                                            ),
+                                            child: Icon(EvilIcons.close, color: fontContrast(color).withOpacity(.8),size: 35,)
                                           ),
                                         )
                                       ),
@@ -422,23 +454,9 @@ class TripsState extends State<Trips> {
                                   shrinkWrap: true,
                                   primary: false,
                                   children:<Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.only(top: 0.0, bottom: 10, left:20, right:20),
-                                      child: Text(
-                                        trips[index]['name'].toUpperCase(),
-                                        textAlign: TextAlign.left,
-                                        style: TextStyle(
-                                          color: fontContrast(color),
-                                          fontSize: 25.0,
-                                          fontWeight: FontWeight.w500
-                                          
-                                        ),
-                                      )
-                                    ),
-                                    _buildDestinationInfo(trips[index]['destinations'], color)
+                                    _buildDestinationInfo(trips[index]['destinations'], color),
                                   ] 
-                                ),
-                                SizedBox(height: 20)
+                                )
                               ]
                             ),
                             
@@ -466,31 +484,46 @@ class TripsState extends State<Trips> {
 
   _buildDestinationInfo(List<dynamic> destinations, Color color){
     var widgets = <Widget>[];
-    for (var destination in destinations){
-      var startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000));
-      var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
+    var length = destinations.length;
+    if(length > 3){
+      length = 3;
+    }
+    for (var i = 0; i < length; i++){
+      var destination =  destinations[i];
+      // var startDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000));
+      // var endDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
       widgets.add(
         Padding(
-          padding: EdgeInsets.only(top:0, bottom:10, left:20, right: 20),
+          padding: EdgeInsets.only(top:0, bottom:10),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
+              Container(
+                padding: EdgeInsets.all(3),
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(200),
+                  color:color,
+
+                ),
+                child:Icon(EvilIcons.location, color:fontContrast(color), size: 15,)
+              ),
               Text(
                 '${destination['destination_name']}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
-                  color: fontContrast(color),
-                  fontSize: 18,
+                  color: Colors.black,
+                  fontSize: 20,
                 )
               ),
-              destination['start_date'] > 0 && destination['end_date'] > 0 ? 
+              /*destination['start_date'] > 0 && destination['end_date'] > 0 ? 
               Text(
                 ' ${new HtmlUnescape().convert('&bull;')} $startDate - $endDate',
                 style: TextStyle(
                   fontWeight: FontWeight.w300,
-                  color: fontContrast(color),
+                  color: Colors.black,
                   fontSize: 18
                 )
               ):
@@ -501,14 +534,50 @@ class TripsState extends State<Trips> {
                   color: Colors.red,
                   fontSize: 18
                 )
+              ),*/
+            ],
+          )
+        )
+      );
+    }
+    if(destinations.length > length) {
+      widgets.add(
+        Padding(
+          padding: EdgeInsets.only(top:0, bottom:10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.all(3),
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(200),
+                  color:Color.fromRGBO(0, 0, 0, .3),
+
+                ),
+                child:Icon(EvilIcons.location, color:fontContrast(color), size: 15,)
+              ),
+              Text(
+                '$length of ${destinations.length}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontWeight: FontWeight.w400,
+                  color: Color.fromRGBO(0, 0, 0, .5),
+                  fontSize: 20,
+                )
               ),
             ],
           )
         )
       );
     }
-    return Column(
-      children: widgets,
+    return Container(
+      margin: EdgeInsets.only(top:40, bottom:20),
+      padding: EdgeInsets.symmetric(horizontal: 60),
+      child:Column(
+        children: widgets,
+      )
     );
   }
   

@@ -229,7 +229,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
                   Positioned.fill(
                       top: 0,
                       child: ClipPath(
-                        clipper: BottomWaveClipperTab(),
+                        clipper: CurveClipper(),
                         child: CachedNetworkImage(
                         imageUrl: image,
                         fit: BoxFit.cover,
@@ -240,7 +240,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
                       top: 0,
                       left: 0,
                       child: ClipPath(
-                        clipper:BottomWaveClipperTab(),
+                        clipper:CurveClipper(),
                         child: Container(
                         color: color.withOpacity(0.5),
                       )
@@ -533,7 +533,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
               background: ClipPath(
-                  clipper:BottomWaveClipperTab(),
+                  clipper:CurveClipper(),
                   child: Container(
                   color: Color.fromRGBO(240, 240, 240, 1),
                 )

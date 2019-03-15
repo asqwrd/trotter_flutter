@@ -155,7 +155,7 @@ class CreateTripState extends State<CreateTrip> {
                 // often want to call a server or save the information in a database
                 var data = {
                   "trip":{
-                    "image": this._destinationImages[0],
+                    "image": this._destinations[0]["image"],
                     "name": nameController.text
                   },
                   "destinations": this._destinations
@@ -221,9 +221,10 @@ class CreateTripState extends State<CreateTrip> {
         "country_name": this.param["country_name"],
         "start_date": null,
         "end_date": null,
+        "image":this.param['image']
       };
       this._destinations.add(destination);
-      this._destinationImages.add(this.param['image']);
+      //this._destinationImages.add(this.param['image']);
     }
     this.destinationsCount = this.destinationsCount + 1;
     super.initState();    
@@ -356,9 +357,10 @@ class CreateTripState extends State<CreateTrip> {
                     "country_name": suggestion["country_name"],
                     "start_date":  null,
                     "end_date": null,
+                    "image": suggestion["image"]
                   });
                 }
-                this._destinationImages.insert(index, suggestion["image"]);
+                //this._destinationImages.insert(index, suggestion["image"]);
               }
             }
           )

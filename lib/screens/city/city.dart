@@ -202,18 +202,12 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
             bottom: !_showTitle
             ? PreferredSize(
                 preferredSize: Size.fromHeight(100),
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      width: double.infinity,
-                      height: 40.0,
-                    ),
-                    Container(
-                      color: Colors.white,
-                      width: double.infinity,
-                      child: _renderTabBar(color, Colors.white,allTab)
-                    )
-                  ]        
+                child: Container(
+                    color: Colors.white,
+                    width: double.infinity,
+                    child: _renderTabBar(color, Colors.white,allTab)
+                    
+                         
                 )
               )
             : PreferredSize(
@@ -227,7 +221,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                   Positioned.fill(
                     top: 0,
                     child: ClipPath(
-                      clipper: BottomWaveClipperTab(),
+                      clipper: CurveClipper(),
                       child: CachedNetworkImage(
                         imageUrl: image,
                         fit: BoxFit.cover,
@@ -238,7 +232,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
                       top: 0,
                       left: 0,
                       child: ClipPath(
-                        clipper:BottomWaveClipperTab(),
+                        clipper:CurveClipper(),
                         child: Container(
                         color: color.withOpacity(0.5),
                       )
@@ -529,7 +523,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
               background: ClipPath(
-                  clipper:BottomWaveClipperTab(),
+                  clipper:CurveClipper(),
                   child: Container(
                   color: Color.fromRGBO(240, 240, 240, 1),
                 )

@@ -7,7 +7,8 @@ import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:html_unescape/html_unescape.dart';
+import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'add-destination-modal.dart';
@@ -535,8 +536,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
         tooltip: 'Add destination',
         child: Icon(Icons.add),
         elevation: 5.0,
-      )
-      ),
+      )),
       appBar: AppBar(
         backgroundColor: Colors.white,
         brightness: Brightness.light,
@@ -772,7 +772,7 @@ class TripState extends State<Trip> {
                 barrierColor: Colors.black.withOpacity(0.5),
                 transitionDuration: const Duration(milliseconds: 300),
               );
-              if(oldName != null){
+              if(oldName != null && oldName is String){
                 Scaffold.of(topcontext).showSnackBar(SnackBar(
                     content: Text(
                       '$oldName has been changed to ${this.trip['name']}',
@@ -860,7 +860,7 @@ class TripState extends State<Trip> {
     var fields = [
       {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},
     ];
-
+ 
     for (var group in result2.asIterable()) {
       var key = group.key;
       for (var destination in group.asIterable()) {
@@ -906,51 +906,82 @@ class TripState extends State<Trip> {
                 collapseMode: CollapseMode.parallax,
                 background: Stack(children: <Widget>[
                   Positioned.fill(
-                      top: 0,
-                      child: ClipPath(
-                        clipper: BottomWaveClipperSlant(),
-                        child: CachedNetworkImage(
-                        imageUrl: trip['image'],
-                        fit: BoxFit.cover,
-                      )
-                    )
+                    top: 0,
+                    child: new Swiper(
+                      itemBuilder: (BuildContext context,int index){
+                        var startDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['start_date']*1000));
+                        var endDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destinations[index]['end_date']*1000));
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: <Widget>[
+                            CachedNetworkImage(
+                              placeholder: (context, url) => SizedBox(
+                                width: 50, 
+                                height:50, 
+                                child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                                  valueColor: new AlwaysStoppedAnimation<Color>(color),
+                                )
+                              )),
+                              imageUrl: destinations[index]['image'],
+                              fit: BoxFit.cover,
+                            ),
+                            Container(
+                              color:Colors.black.withOpacity(0.5)
+                            ),
+                            Positioned(
+                              left: 0,
+                              top: 200,
+                              width: MediaQuery.of(context).size.width,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children:<Widget>[
+                                  Text('${destinations[index]['destination_name']}, ${destinations[index]['country_name']}',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.w300
+                                    )
+                                  ),
+                                  Text('$startDate - $endDate',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w300
+                                    )
+                                  )
+                                ]
+                              )
+                            ),
+
+                          ]
+                        );
+                      },
+                      loop: true,
+                      indicatorLayout: PageIndicatorLayout.SCALE,
+                      itemCount: destinations.length,
+                      //index: 0,
+                      //transformer: DeepthPageTransformer(),
+                      pagination: new SwiperPagination(
+                        builder: new SwiperCustomPagination(builder:
+                        (BuildContext context, SwiperPluginConfig config) {
+                          return new ConstrainedBox(
+                            child: new Align(
+                                alignment: Alignment.bottomCenter,
+                                child: new DotSwiperPaginationBuilder(
+                                        color: Colors.white,
+                                        activeColor: color,
+                                        size: 20.0,
+                                        activeSize: 20.0)
+                                    .build(context, config),
+                            ),
+                            constraints: new BoxConstraints.expand(height: 50.0),
+                          );
+                        }),
+                      ),
+                    ),
                   ),
-                  Positioned.fill(
-                      top: 0,
-                      left: 0,
-                      child: ClipPath(
-                        clipper:BottomWaveClipperSlant(),
-                        child: Container(
-                        color: color.withOpacity(0.5),
-                      )
-                    )
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 150,
-                    width: MediaQuery.of(context).size.width,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children:<Widget>[
-                        Container(
-                          margin: EdgeInsets.only(right:10.0),
-                          child: SvgPicture.asset("images/trotter-logo.svg",
-                            width: 50.0,
-                            height: 50.0,
-                            fit: BoxFit.contain
-                          )
-                        ),
-                        Text(this.trip['name'],
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w300
-                          )
-                        )
-                      ]
-                    )
-                  ),
+                  
                 ]
               )
             ),
@@ -962,8 +993,6 @@ class TripState extends State<Trip> {
         children: <Widget>[
           ListView(
             children: <Widget>[
-              _buildDestinationInfo(destinations, color),
-              Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
               ListView.separated(
                 shrinkWrap: true,
                 primary: false,
@@ -1031,75 +1060,6 @@ class TripState extends State<Trip> {
     );
   }
 
-  _buildDestinationInfo(List<dynamic> destinations, Color color){
-    var widgets = <Widget>[];
-    for (var destination in destinations){
-      var startDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000));
-      var endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
-      widgets.add(
-        Padding(
-          padding: EdgeInsets.only(top:5, bottom:5, right:20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: <Widget>[
-              Text(
-                '${destination['destination_name']} ${new HtmlUnescape().convert('&bull;')}  ',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  color: Colors.blueGrey,
-                  fontSize: 18,
-                )
-              ),
-              destination['start_date'] == 0 || destination['end_date'] == 0 ? 
-                InkWell(
-                  onTap: () {
-                    showDateModal(context, destination, color, this.tripId);
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10), 
-                    child:Text(
-                      'Select arrival and departure dates',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w300,
-                        color: Colors.blueGrey,
-                        fontSize: 18,
-                        decoration: TextDecoration.underline
-                      )
-                    )
-                  ),
-                )
-              :
-              InkWell(
-                onTap: () {
-                  showDateModal(context, destination, color, this.tripId);
-                },
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10), 
-                  child:Text(
-                    '$startDate - $endDate',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      color: Colors.blueGrey,
-                      fontSize: 18,
-                      decoration: TextDecoration.underline
-                    )
-                  )
-                )
-              ),
-            ],
-          )
-        )
-      );
-    }
-    return Column(
-      children: widgets,
-    );
-  }
-
-  
-
   showDestinationsModal(BuildContext context, dynamic destinations, Color color) {
     return showGeneralDialog(
       context: context,
@@ -1137,12 +1097,9 @@ class TripState extends State<Trip> {
             flexibleSpace: FlexibleSpaceBar(
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
-              background: ClipPath(
-                clipper: BottomWaveClipperSlant(),
-                child: Container(
+              background: Container(
                   color: Color.fromRGBO(240, 240, 240, 1)
                 ),
-              )
             ),
           ),
         ];
@@ -1151,39 +1108,14 @@ class TripState extends State<Trip> {
         padding: EdgeInsets.only(top: 40.0),
         decoration: BoxDecoration(color: Colors.white),
         child: ListView(
+          primary: false,
           children: <Widget>[
-            Shimmer.fromColors(
-              baseColor: Color.fromRGBO(220, 220, 220, 0.8),
-              highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child:Container(
-                  color: Color.fromRGBO(240, 240, 240, 1),
-                  height: 20,
-                  width: 300,
-                  margin: EdgeInsets.only(bottom: 20, right: 20),
-                )
-              )
-            ),
-            Shimmer.fromColors(
-              baseColor: Color.fromRGBO(220, 220, 220, 0.8),
-              highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child:Container(
-                  color: Color.fromRGBO(240, 240, 240, 1),
-                  height: 20,
-                  width: 350,
-                  margin: EdgeInsets.only(bottom: 20, right: 20),
-                )
-              )
-            ),
-            Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+            
             ListView.separated(
               shrinkWrap: true,
               primary: false,
               padding: EdgeInsets.all(0),
-              itemCount: 3,
+              itemCount: 4,
               separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
               itemBuilder: (BuildContext context, int index){
                 double width = 300;

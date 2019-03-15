@@ -127,6 +127,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
                   "country_name": suggestion["country_name"],
                   "start_date": this.destination['start_date'] != null ? destination['start_date'] : null,
                   "end_date": this.destination['end_date'] != null ? destination['end_date'] : null,
+                  "image": suggestion['image'] != null ? suggestion['image'] : null,
                 };           
               //});
               

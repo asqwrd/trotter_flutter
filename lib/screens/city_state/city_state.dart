@@ -248,7 +248,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
                   Positioned.fill(
                       top: 0,
                       child: ClipPath(
-                        clipper: BottomWaveClipperTab(),
+                        clipper: CurveClipper(),
                         child: CachedNetworkImage(
                         imageUrl: image,
                         fit: BoxFit.cover,
@@ -259,7 +259,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
                       top: 0,
                       left: 0,
                       child: ClipPath(
-                        clipper:BottomWaveClipperTab(),
+                        clipper:CurveClipper(),
                         child: Container(
                         color: color.withOpacity(0.5),
                       )
@@ -830,7 +830,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
               centerTitle: true,
               collapseMode: CollapseMode.parallax,
               background: ClipPath(
-                  clipper:BottomWaveClipperTab(),
+                  clipper:CurveClipper(),
                   child: Container(
                   color: Color.fromRGBO(240, 240, 240, 1),
                 )

@@ -207,7 +207,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
         var dayId = days[dayIndex]['id'];
         
         return GestureDetector(
-          onTap: () => onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day'}),
+          onTap: () => onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'}),
           child: Column(
             children: <Widget>[
               Column(

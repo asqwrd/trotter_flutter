@@ -31,7 +31,8 @@ class SetItineraryBuilderLoadingAction {
 
 class UpdateDayAfterAddAction {
   final String dayId;
-  final dynamic itineraryItem;
+  final String justAdded;
+  final List<dynamic> itineraryItems;
 
-  UpdateDayAfterAddAction(this.dayId, this.itineraryItem);
+  UpdateDayAfterAddAction(this.dayId, this.itineraryItems, this.justAdded);
 }

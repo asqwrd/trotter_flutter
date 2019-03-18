@@ -23,7 +23,7 @@ class DayList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return buildTimeLine(context, this.items.sublist(1));
+    return buildTimeLine(context, this.items);
   }
   
 
@@ -38,6 +38,7 @@ class DayList extends StatelessWidget {
           var color = itineraryItems[index]['color'].isEmpty == false ? Color(hexStringToHexInt(itineraryItems[index]['color'])) : this.color;
           var poi = itineraryItems[index]['poi'];
           var item = itineraryItems[index];
+          var justAdded = itineraryItems[index]['justAdded'];
           var travelTime = itineraryItems[index]['travel'];
           var prevIndex = index - 1;
           var from = 'city center';
@@ -99,15 +100,28 @@ class DayList extends StatelessWidget {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
-                                  poi == null ? Container() : Text(
-                                    poi['name'],
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w500,
-                                      
-                                    )
-                                  ),
+                                  poi == null ? Container() : Row(
+                                    //crossAxisAlignment: CrossAxisAlignment.center,
+                                    children:<Widget>[ 
+                                    Text(
+                                      poi['name'],
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w500,
+                                        
+                                      )
+                                    ),
+                                    justAdded == true ? Text(
+                                      ' - just added',
+                                      style: TextStyle(
+                                        color: color,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w400,
+                                        
+                                      )
+                                    ):Container()
+                                  ]),
                                   poi == null ? Container() : poi['tags'] != null ? Container(
                                     width: MediaQuery.of(context).size.width - 176,
                                     margin: EdgeInsets.only(top:5),

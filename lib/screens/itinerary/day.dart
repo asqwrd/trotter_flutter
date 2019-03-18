@@ -66,7 +66,7 @@ class DayState extends State<Day> {
         this.color = Color(hexStringToHexInt(data.color));
         this.destinationName = data.destination['name'];
         this.destinationId = data.destination['id'].toString();
-        this.itineraryItems = data.day['itinerary_items'];
+        this.itineraryItems = data.day['itinerary_items'].sublist(1);
       });
       
     });

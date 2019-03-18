@@ -850,7 +850,7 @@ class TripState extends State<Trip> {
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     
     var trip = snapshot.data.trip;
-    //var name = snapshot.data.trip['name'];
+    var name = snapshot.data.trip['name'];
     //this.name = name;
     var destinations = snapshot.data.destinations;
     var destTable = new Collection<dynamic>(destinations);
@@ -930,12 +930,19 @@ class TripState extends State<Trip> {
                             ),
                             Positioned(
                               left: 0,
-                              top: 200,
+                              top: 180,
                               width: MediaQuery.of(context).size.width,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children:<Widget>[
+                                   Text(name,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.w300
+                                    )
+                                  ),
                                   Text('${destinations[index]['destination_name']}, ${destinations[index]['country_name']}',
                                     style: TextStyle(
                                       color: Colors.white,

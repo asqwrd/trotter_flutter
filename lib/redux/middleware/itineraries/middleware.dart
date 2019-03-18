@@ -83,13 +83,13 @@ Future<DayData> fetchDay(String itineraryId, String dayId) async {
 }
 
 
-Future<AddItemData> addToDay(String itineraryId, String dayId, dynamic data) async {
+Future<DayData> addToDay(String itineraryId, String dayId, dynamic data) async {
 
   final response = await http.post('http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId', body: json.encode(data), headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
 
-    return AddItemData.fromJson(json.decode(response.body));
+    return DayData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
     var msg = response.statusCode;
@@ -115,13 +115,15 @@ class DayData {
   final Map<String, dynamic> itinerary; 
   final Map<String, dynamic> destination; 
   final String color;
+  final String justAdded;
 
-  DayData({this.day, this.itinerary, this.color, this.destination});
+  DayData({this.day, this.itinerary, this.color, this.destination, this.justAdded});
 
   factory DayData.fromJson(Map<String, dynamic> json) {
     return DayData(
       day: json['day'],
       color: json['itinerary']['color'],
+      justAdded: json['justAdded'],
       destination: json['itinerary']['destination'],
       itinerary: json['itinerary']['itinerary']
     );

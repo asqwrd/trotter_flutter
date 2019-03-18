@@ -434,13 +434,13 @@ class TripsState extends State<Trips> {
                                       ),
                                       Positioned(
                                         top:20,
-                                        right: 20,
-                                        child: GestureDetector(
+                                        left: 20,
+                                        child: GestureDetector( 
                                           onTap: onPressed2,
                                           child: Container(
                                             padding: EdgeInsets.all(5),
                                             decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius: BorderRadius.circular(15),
                                               color: fontContrast(color).withOpacity(.3)
                                             ),
                                             child: Icon(EvilIcons.close, color: fontContrast(color).withOpacity(.8),size: 35,)
@@ -448,7 +448,7 @@ class TripsState extends State<Trips> {
                                         )
                                       ),
                                     ],
-                                  )                        
+                                  )                         
                                 ),
                                 ListView(
                                   shrinkWrap: true,

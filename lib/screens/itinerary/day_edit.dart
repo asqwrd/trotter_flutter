@@ -29,6 +29,7 @@ class DayEditState extends State<DayEdit> {
   String destinationId;
   List<dynamic> itineraryItems = [];
   //List<FabMiniMenuItem> _fabMiniMenuItemList = [];
+  bool loading = false;
   
   Future<DayData> data;
   final ScrollController _scrollController = ScrollController();
@@ -49,7 +50,7 @@ class DayEditState extends State<DayEdit> {
         this.color = Color(hexStringToHexInt(data.color));
         this.destinationName = data.destination['name'];
         this.destinationId = data.destination['id'].toString();
-        this.itineraryItems = data.day['itinerary_items'];
+        this.itineraryItems = data.day['itinerary_items'].sublist(1);
       });
     }); 
   }
@@ -110,7 +111,6 @@ class DayEditState extends State<DayEdit> {
           )
         );
         if(suggestion != null){
-          // print(suggestion['location']);
           var data = {
             "poi": suggestion,
             "title":"",
@@ -121,9 +121,17 @@ class DayEditState extends State<DayEdit> {
             }
           };
 
+          this.loading = true;
           var response = await addToDay(this.itineraryId, this.dayId, data);
-          this.itineraryItems.add(response.itineraryItem);
-          StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, response.itineraryItem));
+          setState(() {
+            this.color = Color(hexStringToHexInt(response.color));
+            this.destinationName = response.destination['name'];
+            this.destinationId = response.destination['id'].toString();
+            this.itineraryItems = response.day['itinerary_items'].sublist(1);
+            StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded));
+            this.loading = false;
+          });
+          
         }
       },
         "Add a place",
@@ -151,7 +159,7 @@ class DayEditState extends State<DayEdit> {
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     
     var day = snapshot.data.day;
-    var itinerary = snapshot.data.itinerary;
+    //var itinerary = snapshot.data.itinerary;
     var destination = snapshot.data.destination;
     var color = Color(hexStringToHexInt(snapshot.data.color));
 
@@ -211,7 +219,23 @@ class DayEditState extends State<DayEdit> {
           ),
         ];
       },
-      body: DayList(items: itineraryItems, color:color)
+      body: Stack(
+        fit: StackFit.expand,
+        children:<Widget>[
+          DayList(items: itineraryItems, color:color),
+          this.loading == true ? Align( alignment: Alignment.center, child:Container( 
+            width:50,
+            height: 50,
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+              color: Colors.white
+            ),
+            child:CircularProgressIndicator(
+              valueColor: new AlwaysStoppedAnimation<Color>(color),
+            ))
+          ) :Container()
+        ])
     );
   }
   

@@ -12,6 +12,15 @@ Map<String, dynamic> updateDayAfterAddReducer(dynamic state, dynamic action) {
   
   return itinerary;
 }
+Map<String, dynamic> updateDayAfterDeleteReducer(dynamic state, dynamic action) {
+  var itinerary = state.itinerary;
+  var index = itinerary["days"].indexWhere((day)=> day['id'] == action.dayId);
+  var itineraryItems = itinerary["days"][index]["itinerary_items"];
+  itineraryItems.removeWhere((item)=> item['id'] == action.id);
+  itinerary["days"][index]["itinerary_items"] = itineraryItems;
+  
+  return itinerary;
+}
 
 ItineraryData getItineraryReducer(dynamic state, dynamic action) {
   if(action is GetItineraryAction){
@@ -45,6 +54,14 @@ ItineraryData getItineraryBuilderReducer(dynamic state, dynamic action) {
   if(action is UpdateDayAfterAddAction){
     return ItineraryData(
       itinerary: updateDayAfterAddReducer(state, action),
+      color: state.color,
+      destination: state.destination,
+      loading: state.loading
+    );
+  }
+  if(action is UpdateDayAfterDeleteAction){
+    return ItineraryData(
+      itinerary: updateDayAfterDeleteReducer(state, action),
       color: state.color,
       destination: state.destination,
       loading: state.loading

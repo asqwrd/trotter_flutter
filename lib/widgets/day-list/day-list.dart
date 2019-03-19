@@ -7,7 +7,7 @@ import 'package:simple_moment/simple_moment.dart';
 
 class DayList extends StatelessWidget {
   final String2VoidFunc onPressed;
-  final ValueChanged onLongPressed;
+  final Function(dynamic) onLongPressed;
   final Color color;
   final List<dynamic> items;
   final Function(String) callback;
@@ -48,7 +48,11 @@ class DayList extends StatelessWidget {
 
           var time = itineraryItems[index]['travel']['duration']['text'];
           
-          return Padding(
+          return InkWell(
+            onLongPress: (){
+              this.onLongPressed(this.items[index]);
+            },
+            child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child:IntrinsicHeight(child:Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -207,7 +211,7 @@ class DayList extends StatelessWidget {
                 
               ],
             ))
-          );
+          ));
         },
       )
     );

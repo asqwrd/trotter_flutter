@@ -263,6 +263,9 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                   onPressed: (data){
                     onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day'});
                   },
+                  onLongPressed: (data){
+                    
+                  },
                 )
               ) : Container()
             ]

@@ -36,3 +36,10 @@ class UpdateDayAfterAddAction {
 
   UpdateDayAfterAddAction(this.dayId, this.itineraryItems, this.justAdded);
 }
+
+class UpdateDayAfterDeleteAction {
+  final String dayId;
+  final String id;
+
+  UpdateDayAfterDeleteAction(this.dayId, this.id);
+}

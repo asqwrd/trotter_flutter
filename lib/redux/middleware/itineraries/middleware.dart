@@ -92,10 +92,37 @@ Future<DayData> addToDay(String itineraryId, String dayId, dynamic data) async {
     return DayData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
+    return DayData(success: false);
+  }
+  
+}
+
+Future<DeleteItemData> deleteFromDay(String itineraryId, String dayId, String itineraryItemId) async {
+
+  final response = await http.delete('http://localhost:3002/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId', headers:{'Authorization':'security'});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+
+    return DeleteItemData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
     var msg = response.statusCode;
     throw Exception('Response> $msg');
   }
   
+}
+
+class DeleteItemData {
+  final int destinationsDeleted; 
+  final bool success;
+
+  DeleteItemData({this.destinationsDeleted, this.success});
+
+  factory DeleteItemData.fromJson(Map<String, dynamic> json) {
+    return DeleteItemData(
+      success: json['success']
+    );
+  }
 }
 
 class AddItemData {
@@ -116,8 +143,9 @@ class DayData {
   final Map<String, dynamic> destination; 
   final String color;
   final String justAdded;
+  final bool success;
 
-  DayData({this.day, this.itinerary, this.color, this.destination, this.justAdded});
+  DayData({this.day, this.itinerary, this.color, this.destination, this.justAdded, this.success});
 
   factory DayData.fromJson(Map<String, dynamic> json) {
     return DayData(
@@ -125,7 +153,8 @@ class DayData {
       color: json['itinerary']['color'],
       justAdded: json['justAdded'],
       destination: json['itinerary']['destination'],
-      itinerary: json['itinerary']['itinerary']
+      itinerary: json['itinerary']['itinerary'],
+      success: true
     );
   }
 }

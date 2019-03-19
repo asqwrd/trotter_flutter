@@ -222,7 +222,133 @@ class DayEditState extends State<DayEdit> {
       body: Stack(
         fit: StackFit.expand,
         children:<Widget>[
-          DayList(items: itineraryItems, color:color),
+          DayList(
+            items: itineraryItems, 
+            color:color,
+            onLongPressed: (data){
+              //print(data);
+              var name = data['poi']['name'];
+              var undoData = data;
+              var id = data['id'];
+              var textStyle = TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w400
+              );
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  // return object of type Dialog
+                  return AlertDialog(
+                    title: new Text("Delete place?"),
+                    content: new Text(
+                      'Are you sure you want to remove "$name" from your itinerary?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Color.fromRGBO(0, 0, 0, .4),
+                        height: 1.2
+                      ),
+                    ),
+                    actions: <Widget>[
+                      // usually buttons at the bottom of the dialog
+                      new FlatButton(
+                        padding: EdgeInsets.all(10),
+                        child: new Text(
+                          "CLOSE",
+                          style: textStyle,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      new FlatButton(
+                        padding: EdgeInsets.all(10),
+                        child: new Text(
+                          "DELETE",
+                          style: textStyle
+                        ),
+                        onPressed: () async {
+                          this.loading = true;
+                          var response = await deleteFromDay(this.itineraryId, this.dayId, id);
+                          if(response.success == true){
+                            setState(() {
+                              this.itineraryItems.removeWhere((item)=> item['id'] == id);
+                              StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterDeleteAction(this.dayId, id));
+                              this.loading = false;
+                            });
+                            Scaffold
+                            .of(ctxt)
+                            .showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '$name was removed.',
+                                  style: TextStyle(
+                                    fontSize: 18
+                                  )
+                                ),
+                                duration: Duration(seconds: 2),
+                                action: SnackBarAction(
+                                  label: 'Undo',
+                                  textColor: color,
+                                  onPressed: () async {
+                                    setState(() {
+                                      this.loading = true;                               
+                                    });
+                                    var response = await addToDay(this.itineraryId, this.dayId, undoData);
+                                    if(response.success == true){
+                                      setState(() {
+                                        this.color = Color(hexStringToHexInt(response.color));
+                                        this.destinationName = response.destination['name'];
+                                        this.destinationId = response.destination['id'].toString();
+                                        this.itineraryItems = response.day['itinerary_items'].sublist(1);
+                                        StoreProvider.of<AppState>(ctxt).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded));
+                                        this.loading = false;
+                                        Scaffold.of(ctxt).removeCurrentSnackBar();
+                                        Scaffold
+                                        .of(ctxt)
+                                        .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Undo successful!',
+                                              style: TextStyle(
+                                                fontSize: 18
+                                              )
+                                            ),
+                                            duration: Duration(seconds: 2),
+                                          )
+                                        ); 
+                                      });
+                                    } else {
+                                      Scaffold.of(ctxt).removeCurrentSnackBar();
+                                      Scaffold
+                                      .of(ctxt)
+                                      .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Sorry the undo failed!',
+                                            style: TextStyle(
+                                              fontSize: 18
+                                            )
+                                          ),
+                                          duration: Duration(seconds: 2)
+                                        )
+                                      ); 
+                                    }
+
+                                  },
+                                ),
+                              )
+                            ); 
+                          }
+                          
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
           this.loading == true ? Align( alignment: Alignment.center, child:Container( 
             width:50,
             height: 50,

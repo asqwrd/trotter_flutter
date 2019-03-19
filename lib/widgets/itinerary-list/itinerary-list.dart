@@ -8,7 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 class ItineraryList extends StatelessWidget {
   final String2VoidFunc onPressed;
-  final ValueChanged onLongPressed;
+  final Function(dynamic) onLongPressed;
   final String name;
   final Color color;
   final List<dynamic> items;
@@ -79,7 +79,7 @@ class ItineraryList extends StatelessWidget {
           this.onPressed({'id': id, 'level': level, 'google_place':googlePlace});
         },
         onLongPress: () {
-          this.onLongPressed({'item': item});
+          this.onLongPressed(item);
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,

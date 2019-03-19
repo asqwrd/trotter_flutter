@@ -11,7 +11,7 @@ void showTripsBottomSheet(context, dynamic destination){
     builder: (BuildContext bc){
       return StoreConnector <AppState, AppState>(
           converter: (store) => store.state,
-          builder: (context, trips)=> _buildLoadedList(context,trips,destination)
+          builder: (context, store)=> _buildLoadedList(context,store,destination)
         );
       }
   );
@@ -232,8 +232,6 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic destination) {
               ),
               width: 140.0,
               height: 90.0,
-            
-              
             ),
             Container(
               padding: EdgeInsets.symmetric(vertical: 10.0),

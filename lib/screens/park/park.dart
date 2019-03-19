@@ -253,6 +253,9 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
             var level  = items[index]['level'];
             onPush({'id':id.toString(), 'level':level.toString()});
           },
+          onLongPress: (){
+            
+          },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
             child: Row(

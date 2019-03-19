@@ -351,6 +351,8 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
             onPressed: (data){
               onPush({'id':data['id'], 'level':data['level']});
             },
+            onLongPressed: (data){
+            },
             header: section['header']
           )
         );

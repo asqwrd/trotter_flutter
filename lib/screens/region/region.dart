@@ -361,6 +361,8 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
             onPressed: (data){
               onPush({'id':data['id'], 'level':data['level']});
             },
+            onLongPressed: (data){
+            },
             header: section['header']
           )
         );

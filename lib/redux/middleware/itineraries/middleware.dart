@@ -112,6 +112,33 @@ Future<DeleteItemData> deleteFromDay(String itineraryId, String dayId, String it
   
 }
 
+Future<ItinerariesData> fetchItineraries(String filter) async {
+  final response =  await http.get('http://localhost:3002/api/itineraries/all?$filter', headers:{'Authorization':'security'});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return ItinerariesData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    var msg = response.statusCode;
+    throw Exception('Response> $msg');
+  }
+}
+
+class ItinerariesData {
+
+  final List<dynamic> itineraries;
+ 
+
+  ItinerariesData({this.itineraries});
+
+  factory ItinerariesData.fromJson(Map<String, dynamic> json) {
+    return ItinerariesData(
+      itineraries: json['itineraries'],
+    );
+  }
+}
+
+
 class DeleteItemData {
   final int destinationsDeleted; 
   final bool success;

@@ -7,6 +7,7 @@ import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:trotter_flutter/widgets/itineraries/index.dart';
 
 
 
@@ -352,6 +353,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
               onPush({'id':data['id'], 'level':data['level']});
             },
             onLongPressed: (data){
+              showItineraryBottomSheet(context, this.cityId, data['poi']);
             },
             header: section['header']
           )

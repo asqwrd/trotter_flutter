@@ -64,7 +64,7 @@ class TopList extends StatelessWidget {
       this.onPressed({'id': id, 'level': level});
     },
     onLongPress: () {
-      this.onLongPressed({'item': item});
+      this.onLongPressed({'poi':item});
     },
     child:Container(
       //height:210.0,

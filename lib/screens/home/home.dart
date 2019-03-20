@@ -26,7 +26,7 @@ Future<HomeData> fetchHome() async {
     }
   } else {
     final getData =  http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
-    final getData2 =  http.get('http://localhost:3002/api/itineraries/all/', headers:{'Authorization':'security'});
+    final getData2 =  http.get('http://localhost:3002/api/itineraries/all?public=true', headers:{'Authorization':'security'});
     var responses = await Future.wait([getData, getData2]);
     var response = responses[0];
     var response2 = responses[1];

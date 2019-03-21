@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trotter_flutter/redux/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -275,7 +277,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
         controller: _tabController,
         children: [
           _buildTabContent(
-            _buildAllTab(allTab, descriptionShort),
+            _buildAllTab(allTab, descriptionShort, color),
             'All'
           ),
           _buildListView(
@@ -331,7 +333,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildAllTab(List<dynamic> sections, String description) {
+  _buildAllTab(List<dynamic> sections, String description, Color color) {
     var widgets = <Widget>[
       Container(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -352,8 +354,14 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
             onPressed: (data){
               onPush({'id':data['id'], 'level':data['level']});
             },
-            onLongPressed: (data){
-              showItineraryBottomSheet(context, this.cityId, data['poi']);
+            onLongPressed: (data) async {
+              var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
+              if(selectedItineraryId != null) {
+                showDayBottomSheet(context, selectedItineraryId,data['poi'], this.cityId, color);
+              } else {
+                showItineraryBottomSheet(context, this.cityId, data['poi'], color);
+              }
+              
             },
             header: section['header']
           )

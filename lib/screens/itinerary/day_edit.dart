@@ -122,13 +122,13 @@ class DayEditState extends State<DayEdit> {
           };
 
           this.loading = true;
-          var response = await addToDay(this.itineraryId, this.dayId, data);
+          var response = await addToDay(StoreProvider.of<AppState>(context), this.itineraryId, this.dayId, this.destinationId, data);
           setState(() {
             this.color = Color(hexStringToHexInt(response.color));
             this.destinationName = response.destination['name'];
             this.destinationId = response.destination['id'].toString();
             this.itineraryItems = response.day['itinerary_items'].sublist(1);
-            StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded));
+            //StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded,this.itineraryId));
             this.loading = false;
           });
           
@@ -293,14 +293,14 @@ class DayEditState extends State<DayEdit> {
                                     setState(() {
                                       this.loading = true;                               
                                     });
-                                    var response = await addToDay(this.itineraryId, this.dayId, undoData);
+                                    var response = await addToDay(StoreProvider.of<AppState>(context),this.itineraryId, this.dayId, this.destinationId, undoData);
                                     if(response.success == true){
                                       setState(() {
                                         this.color = Color(hexStringToHexInt(response.color));
                                         this.destinationName = response.destination['name'];
                                         this.destinationId = response.destination['id'].toString();
                                         this.itineraryItems = response.day['itinerary_items'].sublist(1);
-                                        StoreProvider.of<AppState>(ctxt).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded));
+                                        //StoreProvider.of<AppState>(ctxt).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded, this.itineraryId));
                                         this.loading = false;
                                         Scaffold.of(ctxt).removeCurrentSnackBar();
                                         Scaffold
@@ -352,12 +352,7 @@ class DayEditState extends State<DayEdit> {
           this.loading == true ? Align( alignment: Alignment.center, child:Container( 
             width:50,
             height: 50,
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
-              color: Colors.white
-            ),
-            child:CircularProgressIndicator(
+            child:RefreshProgressIndicator(
               valueColor: new AlwaysStoppedAnimation<Color>(color),
             ))
           ) :Container()

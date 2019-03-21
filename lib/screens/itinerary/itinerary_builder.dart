@@ -229,7 +229,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                     child:Container(
                       margin: EdgeInsets.only(bottom:20),
                       child: Text(
-                        itineraryItems != null ? '${itineraryItems.length} items(s)' : '0 item(s)',
+                        '${itineraryItems.length == 1 ? "place":"places"} to see',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w300
@@ -239,7 +239,7 @@ _buildDay(List<dynamic> days, String destinationName, String locationId, Color c
                   )
                 ]
               ), 
-              itineraryItems != null ? Container(
+              itineraryItems.length > 0 ? Container(
                 margin: EdgeInsets.only(top:0),
                 child: ItineraryList(
                   items: itineraryItems,

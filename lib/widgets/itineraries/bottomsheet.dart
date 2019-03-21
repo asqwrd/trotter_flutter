@@ -6,7 +6,7 @@ import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 
-void showItineraryBottomSheet(context, String destinationId, dynamic poi) {
+void showItineraryBottomSheet(context, String destinationId, dynamic poi, Color color) {
   var data = fetchItineraries("destination=$destinationId");
   showModalBottomSheet(
     context: context,
@@ -15,7 +15,7 @@ void showItineraryBottomSheet(context, String destinationId, dynamic poi) {
           future: data,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return _buildLoadedList(context,snapshot, poi);
+              return _buildLoadedList(context,snapshot, poi, destinationId, color);
             }
             return _buildLoadingList();
           }
@@ -25,7 +25,7 @@ void showItineraryBottomSheet(context, String destinationId, dynamic poi) {
 }
 
 
-_buildLoadedList(BuildContext context, AsyncSnapshot snapshot, dynamic poi) {
+_buildLoadedList(BuildContext context, AsyncSnapshot snapshot, dynamic poi, String destinationId, Color color) {
   var itineraries = snapshot.data.itineraries;
   var loading = false;
   return IgnorePointer(
@@ -99,10 +99,10 @@ _buildLoadedList(BuildContext context, AsyncSnapshot snapshot, dynamic poi) {
               SingleChildScrollView(
                   primary: false,
                   scrollDirection: Axis.horizontal,
-                  child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(context,itineraries,poi)))
+                  child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(context,itineraries,poi, destinationId, color)))
                 ),
               
-              loading ? Center(child:RefreshProgressIndicator()) : Container()
+              loading ? Center(child:RefreshProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(color))) : Container()
             ]
           )
         ]
@@ -129,10 +129,10 @@ _buildLoadingList(){
   );
 }
 
-_buildItems(BuildContext context,List<dynamic> items, dynamic poi) {
+_buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destinationId, Color color) {
     var widgets = <Widget>[];
     for (var item in items) {
-      widgets.add(_buildBody(context, item, poi));
+      widgets.add(_buildBody(context, item, poi, destinationId, color));
         
     }
     return widgets;
@@ -147,38 +147,21 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi) {
     );
   }
 
-  Widget _buildBody(BuildContext context,  dynamic item, dynamic poi) {
+  Widget _buildBody(BuildContext context,  dynamic item, dynamic poi, String destinationId, Color color) {
+    var days = item['days'] as List;
+    var itineraryItems = days.firstWhere((day) { 
+        var items = day['itinerary_items'] as List;
+        return items.length > 0;
+      },
+      orElse: ()=>{"itinerary_items":<List<dynamic>>[]}
+    
+    )['itinerary_items'];
+
     return Container(margin:EdgeInsets.only(right: 20), child:InkWell(
       onTap: () async {
-        //Navigator.pop(context);
-        var result = await showDayBottomSheet(context, item);
-        if(result['selected'] != null){
-          print(poi['name']);
-          var data = {
-            "poi": poi,
-            "title":"",
-            "description":"",
-            "time":{
-              "value":"",
-              "unit":""
-            }
-          };
-          var response = await addToDay(item['id'], result['selected']['id'], data);
-          if(response.success == true){
-            Scaffold
-            .of(context)
-            .showSnackBar(
-              SnackBar(
-                content: Text(
-                  '${poi['name']} added to ${item['name']}',
-                  style: TextStyle(
-                    fontSize: 18
-                  )
-                ),
-                duration: Duration(seconds: 2),
-              )
-            ); 
-          }
+        //
+        var result = await showDayBottomSheet(context, item['id'], poi, destinationId, color);
+        if(result != null && result['selected'] != null){
           Navigator.pop(context);
         }
 
@@ -188,11 +171,10 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi) {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           MiniItineraryList(
-            items: item['days'][0]['itinerary_items'],
+            items: itineraryItems,
             onPressed: (data) async {
-              var result = await showDayBottomSheet(context, item);
-              if(result['selected'] != null){
-                print(result['selected']);
+              var result = await showDayBottomSheet(context, item['id'], poi, destinationId, color);
+              if(result['selected'] == null){
                 Navigator.pop(context);
               }
 
@@ -219,46 +201,125 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi) {
     ));
   }
 
-  showDayBottomSheet(BuildContext context, item) {
+  responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi, String dayId, String destinationId) async {
+    var data = {
+      "poi": poi,
+      "title":"",
+      "description":"",
+      "time":{
+        "value":"",
+        "unit":""
+      }
+    };
+    
+    var response = await addToDay(StoreProvider.of<AppState>(context), item['id'], dayId, destinationId, data);
+    if(response.success == true){
+      Scaffold
+      .of(context)
+      .showSnackBar(
+        SnackBar(
+          content: Text(
+            '${poi['name']} added to ${item['name']}',
+            style: TextStyle(
+              fontSize: 18
+            )
+          ),
+          duration: Duration(seconds: 2),
+        )
+      ); 
+    }
+  }
+
+  showDayBottomSheet(BuildContext context, String itineraryId, dynamic poi, String destinationId, Color color) {
+    // StoreProvider.of<AppState>(context).dispatch(
+    //                           new SetSelectItineraryLoadingAction(false)
+    //                        ); 
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext bc){
-        var days = item['days'];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.only(top:30, bottom:20, left:20), 
-              child: Text(
-                'Choose a day',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w300
-                ),
-              )
-            ),
-            Container(margin:EdgeInsets.only(bottom: 0, top: 0), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
-            Flexible(child:ListView.separated(
-              separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.symmetric(vertical: 0), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
-              itemCount: days.length,
-              primary: false,
-              itemBuilder:  (BuildContext listContext, int dayIndex){
-                return ListTile(
-                  onTap: (){
-                    Navigator.pop(context,{'selected': days[dayIndex]});
-                  },
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                  title: Text(
-                    'Day ${days[dayIndex]['day'] + 1}',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w400
-                    ),
+        return StoreConnector <AppState, SelectItineraryData>(
+          converter: (store) => store.state.selectedItinerary,
+          onInit: (store) async {
+            if(store.state.selectedItinerary.selectedItinerary == null){
+              store.dispatch(new SetSelectItineraryLoadingAction(true));
+              await fetchSelectedItinerary(StoreProvider.of<AppState>(context),itineraryId);
+              store.dispatch(SetSelectItineraryLoadingAction(false));
+            }
+          },
+          builder: (context, store){
+            var loading = store.loading;
+            if(loading && store.selectedItinerary == null){
+              return Container(
+                height: 300,
+                width:400,
+                child: Center(child:CircularProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(color))) 
+              );
+            }
+            var item = store.selectedItinerary;
+            var days = item['days'];
+            return IgnorePointer(
+              ignoring: StoreProvider.of<AppState>(context).state.selectedItinerary.loading,
+              child: Stack( 
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.only(top:30, bottom:20, left:20), 
+                        child: Text(
+                          'Choose a day',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w300
+                          ),
+                        )
+                      ),
+                      Container(margin:EdgeInsets.only(bottom: 0, top: 0), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
+                      Flexible(
+                        child:ListView.separated(
+                          separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.symmetric(vertical: 0), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
+                          itemCount: days.length,
+                          primary: false,
+                          itemBuilder:  (BuildContext listContext, int dayIndex){
+                            return ListTile(
+                              onTap: () async {
+                                StoreProvider.of<AppState>(context).dispatch(
+                                  new SetSelectItineraryLoadingAction(true)
+                                ); 
+                                await responseFromDayBottomSheet(context, item, poi, days[dayIndex]['id'], destinationId);
+                                StoreProvider.of<AppState>(context).dispatch(
+                                  new SetSelectItineraryLoadingAction(false)
+                                ); 
+                                Navigator.pop(context,{'selected': days[dayIndex]});
+
+                              },
+                              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                              title: Text(
+                                'Day ${days[dayIndex]['day'] + 1}',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w500
+                                ),
+                              ),
+                              subtitle:Text(
+                                '${days[dayIndex]['itinerary_items'].length} ${days[dayIndex]['itinerary_items'].length == 1  ? "place":"places"} to see',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w300
+                                ),
+                              )
+                            );
+                          },  
+                        )
+                      )
+                    ]
                   ),
-                );
-              },  
-            ))
-        ]);
+                  store.loading == true ? Center(child:RefreshProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(color))) : Container()
+                ]
+              )
+            );            
+          }
+        );
       }
     );
   }

@@ -105,9 +105,9 @@ class MiniItineraryList extends StatelessWidget {
     var width =  210.0;
     var height = 100.0;
     if(index + 1 == count && count.isEven && count > 2){
-      width =  200;
+      width =  210;
     } else if (index > 0 && count > 2 && count.isEven) {
-      width =  (200 - 60) * .5;
+      width =  (200) * .5;
     } else if(index > 0 && count > 2 && count.isOdd || count == 2){
       width =  200 * .5;
     } else if(count == 1){

@@ -12,6 +12,15 @@ Map<String, dynamic> updateDayAfterAddReducer(dynamic state, dynamic action) {
   
   return itinerary;
 }
+Map<String, dynamic> updateSelectedDayAfterAddReducer(dynamic state, dynamic action) {
+  var selectedItinerary = state.selectedItinerary;
+  var index = selectedItinerary["days"].indexWhere((day)=> day['id'] == action.dayId);
+  var itineraryItems = action.itineraryItems;
+  selectedItinerary["days"][index]["itinerary_items"] = itineraryItems;
+  
+  return selectedItinerary;
+}
+
 Map<String, dynamic> updateDayAfterDeleteReducer(dynamic state, dynamic action) {
   var itinerary = state.itinerary;
   var index = itinerary["days"].indexWhere((day)=> day['id'] == action.dayId);
@@ -39,6 +48,38 @@ ItineraryData getItineraryReducer(dynamic state, dynamic action) {
       loading: action.loading
     );
   }
+
+  return state;
+}
+
+SelectItineraryData getSelectItineraryReducer(dynamic state, dynamic action){
+  if(action is SelectItineraryAction){
+    return SelectItineraryData(
+      loading: action.loading, 
+      selectedItineraryId: action.selectedItineraryId,
+      selectedItinerary: action.selectedItinerary,
+      destinationId: action.destinationId
+    );
+  }
+
+  if(action is UpdateDayAfterAddAction && (state.selectedItineraryId != null && action.itinerary['id'] == state.selectedItineraryId && action.destinationId == state.destinationId)){
+    return SelectItineraryData(
+      loading: state.loading,
+      selectedItineraryId: action.itinerary['id'],
+      selectedItinerary: updateSelectedDayAfterAddReducer(state, action),
+      destinationId: action.destinationId
+    );
+  }
+
+  if(action is SetSelectItineraryLoadingAction){
+    return SelectItineraryData(
+      loading: action.loading, 
+      selectedItineraryId: state.selectedItineraryId,
+      destinationId: state.destinationId,
+      selectedItinerary: state.selectedItinerary,
+    );
+  }
+
   return state;
 }
 
@@ -51,7 +92,7 @@ ItineraryData getItineraryBuilderReducer(dynamic state, dynamic action) {
       loading: true
     );
   }
-  if(action is UpdateDayAfterAddAction){
+  if(action is UpdateDayAfterAddAction && (state.itinerary != null && state.itinerary['id'] == action.itinerary['id'])){
     return ItineraryData(
       itinerary: updateDayAfterAddReducer(state, action),
       color: state.color,

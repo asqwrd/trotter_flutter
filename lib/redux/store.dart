@@ -7,6 +7,7 @@ AppState appStateReducer(AppState state, action) {
     trips: tripsReducer(state.trips,action),
     itinerary: getItineraryReducer(state.itinerary, action),
     itineraryBuilder: getItineraryBuilderReducer(state.itineraryBuilder, action),
+    selectedItinerary: getSelectItineraryReducer(state.selectedItinerary, action),
     tripLoading: tripLoadingReducer(state.tripLoading, action)
   );
 }

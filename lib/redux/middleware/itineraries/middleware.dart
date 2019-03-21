@@ -47,6 +47,23 @@ Future<ItineraryData> fetchItinerary(Store<AppState> store, String id) async {
   
 }
 
+Future<ItineraryData> fetchSelectedItinerary(Store<AppState> store, String id) async {
+  final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    var results  = ItineraryData.fromJson(json.decode(response.body));
+    store.dispatch(
+      new SelectItineraryAction(results.itinerary['id'], false, results.destination['id'], results.itinerary)
+    );
+    return results;
+  } else {
+    // If that response was not OK, throw an error.
+    var msg = response.statusCode;
+    throw Exception('Response> $msg');
+  }
+  
+}
+
 Future<ItineraryData> fetchItineraryBuilder(Store<AppState> store, String id) async {
   final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
@@ -83,13 +100,15 @@ Future<DayData> fetchDay(String itineraryId, String dayId) async {
 }
 
 
-Future<DayData> addToDay(String itineraryId, String dayId, dynamic data) async {
-
+Future<DayData> addToDay(Store<AppState> store, String itineraryId, String dayId, String destinationId, dynamic data) async {
   final response = await http.post('http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId', body: json.encode(data), headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
-
-    return DayData.fromJson(json.decode(response.body));
+    var res = DayData.fromJson(json.decode(response.body));
+    store.dispatch(
+      new UpdateDayAfterAddAction(dayId, res.day['itinerary_items'].sublist(1), res.justAdded, res.itinerary, destinationId)
+    );
+    return res;
   } else {
     // If that response was not OK, throw an error.
     return DayData(success: false);
@@ -136,6 +155,17 @@ class ItinerariesData {
       itineraries: json['itineraries'],
     );
   }
+}
+
+class SelectItineraryData {
+
+  final String selectedItineraryId;
+  final Map<String, dynamic> selectedItinerary;
+  final String destinationId;
+  final bool loading;
+ 
+
+  SelectItineraryData({this.loading, this.selectedItineraryId, this.destinationId, this.selectedItinerary});
 }
 
 

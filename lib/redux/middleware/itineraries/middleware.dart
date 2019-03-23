@@ -100,13 +100,17 @@ Future<DayData> fetchDay(String itineraryId, String dayId) async {
 }
 
 
-Future<DayData> addToDay(Store<AppState> store, String itineraryId, String dayId, String destinationId, dynamic data) async {
+Future<DayData> addToDay(Store<AppState> store, String itineraryId, String dayId, String destinationId, dynamic data, [bool noSublist]) async {
   final response = await http.post('http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId', body: json.encode(data), headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     var res = DayData.fromJson(json.decode(response.body));
+    var itineraryItems = res.day['itinerary_items'].sublist(1);
+    if(noSublist == true){
+      itineraryItems = res.day['itinerary_items'];
+    }
     store.dispatch(
-      new UpdateDayAfterAddAction(dayId, res.day['itinerary_items'].sublist(1), res.justAdded, res.itinerary, destinationId)
+      new UpdateDayAfterAddAction(dayId, itineraryItems, res.justAdded, res.itinerary, destinationId)
     );
     return res;
   } else {

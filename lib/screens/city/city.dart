@@ -357,9 +357,14 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
             onLongPressed: (data) async {
               var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
               if(selectedItineraryId != null) {
-                showDayBottomSheet(context, selectedItineraryId,data['poi'], this.cityId, color);
+                var result = await showDayBottomSheet(StoreProvider.of<AppState>(context), context, selectedItineraryId,data['poi'], this.cityId, color);
+                if(result != null && result['change'] != null) {
+                  StoreProvider.of<AppState>(context).dispatch(
+                    new SelectItineraryAction(null,false,this.cityId,null)
+                  ); 
+                }
               } else {
-                showItineraryBottomSheet(context, this.cityId, data['poi'], color);
+                showItineraryBottomSheet(StoreProvider.of<AppState>(context), context, this.cityId, data['poi'], color);
               }
               
             },
@@ -384,6 +389,20 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
             var id = items[index]['id'];
             var level  = items[index]['level'];
             onPush({'id':id.toString(), 'level':level.toString()});
+          },
+          onLongPress: () async {
+            var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
+            var poi = items[index];
+            if(selectedItineraryId != null) {
+              var result = await showDayBottomSheet(StoreProvider.of<AppState>(context), context, selectedItineraryId, poi , this.cityId, color);
+              if(result != null && result['change'] != null) {
+                StoreProvider.of<AppState>(context).dispatch(
+                  new SelectItineraryAction(null,false,this.cityId,null)
+                ); 
+              }
+            } else {
+              showItineraryBottomSheet(StoreProvider.of<AppState>(context), context, this.cityId, poi, color);
+            }
           },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),

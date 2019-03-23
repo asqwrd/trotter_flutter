@@ -1,12 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 
-void showItineraryBottomSheet(context, String destinationId, dynamic poi, Color color) {
+void showItineraryBottomSheet(Store<AppState> store, context, String destinationId, dynamic poi, Color color) {
   var data = fetchItineraries("destination=$destinationId");
   showModalBottomSheet(
     context: context,
@@ -15,7 +16,7 @@ void showItineraryBottomSheet(context, String destinationId, dynamic poi, Color 
           future: data,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return _buildLoadedList(context,snapshot, poi, destinationId, color);
+              return _buildLoadedList(store, context,snapshot, poi, destinationId, color);
             }
             return _buildLoadingList();
           }
@@ -25,7 +26,7 @@ void showItineraryBottomSheet(context, String destinationId, dynamic poi, Color 
 }
 
 
-_buildLoadedList(BuildContext context, AsyncSnapshot snapshot, dynamic poi, String destinationId, Color color) {
+_buildLoadedList(Store<AppState> store, BuildContext context, AsyncSnapshot snapshot, dynamic poi, String destinationId, Color color) {
   var itineraries = snapshot.data.itineraries;
   var loading = false;
   return IgnorePointer(
@@ -99,7 +100,7 @@ _buildLoadedList(BuildContext context, AsyncSnapshot snapshot, dynamic poi, Stri
               SingleChildScrollView(
                   primary: false,
                   scrollDirection: Axis.horizontal,
-                  child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(context,itineraries,poi, destinationId, color)))
+                  child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(store, context,itineraries,poi, destinationId, color)))
                 ),
               
               loading ? Center(child:RefreshProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(color))) : Container()
@@ -129,10 +130,10 @@ _buildLoadingList(){
   );
 }
 
-_buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destinationId, Color color) {
+_buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dynamic poi, String destinationId, Color color) {
     var widgets = <Widget>[];
     for (var item in items) {
-      widgets.add(_buildBody(context, item, poi, destinationId, color));
+      widgets.add(_buildBody(store, context, item, poi, destinationId, color));
         
     }
     return widgets;
@@ -147,7 +148,7 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destin
     );
   }
 
-  Widget _buildBody(BuildContext context,  dynamic item, dynamic poi, String destinationId, Color color) {
+  Widget _buildBody(Store<AppState> store, BuildContext context,  dynamic item, dynamic poi, String destinationId, Color color) {
     var days = item['days'] as List;
     var itineraryItems = days.firstWhere((day) { 
         var items = day['itinerary_items'] as List;
@@ -159,10 +160,12 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destin
 
     return Container(margin:EdgeInsets.only(right: 20), child:InkWell(
       onTap: () async {
-        //
-        var result = await showDayBottomSheet(context, item['id'], poi, destinationId, color);
-        if(result != null && result['selected'] != null){
-          Navigator.pop(context);
+        Navigator.pop(context);
+        var result = await showDayBottomSheet(store, context, item['id'], poi, destinationId, color);
+        if(result != null && result['change'] != null) {
+          store.dispatch(
+            new SelectItineraryAction(null,false,destinationId,null)
+          ); 
         }
 
         
@@ -173,9 +176,12 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destin
           MiniItineraryList(
             items: itineraryItems,
             onPressed: (data) async {
-              var result = await showDayBottomSheet(context, item['id'], poi, destinationId, color);
-              if(result['selected'] == null){
-                Navigator.pop(context);
+              Navigator.pop(context);
+              var result = await showDayBottomSheet(store,context, item['id'], poi, destinationId, color);
+              if(result != null && result['change'] != null) {
+                store.dispatch(
+                  new SelectItineraryAction(null,false,destinationId,null)
+                ); 
               }
 
             },
@@ -212,7 +218,7 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destin
       }
     };
     
-    var response = await addToDay(StoreProvider.of<AppState>(context), item['id'], dayId, destinationId, data);
+    var response = await addToDay(StoreProvider.of<AppState>(context), item['id'], dayId, destinationId, data, true);
     if(response.success == true){
       Scaffold
       .of(context)
@@ -230,10 +236,7 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destin
     }
   }
 
-  showDayBottomSheet(BuildContext context, String itineraryId, dynamic poi, String destinationId, Color color) {
-    // StoreProvider.of<AppState>(context).dispatch(
-    //                           new SetSelectItineraryLoadingAction(false)
-    //                        ); 
+  showDayBottomSheet(Store<AppState> storeApp, BuildContext context, String itineraryId, dynamic poi, String destinationId, Color color) {
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext bc){
@@ -256,6 +259,9 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destin
               );
             }
             var item = store.selectedItinerary;
+            if(item == null){
+              return Container();
+            }
             var days = item['days'];
             return IgnorePointer(
               ignoring: StoreProvider.of<AppState>(context).state.selectedItinerary.loading,
@@ -266,12 +272,32 @@ _buildItems(BuildContext context,List<dynamic> items, dynamic poi, String destin
                     children: <Widget>[
                       Container(
                         padding: EdgeInsets.only(top:30, bottom:20, left:20), 
-                        child: Text(
-                          'Choose a day',
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w300
-                          ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Text(
+                              'Choose a day',
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w300
+                              ),
+                            ),
+                            FlatButton(
+                              onPressed: (){
+                                Navigator.pop(context,{"change":true});
+                                showItineraryBottomSheet(storeApp, context, destinationId, poi, color);
+                              },
+                              child: Text(
+                                'Change',
+                                style: TextStyle(
+                                  color:color,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w300
+                                ),
+                              ),
+                            )
+                          ]
                         )
                       ),
                       Container(margin:EdgeInsets.only(bottom: 0, top: 0), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),

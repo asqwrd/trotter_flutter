@@ -207,7 +207,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
     ));
   }
 
-  responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi, String dayId, String destinationId) async {
+  responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi, String dayId, String destinationId, [int toIndex]) async {
     var data = {
       "poi": poi,
       "title":"",
@@ -225,7 +225,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
       .showSnackBar(
         SnackBar(
           content: Text(
-            '${poi['name']} added to ${item['name']}',
+            toIndex != null ? '${poi['name']} moved to day $toIndex' : '${poi['name']} added to ${item['name']}',
             style: TextStyle(
               fontSize: 18
             )
@@ -236,14 +236,14 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
     }
   }
 
-  showDayBottomSheet(Store<AppState> storeApp, BuildContext context, String itineraryId, dynamic poi, String destinationId, Color color, dynamic destination) {
+  showDayBottomSheet(Store<AppState> storeApp, BuildContext context, String itineraryId, dynamic poi, String destinationId, Color color, dynamic destination, {force: false, isSelecting:false, String movingFromId}) {
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext bc){
         return StoreConnector <AppState, SelectItineraryData>(
           converter: (store) => store.state.selectedItinerary,
           onInit: (store) async {
-            if(store.state.selectedItinerary.selectedItinerary == null){
+            if(store.state.selectedItinerary.selectedItinerary == null || force == true){
               store.dispatch(new SetSelectItineraryLoadingAction(true));
               await fetchSelectedItinerary(StoreProvider.of<AppState>(context),itineraryId);
               store.dispatch(SetSelectItineraryLoadingAction(false));
@@ -263,6 +263,9 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
               return Container();
             }
             var days = item['days'];
+            if(movingFromId != null){
+              days.removeWhere((day)=> movingFromId == day['id']);
+            }
             return IgnorePointer(
               ignoring: StoreProvider.of<AppState>(context).state.selectedItinerary.loading,
               child: Stack( 
@@ -283,7 +286,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
                                 fontWeight: FontWeight.w300
                               ),
                             ),
-                            FlatButton(
+                            isSelecting == true ? FlatButton(
                               onPressed: (){
                                 Navigator.pop(context,{"change":true});
                                 showItineraryBottomSheet(storeApp, context, destinationId, poi, color, destination);
@@ -296,7 +299,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
                                   fontWeight: FontWeight.w300
                                 ),
                               ),
-                            )
+                            ) : Container()
                           ]
                         )
                       ),
@@ -312,7 +315,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
                                 StoreProvider.of<AppState>(context).dispatch(
                                   new SetSelectItineraryLoadingAction(true)
                                 ); 
-                                await responseFromDayBottomSheet(context, item, poi, days[dayIndex]['id'], destinationId);
+                                await responseFromDayBottomSheet(context, item, poi, days[dayIndex]['id'], destinationId, days[dayIndex]['day']+1);
                                 StoreProvider.of<AppState>(context).dispatch(
                                   new SetSelectItineraryLoadingAction(false)
                                 ); 

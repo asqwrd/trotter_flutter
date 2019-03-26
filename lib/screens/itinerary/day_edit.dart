@@ -7,6 +7,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:trotter_flutter/widgets/itineraries/index.dart';
 
 
 
@@ -27,6 +28,7 @@ class DayEditState extends State<DayEdit> {
   Color color = Colors.blueGrey;
   String destinationName;
   String destinationId;
+  dynamic destination;
   List<dynamic> itineraryItems = [];
   //List<FabMiniMenuItem> _fabMiniMenuItemList = [];
   bool loading = false;
@@ -49,6 +51,7 @@ class DayEditState extends State<DayEdit> {
       setState(() {
         this.color = Color(hexStringToHexInt(data.color));
         this.destinationName = data.destination['name'];
+        this.destination = data.destination;
         this.destinationId = data.destination['id'].toString();
         this.itineraryItems = data.day['itinerary_items'].sublist(1);
       });
@@ -122,13 +125,12 @@ class DayEditState extends State<DayEdit> {
           };
 
           this.loading = true;
-          var response = await addToDay(StoreProvider.of<AppState>(context), this.itineraryId, this.dayId, this.destinationId, data);
+          var response = await addToDay(StoreProvider.of<AppState>(context), this.itineraryId, this.dayId, this.destinationId, data, false);
           setState(() {
             this.color = Color(hexStringToHexInt(response.color));
             this.destinationName = response.destination['name'];
             this.destinationId = response.destination['id'].toString();
-            this.itineraryItems = response.day['itinerary_items'].sublist(1);
-            //StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded,this.itineraryId));
+            this.itineraryItems = response.day['itinerary_items'];
             this.loading = false;
           });
           
@@ -227,126 +229,7 @@ class DayEditState extends State<DayEdit> {
             color:color,
             onLongPressed: (data){
               //print(data);
-              var name = data['poi']['name'];
-              var undoData = data;
-              var id = data['id'];
-              var textStyle = TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w400
-              );
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  // return object of type Dialog
-                  return AlertDialog(
-                    title: new Text("Delete place?"),
-                    content: new Text(
-                      'Are you sure you want to remove "$name" from your itinerary?',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Color.fromRGBO(0, 0, 0, .4),
-                        height: 1.2
-                      ),
-                    ),
-                    actions: <Widget>[
-                      // usually buttons at the bottom of the dialog
-                      new FlatButton(
-                        padding: EdgeInsets.all(10),
-                        child: new Text(
-                          "CLOSE",
-                          style: textStyle,
-                        ),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      new FlatButton(
-                        padding: EdgeInsets.all(10),
-                        child: new Text(
-                          "DELETE",
-                          style: textStyle
-                        ),
-                        onPressed: () async {
-                          this.loading = true;
-                          var response = await deleteFromDay(this.itineraryId, this.dayId, id);
-                          if(response.success == true){
-                            setState(() {
-                              this.itineraryItems.removeWhere((item)=> item['id'] == id);
-                              StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterDeleteAction(this.dayId, id));
-                              this.loading = false;
-                            });
-                            Scaffold
-                            .of(ctxt)
-                            .showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '$name was removed.',
-                                  style: TextStyle(
-                                    fontSize: 18
-                                  )
-                                ),
-                                duration: Duration(seconds: 2),
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  textColor: color,
-                                  onPressed: () async {
-                                    setState(() {
-                                      this.loading = true;                               
-                                    });
-                                    var response = await addToDay(StoreProvider.of<AppState>(context),this.itineraryId, this.dayId, this.destinationId, undoData);
-                                    if(response.success == true){
-                                      setState(() {
-                                        this.color = Color(hexStringToHexInt(response.color));
-                                        this.destinationName = response.destination['name'];
-                                        this.destinationId = response.destination['id'].toString();
-                                        this.itineraryItems = response.day['itinerary_items'].sublist(1);
-                                        //StoreProvider.of<AppState>(ctxt).dispatch(UpdateDayAfterAddAction(this.dayId, this.itineraryItems, response.justAdded, this.itineraryId));
-                                        this.loading = false;
-                                        Scaffold.of(ctxt).removeCurrentSnackBar();
-                                        Scaffold
-                                        .of(ctxt)
-                                        .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Undo successful!',
-                                              style: TextStyle(
-                                                fontSize: 18
-                                              )
-                                            ),
-                                            duration: Duration(seconds: 2),
-                                          )
-                                        ); 
-                                      });
-                                    } else {
-                                      Scaffold.of(ctxt).removeCurrentSnackBar();
-                                      Scaffold
-                                      .of(ctxt)
-                                      .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Sorry the undo failed!',
-                                            style: TextStyle(
-                                              fontSize: 18
-                                            )
-                                          ),
-                                          duration: Duration(seconds: 2)
-                                        )
-                                      ); 
-                                    }
-
-                                  },
-                                ),
-                              )
-                            ); 
-                          }
-                          
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
+              bottomSheetModal(context, day['day']+1, data);
             },
           ),
           this.loading == true ? Align( alignment: Alignment.center, child:Container( 
@@ -357,6 +240,123 @@ class DayEditState extends State<DayEdit> {
             ))
           ) :Container()
         ])
+    );
+  }
+
+  bottomSheetModal(BuildContext ctxt, int dayIndex, dynamic data){
+    var name = data['poi']['name'];
+    var undoData = data;
+    var id = data['id'];
+
+    return showModalBottomSheet(context: ctxt,
+      builder: (BuildContext context) {
+        return new Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            new ListTile(
+              
+              leading: new Icon(EvilIcons.external_link),
+              title: new Text('Move to another day'),
+              onTap: () async {
+                var result = await showDayBottomSheet(StoreProvider.of<AppState>(context),context,this.itineraryId,data['poi'],this.destinationId,this.color,this.destination,force:true, isSelecting: false, movingFromId: this.dayId);
+                if(result != null && result['selected'] != null){
+                  setState(() {
+                    this.loading = true;
+                  });
+                  var response = await deleteFromDay(this.itineraryId, this.dayId, id);
+                  if(response.success == true){
+                    setState(() {
+                      this.itineraryItems.removeWhere((item)=> item['id'] == id);
+                      StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterDeleteAction(this.dayId, id));
+                      Navigator.of(context).pop();
+                      this.loading = false;
+                    });
+                  }
+                }
+              } 
+            ),
+            new ListTile(
+              leading: new Icon(EvilIcons.trash,),
+              title: new Text('Delete from itnerary'),
+              onTap: () async { 
+                this.loading = true;
+                var response = await deleteFromDay(this.itineraryId, this.dayId, id);
+                if(response.success == true){
+                  setState(() {
+                    this.itineraryItems.removeWhere((item)=> item['id'] == id);
+                    StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterDeleteAction(this.dayId, id));
+                    this.loading = false;
+                  });
+                  Scaffold
+                  .of(ctxt)
+                  .showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '$name was removed.',
+                        style: TextStyle(
+                          fontSize: 18
+                        )
+                      ),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        textColor: color,
+                        onPressed: () async {
+                          setState(() {
+                            this.loading = true;                               
+                          });
+                          var response = await addToDay(StoreProvider.of<AppState>(ctxt),this.itineraryId, this.dayId, this.destinationId, undoData, false);
+                          if(response.success == true){
+                            setState(() {
+                              this.color = Color(hexStringToHexInt(response.color));
+                              this.destinationName = response.destination['name'];
+                              this.destinationId = response.destination['id'].toString();
+                              this.itineraryItems = response.day['itinerary_items'];
+                              this.loading = false;
+                              Scaffold.of(ctxt).removeCurrentSnackBar();
+                              Scaffold
+                              .of(ctxt)
+                              .showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Undo successful!',
+                                    style: TextStyle(
+                                      fontSize: 18
+                                    )
+                                  ),
+                                  duration: Duration(seconds: 2),
+                                )
+                              ); 
+                            });
+                          } else {
+                            Scaffold.of(ctxt).removeCurrentSnackBar();
+                            Scaffold
+                            .of(ctxt)
+                            .showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Sorry the undo failed!',
+                                  style: TextStyle(
+                                    fontSize: 18
+                                  )
+                                ),
+                                duration: Duration(seconds: 2)
+                              )
+                            ); 
+                          }
+
+                        },
+                      ),
+                    )
+                  ); 
+                }
+                Navigator.of(context).pop();
+              }        
+            ),
+          ]
+        );
+      }
     );
   }
   

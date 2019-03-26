@@ -3,9 +3,11 @@ import '../../actions/itineraries/actions.dart';
 import '../../middleware/itineraries/middleware.dart';
 
 Map<String, dynamic> updateDayAfterAddReducer(dynamic state, dynamic action) {
+  print(action.justAdded);
   var itinerary = state.itinerary;
   var index = itinerary["days"].indexWhere((day)=> day['id'] == action.dayId);
   var itineraryItems = action.itineraryItems;
+  print(itineraryItems.length);
   var justAddedIndex = itineraryItems.indexWhere((itin)=> itin['id'] == action.justAdded);
   itineraryItems[justAddedIndex]['justAdded'] = true;
   itinerary["days"][index]["itinerary_items"] = itineraryItems;

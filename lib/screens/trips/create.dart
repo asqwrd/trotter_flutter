@@ -265,7 +265,7 @@ class CreateTripState extends State<CreateTrip> {
     final TextEditingController _destinationTextController = TextEditingController();
     var dateFormat = DateFormat("EEE, MMM d, yyyy");
     if(param != null)
-      _destinationTextController.text = param['country_id'] == 'United_States' ? '${param['name']}, ${param['parent_name']}' :'${param['name']}, ${param['country_name']}';
+      _destinationTextController.text = param['country_id'] == 'United_States' ? '${param['name']}, United States' :'${param['name']}, ${param['country_name']}';
     return Column(
       children: <Widget>[
         Container(

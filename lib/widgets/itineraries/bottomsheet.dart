@@ -7,7 +7,7 @@ import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 
-void showItineraryBottomSheet(Store<AppState> store, context, String destinationId, dynamic poi, Color color) {
+void showItineraryBottomSheet(Store<AppState> store, context, String destinationId, dynamic poi, Color color, dynamic destination) {
   var data = fetchItineraries("destination=$destinationId");
   showModalBottomSheet(
     context: context,
@@ -16,7 +16,7 @@ void showItineraryBottomSheet(Store<AppState> store, context, String destination
           future: data,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return _buildLoadedList(store, context,snapshot, poi, destinationId, color);
+              return _buildLoadedList(store, context,snapshot, poi, destinationId, color, destination);
             }
             return _buildLoadingList();
           }
@@ -26,7 +26,7 @@ void showItineraryBottomSheet(Store<AppState> store, context, String destination
 }
 
 
-_buildLoadedList(Store<AppState> store, BuildContext context, AsyncSnapshot snapshot, dynamic poi, String destinationId, Color color) {
+_buildLoadedList(Store<AppState> store, BuildContext context, AsyncSnapshot snapshot, dynamic poi, String destinationId, Color color, dynamic destination) {
   var itineraries = snapshot.data.itineraries;
   var loading = false;
   return IgnorePointer(
@@ -64,7 +64,7 @@ _buildLoadedList(Store<AppState> store, BuildContext context, AsyncSnapshot snap
             SizedBox(height: 30),
             FlatButton(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
+              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(50.0)),
               child:Text(
                 'Start planning',
                 style: TextStyle(
@@ -74,8 +74,8 @@ _buildLoadedList(Store<AppState> store, BuildContext context, AsyncSnapshot snap
                 ),
               ),
               color: Colors.blueGrey,
-              onPressed: (){
-                TabNavigator().push(context,{'level':'createtrip'});
+              onPressed: () {
+                TabNavigator().push(context,{'level':'createtrip', 'param':destination});
               },
             )
           ],
@@ -100,7 +100,7 @@ _buildLoadedList(Store<AppState> store, BuildContext context, AsyncSnapshot snap
               SingleChildScrollView(
                   primary: false,
                   scrollDirection: Axis.horizontal,
-                  child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(store, context,itineraries,poi, destinationId, color)))
+                  child: Container(margin:EdgeInsets.only(left:20.0), child:_buildRow(_buildItems(store, context,itineraries,poi, destinationId, color, destination)))
                 ),
               
               loading ? Center(child:RefreshProgressIndicator(valueColor: new AlwaysStoppedAnimation<Color>(color))) : Container()
@@ -130,10 +130,10 @@ _buildLoadingList(){
   );
 }
 
-_buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dynamic poi, String destinationId, Color color) {
+_buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dynamic poi, String destinationId, Color color, dynamic destination) {
     var widgets = <Widget>[];
     for (var item in items) {
-      widgets.add(_buildBody(store, context, item, poi, destinationId, color));
+      widgets.add(_buildBody(store, context, item, poi, destinationId, color, destination));
         
     }
     return widgets;
@@ -148,7 +148,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
     );
   }
 
-  Widget _buildBody(Store<AppState> store, BuildContext context,  dynamic item, dynamic poi, String destinationId, Color color) {
+  Widget _buildBody(Store<AppState> store, BuildContext context,  dynamic item, dynamic poi, String destinationId, Color color, dynamic destination) {
     var days = item['days'] as List;
     var itineraryItems = days.firstWhere((day) { 
         var items = day['itinerary_items'] as List;
@@ -161,7 +161,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
     return Container(margin:EdgeInsets.only(right: 20), child:InkWell(
       onTap: () async {
         Navigator.pop(context);
-        var result = await showDayBottomSheet(store, context, item['id'], poi, destinationId, color);
+        var result = await showDayBottomSheet(store, context, item['id'], poi, destinationId, color, destination);
         if(result != null && result['change'] != null) {
           store.dispatch(
             new SelectItineraryAction(null,false,destinationId,null)
@@ -177,7 +177,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
             items: itineraryItems,
             onPressed: (data) async {
               Navigator.pop(context);
-              var result = await showDayBottomSheet(store,context, item['id'], poi, destinationId, color);
+              var result = await showDayBottomSheet(store,context, item['id'], poi, destinationId, color, destination);
               if(result != null && result['change'] != null) {
                 store.dispatch(
                   new SelectItineraryAction(null,false,destinationId,null)
@@ -236,7 +236,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
     }
   }
 
-  showDayBottomSheet(Store<AppState> storeApp, BuildContext context, String itineraryId, dynamic poi, String destinationId, Color color) {
+  showDayBottomSheet(Store<AppState> storeApp, BuildContext context, String itineraryId, dynamic poi, String destinationId, Color color, dynamic destination) {
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext bc){
@@ -286,7 +286,7 @@ _buildItems(Store<AppState> store, BuildContext context,List<dynamic> items, dyn
                             FlatButton(
                               onPressed: (){
                                 Navigator.pop(context,{"change":true});
-                                showItineraryBottomSheet(storeApp, context, destinationId, poi, color);
+                                showItineraryBottomSheet(storeApp, context, destinationId, poi, color, destination);
                               },
                               child: Text(
                                 'Change',

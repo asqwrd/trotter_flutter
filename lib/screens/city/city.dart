@@ -157,6 +157,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     
     var name = snapshot.data.city['name'];
+    var city =snapshot.data.city;
     var image = snapshot.data.city['image'];
     var descriptionShort = snapshot.data.city['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
@@ -277,43 +278,50 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
         controller: _tabController,
         children: [
           _buildTabContent(
-            _buildAllTab(allTab, descriptionShort, color),
+            _buildAllTab(allTab, descriptionShort, color, city),
             'All'
           ),
           _buildListView(
             discover, 
             'Discover',
-            color
+            color,
+            city
           ),
           _buildListView(
             see, 
             'See',
-            color
+            color,
+            city
           ),
           _buildListView(
             eat, 
             'Eat',
-            color
+            color,
+            city
           ),
           _buildListView(
             relax, 
             'Relax',
-            color
+            color,
+            city
           ),
           _buildListView(
             play, 
             'Play',
-            color
+            color,
+            city
           ),
           _buildListView(
             shop, 
             'Shop',
-            color
+            color,
+            city
           ),
           _buildListView(
             nightlife, 
             'NightLife',
-            color
+            color,
+            city
           ),
         ],
       ),
@@ -333,7 +341,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildAllTab(List<dynamic> sections, String description, Color color) {
+  _buildAllTab(List<dynamic> sections, String description, Color color, dynamic destination) {
     var widgets = <Widget>[
       Container(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -347,6 +355,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
       )
     ];
     for (var section in sections) {
+      var items = section['items'];
       if(section['items'].length > 0){
         widgets.add(
           TopList(
@@ -355,18 +364,8 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
               onPush({'id':data['id'], 'level':data['level']});
             },
             onLongPressed: (data) async {
-              var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
-              if(selectedItineraryId != null) {
-                var result = await showDayBottomSheet(StoreProvider.of<AppState>(context), context, selectedItineraryId,data['poi'], this.cityId, color);
-                if(result != null && result['change'] != null) {
-                  StoreProvider.of<AppState>(context).dispatch(
-                    new SelectItineraryAction(null,false,this.cityId,null)
-                  ); 
-                }
-              } else {
-                showItineraryBottomSheet(StoreProvider.of<AppState>(context), context, this.cityId, data['poi'], color);
-              }
-              
+              var index = data['index'];
+              await addToItinerary(context, items, index, color, destination);
             },
             header: section['header']
           )
@@ -379,7 +378,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildListView(List<dynamic> items, String key, Color color) {
+  _buildListView(List<dynamic> items, String key, Color color, dynamic destination) {
     return ListView.builder(
       key: new PageStorageKey(key),
       itemCount: items.length,
@@ -391,18 +390,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
             onPush({'id':id.toString(), 'level':level.toString()});
           },
           onLongPress: () async {
-            var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
-            var poi = items[index];
-            if(selectedItineraryId != null) {
-              var result = await showDayBottomSheet(StoreProvider.of<AppState>(context), context, selectedItineraryId, poi , this.cityId, color);
-              if(result != null && result['change'] != null) {
-                StoreProvider.of<AppState>(context).dispatch(
-                  new SelectItineraryAction(null,false,this.cityId,null)
-                ); 
-              }
-            } else {
-              showItineraryBottomSheet(StoreProvider.of<AppState>(context), context, this.cityId, poi, color);
-            }
+            await addToItinerary(context, items, index, color, destination);
           },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
@@ -491,6 +479,22 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
         );
       },
     );
+  }
+
+  Future addToItinerary(BuildContext context, List items, int index, Color color, dynamic destination) async {
+    var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
+    var selectedItineraryDestination = StoreProvider.of<AppState>(context).state.selectedItinerary.destinationId;
+    var poi = items[index];
+    if(selectedItineraryId != null && selectedItineraryDestination == this.cityId) {
+      var result = await showDayBottomSheet(StoreProvider.of<AppState>(context), context, selectedItineraryId, poi , this.cityId, color, destination);
+      if(result != null && result['change'] != null) {
+        StoreProvider.of<AppState>(context).dispatch(
+          new SelectItineraryAction(null,false,this.cityId,null)
+        ); 
+      }
+    } else {
+      showItineraryBottomSheet(StoreProvider.of<AppState>(context), context, this.cityId, poi, color, destination);
+    }
   }
 
   _renderTab(String label) {

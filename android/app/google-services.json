@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "646792303090",
+    "firebase_url": "https://trotter-25691.firebaseio.com",
+    "project_id": "trotter-25691",
+    "storage_bucket": "trotter-25691.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:646792303090:android:45b3e2de83fc2538",
+        "android_client_info": {
+          "package_name": "org.trotter.application"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "646792303090-ees7oc8a0nj72n8656kicq12p97k3386.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.trotter.application",
+            "certificate_hash": "c89c57ad44d6db5e7c3011bfdd54ed3995693c5a"
+          }
+        },
+        {
+          "client_id": "646792303090-mltctrcecps7oqbcnjuvnmcjclnm9mee.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGMENZRkGzoOY0DiRgq3dBuJ1OcEFjlPA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "646792303090-mltctrcecps7oqbcnjuvnmcjclnm9mee.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

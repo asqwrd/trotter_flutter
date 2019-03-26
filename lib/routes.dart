@@ -32,7 +32,10 @@ class Routes {
     };
     final Store store = Store<AppState>(
       appStateReducer,
-      initialState: AppState.initialState()
+      initialState: AppState.initialState(),
+       middleware: []
+      ..addAll(createAuthMiddleware())
+      //..add(new LoggingMiddleware.printer()),
     );
     
     runApp(

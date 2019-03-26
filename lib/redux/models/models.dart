@@ -1,6 +1,8 @@
 
 import 'package:flutter/foundation.dart';
 import '../middleware/itineraries/middleware.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 
 class AppState {
@@ -9,12 +11,15 @@ class AppState {
   final SelectItineraryData selectedItinerary;
   final ItineraryData itineraryBuilder;
   final bool tripLoading;
+  final FirebaseUser currentUser;
+  
   AppState({
     @required this.trips,
     @required this.tripLoading,
     this.itinerary,
     this.selectedItinerary,
-    this.itineraryBuilder
+    this.itineraryBuilder,
+    this.currentUser
   });
   AppState.initialState()
     : trips = List.unmodifiable(<dynamic>[]),
@@ -36,5 +41,6 @@ class AppState {
       selectedItinerary: null,
       destinationId: null,
     ),
-    tripLoading = false;
+    tripLoading = false,
+    currentUser = null;
 }

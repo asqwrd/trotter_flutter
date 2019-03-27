@@ -159,7 +159,6 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          print(snapshot.hasData);
           if (snapshot.hasData) {
             return _buildLoadedBody(context,snapshot);
           }
@@ -666,7 +665,6 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
         TopList(
           items: items,
           onPressed: (data){
-            print("Clicked ${data['id']}");
             onPush({'id':data['id'], 'level':data['level']});
           },
           onLongPressed: (data) async {
@@ -690,7 +688,6 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
       itemBuilder: (BuildContext context, int index) {
         return InkWell(
           onTap: () {
-            print(items[index]['level']);
             var id = items[index]['id'];
             var level  = items[index]['level'];
             onPush({'id':id.toString(), 'level':level.toString()});

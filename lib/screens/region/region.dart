@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/itineraries/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -156,6 +157,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     
     var name = snapshot.data.region['name'];
+    var destination = snapshot.data.region;
     var image = snapshot.data.region['image'];
     var descriptionShort = snapshot.data.region['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
@@ -284,43 +286,50 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
         controller: _tabController,
         children: [
           _buildTabContent(
-            _buildAllTab(allTab, descriptionShort),
+            _buildAllTab(allTab, descriptionShort,color,destination),
             'All',
           ),
           _buildListView(
             discover, 
             'Discover',
-            color
+            color,
+            destination
           ),
           _buildListView(
             see, 
             'See',
-            color
+            color,
+            destination
           ),
           _buildListView(
             eat, 
             'Eat',
-            color
+            color,
+            destination
           ),
           _buildListView(
             relax, 
             'Relax',
-            color
+            color,
+            destination
           ),
           _buildListView(
             play, 
             'Play',
-            color
+            color,
+            destination
           ),
           _buildListView(
             shop, 
             'Shop',
-            color
+            color,
+            destination
           ),
           _buildListView(
             nightlife, 
             'NightLife',
-            color
+            color,
+            destination
           ),
         ],
       ),
@@ -340,7 +349,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildAllTab(List<dynamic> sections, String description) {
+  _buildAllTab(List<dynamic> sections, String description, Color color, dynamic destination) {
     var widgets = <Widget>[
       Container(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -355,13 +364,16 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
     ];
     for (var section in sections) {
       if(section['items'].length > 0){
+        var items = section['items'];
         widgets.add(
           TopList(
             items: section['items'],
             onPressed: (data){
               onPush({'id':data['id'], 'level':data['level']});
             },
-            onLongPressed: (data){
+            onLongPressed: (data) async {
+              var index = data['index'];
+              await addToItinerary(context, items, index, color, destination);
             },
             header: section['header']
           )
@@ -374,7 +386,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildListView(List<dynamic> items, String key, Color color) {
+  _buildListView(List<dynamic> items, String key, Color color, dynamic destination) {
     return ListView.builder(
       key: new PageStorageKey(key),
       itemCount: items.length,
@@ -384,6 +396,9 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin{
             var id = items[index]['id'];
             var level  = items[index]['level'];
             onPush({'id':id.toString(), 'level':level.toString()});
+          },
+          onLongPress: () async {
+            await addToItinerary(context, items, index, color, destination);
           },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),

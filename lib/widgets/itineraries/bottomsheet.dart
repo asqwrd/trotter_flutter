@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:redux/redux.dart';
 import 'package:shimmer/shimmer.dart';
@@ -6,6 +5,22 @@ import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
+
+Future addToItinerary(BuildContext context, List items, int index, Color color, dynamic destination) async {
+  var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
+  var selectedItineraryDestination = StoreProvider.of<AppState>(context).state.selectedItinerary.destinationId;
+  var poi = items[index];
+  if(selectedItineraryId != null && selectedItineraryDestination == destination['id']) {
+    var result = await showDayBottomSheet(StoreProvider.of<AppState>(context), context, selectedItineraryId, poi , destination['id'], color, destination);
+    if(result != null && result['change'] != null) {
+      StoreProvider.of<AppState>(context).dispatch(
+        new SelectItineraryAction(null,false,destination['id'],null)
+      ); 
+    }
+  } else {
+    showItineraryBottomSheet(StoreProvider.of<AppState>(context), context, destination['id'], poi, color, destination);
+  }
+}
 
 void showItineraryBottomSheet(Store<AppState> store, context, String destinationId, dynamic poi, Color color, dynamic destination) {
   var data = fetchItineraries("destination=$destinationId");

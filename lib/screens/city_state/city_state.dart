@@ -8,7 +8,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
+import 'package:trotter_flutter/widgets/itineraries/index.dart';
 
 
 
@@ -173,6 +173,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
     
 
     var name = snapshot.data.cityState['name'];
+    var destination = snapshot.data.cityState;
     var image = snapshot.data.cityState['image'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
     var discover = snapshot.data.discover;
@@ -301,43 +302,50 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
         controller: _tabController,
         children: [
           _buildTabContent(
-            _buildAllTab(allTab, snapshot),
+            _buildAllTab(allTab, snapshot, color, destination),
             'All'
           ),
           _buildListView(
             discover, 
             'Discover',
-            color
+            color,
+            destination
           ),
           _buildListView(
             see, 
             'See',
-            color
+            color,
+            destination
           ),
           _buildListView(
             eat, 
             'Eat',
-            color
+            color,
+            destination
           ),
           _buildListView(
             relax, 
             'Relax',
-            color
+            color,
+            destination
           ),
           _buildListView(
             play, 
             'Play',
-            color
+            color,
+            destination
           ),
           _buildListView(
             shop, 
             'Shop',
-            color
+            color,
+            destination
           ),
           _buildListView(
             nightlife, 
             'NightLife',
-            color
+            color,
+            destination
           ),
         ],
       ),
@@ -478,7 +486,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
     );
   }
 
-  _buildAllTab(List<dynamic> sections, AsyncSnapshot snapshot ) {
+  _buildAllTab(List<dynamic> sections, AsyncSnapshot snapshot, Color color, dynamic destination ) {
     bool _showVisaTextual = false;
     bool _showVisaAllowedStay = false;
     bool _showVisa = false;
@@ -487,9 +495,11 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
     bool _showVisaBlankPages = false;
     var name = snapshot.data.cityState['name'];
     var descriptionShort = snapshot.data.cityState['description_short'];
+    
 
     var visa = snapshot.data.visa;
     var safety = snapshot.data.safety;
+    double rating = safety['rating'] * 1.0;
     var plugs = snapshot.data.plugs;
     var emergencyNumbers = snapshot.data.emergencyNumber;
     _showVisa = visa != null;
@@ -582,7 +592,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
                 style: TextStyle(
                   fontSize: 20.0,
                   fontWeight: FontWeight.w300,
-                  color: _getAdviceColor(safety['rating'])
+                  color: _getAdviceColor(rating)
                 )
               )
             ),
@@ -651,14 +661,17 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
       ),
     ];
     for (var section in sections) {
+      var items = section['items'];
       widgets.add(
         TopList(
-          items: section['items'],
+          items: items,
           onPressed: (data){
             print("Clicked ${data['id']}");
             onPush({'id':data['id'], 'level':data['level']});
           },
-          onLongPressed: (data){
+          onLongPressed: (data) async {
+            var index = data['index'];
+            await addToItinerary(context, items, index, color, destination);
           },
           header: section['header']
         )
@@ -670,7 +683,7 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
     );
   }
 
-  _buildListView(List<dynamic> items, String key, Color color) {
+  _buildListView(List<dynamic> items, String key, Color color, dynamic destination) {
     return ListView.builder(
       key: new PageStorageKey(key),
       itemCount: items.length,
@@ -681,6 +694,9 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
             var id = items[index]['id'];
             var level  = items[index]['level'];
             onPush({'id':id.toString(), 'level':level.toString()});
+          },
+          onLongPress: () async {
+            await addToItinerary(context, items, index, color, destination);
           },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),

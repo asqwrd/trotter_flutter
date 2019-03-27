@@ -1,4 +1,4 @@
-package com.example.trotterflutter;
+package org.trotter.application;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

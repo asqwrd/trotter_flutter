@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:trotter_flutter/redux/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -479,22 +477,6 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
         );
       },
     );
-  }
-
-  Future addToItinerary(BuildContext context, List items, int index, Color color, dynamic destination) async {
-    var selectedItineraryId = StoreProvider.of<AppState>(context).state.selectedItinerary.selectedItineraryId;
-    var selectedItineraryDestination = StoreProvider.of<AppState>(context).state.selectedItinerary.destinationId;
-    var poi = items[index];
-    if(selectedItineraryId != null && selectedItineraryDestination == this.cityId) {
-      var result = await showDayBottomSheet(StoreProvider.of<AppState>(context), context, selectedItineraryId, poi , this.cityId, color, destination);
-      if(result != null && result['change'] != null) {
-        StoreProvider.of<AppState>(context).dispatch(
-          new SelectItineraryAction(null,false,this.cityId,null)
-        ); 
-      }
-    } else {
-      showItineraryBottomSheet(StoreProvider.of<AppState>(context), context, this.cityId, poi, color, destination);
-    }
   }
 
   _renderTab(String label) {

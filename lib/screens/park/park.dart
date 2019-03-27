@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/itineraries/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -120,6 +121,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     
     var name = snapshot.data.park['name'];
+    var destination = snapshot.data.park;
     var image = snapshot.data.park['image'];
     var descriptionShort = snapshot.data.park['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
@@ -234,7 +236,8 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
             child:_buildListView(
               pois, 
               'Poi',
-              color
+              color,
+              destination
             )
           )
         ]
@@ -242,7 +245,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
     );
   }
 
-  _buildListView(List<dynamic> items, String key, Color color) {
+  _buildListView(List<dynamic> items, String key, Color color, destination) {
     return ListView.builder(
       key: new PageStorageKey(key),
       itemCount: items.length,
@@ -253,8 +256,8 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
             var level  = items[index]['level'];
             onPush({'id':id.toString(), 'level':level.toString()});
           },
-          onLongPress: (){
-            
+          onLongPress: () async {
+            await addToItinerary(context, items, index, color, destination);
           },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),

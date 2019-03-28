@@ -89,7 +89,7 @@ Middleware<AppState> _createLogOutMiddleware() {
     try {
       await _auth.signOut();
       print('logging out...');
-      store.dispatch(new LogOutSuccessful());
+      store.dispatch(LogOutSuccessful());
     } catch (error) {
       print(error);
     }

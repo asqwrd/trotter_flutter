@@ -10,18 +10,19 @@ import 'package:trotter_flutter/redux/index.dart';
 // This is the preferred method and it allows us to create
 // modular functions that are safer.
 //
-final authReducer = combineReducers<FirebaseUser>([
-		// create a reducer binding for each possible reducer--
-		// generally thered be one for each possible action a user
-		// will take.
-		// We'll pass in what a method, which takes a piece of
-		// application state and an action.
-		// In this case, auth methods take a user as the piece
-		// of state
-		//
-  new TypedReducer<FirebaseUser, LogInSuccessful>(_logIn),
-  new TypedReducer<FirebaseUser, LogOut>(_logOut),
-]);
+
+FirebaseUser userReducer(dynamic state, dynamic action) {
+  if(action is LogOutSuccessful){
+    return null;
+
+  }
+
+  if(action is LogInSuccessful){
+    return action.user;
+  }
+
+  return state;
+}
 
 // Create the actual reducer methods:
 //
@@ -37,5 +38,6 @@ FirebaseUser _logIn(FirebaseUser user, action) {
 
 // This will just replace the user slice of state with null.
 Null _logOut(FirebaseUser user, action) {
+  print('herejlkjkj');
   return null;
 }

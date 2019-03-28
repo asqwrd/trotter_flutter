@@ -5,7 +5,7 @@ import 'dart:convert';
 import '../../models/index.dart';
 
 Future<TripsData> fetchTrips(Store<AppState> store) async {
-  final response = await http.get('http://localhost:3002/api/trips/all/', headers:{'Authorization':'security'});
+  final response = await http.get('http://localhost:3002/api/trips/all?owner_id=${store.state.currentUser.uid}', headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     var results = TripsData.fromJson(json.decode(response.body));
@@ -50,6 +50,8 @@ Future<DeleteTripData> deleteTrip(Store<AppState> store, String tripId) async {
 }
 
 Future<CreateTripData> postCreateTrip(Store<AppState> store, dynamic data, [int index, bool undo = false]) async {
+  var owner = store.state.currentUser.uid;
+  data['trip']['owner_id'] = owner;
   final response = await http.post('http://localhost:3002/api/trips/create/', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON

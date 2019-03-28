@@ -42,6 +42,7 @@ class Trips extends StatefulWidget {
 class TripsState extends State<Trips> {
   bool _showTitle = false;
   bool refreshing = false;
+  bool loggedIn = false;
   BuildContext context;
   final ValueChanged<dynamic> onPush;
   
@@ -77,7 +78,7 @@ class TripsState extends State<Trips> {
   @override
   Widget build(BuildContext context) {
     this.context = context;
-    var color = Color.fromRGBO(1, 155, 174, 1);
+    var color = Color.fromRGBO(234, 189, 149,1);
     return new Scaffold(
       floatingActionButton: FloatingActionButton(
         backgroundColor: color,
@@ -96,11 +97,17 @@ class TripsState extends State<Trips> {
       body: StoreConnector <AppState, TripViewModel>(
         converter: (store) => TripViewModel.create(store),
         onInit: (store) async {
-          store.dispatch(new SetTripsLoadingAction(true));
-          await fetchTrips(store);
-          store.dispatch(SetTripsLoadingAction(false));
+          if(store.state.currentUser != null){
+            store.dispatch(new SetTripsLoadingAction(true));
+            await fetchTrips(store);
+            store.dispatch(SetTripsLoadingAction(false));
+            //setState(() {
+              this.loggedIn = true;
+            //}); 
+          }
         },
-        builder: (context, viewModel)=> _buildLoadedBody(context, viewModel, color)
+        rebuildOnChange: true,
+        builder: (context, viewModel) => _buildLoadedBody(context, viewModel, color)
       )
     );
   }
@@ -112,14 +119,25 @@ class TripsState extends State<Trips> {
   Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel, Color color) {
     
     var trips = StoreProvider.of<AppState>(context).state.trips;
+    var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
     var loading = StoreProvider.of<AppState>(context).state.tripLoading;
+    var store = StoreProvider.of<AppState>(context);
     if(loading == true)
       return _buildLoadingBody(context, viewModel);
+      
+    
+   if(currentUser == null){
+      return Container();
+    } else if(currentUser != null && this.loggedIn == false){
+      store.dispatch(new SetTripsLoadingAction(true));
+      fetchTrips(store);
+      this.loggedIn = true;
+    }
     
     if(trips.length == 0) {
-      return Stack(
-        children: <Widget>[
-          AppBar(
+      return Scaffold(
+        
+        appBar: AppBar(
             backgroundColor: Colors.white,
             elevation: 0,
             brightness: Brightness.light,
@@ -131,7 +149,8 @@ class TripsState extends State<Trips> {
               },     
             ),
           ),
-          Center(
+          body:Stack( children: <Widget>[
+            Center(
             child:Container(
               color:Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 30),
@@ -166,8 +185,7 @@ class TripsState extends State<Trips> {
           this.refreshing == true ? Center(
               child: RefreshProgressIndicator()
             ) : Container()
-        ]
-      ); 
+          ])); 
     }
    
 
@@ -199,7 +217,7 @@ class TripsState extends State<Trips> {
                       child: ClipPath(
                         clipper: BottomWaveClipper(),
                         child: Image.asset(
-                        'images/search2.jpg',
+                        'images/trips.jpg',
                         fit: BoxFit.cover,
                       )
                     )

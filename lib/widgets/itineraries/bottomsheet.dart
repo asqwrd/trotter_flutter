@@ -23,7 +23,7 @@ Future addToItinerary(BuildContext context, List items, int index, Color color, 
 }
 
 void showItineraryBottomSheet(Store<AppState> store, context, String destinationId, dynamic poi, Color color, dynamic destination) {
-  var data = fetchItineraries("destination=$destinationId");
+  var data = fetchItineraries("destination=$destinationId&ownerId=${store.state.currentUser.uid}");
   showModalBottomSheet(
     context: context,
     builder: (BuildContext bc){

@@ -13,7 +13,7 @@ Future<HomeData> fetchHome() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
   if(cacheData != null) {
-    final response =  await http.get('http://localhost:3002/api/itineraries/all/', headers:{'Authorization':'security'});
+    final response =  await http.get('http://localhost:3002/api/itineraries/all', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var homeData = json.decode(cacheData);

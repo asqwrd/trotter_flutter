@@ -4,6 +4,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:redux/redux.dart';
 
+
 class GoogleAuthButtonContainer extends StatelessWidget {
   GoogleAuthButtonContainer({Key key}) : super(key: key);
 
@@ -40,11 +41,13 @@ class _ViewModel {
         buttonText:
         store.state.currentUser != null ? 'Log Out' : 'Log in with Google',
         onPressedCallback: () {
-          if (store.state.currentUser != null) {
+         if (store.state.currentUser != null) {
             store.dispatch(new LogOut());
-          } else {
+            print('null');
+         } else {
+           print('here');
             store.dispatch(new LogIn());
-          }
+        }
         });
   }
 }
@@ -64,16 +67,39 @@ class GoogleAuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
   	// Raised button is a widget that gives some
   	// automatic Material design styles
-    return new RaisedButton(
+    return FlatButton(
       onPressed: onPressedCallback,
       color: Colors.white,
-      child: new Container(
+      child:  Container(
       	// Explicitly set height
       	// Contianer has many options you can pass it,
       	// Most widgets do *not* allow you to explicitly set
       	// width and height
         width: 230.0,
         height: 50.0,
+        decoration: BoxDecoration(
+          //borderRadius: BorderRadius.circular(100),
+          border: BorderDirectional(
+
+            top:BorderSide(
+              color: Colors.red,
+              style: BorderStyle.solid,
+            ),
+            bottom: BorderSide(
+              color: Colors.green,
+              style: BorderStyle.solid
+            ),
+            start:BorderSide(
+              color: Colors.yellow,
+              style: BorderStyle.solid
+            ),
+            end:BorderSide(
+              color: Colors.blue,
+              style: BorderStyle.solid
+            )
+          )
+        ),
+        
         alignment: Alignment.center,
         // Row is a layout widget
         // that lays out its children on a horizontal axis
@@ -85,9 +111,10 @@ class GoogleAuthButton extends StatelessWidget {
               padding: const EdgeInsets.only(right: 20.0),
               // Image, like everyhting, is just a class.
               // This constructor expects an image URL -- I found this one on Google
- 							child: new Image.network(
-                'https://diylogodesigns.com/blog/wp-content/uploads/2016/04/google-logo-icon-PNG-Transparent-Background.png',
+ 							child: Image.asset(
+                'images/google-logo.png',
                 width: 30.0,
+                fit: BoxFit.contain,
               ),
             ),
             new Text(

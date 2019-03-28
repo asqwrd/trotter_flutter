@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
+import 'package:redux/redux.dart';
+import 'package:trotter_flutter/utils/index.dart';
+import 'package:trotter_flutter/redux/index.dart';
 
 
 enum TabItem { explore, trips, profile }
@@ -59,9 +63,10 @@ class TabHelper {
       case TabItem.explore:
         return Color.fromRGBO(106,154,168,1);
       case TabItem.trips:
-        return Color.fromRGBO(1, 155, 174, 1);
+        return Color.fromRGBO(234, 189, 149,1);
+        //return Color.fromRGBO(1, 155, 174, 1);
       case TabItem.profile:
-        return Colors.blue;
+        return Color.fromRGBO(1, 155, 174,1);
     }
     return Colors.black;
   }
@@ -85,9 +90,9 @@ class BottomNavigation extends StatelessWidget {
         elevation: 15,
         currentIndex: TabHelper.tabIndex(currentTab),
         items: [
-          _buildItem(tabItem: TabItem.explore),
-          _buildItem(tabItem: TabItem.trips),
-          _buildItem(tabItem: TabItem.profile),
+          _buildItem(context: context,tabItem: TabItem.explore),
+          _buildItem(context: context, tabItem: TabItem.trips),
+          _buildItem(context: context, tabItem: TabItem.profile),
         ],
         onTap: (index){
           onSelectTab(
@@ -98,13 +103,13 @@ class BottomNavigation extends StatelessWidget {
     );
   }
 
-  BubbleBottomBarItem _buildItem({TabItem tabItem}) {
+  BubbleBottomBarItem _buildItem({BuildContext context, TabItem tabItem}) {
 
     String text = TabHelper.description(tabItem);
     //SvgPicture icon = TabHelper.icon(tabItem);
     return BubbleBottomBarItem(
-      icon: _icon(item: tabItem),
-      activeIcon: _icon(item: tabItem),
+      icon: _icon(context, item: tabItem),
+      activeIcon: _icon(context, item: tabItem),
       backgroundColor: _colorTabMatching(item: tabItem),
       title: Container(
         margin:EdgeInsets.only(right:30),
@@ -122,10 +127,19 @@ class BottomNavigation extends StatelessWidget {
     return currentTab == item ? TabHelper.color(item) : Colors.grey;
   }
 
-  _icon({TabItem item}) {
+  _icon(BuildContext context, {TabItem item}) {
+    var store = StoreProvider.of<AppState>(context).state;
     return Align(
       alignment: Alignment.centerLeft,
-      child:SvgPicture.asset(
+      child: item == TabItem.profile && store.currentUser != null ? ClipPath(
+        clipper: CornerRadiusClipper(100),
+        child:Image.network(
+          store.currentUser.photoUrl,
+          width: 30.0,
+          height: 30.0,
+          fit:BoxFit.contain
+        )
+      ) : SvgPicture.asset(
           TabHelper.icon(item), 
           color: currentTab == item ? TabHelper.color(item) : Colors.black, 
           width: 30, 

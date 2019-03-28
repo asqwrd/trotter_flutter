@@ -67,7 +67,10 @@ flutter:
   assets:
   - images/home_bg.jpeg
   - images/header.png
+  - images/trips.jpg
   - images/header.svg
+  - images/google-logo.svg
+  - images/google-logo.png
   - images/logo_nw.png
   - images/trotter-logo.svg
   - images/edit-icon.svg

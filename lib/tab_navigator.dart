@@ -9,9 +9,9 @@ import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/screens/region/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
+import 'package:trotter_flutter/screens/profile/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:transformer_page_view/transformer_page_view.dart';
-import 'package:trotter_flutter/utils/index.dart';
+
 
 
 
@@ -92,28 +92,6 @@ class TabNavigator extends StatelessWidget {
       default:
         break;
     }
-
-    /*if(data['from'] == 'createtrip') {
-      Navigator.push(
-        Contexts.trips,
-        PageRouteBuilder(
-            pageBuilder: (context, _, __) => routeBuilders[goTo](context),
-            transitionsBuilder: (BuildContext context,
-                Animation<double> animation,
-                Animation<double> secondaryAnimation,
-                Widget child) {
-              return new FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-
-            }),
-        );
-        onSwitchTab({'tabItem':TabItem.trips});
-      
-
-    }*/
-
 
     if(data['from'] != null && (data['from'] == 'search' || data['from'] == 'createtrip')) {
       return Navigator.pushReplacement(
@@ -237,7 +215,7 @@ class TabNavigator extends StatelessWidget {
         );
         return routes;
       case TabItem.profile:
-        routes[TabNavigatorRoutes.root] = (context) => Home(
+        routes[TabNavigatorRoutes.root] = (context) => Profile(
           onPush: (data) => push(context, data),
         );
         return routes;

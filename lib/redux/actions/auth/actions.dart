@@ -25,6 +25,8 @@ class LogInFail {
   }
 }
 
+class CheckStatus{}
+
 class LogOut {}
 
 class LogOutSuccessful {

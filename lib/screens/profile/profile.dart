@@ -103,9 +103,24 @@ class ProfileState extends State<Profile> {
                     width: 30.0,
                     height: 30.0,
                     fit: BoxFit.contain
-                  ) : CircleAvatar(
-                    backgroundImage: NetworkImage(store.currentUser.photoUrl)
-                  )
+                  ) : Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      border:Border.all(
+                        style: BorderStyle.solid,
+                        color: Colors.white,
+                        width: 2
+                      )
+                    ),
+                    child: ClipPath(
+                    clipper: CornerRadiusClipper(100),
+                    child:Image.network(
+                      store.currentUser.photoUrl,
+                      width: 30.0,
+                      height: 30.0,
+                      fit:BoxFit.contain
+                    )
+                  )) 
                 ),
                 Text('Profile',
                   style: TextStyle(

@@ -5,6 +5,8 @@ import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:redux/redux.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/redux/index.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 
 enum TabItem { explore, trips, profile }
@@ -128,25 +130,41 @@ class BottomNavigation extends StatelessWidget {
   }
 
   _icon(BuildContext context, {TabItem item}) {
-    var store = StoreProvider.of<AppState>(context).state;
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: item == TabItem.profile && store.currentUser != null ? ClipPath(
-        clipper: CornerRadiusClipper(100),
-        child:Image.network(
-          store.currentUser.photoUrl,
-          width: 30.0,
-          height: 30.0,
-          fit:BoxFit.contain
-        )
-      ) : SvgPicture.asset(
-          TabHelper.icon(item), 
-          color: currentTab == item ? TabHelper.color(item) : Colors.black, 
-          width: 30, 
-          height: 30, 
-          fit: BoxFit.contain,
+    return StoreConnector <AppState, FirebaseUser>(
+      converter: (store) => store.state.currentUser,
+      builder: (context, currentUser){
+        return Align(
           alignment: Alignment.centerLeft,
-        )
-      );
+          child: item == TabItem.profile && currentUser != null ? 
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+              border:Border.all(
+                style: BorderStyle.solid,
+                color: _colorTabMatching(item: item),
+                width: 2
+              )
+            ),
+            child: ClipPath(
+            clipper: CornerRadiusClipper(100),
+            child:Image.network(
+              currentUser.photoUrl,
+              width: 30.0,
+              height: 30.0,
+              fit:BoxFit.contain
+            )
+          )) : SvgPicture.asset(
+            TabHelper.icon(item), 
+            color: currentTab == item ? TabHelper.color(item) : Colors.black, 
+            width: 30, 
+            height: 30, 
+            fit: BoxFit.contain,
+            alignment: Alignment.centerLeft,
+          )
+        );
+      }
+    );
+    
+     
   }
 }

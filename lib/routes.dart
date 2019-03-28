@@ -37,10 +37,12 @@ class Routes {
       ..addAll(createAuthMiddleware())
       //..add(new LoggingMiddleware.printer()),
     );
+
     
     runApp(
       StoreProvider<AppState>(
-      store: store,child:new AnnotatedRegion<SystemUiOverlayStyle>(
+      store: store,
+      child:new AnnotatedRegion<SystemUiOverlayStyle>(
         value:mySystemTheme,
         child:new MaterialApp(
           theme: ThemeData(

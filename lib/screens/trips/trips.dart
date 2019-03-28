@@ -101,9 +101,7 @@ class TripsState extends State<Trips> {
             store.dispatch(new SetTripsLoadingAction(true));
             await fetchTrips(store);
             store.dispatch(SetTripsLoadingAction(false));
-            //setState(() {
-              this.loggedIn = true;
-            //}); 
+            this.loggedIn = true;
           }
         },
         rebuildOnChange: true,

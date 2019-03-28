@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
+import 'package:trotter_flutter/redux/index.dart';
+import 'package:redux/redux.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 class App extends StatefulWidget {
   @override
@@ -27,6 +30,7 @@ class AppStateWidget extends State<App> {
 
   @override
   void didChangeDependencies() {
+    StoreProvider.of<AppState>(context).dispatch(CheckStatus());
     super.didChangeDependencies();
     FocusScope.of(context).setFirstFocus(_focusA);
   }
@@ -51,6 +55,7 @@ class AppStateWidget extends State<App> {
     _focusC.detach();
     super.dispose();
   }
+
 
   
   

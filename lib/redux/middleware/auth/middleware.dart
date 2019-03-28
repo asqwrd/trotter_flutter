@@ -18,6 +18,7 @@ import 'package:trotter_flutter/redux/index.dart';
 List<Middleware<AppState>> createAuthMiddleware() {
   final logIn = _createLogInMiddleware();
   final logOut = _createLogOutMiddleware();
+  final checkStatus = _createStatusMiddleware();
 
   // Built in redux method that tells your store that these
   // are middleware methods.
@@ -26,7 +27,8 @@ List<Middleware<AppState>> createAuthMiddleware() {
   // here.
   return <Middleware<AppState>>[
     new TypedMiddleware<AppState, LogIn>(logIn),
-    new TypedMiddleware<AppState, LogOut>(logOut)
+    new TypedMiddleware<AppState, LogOut>(logOut),
+    new TypedMiddleware<AppState, CheckStatus>(checkStatus)
   ];
 }
 
@@ -94,4 +96,30 @@ Middleware<AppState> _createLogOutMiddleware() {
       print(error);
     }
 	};
+}
+
+Middleware<AppState> _createStatusMiddleware() {
+  return (Store store, action, NextDispatcher next) async {
+
+		FirebaseUser user;
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+
+    // Actions are classes, so you can Typecheck them
+    if (action is CheckStatus) {
+      try {
+        user = await _auth.currentUser();
+
+        print('Logged in ' + user.displayName);
+
+        // This can be tough to reason about -- or at least it was for me.
+        // We're going to dispatch a new action if we logged in,
+        //
+        // We also continue the current cycle below by calling next(action).
+        store.dispatch(new LogInSuccessful(user: user));
+      } catch(error){
+        print(error);
+      }
+    }
+    //next(action);
+  };
 }

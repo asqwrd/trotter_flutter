@@ -67,44 +67,23 @@ class GoogleAuthButton extends StatelessWidget {
   Widget build(BuildContext context) {
   	// Raised button is a widget that gives some
   	// automatic Material design styles
-    return FlatButton(
+    return RaisedButton(
       onPressed: onPressedCallback,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
       color: Colors.white,
       child:  Container(
       	// Explicitly set height
       	// Contianer has many options you can pass it,
       	// Most widgets do *not* allow you to explicitly set
       	// width and height
-        width: 230.0,
+        width: 180.0,
         height: 50.0,
-        decoration: BoxDecoration(
-          //borderRadius: BorderRadius.circular(100),
-          border: BorderDirectional(
-
-            top:BorderSide(
-              color: Colors.red,
-              style: BorderStyle.solid,
-            ),
-            bottom: BorderSide(
-              color: Colors.green,
-              style: BorderStyle.solid
-            ),
-            start:BorderSide(
-              color: Colors.yellow,
-              style: BorderStyle.solid
-            ),
-            end:BorderSide(
-              color: Colors.blue,
-              style: BorderStyle.solid
-            )
-          )
-        ),
         
         alignment: Alignment.center,
         // Row is a layout widget
         // that lays out its children on a horizontal axis
         child: new Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          //mainAxisAlignment: MainAxisAlignment.center,
           children: [
           	// Padding is a convenience widget that adds Padding to it's child
             new Padding(
@@ -130,3 +109,4 @@ class GoogleAuthButton extends StatelessWidget {
     );
   }
 }
+

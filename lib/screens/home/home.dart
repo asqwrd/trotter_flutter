@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
+import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
@@ -8,6 +9,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:trotter_flutter/redux/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 Future<HomeData> fetchHome() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -283,7 +286,12 @@ class HomeState extends State<Home> {
                   onPush({'id':data['id'], 'level':data['level']});
                 },
                 onLongPressed: (data){
-                  bottomSheetModal(context, data['item']);
+                  var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
+                  if(currentUser == null){
+                    loginBottomSheet(context, data, color);
+                  }else {
+                    bottomSheetModal(context, data['item']);
+                  }
                 },
                 header: "Trending cities"
               ),
@@ -293,7 +301,12 @@ class HomeState extends State<Home> {
                   onPush({'id':data['id'], 'level':data['level']});
                 },
                 onLongPressed: (data){
-                  bottomSheetModal(context, data['item']);
+                  var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
+                  if(currentUser == null){
+                    loginBottomSheet(context, data, color);
+                  }else {
+                    bottomSheetModal(context, data['item']);
+                  }
                 },
                 header: "Explore the island life"
               )

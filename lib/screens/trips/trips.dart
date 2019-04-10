@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'dart:core';
-import 'package:intl/intl.dart';
+import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:html_unescape/html_unescape.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -125,7 +124,61 @@ class TripsState extends State<Trips> {
       
     
    if(currentUser == null){
-      return Container();
+      return Scaffold(
+        
+        appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            brightness: Brightness.light,
+            title: SearchBar(
+              placeholder: 'Explore the world',
+              fillColor: color.withOpacity(0.3),
+              onPressed: (){
+                onPush({'query':'', 'level':'search'});
+              },     
+            ),
+          ),
+          body:Stack( children: <Widget>[
+            Center(
+            child:Container(
+              color:Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Image.asset('images/trips-login.png', width:170, height: 170, fit: BoxFit.contain),
+                  Text(
+                    'Want to create a trip?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 35,
+                      color: color,
+                      fontWeight: FontWeight.w300
+                      
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Sign up and start planning right away.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 25,
+                      color: color,
+                      fontWeight: FontWeight.w300
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: 40),
+                    child: GoogleAuthButtonContainer()
+                  )
+                ],
+              )
+            )
+          ),
+          this.refreshing == true ? Center(
+              child: RefreshProgressIndicator()
+            ) : Container()
+          ])); 
     } else if(currentUser != null && this.loggedIn == false){
       store.dispatch(new SetTripsLoadingAction(true));
       fetchTrips(store);

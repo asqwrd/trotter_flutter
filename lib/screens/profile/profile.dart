@@ -1,17 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter_page_indicator/flutter_page_indicator.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:redux/redux.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -59,26 +49,9 @@ class ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return StoreConnector <AppState, AppState>(
-          converter: (store) => store.state,
-          builder: (context, store)=> _buildContent(context,store)
-        );
-      
-      
-      
-      
-      // new Container(
-      //   child: new Center(
-      //     child: new Column(
-      //       mainAxisAlignment: MainAxisAlignment.center,
-      //       children: <Widget>[
-			// 				new GoogleAuthButtonContainer(),									// new
-      //         new Text(
-      //           'You have pushed the button this many times:',
-      //         ),
-      //       ],
-      //     ),
-      //   ),
-      // ),
+      converter: (store) => store.state,
+      builder: (context, store)=> _buildContent(context,store)
+    );
   }
 
   Widget _buildContent(BuildContext context, AppState store){

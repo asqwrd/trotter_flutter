@@ -8,7 +8,9 @@ import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-
+import 'package:trotter_flutter/redux/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trotter_flutter/widgets/auth/index.dart';
 
 
 
@@ -257,7 +259,12 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
             onPush({'id':id.toString(), 'level':level.toString()});
           },
           onLongPress: () async {
-            await addToItinerary(context, items, index, color, destination);
+            var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
+            if(currentUser == null){
+              loginBottomSheet(context, data, color);
+            } else {
+              await addToItinerary(context, items, index, color, destination);
+            }
           },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),

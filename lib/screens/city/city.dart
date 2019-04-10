@@ -8,7 +8,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
-
+import 'package:trotter_flutter/redux/index.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:trotter_flutter/widgets/auth/index.dart';
 
 
 
@@ -362,8 +364,14 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
               onPush({'id':data['id'], 'level':data['level']});
             },
             onLongPressed: (data) async {
-              var index = data['index'];
-              await addToItinerary(context, items, index, color, destination);
+              var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
+              if(currentUser == null){
+                loginBottomSheet(context, data, color);
+              } else {
+                var index = data['index'];
+                await addToItinerary(context, items, index, color, destination);
+              }
+              
             },
             header: section['header']
           )
@@ -388,7 +396,12 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
             onPush({'id':id.toString(), 'level':level.toString()});
           },
           onLongPress: () async {
-            await addToItinerary(context, items, index, color, destination);
+            var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
+            if(currentUser == null){
+              loginBottomSheet(context, data, color);
+            } else {
+              await addToItinerary(context, items, index, color, destination);
+            }
           },
           child:Padding(
             padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),

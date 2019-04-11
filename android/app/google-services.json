@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "646792303090-i715hk3gru2rpq2ngt25d4rtp53nb12m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.trotter.application",
+            "certificate_hash": "eae2ee23b5bd77f1ee29bbbc8cd4dfbbc34dd502"
+          }
+        },
+        {
           "client_id": "646792303090-mltctrcecps7oqbcnjuvnmcjclnm9mee.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -33,20 +41,20 @@
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 1
-        },
         "appinvite_service": {
-          "status": 2,
           "other_platform_oauth_client": [
             {
               "client_id": "646792303090-mltctrcecps7oqbcnjuvnmcjclnm9mee.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "646792303090-rk3j3db3o4lskm8brabav47d32lcoasn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.trotter.application"
+              }
             }
           ]
-        },
-        "ads_service": {
-          "status": 2
         }
       }
     }

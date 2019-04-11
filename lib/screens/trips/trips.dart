@@ -78,8 +78,9 @@ class TripsState extends State<Trips> {
   Widget build(BuildContext context) {
     this.context = context;
     var color = Color.fromRGBO(234, 189, 149,1);
+    var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
     return new Scaffold(
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: (currentUser != null) ? FloatingActionButton(
         backgroundColor: color,
         onPressed: () { 
           onPush({"level": "createtrip"});
@@ -92,7 +93,7 @@ class TripsState extends State<Trips> {
         tooltip: 'Create trip',
         child: Icon(Icons.add),
         elevation: 5.0,
-      ),
+      ) : null,
       body: StoreConnector <AppState, TripViewModel>(
         converter: (store) => TripViewModel.create(store),
         onInit: (store) async {

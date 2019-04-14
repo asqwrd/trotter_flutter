@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../actions/trips/actions.dart';
 import 'package:redux/redux.dart';
 import 'package:http/http.dart' as http;
@@ -5,23 +7,26 @@ import 'dart:convert';
 import '../../models/index.dart';
 
 Future<TripsData> fetchTrips(Store<AppState> store) async {
-  final response = await http.get('http://localhost:3002/api/trips/all?owner_id=${store.state.currentUser.uid}', headers:{'Authorization':'security'});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    var results = TripsData.fromJson(json.decode(response.body));
-    store.dispatch(
-      new GetTripsAction(
-        results.trips, 
-      )
-    );
-    store.dispatch(new SetTripsLoadingAction(false));
-    return results;
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
+  try {
+    final response = await http.get('http://localhost:3002/api/trips/all?owner_id=${store.state.currentUser.uid}', headers:{'Authorization':'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = TripsData.fromJson(json.decode(response.body));
+      store.dispatch(
+        new GetTripsAction(
+          results.trips, 
+        )
+      );
+      store.dispatch(new SetTripsLoadingAction(false));
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return throw Exception('Response> $msg');
+    }
+  } catch(error){
+    //return error;
   }
-  
 }
 
 Future<DeleteTripData> deleteTrip(Store<AppState> store, String tripId) async {

@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
@@ -11,59 +15,81 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:shimmer/shimmer.dart';
+
 
 Future<HomeData> fetchHome() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
-  if(cacheData != null) {
-    final response =  await http.get('http://localhost:3002/api/itineraries/all', headers:{'Authorization':'security'});
-    if (response.statusCode == 200) {
+  if(cacheData == null) {
       // If server returns an OK response, parse the JSON
       var homeData = json.decode(cacheData);
-      homeData['itineraries'] = json.decode(response.body)['itineraries'];
       return HomeData.fromJson(homeData);
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      throw Exception('Response> $msg');
-    }
   } else {
-    final getData =  http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
-    final getData2 =  http.get('http://localhost:3002/api/itineraries/all?public=true', headers:{'Authorization':'security'});
-    var responses = await Future.wait([getData, getData2]);
-    var response = responses[0];
-    var response2 = responses[1];
-    if (response.statusCode == 200 && response2.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      await prefs.setString('home', response.body);
-      var homeData = json.decode(response.body);
-      homeData['itineraries'] = json.decode(response2.body)['itineraries'];
-      return HomeData.fromJson(homeData);
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      throw Exception('Response> $msg');
+    try{
+      var response =  await http.get('http://localhost:3002/api/explore/home/', headers:{'Authorization':'security'});
+      if (response.statusCode == 200) {
+        // If server returns an OK response, parse the JSON
+        await prefs.setString('home', response.body);
+        var homeData = json.decode(response.body);
+        return HomeData.fromJson(homeData);
+      } else {
+        // If that response was not OK, throw an error.
+        var msg = response.statusCode;
+        return HomeData(error: "Api returned a $msg");
+      }
+    } catch(error){
+      return HomeData(error: "Server is down");
     }
   }
 }
 
+Future<HomeItinerariesData> fetchHomeItineraries() async {
+  try{
+    final response =  await http.get('http://localhost:3002/api/itineraries/all', headers:{'Authorization':'security'});
+      if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var data = json.decode(response.body);
+      return HomeItinerariesData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+     return HomeItinerariesData(error: "Api returned a $msg");
+    }
+  } catch(error) {
+    //print('Response> $error');
+    return HomeItinerariesData(error: "Server is down");
+  }
+}
+
 class HomeData {
-  //final List<dynamic> nationalParks;
   final List<dynamic> popularCities;
-  //final List<dynamic> popularCountries;
   final List<dynamic> popularIslands;
-  final List<dynamic> itineraries;
+  final String error;
  
 
-  HomeData({this.popularCities, this.popularIslands, this.itineraries});
+  HomeData({this.popularCities, this.popularIslands, this.error});
 
   factory HomeData.fromJson(Map<String, dynamic> json) {
     return HomeData(
-      //nationalParks: json['national_parks'],
       popularCities: json['popular_cities'],
-      //popularCountries: json['popular_countries'],
       popularIslands: json['popular_islands'],
+      error:null
+    );
+  }
+}
+
+class HomeItinerariesData {
+  final List<dynamic> itineraries;
+  final String error;
+ 
+
+  HomeItinerariesData({this.itineraries, this.error});
+
+  factory HomeItinerariesData.fromJson(Map<String, dynamic> json) {
+    return HomeItinerariesData(
       itineraries: json['itineraries'],
+      error: null
     );
   }
 }
@@ -102,6 +128,7 @@ class HomeState extends State<Home> {
   }
 
   Future<HomeData> data = fetchHome();
+  Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
   HomeState({
     this.onPush,
   });
@@ -111,6 +138,7 @@ class HomeState extends State<Home> {
 
     setState(() {
       data = fetchHome();
+      dataItineraries = fetchHomeItineraries();
     });
 
     return null;
@@ -125,8 +153,20 @@ class HomeState extends State<Home> {
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          } else if(snapshot.hasData && snapshot.data.error == null){
             return _buildLoadedBody(context,snapshot);
+          } else if(snapshot.hasData && snapshot.data.error != null){
+            return ErrorContainer(
+              color: Color.fromRGBO(106,154,168,1),
+              onRetry: () {
+                setState(() {
+                  data =  fetchHome(); 
+                  dataItineraries =  fetchHomeItineraries(); 
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }
@@ -163,12 +203,11 @@ class HomeState extends State<Home> {
     );
   } 
 
-  // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var color = Color.fromRGBO(106,154,168,1);
-    List<Widget> widgets = [
+  Widget _buildItinerary(BuildContext ctxt, AsyncSnapshot snapshot, Color color){
+    var itineraries = snapshot.data.itineraries;
+    var widgets = <Widget>[
       Padding(
-        padding: EdgeInsets.only(bottom: 10, top: 50, left: 20, right: 20),
+        padding: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
         child: Text(
         'Get inspired by itineraries!',
         style: TextStyle(
@@ -187,7 +226,7 @@ class HomeState extends State<Home> {
         ),
       ))
     ];
-    for (var itinerary in snapshot.data.itineraries) {
+    for (var itinerary in itineraries) {
       widgets.add(
         ItineraryCard(
           item: itinerary,
@@ -199,6 +238,61 @@ class HomeState extends State<Home> {
       );
     }
 
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgets,
+      )
+    );
+
+  }
+
+ Widget _buildItineraryLoading(BuildContext ctxt){
+    var widgets = <Widget>[
+      Shimmer.fromColors(
+      baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+      highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+      child:Align(alignment: Alignment.centerLeft, child:Container(
+        color:Color.fromRGBO(220, 220, 220, 0.8),
+        margin: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
+        height:20,
+        width: 200,
+      ))),
+      Shimmer.fromColors(
+      baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+      highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+      child:Container(
+        color:Color.fromRGBO(220, 220, 220, 0.8),
+        margin: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
+        height:20,
+        width: double.infinity,
+      )),
+      Shimmer.fromColors(
+      baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+      highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+      child:Container(
+        color:Color.fromRGBO(220, 220, 220, 0.8),
+        margin: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
+        height:20,
+        width: double.infinity,
+      )),
+      ItineraryCardLoading()
+    ];
+
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: widgets,
+      )
+    );
+
+  }
+  // function for rendering view after data is loaded
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+    var popularCities = snapshot.data.popularCities;
+    var popularIslands = snapshot.data.popularIslands;
+    var color = Color.fromRGBO(106,154,168,1);
+    
     return NestedScrollView(
       controller: _scrollController,
       headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -281,7 +375,7 @@ class HomeState extends State<Home> {
             shrinkWrap: true,
             children: <Widget>[
               TopList(
-                items: snapshot.data.popularCities,
+                items: popularCities,
                 onPressed: (data){
                   onPush({'id':data['id'], 'level':data['level']});
                 },
@@ -296,7 +390,7 @@ class HomeState extends State<Home> {
                 header: "Trending cities"
               ),
               TopList(
-                items: snapshot.data.popularIslands,
+                items: popularIslands,
                 onPressed: (data){
                   onPush({'id':data['id'], 'level':data['level']});
                 },
@@ -309,8 +403,38 @@ class HomeState extends State<Home> {
                   }
                 },
                 header: "Explore the island life"
+              ),
+
+              FutureBuilder(
+                future: dataItineraries,
+                builder: (context, snapshot) {
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return _buildItineraryLoading(context);
+                  } else if(snapshot.hasData && snapshot.data.error == null){
+                    return _buildItinerary(context,snapshot, color);
+                  } else if(snapshot.hasData && snapshot.data.error != null){
+                    return Container(
+                      child: Column(
+                        children: <Widget>[
+                          Text('Failed to get itineraries.'),
+                          RetryButton(
+                            color: color, 
+                            width: 100,
+                            height: 50,
+                            onPressed: (){
+                              setState(() {
+                                dataItineraries =  fetchHomeItineraries(); 
+                              });
+                            },
+                          )
+                        ],
+                      )
+                    );
+                  }
+                  return _buildItineraryLoading(context);
+                }
               )
-            ]..addAll(widgets),
+            ],
           )
         )
       ),

@@ -9,6 +9,8 @@ import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
+
 
 enum CardActions { delete }
 
@@ -78,35 +80,39 @@ class TripsState extends State<Trips> {
   Widget build(BuildContext context) {
     this.context = context;
     var color = Color.fromRGBO(234, 189, 149,1);
-    var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
-    return new Scaffold(
-      floatingActionButton: (currentUser != null) ? FloatingActionButton(
-        backgroundColor: color,
-        onPressed: () { 
-          onPush({"level": "createtrip"});
-          if(StoreProvider.of<AppState>(context).state.trips.length == 0){
-            setState(() {
-              this._showTitle = false;           
-            });
-          }
-        },
-        tooltip: 'Create trip',
-        child: Icon(Icons.add),
-        elevation: 5.0,
-      ) : null,
-      body: StoreConnector <AppState, TripViewModel>(
-        converter: (store) => TripViewModel.create(store),
-        onInit: (store) async {
-          if(store.state.currentUser != null){
-            store.dispatch(new SetTripsLoadingAction(true));
-            await fetchTrips(store);
-            store.dispatch(SetTripsLoadingAction(false));
-            this.loggedIn = true;
-          }
-        },
-        rebuildOnChange: true,
-        builder: (context, viewModel) => _buildLoadedBody(context, viewModel, color)
-      )
+    return StoreConnector <AppState, TripViewModel>(
+      converter: (store) => TripViewModel.create(store),
+      onInit: (store) async {
+        if(store.state.currentUser != null){
+          store.dispatch(new SetTripsLoadingAction(true));
+          await fetchTrips(store);
+          store.dispatch(SetTripsLoadingAction(false));
+          this.loggedIn = true;
+        }
+      },
+      rebuildOnChange: true,
+      builder: (context, viewModel){
+        var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
+        var tripsError = StoreProvider.of<AppState>(context).state.tripsError;
+        var offline = StoreProvider.of<AppState>(context).state.offline; 
+        return Scaffold(
+          floatingActionButton: (currentUser != null && tripsError == null && offline == false) ? FloatingActionButton(
+            backgroundColor: color,
+            onPressed: () { 
+              onPush({"level": "createtrip"});
+              if(StoreProvider.of<AppState>(context).state.trips.length == 0){
+                setState(() {
+                  this._showTitle = false;           
+                });
+              }
+            },
+            tooltip: 'Create trip',
+            child: Icon(Icons.add),
+            elevation: 5.0,
+          ) : null,
+          body: _buildLoadedBody(context, viewModel, color)
+        );
+      }
     );
   }
 
@@ -115,7 +121,8 @@ class TripsState extends State<Trips> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel, Color color) {
-    
+    var error =  StoreProvider.of<AppState>(context).state.tripsError;
+    var offline =  StoreProvider.of<AppState>(context).state.offline;
     var trips = StoreProvider.of<AppState>(context).state.trips;
     var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
     var loading = StoreProvider.of<AppState>(context).state.tripLoading;
@@ -123,6 +130,15 @@ class TripsState extends State<Trips> {
     if(loading == true)
       return _buildLoadingBody(context, viewModel);
       
+    if(error != null && offline == false){
+      return ErrorContainer(
+        color: color,
+        onRetry: (){
+          store.dispatch(new SetTripsLoadingAction(true));
+          viewModel.onGetTrips();
+        },
+      );
+    }
     
    if(currentUser == null){
       return Scaffold(
@@ -185,6 +201,7 @@ class TripsState extends State<Trips> {
       fetchTrips(store);
       this.loggedIn = true;
     }
+
     
     if(trips.length == 0) {
       return Scaffold(

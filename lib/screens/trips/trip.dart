@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:core';
 import 'package:intl/intl.dart';
+import 'package:redux/redux.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -252,15 +255,35 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
   );
 }
 
-Future<TripData> fetchTrip(String id) async {
-  final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return TripData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
+Future<TripData> fetchTrip(Store<AppState> store, String id) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  try {
+    final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      await prefs.setString('trip_$id', response.body);
+      var tripData = json.decode(response.body);
+      return TripData.fromJson(tripData);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return TripData(error:'Response> $msg');
+    }
+
+  } catch(error){
+    final String cacheData = prefs.getString('trip_$id') ?? null;
+    if(cacheData != null) {
+      var tripData = json.decode(cacheData);
+      var results = TripData.fromJson(tripData);
+      store.dispatch(
+        new OfflineAction(
+          true,
+        )
+      );
+      return results;
+    } else {
+      return TripData(error: "Server is down");
+    }
   }
   
 }
@@ -679,14 +702,16 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
 
 class TripData {
   final Map<String, dynamic> trip; 
-  final List<dynamic> destinations; 
+  final List<dynamic> destinations;
+  final String error; 
 
-  TripData({this.trip, this.destinations});
+  TripData({this.trip, this.destinations, this.error});
 
   factory TripData.fromJson(Map<String, dynamic> json) {
     return TripData(
       trip: json['trip'],
-      destinations: json['destinations']
+      destinations: json['destinations'],
+      error:null
     );
   }
 }
@@ -725,7 +750,6 @@ class TripState extends State<Trip> {
 
     }));
     super.initState();
-    data = fetchTrip(this.tripId);
     
   }
 
@@ -808,54 +832,72 @@ class TripState extends State<Trip> {
 
   @override
   Widget build(BuildContext context) {
-    data.then((data){
-      setState(() {
-        this.color = Color(hexStringToHexInt(data.trip['color']));
-        this.destinations = data.destinations;
-        this.trip = data.trip;
-        this.trip['destinations'] = this.destinations;
-        
-        //print(this.name);
-      });
-      
-    });
-    return new Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: this.color,
-        onPressed: () { 
-          bottomSheetModal(context, this.trip);
-        },
-        tooltip: 'Create trip',
-        child: SvgPicture.asset(
-          'images/edit-icon.svg',
-          width: 30,
-          height: 30
-        ),
-        elevation: 5.0,
-      ),
-      body: FutureBuilder(
-        future: data,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return _buildLoadedBody(context,snapshot);
-          }
-          return _buildLoadingBody(context);
+
+    return StoreConnector <AppState, Store<AppState>>(
+      converter: (store) => store,
+      onInit: (store) async {
+        if(store.state.currentUser != null){
+          data = fetchTrip(store, this.tripId);
+          // data.then((data){
+          //   this.color = Color(hexStringToHexInt(data.trip['color']));
+          //   this.destinations = data.destinations;
+          //   this.trip = data.trip;
+          //   this.trip['destinations'] = this.destinations;
+          // });
         }
-      )
+      },
+      builder: (context, store){
+        return Scaffold(
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: this.color,
+            onPressed: () { 
+              bottomSheetModal(context, this.trip);
+            },
+            tooltip: 'Create trip',
+            child: SvgPicture.asset(
+              'images/edit-icon.svg',
+              width: 30,
+              height: 30
+            ),
+            elevation: 5.0,
+          ),
+          body: FutureBuilder(
+            future: data,
+            builder: (context, snapshot) {
+              if(snapshot.connectionState == ConnectionState.waiting){
+                return _buildLoadingBody(context);
+              } else if(snapshot.hasData && snapshot.data.error == null){
+                return _buildLoadedBody(context,snapshot);
+              } else if(snapshot.hasData && snapshot.data.error != null){
+                return ErrorContainer(
+                  color: Color.fromRGBO(106,154,168,1),
+                  onRetry: () {
+                    setState(() {
+                      data =  fetchTrip(store,this.tripId); 
+                    });
+                  },
+                );
+              }
+              return _buildLoadingBody(context);
+            }
+          )
+        );
+      }
     );
   }
   
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    
-    var trip = snapshot.data.trip;
+
+    this.trip = snapshot.data.trip;
     var name = snapshot.data.trip['name'];
     //this.name = name;
-    var destinations = snapshot.data.destinations;
+    this.destinations = snapshot.data.destinations;
+    this.trip['destinations'] = this.destinations;
     var destTable = new Collection<dynamic>(destinations);
     var result2 = destTable.groupBy<dynamic>((destination) => destination['country_id']);
-    var color = Color(hexStringToHexInt(snapshot.data.trip['color']));
+    this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
     var fields = [
       {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},

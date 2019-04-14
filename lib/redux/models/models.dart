@@ -11,6 +11,8 @@ class AppState {
   final SelectItineraryData selectedItinerary;
   final ItineraryData itineraryBuilder;
   final bool tripLoading;
+  final bool offline;
+  final String tripsError;
   final FirebaseUser currentUser;
   
   AppState({
@@ -19,7 +21,9 @@ class AppState {
     this.itinerary,
     this.selectedItinerary,
     this.itineraryBuilder,
-    this.currentUser
+    this.currentUser,
+    this.tripsError,
+    this.offline
   });
   AppState.initialState()
     : trips = List.unmodifiable(<dynamic>[]),
@@ -42,5 +46,7 @@ class AppState {
       destinationId: null,
     ),
     tripLoading = false,
+    tripsError = null,
+    offline = false,
     currentUser = null;
 }

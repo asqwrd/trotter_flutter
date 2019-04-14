@@ -1,31 +1,87 @@
 import 'dart:async';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../actions/trips/actions.dart';
+import '../../actions/common-actions.dart';
 import 'package:redux/redux.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../models/index.dart';
 
 Future<TripsData> fetchTrips(Store<AppState> store) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get('http://localhost:3002/api/trips/all?owner_id=${store.state.currentUser.uid}', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = TripsData.fromJson(json.decode(response.body));
-      store.dispatch(
-        new GetTripsAction(
-          results.trips, 
-        )
-      );
+      if(results.error == null){
+        await prefs.setString('trips', response.body);
+        store.dispatch(
+          new GetTripsAction(
+            results.trips,
+          )
+        );
+         store.dispatch(
+          new ErrorAction(
+            null,
+            null
+          )
+        );
+        store.dispatch(
+          new OfflineAction(
+            false,
+          )
+        );
+      } else if(results.error != null){
+         store.dispatch(
+          new ErrorAction(
+            results.error,
+            null
+          )
+        );
+      }
       store.dispatch(new SetTripsLoadingAction(false));
       return results;
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
-      return throw Exception('Response> $msg');
+      return TripsData(error: "Response > $msg");
     }
   } catch(error){
-    //return error;
+    final String cacheData = prefs.getString('trips') ?? null;
+    if(cacheData != null) {
+       var tripsData = json.decode(cacheData);
+       var results = TripsData.fromJson(tripsData);
+       store.dispatch(
+        new GetTripsAction(
+          results.trips,
+        )
+      );
+      store.dispatch(new SetTripsLoadingAction(false));
+      store.dispatch(
+        new OfflineAction(
+          true,
+        )
+      );
+      store.dispatch(
+        new ErrorAction(
+          null,
+          null
+        )
+      );
+      return results;
+    } else {
+      store.dispatch(
+        new ErrorAction(
+          "Server is down",
+          "trips"
+        )
+      );
+      store.dispatch(new SetTripsLoadingAction(false));
+      return TripsData(error: "Server is down");
+    }
   }
 }
 
@@ -119,12 +175,14 @@ class CreateTripData {
 
 class TripsData {
   final List<dynamic> trips; 
+  final String error;
 
-  TripsData({this.trips});
+  TripsData({this.trips, this.error});
 
   factory TripsData.fromJson(Map<String, dynamic> json) {
     return TripsData(
       trips: json['trips'],
+      error:null
     );
   }
 }

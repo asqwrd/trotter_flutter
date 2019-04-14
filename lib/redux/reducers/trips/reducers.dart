@@ -1,5 +1,6 @@
 import 'package:redux/redux.dart';
 import '../../actions/trips/actions.dart';
+import '../../actions/common-actions.dart';
 
 List<dynamic> getTripsReducer(dynamic state, dynamic action) {
   return []
@@ -31,6 +32,12 @@ List<dynamic> updateTripsDestinationReducer(dynamic state, dynamic action) {
 bool tripLoadingReducer(dynamic state, action) {
   if(action is SetTripsLoadingAction)
     return action.loading;
+  return state;
+}
+
+String tripsErrorReducer(dynamic state, action) {
+  if(action is ErrorAction && action.page == "trips")
+    return action.error;
   return state;
 }
 

@@ -21,7 +21,7 @@ import 'package:shimmer/shimmer.dart';
 Future<HomeData> fetchHome() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
-  if(cacheData == null) {
+  if(cacheData != null) {
       // If server returns an OK response, parse the JSON
       var homeData = json.decode(cacheData);
       return HomeData.fromJson(homeData);
@@ -416,7 +416,16 @@ class HomeState extends State<Home> {
                     return Container(
                       child: Column(
                         children: <Widget>[
-                          Text('Failed to get itineraries.'),
+                          Container(
+                            margin: EdgeInsets.only(bottom: 20), 
+                            child:Text(
+                              'Failed to get itineraries.',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w300
+                              ),
+                            )
+                          ),
                           RetryButton(
                             color: color, 
                             width: 100,

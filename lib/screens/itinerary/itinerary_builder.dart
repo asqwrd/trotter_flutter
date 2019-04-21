@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -60,15 +64,15 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: StoreConnector <AppState, ItineraryViewModel>(
-        converter: (store) => ItineraryViewModel.create(store, this.itineraryId),
+      body: StoreConnector <AppState, Store<AppState>>(
+        converter: (store) => store,
         onInit: (store) async {
           store.dispatch(new SetItineraryBuilderLoadingAction(true));
-          await fetchItineraryBuilder(store,this.itineraryId);
+          await fetchItineraryBuilder(store,this.itineraryId,'itinerary_builder');
           store.dispatch(SetItineraryBuilderLoadingAction(false));
         },
-        builder: (context, viewModel){
-            return _buildLoadedBody(context, viewModel);
+        builder: (context, store){
+            return _buildLoadedBody(context, store);
         }
       ) 
     );
@@ -76,18 +80,28 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, ItineraryViewModel viewModel) {
-    if(StoreProvider.of<AppState>(context).state.itineraryBuilder == null || StoreProvider.of<AppState>(context).state.itineraryBuilder.loading){
+  Widget _buildLoadedBody(BuildContext ctxt, Store<AppState> store) {
+    if(store.state.itineraryBuilder == null || store.state.itineraryBuilder.loading){
       return _buildLoadingBody(ctxt);
     }
-    
-    var itinerary = StoreProvider.of<AppState>(context).state.itineraryBuilder.itinerary;
+    print(store.state.itineraryBuilder.error);
+    if(store.state.itineraryBuilder.error != null) {
+      return ErrorContainer(
+        onRetry: () async {
+          store.dispatch(new SetItineraryBuilderLoadingAction(true));
+          await fetchItineraryBuilder(store,this.itineraryId,'itinerary_builder');
+          store.dispatch(new SetItineraryBuilderLoadingAction(false));
+        },
+      );
+    }
+
+    var itinerary = store.state.itineraryBuilder.itinerary;
     var name = itinerary['name'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
-    var destination = StoreProvider.of<AppState>(context).state.itineraryBuilder.destination;
-    var color = Color(hexStringToHexInt(StoreProvider.of<AppState>(context).state.itineraryBuilder.color));
+    var destination = store.state.itineraryBuilder.destination;
+    var color = Color(hexStringToHexInt(store.state.itineraryBuilder.color));
 
 
     return  NestedScrollView(

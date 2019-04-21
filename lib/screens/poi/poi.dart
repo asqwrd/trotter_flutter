@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -19,30 +22,36 @@ Future<PoiData> fetchPoi(String id, [bool googlePlace, String locationId]) async
     await Future.delayed(const Duration(seconds: 1));
     return PoiData.fromJson(json.decode(cacheData));
   } else {
-    print('no-cached');
-    final response = await http.get('http://localhost:3002/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId', headers:{'Authorization':'security'});
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      await prefs.setString('poi_$id', response.body);
-      return PoiData.fromJson(json.decode(response.body));
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      throw Exception('Response> $msg');
+    try {
+      print('no-cached');
+      final response = await http.get('http://localhost:3002/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId', headers:{'Authorization':'security'});
+      if (response.statusCode == 200) {
+        // If server returns an OK response, parse the JSON
+        await prefs.setString('poi_$id', response.body);
+        return PoiData.fromJson(json.decode(response.body));
+      } else {
+        // If that response was not OK, throw an error.
+        var msg = response.statusCode;
+        return PoiData(error:'Response> $msg');
+      }
+    } catch(error) {
+      return PoiData(error:'Server down');
     }
   }
 }
 
 class PoiData {
   final String color;
-  final Map<String, dynamic> poi; 
+  final Map<String, dynamic> poi;
+  final String error; 
 
-  PoiData({this.color, this.poi});
+  PoiData({this.color, this.poi, this.error});
 
   factory PoiData.fromJson(Map<String, dynamic> json) {
     return PoiData(
       color: json['color'],
       poi: json['poi'],
+      error: null
     );
   }
 }
@@ -107,8 +116,19 @@ class PoiState extends State<Poi> {
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          }
+          if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
+          } else if (snapshot.hasData && snapshot.data.error != null) {
+            return ErrorContainer(
+              onRetry: () {
+                setState(() {
+                  data = fetchPoi(this.poiId);
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }

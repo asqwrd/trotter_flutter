@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -20,16 +23,20 @@ Future<CountryData> fetchCountry(String id) async {
     await Future.delayed(const Duration(seconds: 1));
     return CountryData.fromJson(json.decode(cacheData));
   } else {
-    print('no-cached');
-    final response = await http.get('http://localhost:3002/api/explore/countries/$id', headers:{'Authorization':'security'});
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      await prefs.setString('country_$id', response.body);
-      return CountryData.fromJson(json.decode(response.body));
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      throw Exception('Response> $msg');
+    try {
+      print('no-cached');
+      final response = await http.get('http://localhost:3002/api/explore/countries/$id', headers:{'Authorization':'security'});
+      if (response.statusCode == 200) {
+        // If server returns an OK response, parse the JSON
+        await prefs.setString('country_$id', response.body);
+        return CountryData.fromJson(json.decode(response.body));
+      } else {
+        // If that response was not OK, throw an error.
+        var msg = response.statusCode;
+        return CountryData(error:'Response> $msg');
+      }
+    } catch(error){
+      return CountryData(error: 'Server is down');
     }
   }
 }
@@ -43,9 +50,10 @@ class CountryData {
   final dynamic safety;
   final dynamic visa;
   final dynamic popularDestinations;
+  final String error;
  
 
-  CountryData({this.color, this.country, this.currency, this.emergencyNumber,this.plugs, this.safety, this.visa, this.popularDestinations});
+  CountryData({this.color, this.country, this.currency, this.emergencyNumber,this.plugs, this.safety, this.visa, this.popularDestinations, this.error});
 
   factory CountryData.fromJson(Map<String, dynamic> json) {
     return CountryData(
@@ -57,6 +65,7 @@ class CountryData {
       safety: json['safety'],
       visa: json['visa'],
       popularDestinations: json['popular_destinations'],
+      error: null
     );
   }
 }
@@ -115,8 +124,19 @@ class CountryState extends State<Country> {
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          }
+          if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
+          } else if(snapshot.hasData && snapshot.data.error != null) {
+            return ErrorContainer(
+              onRetry: () {
+                setState(() {
+                  data = fetchCountry(this.countryId);
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }

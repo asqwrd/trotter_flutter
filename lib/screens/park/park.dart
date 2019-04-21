@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
@@ -23,30 +24,37 @@ Future<ParkData> fetchPark(String id) async {
     await Future.delayed(const Duration(seconds: 1));
     return ParkData.fromJson(json.decode(cacheData));
   } else {
-    print('no-cached');
-    print(id);
-    final response = await http.get('http://localhost:3002/api/explore/national_parks/$id/', headers:{'Authorization':'security'});
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      await prefs.setString('park_$id', response.body);
-      return ParkData.fromJson(json.decode(response.body));
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      throw Exception('Response> $msg');
+    try{
+      print('no-cached');
+      print(id);
+      final response = await http.get('http://localhost:3002/api/explore/national_parks/$id/', headers:{'Authorization':'security'});
+      if (response.statusCode == 200) {
+        // If server returns an OK response, parse the JSON
+        await prefs.setString('park_$id', response.body);
+        return ParkData.fromJson(json.decode(response.body));
+      } else {
+        // If that response was not OK, throw an error.
+        var msg = response.statusCode;
+        return ParkData(error:'Response> $msg');
+      }
+    } catch(error) {
+      return ParkData(error:'Server is down');
     }
+    
   }
 }
 
 class ParkData {
   final String color;
   final Map<String, dynamic> park;
-  final List<dynamic> pois; 
+  final List<dynamic> pois;
+  final String error; 
 
   ParkData({
     this.color, 
     this.park, 
     this.pois, 
+    this.error
   });
 
   factory ParkData.fromJson(Map<String, dynamic> json) {
@@ -54,6 +62,7 @@ class ParkData {
       color: json['color'],
       park: json['park'],
       pois: json['pois'],
+      error: null
     );
   }
 }
@@ -111,8 +120,19 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin{
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          }
+          if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
+          } else if (snapshot.hasData && snapshot.data.error != null) {
+            return ErrorContainer(
+              onRetry: () {
+                setState(() {
+                  data = fetchPark(this.parkId);
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -24,17 +25,22 @@ Future<CityStateData> fetchCityState(String id) async {
     await Future.delayed(const Duration(seconds: 1));
     return CityStateData.fromJson(json.decode(cacheData));
   } else {
-    print('no-cached');
-    final response = await http.get('http://localhost:3002/api/explore/city_states/$id/', headers:{'Authorization':'security'});
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      await prefs.setString('cityState_$id', response.body);
-      return CityStateData.fromJson(json.decode(response.body));
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      throw Exception('Response> $msg');
+    try {
+      print('no-cached');
+      final response = await http.get('http://localhost:3002/api/explore/city_states/$id/', headers:{'Authorization':'security'});
+      if (response.statusCode == 200) {
+        // If server returns an OK response, parse the JSON
+        await prefs.setString('cityState_$id', response.body);
+        return CityStateData.fromJson(json.decode(response.body));
+      } else {
+        // If that response was not OK, throw an error.
+        var msg = response.statusCode;
+        return CityStateData(error:'Response> $msg');
+      }
+    } catch(error){
+      return CityStateData(error:'Server is down');
     }
+    
   }
 }
 
@@ -60,6 +66,7 @@ class CityStateData {
   final List<dynamic> plugs;
   final dynamic safety;
   final dynamic visa;
+  final String error;
  
 
   CityStateData({
@@ -84,6 +91,7 @@ class CityStateData {
     this.plugs, 
     this.safety, 
     this.visa,
+    this.error
   });
 
   factory CityStateData.fromJson(Map<String, dynamic> json) {
@@ -102,6 +110,7 @@ class CityStateData {
       plugs: json['plugs'],
       safety: json['safety'],
       visa: json['visa'],
+      error: null
     );
   }
 }
@@ -161,8 +170,19 @@ class CityStateState extends State<CityState> with SingleTickerProviderStateMixi
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          }
+          if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
+          } else if (snapshot.hasData && snapshot.data.error != null) {
+            return ErrorContainer(
+              onRetry: () {
+                setState(() {
+                  data = fetchCityState(this.cityStateId);
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }

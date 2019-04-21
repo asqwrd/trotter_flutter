@@ -31,13 +31,15 @@ class AppState {
       itinerary: null,
       loading: true,
       color: null,
-      destination: null
+      destination: null,
+      error:null
     ),
     itineraryBuilder = ItineraryData(
       itinerary: null,
       loading: true,
       color: null,
-      destination: null
+      destination: null,
+      error:null
     ),
     selectedItinerary = SelectItineraryData(
       loading: false, 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -23,18 +24,23 @@ Future<CityData> fetchCity(String id) async {
     await Future.delayed(const Duration(seconds: 1));
     return CityData.fromJson(json.decode(cacheData));
   } else {
-    print('no-cached');
-    print(id);
-    final response = await http.get('http://localhost:3002/api/explore/cities/$id/', headers:{'Authorization':'security'});
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      await prefs.setString('city_$id', response.body);
-      return CityData.fromJson(json.decode(response.body));
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      throw Exception('Response> $msg');
+    try{
+      print('no-cached');
+      print(id);
+      final response = await http.get('http://localhost:3002/api/explore/cities/$id/', headers:{'Authorization':'security'});
+      if (response.statusCode == 200) {
+        // If server returns an OK response, parse the JSON
+        await prefs.setString('city_$id', response.body);
+        return CityData.fromJson(json.decode(response.body));
+      } else {
+        // If that response was not OK, throw an error.
+        var msg = response.statusCode;
+        return CityData(error: 'Response > $msg');
+      }
+    } catch(error){
+       return CityData(error: 'Server is down');
     }
+    
   }
 }
 
@@ -55,6 +61,7 @@ class CityData {
   final List<dynamic> seeLocations;
   final List<dynamic> shop;
   final List<dynamic> shopLocations;
+  final String error;
  
 
   CityData({
@@ -74,6 +81,7 @@ class CityData {
     this.relaxLocations,
     this.seeLocations,
     this.shopLocations,
+    this.error
   });
 
   factory CityData.fromJson(Map<String, dynamic> json) {
@@ -87,6 +95,7 @@ class CityData {
       relax: json['relax'],
       see: json['see'],
       shop: json['shop'],
+      error: null
     );
   }
 }
@@ -145,8 +154,18 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin{
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          } else if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
+          } else if (snapshot.hasData && snapshot.data.error != null) {
+            return ErrorContainer(
+              onRetry: () {
+                setState(() {
+                  data = fetchCity(this.cityId);
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }

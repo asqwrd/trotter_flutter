@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:trotter_flutter/redux/actions/index.dart';
+
 import '../../actions/itineraries/actions.dart';
 import 'package:redux/redux.dart';
 import 'package:http/http.dart' as http;
@@ -27,24 +31,27 @@ Future<CreateItineraryData> postCreateItinerary(Store<AppState> store, dynamic d
 }
 
 Future<ItineraryData> fetchItinerary(Store<AppState> store, String id) async {
-  final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    var results  = ItineraryData.fromJson(json.decode(response.body));
-    store.dispatch(
-      new GetItineraryAction(
-        results.itinerary,
-        results.destination,
-        results.color,
-      )
-    );
-    return results;
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
+  try {
+    final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results  = ItineraryData.fromJson(json.decode(response.body));
+      store.dispatch(
+        new GetItineraryAction(
+          results.itinerary,
+          results.destination,
+          results.color,
+        )
+      );
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return ItineraryData(error: 'Response> $msg');
+    }
+  } catch(error){
+    return ItineraryData(error:'Server is down');
   }
-  
 }
 
 Future<ItineraryData> fetchSelectedItinerary(Store<AppState> store, String id) async {
@@ -64,25 +71,47 @@ Future<ItineraryData> fetchSelectedItinerary(Store<AppState> store, String id) a
   
 }
 
-Future<ItineraryData> fetchItineraryBuilder(Store<AppState> store, String id) async {
-  final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    var results  = ItineraryData.fromJson(json.decode(response.body));
+Future<ItineraryData> fetchItineraryBuilder(Store<AppState> store, String id, String page) async {
+  try {
+    final response = await http.get('http://localhost:3002/api/itineraries/get/$id', headers:{'Authorization':'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results  = ItineraryData.fromJson(json.decode(response.body));
+      store.dispatch(
+        new GetItineraryBuilderAction(
+          results.itinerary,
+          results.destination,
+          results.color,
+        )
+      );
+      store.dispatch(
+        new ErrorAction(
+          null,
+          null
+        )
+      );
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      store.dispatch(
+        new ErrorAction(
+          'Response> $msg',
+          page
+        )
+      );
+      return ItineraryData(error:'Response> $msg');
+    }
+  } catch(error) {
+    print('here');
     store.dispatch(
-      new GetItineraryBuilderAction(
-        results.itinerary,
-        results.destination,
-        results.color,
+      new ErrorAction(
+        'Server is down',
+        page
       )
     );
-    return results;
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
+    return ItineraryData(error: 'Server is down');
   }
-  
 }
 
 Future<DayData> fetchDay(String itineraryId, String dayId) async {
@@ -227,15 +256,17 @@ class ItineraryData {
   final bool loading;
   final Map<String, dynamic> itinerary; 
   final Map<String, dynamic> destination; 
+  final String error;
 
-  ItineraryData({this.color, this.loading, this.itinerary, this.destination});
+  ItineraryData({this.color, this.loading, this.itinerary, this.destination, this.error});
 
   factory ItineraryData.fromJson(Map<String, dynamic> json) {
     return ItineraryData(
       loading: false,
       itinerary: json['itinerary'],
       destination: json['destination'],
-      color: json['color']
+      color: json['color'],
+      error: null
     );
   }
 }

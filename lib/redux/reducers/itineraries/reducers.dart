@@ -1,4 +1,5 @@
 import 'package:redux/redux.dart';
+import 'package:trotter_flutter/redux/actions/index.dart';
 import '../../actions/itineraries/actions.dart';
 import '../../middleware/itineraries/middleware.dart';
 
@@ -39,7 +40,8 @@ ItineraryData getItineraryReducer(dynamic state, dynamic action) {
       itinerary: action.itinerary,
       color: action.color,
       destination: action.destination,
-      loading: true
+      loading: true,
+      error: state.error
     );
   }
   if(action is SetItineraryLoadingAction){
@@ -47,7 +49,17 @@ ItineraryData getItineraryReducer(dynamic state, dynamic action) {
       itinerary: state.itinerary,
       color: state.color,
       destination: state.destination,
-      loading: action.loading
+      loading: action.loading,
+      error: state.error
+    );
+  }
+  if(action is ErrorAction && action.page == "itinerary"){
+    return ItineraryData(
+      itinerary: state.itinerary,
+      color: state.color,
+      destination: state.destination,
+      loading: state.loading,
+      error: action.error
     );
   }
 
@@ -91,7 +103,8 @@ ItineraryData getItineraryBuilderReducer(dynamic state, dynamic action) {
       itinerary: action.itinerary,
       color: action.color,
       destination: action.destination,
-      loading: true
+      loading: true,
+      error: state.error
     );
   }
   if(action is UpdateDayAfterAddAction && (state.itinerary != null && state.itinerary['id'] == action.itinerary['id'])){
@@ -99,7 +112,8 @@ ItineraryData getItineraryBuilderReducer(dynamic state, dynamic action) {
       itinerary: updateDayAfterAddReducer(state, action),
       color: state.color,
       destination: state.destination,
-      loading: state.loading
+      loading: state.loading,
+      error: state.error
     );
   }
   if(action is UpdateDayAfterDeleteAction){
@@ -107,7 +121,8 @@ ItineraryData getItineraryBuilderReducer(dynamic state, dynamic action) {
       itinerary: updateDayAfterDeleteReducer(state, action),
       color: state.color,
       destination: state.destination,
-      loading: state.loading
+      loading: state.loading,
+      error: state.error
     );
   }
   if(action is SetItineraryBuilderLoadingAction){
@@ -115,7 +130,17 @@ ItineraryData getItineraryBuilderReducer(dynamic state, dynamic action) {
       itinerary: state.itinerary,
       color: state.color,
       destination: state.destination,
-      loading: action.loading
+      loading: action.loading,
+      error: state.error
+    );
+  }
+  if(action is ErrorAction && action.page == "itinerary_builder"){
+    return ItineraryData(
+      itinerary: state.itinerary,
+      color: state.color,
+      destination: state.destination,
+      loading: state.loading,
+      error: action.error
     );
   }
   return state;

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,37 +11,44 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 Future<SearchData> fetchSearch(String query, String id, bool searchPoi) async {
   var response;
-  if(query.isEmpty && !searchPoi){
-    response = await http.get('http://localhost:3002/api/search/recent', headers:{'Authorization':'security'});
-  } else if(query.isEmpty && searchPoi){
-    response = await http.get('http://localhost:3002/api/search/recent?poi=true', headers:{'Authorization':'security'});
-  } else if(query.isNotEmpty && (id != null && id.isNotEmpty) && searchPoi) {
-    response = await http.get('http://localhost:3002/api/search/find/$query?id=${id}', headers:{'Authorization':'security'});
-  }else {
-    response = await http.get('http://localhost:3002/api/search/find/$query', headers:{'Authorization':'security'});
+  try{
+    if(query.isEmpty && !searchPoi){
+      response = await http.get('http://localhost:3002/api/search/recent', headers:{'Authorization':'security'});
+    } else if(query.isEmpty && searchPoi){
+      response = await http.get('http://localhost:3002/api/search/recent?poi=true', headers:{'Authorization':'security'});
+    } else if(query.isNotEmpty && (id != null && id.isNotEmpty) && searchPoi) {
+      response = await http.get('http://localhost:3002/api/search/find/$query?id=${id}', headers:{'Authorization':'security'});
+    }else {
+      response = await http.get('http://localhost:3002/api/search/find/$query', headers:{'Authorization':'security'});
+    }
+    
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return SearchData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return SearchData(error: "Response > $msg");
+    }
+  }catch(error){
+    return SearchData(error: "Server is down");
   }
   
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return SearchData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
-  }
   
 }
 
 class SearchData {
   final List<dynamic> recentSearch; 
   final List<dynamic> results; 
+  final String error;
 
-  SearchData({this.results, this.recentSearch});
+  SearchData({this.results, this.recentSearch, this.error});
 
   factory SearchData.fromJson(Map<String, dynamic> json) {
     return SearchData(
       results: json['results'],
-      recentSearch: json['recent_search']
+      recentSearch: json['recent_search'],
+      error:null
     );
   }
 }
@@ -112,15 +120,29 @@ class SearchState extends State<Search> {
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
-              return Text('Press button to start.');
+              return ErrorContainer(
+                color: Color.fromRGBO(106,154,168,1),
+                onRetry: () {
+                  setState(() {
+                    data = fetchSearch('',this.id,selectId); 
+                  });
+                },
+              );
             case ConnectionState.active:
             case ConnectionState.waiting:
               return _buildLoadedBody(context,snapshot, true,'');
             case ConnectionState.done:
               if (snapshot.hasData) {
                 return _buildLoadedBody(context,snapshot, false, this.id);
-              } else if(snapshot.hasError) {
-                return Text('No Connection');
+              } else if(snapshot.hasError){
+                return ErrorContainer(
+                  color: Color.fromRGBO(106,154,168,1),
+                  onRetry: () {
+                    setState(() {
+                      data = fetchSearch('',this.id,selectId); 
+                    });
+                  },
+                );
               }
           }
           
@@ -132,9 +154,10 @@ class SearchState extends State<Search> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading, String id) {
-   
+
     var recentSearch = snapshot.hasData ? snapshot.data.recentSearch : null;
     var results = snapshot.hasData ? snapshot.data.results : null;
+    var error = snapshot.hasData ? snapshot.data.error : null;
     var chips = [
       FilterChip(
         selected: this.id != null && this.id.isNotEmpty ? !selectId : true,
@@ -238,9 +261,7 @@ class SearchState extends State<Search> {
       ),
       body: isLoading ? _buildLoadingBody() : results != null ? 
         ListView.builder(
-          //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
           itemCount: results.length,
-          //shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
             return selectId == false ? InkWell(
               onTap: (){
@@ -318,10 +339,8 @@ class SearchState extends State<Search> {
               )
             );
           },
-        ) : ListView.builder(
-          //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+        ) : error == null ? ListView.builder(
           itemCount: recentSearch.length,
-          //shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
             return InkWell(
               onTap: (){
@@ -338,7 +357,14 @@ class SearchState extends State<Search> {
               )
             );
           },
-        ),
+        ) : ErrorContainer(
+            color: Color.fromRGBO(106,154,168,1),
+            onRetry: () {
+              setState(() {
+                data = fetchSearch('',this.id,selectId); 
+              });
+            },
+          ),
     );
   }
 

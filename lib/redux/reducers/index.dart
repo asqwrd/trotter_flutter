@@ -5,7 +5,8 @@ export 'auth/reducers.dart';
 import '../actions/index.dart';
 
 bool offlineReducer(dynamic state, action) {
-  if(action is OfflineAction)
-    return action.offline;
+  if(action is OfflineAction){
+    return action.offline; 
+  }
   return state;
 }

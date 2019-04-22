@@ -96,7 +96,7 @@ class DayEditState extends State<DayEdit> {
           }
           if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
-          }else if(snapshot.hasData && snapshot.data.error != null){
+          } else if(snapshot.hasData && snapshot.data.error != null){
             return ErrorContainer(
               color: Color.fromRGBO(106,154,168,1),
               onRetry: () {

@@ -44,13 +44,46 @@ Future<ItineraryData> fetchItinerary(Store<AppState> store, String id) async {
           results.color,
         )
       );
+      store.dispatch(
+        new ErrorAction(
+          null,
+          'itinerary'
+        )
+      );
+      store.dispatch(
+        new OfflineAction(
+          false,
+        )
+      );
       return results;
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      store.dispatch(
+        new ErrorAction(
+          'Server is down',
+          'itinerary'
+        )
+      );
+      store.dispatch(
+        new OfflineAction(
+          true,
+        )
+      );
       return ItineraryData(error: 'Response> $msg');
     }
   } catch(error){
+    store.dispatch(
+      new ErrorAction(
+        'Server is down',
+        'itinerary'
+      )
+    );
+    store.dispatch(
+      new OfflineAction(
+        true,
+      )
+    );
     return ItineraryData(error:'Server is down');
   }
 }

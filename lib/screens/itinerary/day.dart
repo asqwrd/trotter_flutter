@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 
 
 
@@ -74,8 +77,30 @@ class DayState extends State<Day> {
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          }
+          if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
+          } else if(snapshot.hasData && snapshot.data.error != null){
+            return ErrorContainer(
+              color: Color.fromRGBO(106,154,168,1),
+              onRetry: () {
+                setState(() {
+                  data = fetchDay(this.itineraryId, this.dayId);
+                  data.then((data){
+                    if(data.error == null){
+                      setState(() {
+                        this.color = Color(hexStringToHexInt(data.color));
+                        this.destinationName = data.destination['name'];
+                        this.destinationId = data.destination['id'].toString();
+                        this.itineraryItems = data.day['itinerary_items'].sublist(1);
+                      });
+                    }
+                  });  
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }

@@ -65,12 +65,14 @@ class DayState extends State<Day> {
   @override
   Widget build(BuildContext context) {
     data.then((data){
-      setState(() {
-        this.color = Color(hexStringToHexInt(data.color));
-        this.destinationName = data.destination['name'];
-        this.destinationId = data.destination['id'].toString();
-        this.itineraryItems = data.day['itinerary_items'].sublist(1);
-      });
+      if(data.error == null){
+        setState(() {
+          this.color = Color(hexStringToHexInt(data.color));
+          this.destinationName = data.destination['name'];
+          this.destinationId = data.destination['id'].toString();
+          this.itineraryItems = data.day['itinerary_items'].sublist(1);
+        });
+      }
       
     });
     return new Scaffold(

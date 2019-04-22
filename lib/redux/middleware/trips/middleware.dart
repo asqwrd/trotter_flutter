@@ -26,7 +26,7 @@ Future<TripsData> fetchTrips(Store<AppState> store) async {
          store.dispatch(
           new ErrorAction(
             null,
-            null
+            'trips'
           )
         );
         store.dispatch(
@@ -68,7 +68,7 @@ Future<TripsData> fetchTrips(Store<AppState> store) async {
       store.dispatch(
         new ErrorAction(
           null,
-          null
+          'trips'
         )
       );
       return results;

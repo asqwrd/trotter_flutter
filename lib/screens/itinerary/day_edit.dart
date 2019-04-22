@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/redux/index.dart';
@@ -48,13 +51,15 @@ class DayEditState extends State<DayEdit> {
     super.initState();
     data = fetchDay(this.itineraryId, this.dayId);
     data.then((data){
-      setState(() {
-        this.color = Color(hexStringToHexInt(data.color));
-        this.destinationName = data.destination['name'];
-        this.destination = data.destination;
-        this.destinationId = data.destination['id'].toString();
-        this.itineraryItems = data.day['itinerary_items'].sublist(1);
-      });
+      if(data.error == null){
+        setState(() {
+          this.color = Color(hexStringToHexInt(data.color));
+          this.destinationName = data.destination['name'];
+          this.destination = data.destination;
+          this.destinationId = data.destination['id'].toString();
+          this.itineraryItems = data.day['itinerary_items'].sublist(1);
+        });
+      }
     }); 
   }
 
@@ -77,7 +82,7 @@ class DayEditState extends State<DayEdit> {
       floatingActionButton: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if(snapshot.hasData){
+          if(snapshot.hasData && snapshot.data.error == null){
             return _buildFab(Color(hexStringToHexInt(snapshot.data.color)));
           }
           return FloatingActionButton(onPressed: (){}, backgroundColor: Color.fromRGBO(240, 240, 240, 1),);
@@ -86,8 +91,31 @@ class DayEditState extends State<DayEdit> {
       body: FutureBuilder(
         future: data,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if(snapshot.connectionState == ConnectionState.waiting){
+            return _buildLoadingBody(context);
+          }
+          if (snapshot.hasData && snapshot.data.error == null) {
             return _buildLoadedBody(context,snapshot);
+          }else if(snapshot.hasData && snapshot.data.error != null){
+            return ErrorContainer(
+              color: Color.fromRGBO(106,154,168,1),
+              onRetry: () {
+                setState(() {
+                  data = fetchDay(this.itineraryId, this.dayId);
+                  data.then((data){
+                    if(data.error == null){
+                      setState(() {
+                        this.color = Color(hexStringToHexInt(data.color));
+                        this.destinationName = data.destination['name'];
+                        this.destination = data.destination;
+                        this.destinationId = data.destination['id'].toString();
+                        this.itineraryItems = data.day['itinerary_items'].sublist(1);
+                      });
+                    }
+                  });  
+                });
+              },
+            );
           }
           return _buildLoadingBody(context);
         }

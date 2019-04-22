@@ -84,7 +84,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     if(store.state.itineraryBuilder == null || store.state.itineraryBuilder.loading){
       return _buildLoadingBody(ctxt);
     }
-    print(store.state.itineraryBuilder.error);
     if(store.state.itineraryBuilder.error != null) {
       return ErrorContainer(
         onRetry: () async {

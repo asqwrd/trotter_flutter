@@ -9,38 +9,44 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 Future<SearchModalData> fetchSearchModal(String query, String id, bool searchPoi) async {
-  var response;
-  if(query.isEmpty && !searchPoi){
-    response = await http.get('http://localhost:3002/api/search/recent', headers:{'Authorization':'security'});
-  } else if(query.isEmpty && searchPoi){
-    response = await http.get('http://localhost:3002/api/search/recent?poi=true', headers:{'Authorization':'security'});
-  } else if(query.isNotEmpty && (id != null && id.isNotEmpty) && searchPoi) {
-    response = await http.get('http://localhost:3002/api/search/find/$query?id=${id}', headers:{'Authorization':'security'});
-  }else {
-    response = await http.get('http://localhost:3002/api/search/find/$query', headers:{'Authorization':'security'});
+  try {
+    var response;
+    if(query.isEmpty && !searchPoi){
+      response = await http.get('http://localhost:3002/api/search/recent', headers:{'Authorization':'security'});
+    } else if(query.isEmpty && searchPoi){
+      response = await http.get('http://localhost:3002/api/search/recent?poi=true', headers:{'Authorization':'security'});
+    } else if(query.isNotEmpty && (id != null && id.isNotEmpty) && searchPoi) {
+      response = await http.get('http://localhost:3002/api/search/find/$query?id=${id}', headers:{'Authorization':'security'});
+    }else {
+      response = await http.get('http://localhost:3002/api/search/find/$query', headers:{'Authorization':'security'});
+    }
+    
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return SearchModalData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      return SearchModalData(success: false);
+    }
+  } catch(error) {
+    return SearchModalData(success: false);
   }
   
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return SearchModalData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
-  }
   
 }
 
 class SearchModalData {
   final List<dynamic> recentSearchModal; 
   final List<dynamic> results; 
+  final bool success;
 
-  SearchModalData({this.results, this.recentSearchModal});
+  SearchModalData({this.results, this.recentSearchModal, this.success});
 
   factory SearchModalData.fromJson(Map<String, dynamic> json) {
     return SearchModalData(
       results: json['results'],
-      recentSearchModal: json['recent_search']
+      recentSearchModal: json['recent_search'],
+      success: true
     );
   }
 }

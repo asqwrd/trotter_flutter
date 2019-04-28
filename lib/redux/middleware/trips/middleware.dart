@@ -111,37 +111,52 @@ Future<DeleteTripData> deleteTrip(Store<AppState> store, String tripId) async {
 }
 
 Future<CreateTripData> postCreateTrip(Store<AppState> store, dynamic data, [int index, bool undo = false]) async {
-  var owner = store.state.currentUser.uid;
-  data['trip']['owner_id'] = owner;
-  final response = await http.post('http://localhost:3002/api/trips/create/', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    var results = CreateTripResponseData.fromJson(json.decode(response.body));
-    var trip = results.trip;
-    trip['destinations'] = results.destinations;
-    if(index != null && undo == true){
-      store.dispatch(
-        new UndoTripDeleteAction(
-          trip,
-          index,
-          true 
-        )
-      );
+  try {
+    var owner = store.state.currentUser.uid;
+    data['trip']['owner_id'] = owner;
+    final response = await http.post('http://localhost:3002/api/trips/create/', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = CreateTripResponseData.fromJson(json.decode(response.body));
+      var trip = results.trip;
+      trip['destinations'] = results.destinations;
+      if(index != null && undo == true){
+        store.dispatch(
+          new UndoTripDeleteAction(
+            trip,
+            index,
+            true 
+          )
+        );
+      } else {
+        store.dispatch(
+          new CreateTripAction(
+            trip,
+            true
+          )
+        );
+      }
+      store.dispatch(new ErrorAction(null,null));
+      store.dispatch(new OfflineAction(
+        false,
+      ));
+      return CreateTripData(trip: trip, success: true);
     } else {
-      store.dispatch(
-        new CreateTripAction(
-          trip,
-          true
-        )
-      );
+      // If that response was not OK, throw an error.
+      store.dispatch(new ErrorAction('Server is down', 'create_trip'));
+      store.dispatch(new OfflineAction(
+        true,
+      ));
+      return CreateTripData(success: false);
     }
-    return CreateTripData(trip: trip, success: true);
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-    throw Exception('Response> $msg');
-    //return CreateTripData(success: false);
+  } catch(error){
+    store.dispatch(new ErrorAction('Server is down', 'create_trip'));
+    store.dispatch(new OfflineAction(
+      true,
+    ));
+    return CreateTripData(success: false);
   }
+  
   
 }
 
@@ -213,18 +228,21 @@ class DeleteTripError {
 }
 
 Future<dynamic> postAddToTrip(String tripId, dynamic data) async {
-  final response = await http.post('http://localhost:3002/api/trips/add/$tripId', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return AddTripData.fromJson(json.decode(response.body));
-  } else if(response.statusCode == 409){
-    return AddTripErrorData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    var msg = response.statusCode;
-
-    throw Exception('Response> $msg');
+  try {
+    final response = await http.post('http://localhost:3002/api/trips/add/$tripId', body: json.encode(data), headers:{'Authorization':'security',"Content-Type": "application/json"});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return AddTripData.fromJson(json.decode(response.body));
+    } else if(response.statusCode == 409){
+      return AddTripErrorData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      return AddTripData(success: false);
+    }
+  } catch(error){
+    return AddTripData(success: false);
   }
+  
   
 }
 
@@ -273,13 +291,15 @@ Future<dynamic> deleteDestination(String tripId, String destinationId) async {
 class AddTripData {
   final dynamic destination; 
   final bool exists;
+  final bool success;
 
-  AddTripData({this.destination, this.exists});
+  AddTripData({this.destination, this.exists, this.success});
 
   factory AddTripData.fromJson(Map<String, dynamic> json) {
     return AddTripData(
       destination: json['destination'],
-      exists: false
+      exists: false,
+      success: true
     );
   }
 }

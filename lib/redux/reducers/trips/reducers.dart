@@ -42,7 +42,7 @@ String tripsErrorReducer(dynamic state, action) {
 }
 
 List<dynamic> deleteTripReducer(dynamic state, action) {
-  if(action is DeleteTripAction){
+  if(action is DeleteTripAction && action.success == true){
     var trips = []..addAll(state);
     trips.removeWhere((trip)=> trip['id'] == action.tripId);
     return trips;

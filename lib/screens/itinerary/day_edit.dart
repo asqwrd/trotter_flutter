@@ -282,8 +282,7 @@ class DayEditState extends State<DayEdit> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            new ListTile(
-              
+            new ListTile( 
               leading: new Icon(EvilIcons.external_link),
               title: new Text('Move to another day'),
               onTap: () async {
@@ -298,6 +297,23 @@ class DayEditState extends State<DayEdit> {
                       this.itineraryItems.removeWhere((item)=> item['id'] == id);
                       StoreProvider.of<AppState>(context).dispatch(UpdateDayAfterDeleteAction(this.dayId, id));
                       Navigator.of(context).pop();
+                      this.loading = false;
+                    });
+                  } else {
+                    setState(() {
+                      Scaffold
+                      .of(this.context)
+                      .showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Unable to delete from itinerary',
+                            style: TextStyle(
+                              fontSize: 18
+                            )
+                          ),
+                          duration: Duration(seconds: 2),
+                        )
+                      ); 
                       this.loading = false;
                     });
                   }
@@ -378,6 +394,23 @@ class DayEditState extends State<DayEdit> {
                       ),
                     )
                   ); 
+                } else {
+                  setState(() {
+                    Scaffold
+                    .of(this.context)
+                    .showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Unable to delete from itinerary',
+                          style: TextStyle(
+                            fontSize: 18
+                          )
+                        ),
+                        duration: Duration(seconds: 2),
+                      )
+                    ); 
+                    this.loading = false;
+                  });
                 }
                 Navigator.of(context).pop();
               }        

@@ -620,14 +620,14 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                 Scaffold
                                 .of(listContext)
                                 .showSnackBar(SnackBar(content: Text(
-                                      '${destinations[index]['destination_name']}\'s dates updated',
-                                        style: TextStyle(
-                                          fontSize: 18
-                                        )
-                                      ),
-                                      duration: Duration(seconds: 2)
-                                    )
-                                  );
+                                    '${destinations[index]['destination_name']}\'s dates updated',
+                                      style: TextStyle(
+                                        fontSize: 18
+                                      )
+                                    ),
+                                    duration: Duration(seconds: 2)
+                                  )
+                                );
                               }
 
                             });
@@ -675,6 +675,18 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                   )
                                 );                           
                               });
+                            } else {
+                              Scaffold
+                              .of(listContext)
+                              .showSnackBar(SnackBar(content: Text(
+                                  'Unable to delete $name',
+                                    style: TextStyle(
+                                      fontSize: 18
+                                    )
+                                  ),
+                                  duration: Duration(seconds: 2)
+                                )
+                              );
                             }
                           }        
                         ),
@@ -848,19 +860,19 @@ class TripState extends State<Trip> {
       },
       builder: (context, store){
         return Scaffold(
-          floatingActionButton: FloatingActionButton(
+          floatingActionButton: !store.state.offline ? FloatingActionButton(
             backgroundColor: this.color,
             onPressed: () { 
               bottomSheetModal(context, this.trip);
             },
-            tooltip: 'Create trip',
+            tooltip: 'Edit trip',
             child: SvgPicture.asset(
               'images/edit-icon.svg',
               width: 30,
               height: 30
             ),
             elevation: 5.0,
-          ),
+          ) : null,
           body: FutureBuilder(
             future: data,
             builder: (context, snapshot) {

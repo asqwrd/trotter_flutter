@@ -86,7 +86,8 @@ Future<TripsData> fetchTrips(Store<AppState> store) async {
 }
 
 Future<DeleteTripData> deleteTrip(Store<AppState> store, String tripId) async {
-  final response = await http.delete('http://localhost:3002/api/trips/delete/trip/$tripId', headers:{'Authorization':'security'});
+  try{
+    final response = await http.delete('http://localhost:3002/api/trips/delete/trip/$tripId', headers:{'Authorization':'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     var results = DeleteTripData.fromJson(json.decode(response.body));
@@ -105,8 +106,22 @@ Future<DeleteTripData> deleteTrip(Store<AppState> store, String tripId) async {
         false 
       )
     );
+    store.dispatch(new SetTripsLoadingAction(false));
     return DeleteTripData(success: false);
   }
+
+  } catch(error){
+    // If that response was not OK, throw an error.
+    store.dispatch(
+      new DeleteTripAction(
+        tripId,
+        false 
+      )
+    ); 
+    store.dispatch(new SetTripsLoadingAction(false));    
+    return DeleteTripData(success: false);
+  }
+  
   
 }
 
@@ -275,12 +290,18 @@ Future<dynamic> putUpdateTrip(String tripId, dynamic data) async {
 }
 
 Future<dynamic> deleteDestination(String tripId, String destinationId) async {
-  final response = await http.delete('http://localhost:3002/api/trips/delete/$tripId/destination/$destinationId', headers:{'Authorization':'security',"Content-Type": "application/json"});
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return UpdateTripData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
+  try{
+    final response = await http.delete('http://localhost:3002/api/trips/delete/$tripId/destination/$destinationId', headers:{'Authorization':'security',"Content-Type": "application/json"});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return UpdateTripData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      return {
+        "success": false
+      };
+    }
+  } catch(error){
     return {
       "success": false
     };

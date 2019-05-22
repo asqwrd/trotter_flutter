@@ -10,7 +10,7 @@ description: A new Flutter project.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   flutter:
@@ -70,6 +70,7 @@ flutter:
   - images/header.png
   - images/headerPreview.jpeg
   - images/trips.jpg
+  - images/trips2.jpg
   - images/trips-login.png
   - images/server-error-icon.png
   - images/header.svg

@@ -3,17 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
+import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/index.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -100,18 +99,14 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  //final ScrollController _scrollController = ScrollController();
-  bool _showTitle = false;
   final String2VoidFunc onPush;
   ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
-  double _fabHeight;
-  final double _initFabHeight = 120.0;
+  bool errorUi = false;
 
   @override
   void initState() {
-    _fabHeight = _initFabHeight;
     _sc.addListener(() {
       setState(() {
         if (_pc.isPanelOpen()) {
@@ -148,18 +143,35 @@ class HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     var color = Color.fromRGBO(206, 132, 75, 1);
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 160;
-    double _bodyHeight = MediaQuery.of(context).size.height - 115;
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
+    data.then((data) => {
+          if (data.error != null)
+            {
+              setState(() {
+                this.errorUi = true;
+              })
+            }
+          else
+            if (data.error == null)
+              {
+                setState(() {
+                  this.errorUi = false;
+                })
+              }
+        });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      SlidingUpPanel(
+      Positioned(
+          child: SlidingUpPanel(
         parallaxEnabled: true,
         parallaxOffset: .5,
-        minHeight: _panelHeightClosed,
+        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
         controller: _pc,
         backdropEnabled: true,
         backdropColor: color,
         backdropTapClosesPanel: false,
+        backdropOpacity: .8,
         onPanelOpened: () {
           setState(() {
             disableScroll = false;
@@ -170,10 +182,6 @@ class HomeState extends State<Home> {
             disableScroll = true;
           });
         },
-        onPanelSlide: (double pos) => setState(() {
-              _fabHeight = pos * (_panelHeightOpen - _panelHeightClosed) +
-                  _initFabHeight;
-            }),
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(15), topRight: Radius.circular(15)),
         maxHeight: _panelHeightOpen,
@@ -187,7 +195,7 @@ class HomeState extends State<Home> {
                     return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error != null) {
                     return ErrorContainer(
-                      color: Color.fromRGBO(106, 154, 168, 1),
+                      color: Color.fromRGBO(206, 132, 75, 1),
                       onRetry: () {
                         setState(() {
                           data = fetchHome();
@@ -211,44 +219,17 @@ class HomeState extends State<Home> {
                     fit: BoxFit.cover,
                     alignment: Alignment.center,
                   )),
-              Positioned(
-                  left: 0,
-                  top: MediaQuery.of(context).size.height * .30,
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Container(
-                            margin: EdgeInsets.only(right: 10.0),
-                            child: SvgPicture.asset("images/trotter-logo.svg",
-                                width: 50.0,
-                                height: 50.0,
-                                fit: BoxFit.contain)),
-                        Container(
-                            child: Text("Trotter",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w300)))
-                      ])),
+              Positioned.fill(
+                top: 0,
+                left: 0,
+                child: Container(color: color.withOpacity(.3)),
+              ),
             ])),
-      ),
+      )),
       Positioned(
-        right: 20.0,
-        bottom: _fabHeight,
-        child: FloatingActionButton(
-          child: SvgPicture.asset("images/search-icon.svg",
-              width: 20.0,
-              height: 20.0,
-              color: fontContrast(color),
-              fit: BoxFit.contain),
-          onPressed: () {
-            onPush({'query': '', 'level': 'search'});
-          },
-          backgroundColor: color,
-        ),
-      ),
+          top: 0,
+          width: MediaQuery.of(context).size.width,
+          child: new TrotterAppBar(onPush: onPush, color: color)),
     ]);
   }
 
@@ -360,8 +341,6 @@ class HomeState extends State<Home> {
     var color = Color.fromRGBO(206, 132, 75, 1);
 
     return Container(
-      // decoration: BoxDecoration(
-      //     color: Colors.black, borderRadius: BorderRadius.circular(50)),
       height: MediaQuery.of(context).size.height,
       child: ListView(
         controller: _sc,
@@ -381,7 +360,7 @@ class HomeState extends State<Home> {
             alignment: Alignment.center,
             padding: EdgeInsets.only(top: 10, bottom: 20),
             child: Text(
-              'Explore Trotter',
+              'Explore',
               style: TextStyle(fontSize: 30),
             ),
           ),
@@ -424,27 +403,28 @@ class HomeState extends State<Home> {
                   return _buildItinerary(context, snapshot, color);
                 } else if (snapshot.hasData && snapshot.data.error != null) {
                   return Container(
+                      margin: EdgeInsets.only(bottom: 20),
                       child: Column(
-                    children: <Widget>[
-                      Container(
-                          margin: EdgeInsets.only(bottom: 20),
-                          child: Text(
-                            'Failed to get itineraries.',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.w300),
-                          )),
-                      RetryButton(
-                        color: color,
-                        width: 100,
-                        height: 50,
-                        onPressed: () {
-                          setState(() {
-                            dataItineraries = fetchHomeItineraries();
-                          });
-                        },
-                      )
-                    ],
-                  ));
+                        children: <Widget>[
+                          Container(
+                              margin: EdgeInsets.only(bottom: 20),
+                              child: Text(
+                                'Failed to get itineraries.',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.w300),
+                              )),
+                          RetryButton(
+                            color: color,
+                            width: 100,
+                            height: 50,
+                            onPressed: () {
+                              setState(() {
+                                dataItineraries = fetchHomeItineraries();
+                              });
+                            },
+                          )
+                        ],
+                      ));
                 }
                 return _buildItineraryLoading(context);
               })
@@ -479,7 +459,7 @@ class HomeState extends State<Home> {
           onRefresh: () => _refreshData(),
           child: Container(
               padding: EdgeInsets.only(top: 40.0),
-              decoration: BoxDecoration(color: Colors.white),
+              decoration: BoxDecoration(color: Colors.transparent),
               child: ListView(children: <Widget>[
                 Container(
                     //height: 175.0,

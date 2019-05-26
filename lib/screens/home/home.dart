@@ -104,6 +104,7 @@ class HomeState extends State<Home> {
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
+  bool loading = true;
 
   @override
   void initState() {
@@ -151,6 +152,7 @@ class HomeState extends State<Home> {
             {
               setState(() {
                 this.errorUi = true;
+                //this.loading = false;
               })
             }
           else
@@ -158,6 +160,7 @@ class HomeState extends State<Home> {
               {
                 setState(() {
                   this.errorUi = false;
+                  // this.loading = false;
                 })
               }
         });
@@ -190,7 +193,7 @@ class HomeState extends State<Home> {
                 future: data,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _buildLoadingBody(context);
+                    return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error == null) {
                     return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error != null) {
@@ -336,8 +339,8 @@ class HomeState extends State<Home> {
 
   // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var popularCities = snapshot.data.popularCities;
-    var popularIslands = snapshot.data.popularIslands;
+    var popularCities = snapshot.hasData ? snapshot.data.popularCities : [];
+    var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
     var color = Color.fromRGBO(206, 132, 75, 1);
 
     return Container(
@@ -364,36 +367,46 @@ class HomeState extends State<Home> {
               style: TextStyle(fontSize: 30),
             ),
           ),
-          TopList(
-              items: popularCities,
-              onPressed: (data) {
-                onPush({'id': data['id'], 'level': data['level']});
-              },
-              onLongPressed: (data) {
-                var currentUser =
-                    StoreProvider.of<AppState>(context).state.currentUser;
-                if (currentUser == null) {
-                  loginBottomSheet(context, data, color);
-                } else {
-                  bottomSheetModal(context, data['item']);
-                }
-              },
-              header: "Trending cities"),
-          TopList(
-              items: popularIslands,
-              onPressed: (data) {
-                onPush({'id': data['id'], 'level': data['level']});
-              },
-              onLongPressed: (data) {
-                var currentUser =
-                    StoreProvider.of<AppState>(context).state.currentUser;
-                if (currentUser == null) {
-                  loginBottomSheet(context, data, color);
-                } else {
-                  bottomSheetModal(context, data['item']);
-                }
-              },
-              header: "Explore the island life"),
+          snapshot.connectionState == ConnectionState.waiting
+              ? Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(bottom: 30.0),
+                  child: TopListLoading())
+              : TopList(
+                  items: popularCities,
+                  onPressed: (data) {
+                    onPush({'id': data['id'], 'level': data['level']});
+                  },
+                  onLongPressed: (data) {
+                    var currentUser =
+                        StoreProvider.of<AppState>(context).state.currentUser;
+                    if (currentUser == null) {
+                      loginBottomSheet(context, data, color);
+                    } else {
+                      bottomSheetModal(context, data['item']);
+                    }
+                  },
+                  header: "Trending cities"),
+          snapshot.connectionState == ConnectionState.waiting
+              ? Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(bottom: 30.0),
+                  child: TopListLoading())
+              : TopList(
+                  items: popularIslands,
+                  onPressed: (data) {
+                    onPush({'id': data['id'], 'level': data['level']});
+                  },
+                  onLongPressed: (data) {
+                    var currentUser =
+                        StoreProvider.of<AppState>(context).state.currentUser;
+                    if (currentUser == null) {
+                      loginBottomSheet(context, data, color);
+                    } else {
+                      bottomSheetModal(context, data['item']);
+                    }
+                  },
+                  header: "Explore the island life"),
           FutureBuilder(
               future: dataItineraries,
               builder: (context, snapshot) {
@@ -435,43 +448,15 @@ class HomeState extends State<Home> {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    return NestedScrollView(
-        controller: _sc,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              expandedHeight: 350.0,
-              floating: false,
-              pinned: true,
-              backgroundColor: Color.fromRGBO(240, 240, 240, 1),
-              automaticallyImplyLeading: false,
-              flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: ClipPath(
-                    clipper: BottomWaveClipper(),
-                    child: Container(color: Color.fromRGBO(240, 240, 240, 1))),
-              ),
-            ),
-          ];
-        },
-        body: RefreshIndicator(
-          onRefresh: () => _refreshData(),
-          child: Container(
-              padding: EdgeInsets.only(top: 40.0),
-              decoration: BoxDecoration(color: Colors.transparent),
-              child: ListView(children: <Widget>[
-                Container(
-                    //height: 175.0,
-                    width: double.infinity,
-                    margin: EdgeInsets.only(bottom: 30.0),
-                    child: TopListLoading()),
-                Container(
-                    //height: 175.0,
-                    width: double.infinity,
-                    margin: EdgeInsets.only(bottom: 30.0),
-                    child: TopListLoading()),
-              ])),
-        ));
+    return ListView(controller: _sc, children: <Widget>[
+      Container(
+          width: double.infinity,
+          margin: EdgeInsets.only(bottom: 30.0),
+          child: TopListLoading()),
+      Container(
+          width: double.infinity,
+          margin: EdgeInsets.only(bottom: 30.0),
+          child: TopListLoading()),
+    ]);
   }
 }

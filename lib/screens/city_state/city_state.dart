@@ -123,7 +123,7 @@ class CityState extends StatefulWidget {
   CityStateState createState() => new CityStateState(cityStateId:this.cityStateId, onPush:this.onPush);
 }
 
-class CityStateState extends State<CityState> with SingleTickerProviderStateMixin{
+class CityStateState extends State<CityState> with TickerProviderStateMixin{
   bool _showTitle = false;
   static String id;
   final String cityStateId;

@@ -207,7 +207,6 @@ class HomeState extends State<Home> {
                       },
                     );
                   }
-                  return _buildLoadingBody(context);
                 })),
         body: Container(
             height: _bodyHeight,

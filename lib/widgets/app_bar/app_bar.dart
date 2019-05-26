@@ -16,7 +16,7 @@ class TrotterAppBar extends StatelessWidget {
   final Color color;
   final Widget leading;
   final List<Widget> actions;
-  final Widget title;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,10 @@ class TrotterAppBar extends StatelessWidget {
               child: SvgPicture.asset("images/trotter-logo.svg",
                   width: 24.0, height: 24.0, fit: BoxFit.contain)),
       title: title != null
-          ? title
+          ? Text(
+              title,
+              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 30),
+            )
           : Text(
               'Trotter',
               style: TextStyle(fontWeight: FontWeight.w300, fontSize: 30),

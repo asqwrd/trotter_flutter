@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -121,6 +122,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   bool loading = true;
   String image;
   Color color = Colors.transparent;
+  String cityName;
 
   @override
   void initState() {
@@ -163,6 +165,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                 setState(() {
                   this.errorUi = false;
                   this.image = data.city['image'];
+                  this.cityName = data.city['name'];
                   this.color = Color(hexStringToHexInt(data.color));
                 })
               }
@@ -196,7 +199,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                 future: data,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _buildLoadingBody(context);
+                    return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error == null) {
                     return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error != null) {
@@ -208,7 +211,6 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                       },
                     );
                   }
-                  return _buildLoadingBody(context);
                 })),
         body: Container(
             height: _bodyHeight,
@@ -224,24 +226,37 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
                         )
-                      : Center(child: RefreshProgressIndicator())),
+                      : Container()),
               Positioned.fill(
                 top: 0,
                 left: 0,
                 child: Container(color: this.color.withOpacity(.3)),
               ),
+              this.image == null
+                  ? Positioned(
+                      child: Center(
+                          child: RefreshProgressIndicator(
+                      backgroundColor: Colors.white,
+                    )))
+                  : Container()
             ])),
       )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
-          child: new TrotterAppBar(onPush: onPush, color: color)),
+          child: new TrotterAppBar(
+            onPush: onPush,
+            color: color,
+            title: this.cityName,
+          )),
     ]);
   }
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var name = snapshot.data.city['name'];
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return _buildLoadingBody(ctxt);
+    }
     var city = snapshot.data.city;
     var descriptionShort = snapshot.data.city['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
@@ -263,34 +278,18 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
     ];
 
     return Container(
-        height: MediaQuery.of(context).size.height,
+        height: MediaQuery.of(ctxt).size.height,
         child: ListView(
           primary: false,
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           children: <Widget>[
-            Center(
-                child: Container(
-              width: 30,
-              height: 5,
-              decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.all(Radius.circular(12.0))),
-            )),
-            Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.only(top: 10, bottom: 20),
-              child: Text(
-                name,
-                style: TextStyle(fontSize: 30),
-              ),
-            ),
             Container(
                 color: Colors.transparent,
                 child: _renderTabBar(color, color, allTab)),
             Container(
                 width: MediaQuery.of(ctxt).size.width,
-                height: MediaQuery.of(ctxt).size.height - 250,
+                height: MediaQuery.of(ctxt).size.height - 180,
                 child: TabBarView(
                   controller: _tabController,
                   children: [
@@ -313,7 +312,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   _buildTabContent(List<Widget> widgets, String key) {
     return Container(
         width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
+        margin: EdgeInsets.only(top: 0.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.white),
         key: new PageStorageKey(key),
         child: ListView(
@@ -495,7 +494,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
       controller: _tabController,
       labelColor: mainColor,
       isScrollable: true,
-      unselectedLabelColor: fontContrast(fontColor).withOpacity(0.6),
+      unselectedLabelColor: Colors.black.withOpacity(0.6),
       indicator: BoxDecoration(
           border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
       tabs: tabs,
@@ -504,44 +503,104 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    return NestedScrollView(
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Colors.white,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: ClipPath(
-                  clipper: CurveClipper(),
-                  child: Container(
-                    color: Color.fromRGBO(240, 240, 240, 1),
-                  )),
-            ),
-          ),
-        ];
-      },
-      body: Container(
-          padding: EdgeInsets.only(top: 0.0),
-          decoration: BoxDecoration(color: Colors.white),
-          child: ListView(
-            children: <Widget>[
-              Container(
-                  height: 175.0,
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 30.0),
-                  child: TopListLoading()),
-              Container(
-                  height: 175.0,
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 30.0),
-                  child: TopListLoading()),
-            ],
-          )),
+    return Container(
+      padding: EdgeInsets.only(top: 0.0),
+      decoration: BoxDecoration(color: Colors.transparent),
+      child: ListView(
+        controller: _sc,
+        physics: disableScroll
+            ? NeverScrollableScrollPhysics()
+            : ClampingScrollPhysics(),
+        children: <Widget>[
+          Shimmer.fromColors(
+              baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+              highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+              child: Row(
+                children: <Widget>[
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
+                      child: Container(
+                        // A fixed-height child.
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(240, 240, 240, 0.8),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
+                        height: 20.0,
+                      )),
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
+                      child: Container(
+                        // A fixed-height child.
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(240, 240, 240, 0.8),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
+                        height: 20.0,
+                      )),
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
+                      child: Container(
+                        // A fixed-height child.
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(240, 240, 240, 0.8),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
+                        height: 20.0,
+                      )),
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
+                      child: Container(
+                        // A fixed-height child.
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(240, 240, 240, 0.8),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
+                        height: 20.0,
+                      )),
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 10.0),
+                      child: Container(
+                        // A fixed-height child.
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(240, 240, 240, 0.8),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
+                        height: 20.0,
+                      )),
+                ],
+              )),
+          Container(
+              height: 175.0,
+              width: double.infinity,
+              margin: EdgeInsets.only(bottom: 30.0),
+              child: TopListLoading()),
+          Container(
+              height: 175.0,
+              width: double.infinity,
+              margin: EdgeInsets.only(bottom: 30.0),
+              child: TopListLoading()),
+          Container(
+              height: 175.0,
+              width: double.infinity,
+              margin: EdgeInsets.only(bottom: 30.0),
+              child: TopListLoading()),
+        ],
+      ),
     );
   }
 }

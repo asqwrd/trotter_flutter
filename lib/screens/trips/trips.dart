@@ -178,10 +178,7 @@ class TripsState extends State<Trips> {
           child: new TrotterAppBar(
             onPush: onPush,
             color: color,
-            title: Text(
-              'Trips',
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 30),
-            ),
+            title: 'Trips',
           )),
     ]);
   }

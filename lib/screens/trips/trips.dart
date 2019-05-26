@@ -195,7 +195,6 @@ class TripsState extends State<Trips> {
     var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
     var loading = StoreProvider.of<AppState>(context).state.tripLoading;
     var store = StoreProvider.of<AppState>(context);
-    if (loading == true) return _buildLoadingBody(context, viewModel);
 
     if (error != null && offline == false) {
       return ErrorContainer(
@@ -209,22 +208,38 @@ class TripsState extends State<Trips> {
 
     if (currentUser == null) {
       return Scaffold(
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            brightness: Brightness.light,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              fillColor: color.withOpacity(0.3),
-              onPressed: () {
-                onPush({'query': '', 'level': 'search'});
-              },
-            ),
-          ),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(20),
+                child: Column(
+                  children: <Widget>[
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10, bottom: 20),
+                      child: Text(
+                        'Plan',
+                        style: TextStyle(fontSize: 30),
+                      ),
+                    )
+                  ],
+                ),
+              )),
           body: Stack(children: <Widget>[
             Center(
                 child: Container(
-                    color: Colors.white,
+                    color: Colors.transparent,
                     padding: EdgeInsets.symmetric(horizontal: 30),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -265,18 +280,34 @@ class TripsState extends State<Trips> {
 
     if (trips.length == 0) {
       return Scaffold(
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            brightness: Brightness.light,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              fillColor: color.withOpacity(0.3),
-              onPressed: () {
-                onPush({'query': '', 'level': 'search'});
-              },
-            ),
-          ),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(20),
+                child: Column(
+                  children: <Widget>[
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10, bottom: 20),
+                      child: Text(
+                        'Plan',
+                        style: TextStyle(fontSize: 30),
+                      ),
+                    )
+                  ],
+                ),
+              )),
           body: Stack(children: <Widget>[
             Center(
                 child: Container(
@@ -313,6 +344,7 @@ class TripsState extends State<Trips> {
     }
 
     var tripBuilder = ['', '', ...trips];
+    if (loading == true) return Center(child: RefreshProgressIndicator());
 
     return Container(
         height: MediaQuery.of(context).size.height,

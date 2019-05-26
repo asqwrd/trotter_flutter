@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -7,8 +6,6 @@ import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
@@ -107,7 +104,7 @@ class City extends StatefulWidget {
       new CitiesState(cityId: this.cityId, onPush: this.onPush);
 }
 
-class CitiesState extends State<City> with SingleTickerProviderStateMixin {
+class CitiesState extends State<City> with TickerProviderStateMixin {
   bool _showTitle = false;
   static String id;
   final String cityId;
@@ -276,6 +273,17 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
       {'items': shop, 'header': 'Shop'},
       {'items': nightlife, 'header': 'Nightlife'},
     ];
+    var tabContents = <Widget>[
+      _buildTabContent(
+          _buildAllTab(allTab, descriptionShort, color, city), 'All'),
+    ];
+    for (var tab in allTab) {
+      if (tab['items'].length > 0) {
+        tabContents.add(
+          _buildListView(tab['items'], tab['header'], color, city),
+        );
+      }
+    }
 
     return Container(
         height: MediaQuery.of(ctxt).size.height,
@@ -291,20 +299,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                 width: MediaQuery.of(ctxt).size.width,
                 height: MediaQuery.of(ctxt).size.height - 180,
                 child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildTabContent(
-                        _buildAllTab(allTab, descriptionShort, color, city),
-                        'All'),
-                    _buildListView(discover, 'Discover', color, city),
-                    _buildListView(see, 'See', color, city),
-                    _buildListView(eat, 'Eat', color, city),
-                    _buildListView(relax, 'Relax', color, city),
-                    _buildListView(play, 'Play', color, city),
-                    _buildListView(shop, 'Shop', color, city),
-                    _buildListView(nightlife, 'NightLife', color, city),
-                  ],
-                ))
+                    controller: _tabController, children: tabContents))
           ],
         ));
   }
@@ -490,6 +485,8 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
       }
     }
 
+    _tabController = TabController(vsync: this, length: tabs.length);
+
     return TabBar(
       controller: _tabController,
       labelColor: mainColor,
@@ -503,6 +500,24 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
+    var children2 = <Widget>[
+      TabBarLoading(),
+      Container(
+          height: 175.0,
+          width: double.infinity,
+          margin: EdgeInsets.only(bottom: 30.0),
+          child: TopListLoading()),
+      Container(
+          height: 175.0,
+          width: double.infinity,
+          margin: EdgeInsets.only(bottom: 30.0),
+          child: TopListLoading()),
+      Container(
+          height: 175.0,
+          width: double.infinity,
+          margin: EdgeInsets.only(bottom: 30.0),
+          child: TopListLoading()),
+    ];
     return Container(
       padding: EdgeInsets.only(top: 0.0),
       decoration: BoxDecoration(color: Colors.transparent),
@@ -511,95 +526,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
         physics: disableScroll
             ? NeverScrollableScrollPhysics()
             : ClampingScrollPhysics(),
-        children: <Widget>[
-          Shimmer.fromColors(
-              baseColor: Color.fromRGBO(220, 220, 220, 0.8),
-              highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
-              child: Row(
-                children: <Widget>[
-                  Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      child: Container(
-                        // A fixed-height child.
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(240, 240, 240, 0.8),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
-                        height: 20.0,
-                      )),
-                  Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      child: Container(
-                        // A fixed-height child.
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(240, 240, 240, 0.8),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
-                        height: 20.0,
-                      )),
-                  Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      child: Container(
-                        // A fixed-height child.
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(240, 240, 240, 0.8),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
-                        height: 20.0,
-                      )),
-                  Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      child: Container(
-                        // A fixed-height child.
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(240, 240, 240, 0.8),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
-                        height: 20.0,
-                      )),
-                  Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 10.0),
-                      child: Container(
-                        // A fixed-height child.
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(240, 240, 240, 0.8),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        width: (MediaQuery.of(ctxt).size.width / 5) - 40,
-                        height: 20.0,
-                      )),
-                ],
-              )),
-          Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()),
-          Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()),
-          Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()),
-        ],
+        children: children2,
       ),
     );
   }

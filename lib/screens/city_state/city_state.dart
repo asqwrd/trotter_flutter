@@ -414,7 +414,12 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
         margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.white),
         key: new PageStorageKey(key),
-        child: ListView(children: widgets));
+        child: ListView(
+            controller: _sc,
+            physics: disableScroll
+                ? NeverScrollableScrollPhysics()
+                : ClampingScrollPhysics(),
+            children: widgets));
   }
 
   _buildAllTab(List<dynamic> sections, AsyncSnapshot snapshot, Color color,

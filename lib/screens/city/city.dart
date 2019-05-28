@@ -104,14 +104,11 @@ class City extends StatefulWidget {
       new CitiesState(cityId: this.cityId, onPush: this.onPush);
 }
 
-class CitiesState extends State<City> with TickerProviderStateMixin {
-  bool _showTitle = false;
+class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   static String id;
   final String cityId;
   Future<CityData> data;
-  TabController _tabController;
   final ValueChanged<dynamic> onPush;
-  var kExpandedHeight = 200;
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -131,7 +128,6 @@ class CitiesState extends State<City> with TickerProviderStateMixin {
       });
     });
     super.initState();
-    _tabController = TabController(vsync: this, length: 8);
     data = fetchCity(this.cityId);
   }
 
@@ -140,7 +136,6 @@ class CitiesState extends State<City> with TickerProviderStateMixin {
   @override
   void dispose() {
     _sc.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -287,21 +282,22 @@ class CitiesState extends State<City> with TickerProviderStateMixin {
 
     return Container(
         height: MediaQuery.of(ctxt).size.height,
-        child: ListView(
-          primary: false,
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          children: <Widget>[
-            Container(
-                color: Colors.transparent,
-                child: _renderTabBar(color, color, allTab)),
-            Container(
-                width: MediaQuery.of(ctxt).size.width,
-                height: MediaQuery.of(ctxt).size.height - 180,
-                child: TabBarView(
-                    controller: _tabController, children: tabContents))
-          ],
-        ));
+        child: DefaultTabController(
+            length: tabContents.length,
+            child: ListView(
+              primary: false,
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              children: <Widget>[
+                Container(
+                    color: Colors.transparent,
+                    child: _renderTabBar(color, color, allTab)),
+                Container(
+                    width: MediaQuery.of(ctxt).size.width,
+                    height: MediaQuery.of(ctxt).size.height - 180,
+                    child: TabBarView(children: tabContents))
+              ],
+            )));
   }
 
   _buildTabContent(List<Widget> widgets, String key) {
@@ -485,10 +481,7 @@ class CitiesState extends State<City> with TickerProviderStateMixin {
       }
     }
 
-    _tabController = TabController(vsync: this, length: tabs.length);
-
     return TabBar(
-      controller: _tabController,
       labelColor: mainColor,
       isScrollable: true,
       unselectedLabelColor: Colors.black.withOpacity(0.6),

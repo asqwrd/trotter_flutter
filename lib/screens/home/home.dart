@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
@@ -19,10 +20,10 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-Future<HomeData> fetchHome() async {
+Future<HomeData> fetchHome([bool refresh]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
-  if (cacheData != null) {
+  if (cacheData != null && refresh != true) {
     // If server returns an OK response, parse the JSON
     var homeData = json.decode(cacheData);
     return HomeData.fromJson(homeData);
@@ -105,7 +106,7 @@ class HomeState extends State<Home> {
   bool disableScroll = true;
   bool errorUi = false;
   bool loading = true;
-
+  final Color color = Color.fromRGBO(216, 167, 177, 1);
   @override
   void initState() {
     _sc.addListener(() {
@@ -134,7 +135,8 @@ class HomeState extends State<Home> {
     await new Future.delayed(new Duration(seconds: 2));
 
     setState(() {
-      data = fetchHome();
+      loading = true;
+      data = fetchHome(true);
       dataItineraries = fetchHomeItineraries();
     });
 
@@ -143,7 +145,6 @@ class HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    var color = Color.fromRGBO(206, 132, 75, 1);
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
@@ -198,7 +199,7 @@ class HomeState extends State<Home> {
                     return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error != null) {
                     return ErrorContainer(
-                      color: Color.fromRGBO(206, 132, 75, 1),
+                      color: color,
                       onRetry: () {
                         setState(() {
                           data = fetchHome();
@@ -231,7 +232,28 @@ class HomeState extends State<Home> {
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
-          child: new TrotterAppBar(onPush: onPush, color: color)),
+          child: new TrotterAppBar(
+            onPush: onPush,
+            color: color,
+            actions: <Widget>[
+              Container(
+                  width: 58,
+                  height: 58,
+                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () {
+                      this._refreshData();
+                    },
+                    child: SvgPicture.asset("images/refresh_icon.svg",
+                        width: 24.0,
+                        height: 24.0,
+                        color: Colors.white,
+                        fit: BoxFit.contain),
+                  ))
+            ],
+          )),
     ]);
   }
 
@@ -340,7 +362,6 @@ class HomeState extends State<Home> {
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     var popularCities = snapshot.hasData ? snapshot.data.popularCities : [];
     var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
-    var color = Color.fromRGBO(206, 132, 75, 1);
 
     return Container(
       height: MediaQuery.of(context).size.height,

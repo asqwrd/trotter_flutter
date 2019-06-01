@@ -52,7 +52,7 @@ class TrotterAppBar extends StatelessWidget {
         Container(
             width: 58,
             height: 58,
-            margin: EdgeInsets.symmetric(horizontal: 10),
+            margin: EdgeInsets.symmetric(horizontal: 0),
             child: FlatButton(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100)),

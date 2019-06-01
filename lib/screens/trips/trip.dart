@@ -5,6 +5,8 @@ import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:redux/redux.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -741,33 +743,39 @@ class TripState extends State<Trip> {
   bool _showTitle = false;
   final ValueChanged<dynamic> onPush;
   final String tripId;
-  GoogleMapController mapController;
   Color color = Colors.blueGrey;
   bool loading = false;
   List<dynamic> destinations;
   dynamic trip;
+  final ScrollController _sc = ScrollController();
+  PanelController _pc = new PanelController();
+  bool disableScroll = true;
+  bool errorUi = false;
+  String image;
+  String tripName;
+
   
   Future<TripData> data;
-  final ScrollController _scrollController = ScrollController();
-  var kExpandedHeight = 280;
 
 
    
 
   @override
   void initState() {
-     _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+      _sc.addListener(() {
+      setState(() {
+        if (_pc.isPanelOpen()) {
+          disableScroll = _sc.offset <= 0;
+        }
+      });
+    });
     super.initState();
     
   }
 
   @override
   void dispose(){
-    _scrollController.dispose();
+    _sc.dispose();
     super.dispose();
   }
 
@@ -844,22 +852,51 @@ class TripState extends State<Trip> {
 
   @override
   Widget build(BuildContext context) {
-
-    return StoreConnector <AppState, Store<AppState>>(
+     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    double _bodyHeight = MediaQuery.of(context).size.height - 110;
+    double _panelHeightClosed = 100.0;
+    return Stack(alignment: Alignment.topCenter, children: <Widget>[
+      Positioned(
+          child: SlidingUpPanel(
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
+        controller: _pc,
+        backdropEnabled: true,
+        backdropColor: color,
+        backdropTapClosesPanel: false,
+        backdropOpacity: .8,
+        onPanelOpened: () {
+          setState(() {
+            disableScroll = false;
+          });
+        },
+        onPanelClosed: () {
+          setState(() {
+            disableScroll = true;
+          });
+        },
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+        maxHeight: _panelHeightOpen,
+        panel: Center(
+            child: StoreConnector <AppState, Store<AppState>>(
       converter: (store) => store,
       onInit: (store) async {
         if(store.state.currentUser != null){
           data = fetchTrip(store, this.tripId);
-          // data.then((data){
-          //   this.color = Color(hexStringToHexInt(data.trip['color']));
-          //   this.destinations = data.destinations;
-          //   this.trip = data.trip;
-          //   this.trip['destinations'] = this.destinations;
-          // });
+          data.then((data){
+            this.color = Color(hexStringToHexInt(data.trip['color']));
+            this.destinations = data.destinations;
+            this.trip = data.trip;
+            this.trip['destinations'] = this.destinations;
+            this.tripName = data.trip['name'];
+          });
         }
       },
       builder: (context, store){
         return Scaffold(
+          backgroundColor: Colors.transparent,
           floatingActionButton: !store.state.offline ? FloatingActionButton(
             backgroundColor: this.color,
             onPressed: () { 
@@ -876,9 +913,7 @@ class TripState extends State<Trip> {
           body: FutureBuilder(
             future: data,
             builder: (context, snapshot) {
-              if(snapshot.connectionState == ConnectionState.waiting){
-                return _buildLoadingBody(context);
-              } else if(snapshot.hasData && snapshot.data.error == null){
+               if(snapshot.hasData && snapshot.data.error == null){
                 return _buildLoadedBody(context,snapshot);
               } else if(snapshot.hasData && snapshot.data.error != null){
                 return ErrorContainer(
@@ -895,71 +930,11 @@ class TripState extends State<Trip> {
           )
         );
       }
-    );
-  }
-  
-
-// function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-
-    this.trip = snapshot.data.trip;
-    var name = snapshot.data.trip['name'];
-    //this.name = name;
-    this.destinations = snapshot.data.destinations;
-    this.trip['destinations'] = this.destinations;
-    var destTable = new Collection<dynamic>(destinations);
-    var result2 = destTable.groupBy<dynamic>((destination) => destination['country_id']);
-    this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
-    var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
-    var fields = [
-      {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},
-    ];
- 
-    for (var group in result2.asIterable()) {
-      var key = group.key;
-      for (var destination in group.asIterable()) {
-        fields.addAll([
-          {"label":"Itinerary for ${destination['destination_name']}", "icon": Icon(Icons.map, color: iconColor), "level":"itinerary/edit", "destination": destination},
-          {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
-        ]);
-      }
-      if(group.asIterable().first['level'] != 'city_state'){
-        fields.add(
-          {"label":"Must knows about ${group.asIterable().first['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": key.toString(), "level":"country"}
-        );
-      }
-    }
-  
-    return NestedScrollView(
-      controller: _scrollController,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: this._showTitle ? color : Colors.white,
-            automaticallyImplyLeading: false,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              leading: IconButton(
-                padding: EdgeInsets.all(0),
-                icon:  Icon(Icons.arrow_back),
-                onPressed: () {  Navigator.pop(context);},
-                iconSize: 30,
-                color: Colors.white,
-              ),
-              onPressed: (){
-                onPush({'query':'', 'level':'search'});
-              },
-                  
-            ),
-            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
-            flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: Stack(children: <Widget>[
-                  Positioned.fill(
+    )),
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+               this.destinations == null ? Container() : Positioned.fill(
                     top: 0,
                     child: new Swiper(
                       itemBuilder: (BuildContext context,int index){
@@ -976,7 +951,7 @@ class TripState extends State<Trip> {
                                   valueColor: new AlwaysStoppedAnimation<Color>(color),
                                 )
                               )),
-                              imageUrl: destinations[index]['image'],
+                              imageUrl: this.destinations[index]['image'],
                               fit: BoxFit.cover,
                             ),
                             Container(
@@ -984,20 +959,14 @@ class TripState extends State<Trip> {
                             ),
                             Positioned(
                               left: 0,
-                              top: 180,
+                              top: (MediaQuery.of(context).size.height/2) - 110,
                               width: MediaQuery.of(context).size.width,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children:<Widget>[
-                                   Text(name,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 30,
-                                      fontWeight: FontWeight.w300
-                                    )
-                                  ),
-                                  Text('${destinations[index]['destination_name']}, ${destinations[index]['country_name']}',
+                  
+                                  Text('${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name']}',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 30,
@@ -1042,83 +1011,133 @@ class TripState extends State<Trip> {
                       ),
                     ),
                   ),
-                  
-                ]
-              )
+              this.destinations == null
+                  ? Positioned(
+                      child: Center(
+                          child: RefreshProgressIndicator(
+                      backgroundColor: Colors.white,
+                    )))
+                  : Container()
+            ])),
+      )),
+      Positioned(
+          top: 0,
+          width: MediaQuery.of(context).size.width,
+          child: new TrotterAppBar(
+              onPush: onPush, color: color, title: this.tripName, back: true)),
+    ]);
+  }
+  
+
+// function for rendering view after data is loaded
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+
+    this.trip = snapshot.data.trip;
+    this.destinations = snapshot.data.destinations;
+    this.trip['destinations'] = this.destinations;
+    var destTable = new Collection<dynamic>(destinations);
+    var result2 = destTable.groupBy<dynamic>((destination) => destination['country_id']);
+    this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
+    var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
+    var fields = [
+      {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},
+    ];
+ 
+    for (var group in result2.asIterable()) {
+      var key = group.key;
+      for (var destination in group.asIterable()) {
+        fields.addAll([
+          {"label":"Itinerary for ${destination['destination_name']}", "icon": Icon(Icons.map, color: iconColor), "level":"itinerary/edit", "destination": destination},
+          {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
+        ]);
+      }
+      if(group.asIterable().first['level'] != 'city_state'){
+        fields.add(
+          {"label":"Must knows about ${group.asIterable().first['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": key.toString(), "level":"country"}
+        );
+      }
+    }
+  
+    return Container(
+      height: MediaQuery.of(ctxt).size.height, 
+      child: ListView(
+         controller: _sc,
+            physics: disableScroll
+                ? NeverScrollableScrollPhysics()
+                : ClampingScrollPhysics(),
+      children: <Widget>[
+        Center(
+                child: Container(
+              width: 30,
+              height: 5,
+              decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.all(Radius.circular(12.0))),
+            )),
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 10, bottom: 20),
+              child: Text(
+                'Get Organized',
+                style: TextStyle(fontSize: 30),
+              ),
             ),
-          ),
-        ];
-      },
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          ListView(
-            children: <Widget>[
-              ListView.separated(
-                shrinkWrap: true,
-                primary: false,
-                padding: EdgeInsets.all(0),
-                itemCount: fields.length,
-                separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                itemBuilder: (BuildContext context, int index){
-                  return ListTile(
-                    onTap: () async {
-                      dynamic destination = fields[index]['destination'];
-                      if(fields[index]['id'] != null){
-                        onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
-                      } else if(destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary/edit'){
-                        var store =  StoreProvider.of<AppState>(context);
-                        dynamic data = {
-                          "itinerary":{
-                            "name": trip['name'],
-                            "destination": destination['destination_id'],
-                            "destination_name": destination['destination_name'],
-                            "destination_country_name": destination['country_name'],
-                            "destination_country": destination['country_id'],
-                            "location": destination['location'],
-                            "start_date": destination['start_date'],
-                            "end_date": destination['end_date'],
-                            "trip_id": trip['id']
-                          },
-                          "trip_destination_id": destination['id']
-                          
-                        };
-                        setState(() {
-                          this.loading = true;                     
-                        });
-                        var response = await postCreateItinerary(store, data);
-                        setState(() {
-                          this.loading = false;   
-                          destination['itinerary_id'] = response.id;                  
-                        });
-                        onPush({'id': response.id, 'level': fields[index]['level'].toString()});
-                      } else if(!destination['itinerary_id'].isEmpty){
-                        onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
-                      }
+        ListView.separated(
+          shrinkWrap: true,
+          primary: false,
+          padding: EdgeInsets.all(0),
+          itemCount: fields.length,
+          separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+          itemBuilder: (BuildContext context, int index){
+            return ListTile(
+              onTap: () async {
+                dynamic destination = fields[index]['destination'];
+                if(fields[index]['id'] != null){
+                  onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
+                } else if(destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary/edit'){
+                  var store =  StoreProvider.of<AppState>(context);
+                  dynamic data = {
+                    "itinerary":{
+                      "name": trip['name'],
+                      "destination": destination['destination_id'],
+                      "destination_name": destination['destination_name'],
+                      "destination_country_name": destination['country_name'],
+                      "destination_country": destination['country_id'],
+                      "location": destination['location'],
+                      "start_date": destination['start_date'],
+                      "end_date": destination['end_date'],
+                      "trip_id": trip['id']
                     },
-                    trailing: fields[index]['icon'],
-                    title: Text(
-                      fields[index]['label'],
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.w300
-                      ),
-                    ),
-                        
-                  );
+                    "trip_destination_id": destination['id']
+                    
+                  };
+                  setState(() {
+                    this.loading = true;                     
+                  });
+                  var response = await postCreateItinerary(store, data);
+                  setState(() {
+                    this.loading = false;   
+                    destination['itinerary_id'] = response.id;                  
+                  });
+                  onPush({'id': response.id, 'level': fields[index]['level'].toString()});
+                } else if(!destination['itinerary_id'].isEmpty){
+                  onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
                 }
-              )
-            ]
-          ),
-          this.loading ? Align(
-            alignment: Alignment.center,
-            child: CircularProgressIndicator(
-              valueColor: new AlwaysStoppedAnimation<Color>(color)
-            ),
-          ) : Container()
-        ],
-      )
-    );
+              },
+              trailing: fields[index]['icon'],
+              title: Text(
+                fields[index]['label'],
+                style: TextStyle(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w300
+                ),
+              ),
+                  
+            );
+          }
+        )
+      ]
+    ));
   }
 
   showDestinationsModal(BuildContext context, dynamic destinations, Color color) {
@@ -1146,32 +1165,29 @@ class TripState extends State<Trip> {
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
 
-    return NestedScrollView(
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Colors.white,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: Container(
-                  color: Color.fromRGBO(240, 240, 240, 1)
-                ),
-            ),
-          ),
-        ];
-      },
-      body: Container(
-        padding: EdgeInsets.only(top: 40.0),
-        decoration: BoxDecoration(color: Colors.white),
+    return Container(
+        padding: EdgeInsets.only(top: 0.0),
+        decoration: BoxDecoration(color: Colors.transparent),
         child: ListView(
-          primary: false,
+          controller: _sc,
+            physics:  NeverScrollableScrollPhysics(),
           children: <Widget>[
-            
+             Center(
+                child: Container(
+              width: 30,
+              height: 5,
+              decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.all(Radius.circular(12.0))),
+            )),
+            Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.only(top: 10, bottom: 20),
+              child: Text(
+                'Get Organized',
+                style: TextStyle(fontSize: 30),
+              ),
+            ),
             ListView.separated(
               shrinkWrap: true,
               primary: false,
@@ -1215,7 +1231,6 @@ class TripState extends State<Trip> {
             )
           ]
         ) 
-      ),
     );
   }
 }

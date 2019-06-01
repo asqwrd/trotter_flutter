@@ -78,6 +78,7 @@ flutter:
   - images/google-logo.png
   - images/logo_nw.png
   - images/trotter-logo.svg
+  - images/refresh_icon.svg
   - images/edit-icon.svg
   - images/delete-icon.svg
   - images/logo_nw_black.png

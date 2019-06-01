@@ -62,7 +62,7 @@ class TabHelper {
   static Color color(TabItem tabItem) {
     switch (tabItem) {
       case TabItem.explore:
-        return Color.fromRGBO(206, 132, 75, 1);
+        return Color.fromRGBO(216, 167, 177, 1);
       case TabItem.trips:
         return Color.fromRGBO(234, 189, 149, 1);
       //return Color.fromRGBO(1, 155, 174, 1);

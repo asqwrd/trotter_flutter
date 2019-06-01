@@ -179,6 +179,28 @@ class TripsState extends State<Trips> {
             onPush: onPush,
             color: color,
             title: 'Trips',
+            actions: <Widget>[
+              Container(
+                  width: 58,
+                  height: 58,
+                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () async {
+                      StoreProvider.of<AppState>(context)
+                          .dispatch(new SetTripsLoadingAction(true));
+                      await fetchTrips(StoreProvider.of<AppState>(context));
+                      StoreProvider.of<AppState>(context)
+                          .dispatch(SetTripsLoadingAction(false));
+                    },
+                    child: SvgPicture.asset("images/refresh_icon.svg",
+                        width: 24.0,
+                        height: 24.0,
+                        color: Colors.white,
+                        fit: BoxFit.contain),
+                  ))
+            ],
           )),
     ]);
   }
@@ -226,7 +248,7 @@ class TripsState extends State<Trips> {
                       alignment: Alignment.center,
                       padding: EdgeInsets.only(top: 10, bottom: 20),
                       child: Text(
-                        'Plan',
+                        'Get Started',
                         style: TextStyle(fontSize: 30),
                       ),
                     )
@@ -298,7 +320,7 @@ class TripsState extends State<Trips> {
                       alignment: Alignment.center,
                       padding: EdgeInsets.only(top: 10, bottom: 20),
                       child: Text(
-                        'Plan',
+                        'Get started',
                         style: TextStyle(fontSize: 30),
                       ),
                     )
@@ -341,7 +363,26 @@ class TripsState extends State<Trips> {
     }
 
     var tripBuilder = ['', '', ...trips];
-    if (loading == true) return Center(child: RefreshProgressIndicator());
+    if (loading == true)
+      return ListView(children: <Widget>[
+        Center(
+            child: Container(
+          width: 30,
+          height: 5,
+          decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.all(Radius.circular(12.0))),
+        )),
+        Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(top: 10, bottom: 20),
+          child: Text(
+            'Getting trips',
+            style: TextStyle(fontSize: 30),
+          ),
+        ),
+        Center(child: RefreshProgressIndicator())
+      ]);
 
     return Container(
         height: MediaQuery.of(context).size.height,
@@ -368,7 +409,7 @@ class TripsState extends State<Trips> {
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(top: 10, bottom: 20),
                 child: Text(
-                  'Plan',
+                  'Where are you going?',
                   style: TextStyle(fontSize: 30),
                 ),
               );
@@ -632,48 +673,6 @@ class TripsState extends State<Trips> {
         padding: EdgeInsets.symmetric(horizontal: 60),
         child: Column(
           children: widgets,
-        ));
-  }
-
-  // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt, TripViewModel viewModel) {
-    return NestedScrollView(
-        //controller: _scrollControllerTrips,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              expandedHeight: 350,
-              floating: false,
-              pinned: true,
-              backgroundColor: Color.fromRGBO(194, 121, 73, 1),
-              automaticallyImplyLeading: false,
-              flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: Container(color: Color.fromRGBO(240, 240, 240, 1)),
-              ),
-            ),
-          ];
-        },
-        body: RefreshIndicator(
-          onRefresh: () => viewModel.onGetTrips(),
-          child: Container(
-              padding: EdgeInsets.only(top: 40.0),
-              decoration: BoxDecoration(color: Colors.white),
-              child: ListView(
-                children: <Widget>[
-                  Container(
-                      height: 175.0,
-                      width: double.infinity,
-                      margin: EdgeInsets.only(bottom: 30.0),
-                      child: TopListLoading()),
-                  Container(
-                      height: 175.0,
-                      width: double.infinity,
-                      margin: EdgeInsets.only(bottom: 30.0),
-                      child: TopListLoading()),
-                ],
-              )),
         ));
   }
 }

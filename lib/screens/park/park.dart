@@ -180,11 +180,20 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                   top: 0,
                   left: 0,
                   child: this.image != null
-                      ? Image.network(
-                          this.image,
+                      ? CachedNetworkImage(
+                          imageUrl: this.image,
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
-                        )
+                          placeholder: (context, url) => SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: Align(
+                                  alignment: Alignment.center,
+                                  child: CircularProgressIndicator(
+                                    valueColor:
+                                        new AlwaysStoppedAnimation<Color>(
+                                            Colors.blueAccent),
+                                  ))))
                       : Container()),
               Positioned.fill(
                 top: 0,
@@ -204,10 +213,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-            onPush: onPush,
-            color: color,
-            title: this.parkName,
-          )),
+              onPush: onPush, color: color, title: this.parkName, back: true)),
     ]);
   }
 

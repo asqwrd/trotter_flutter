@@ -444,18 +444,4 @@ class HomeState extends State<Home> {
       ),
     );
   }
-
-  // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
-    return ListView(controller: _sc, children: <Widget>[
-      Container(
-          width: double.infinity,
-          margin: EdgeInsets.only(bottom: 30.0),
-          child: TopListLoading()),
-      Container(
-          width: double.infinity,
-          margin: EdgeInsets.only(bottom: 30.0),
-          child: TopListLoading()),
-    ]);
-  }
 }

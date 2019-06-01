@@ -7,8 +7,6 @@ import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/redux/index.dart';
@@ -216,11 +214,20 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
                   top: 0,
                   left: 0,
                   child: this.image != null
-                      ? Image.network(
-                          this.image,
+                      ? CachedNetworkImage(
+                          imageUrl: this.image,
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
-                        )
+                          placeholder: (context, url) => SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: Align(
+                                  alignment: Alignment.center,
+                                  child: CircularProgressIndicator(
+                                    valueColor:
+                                        new AlwaysStoppedAnimation<Color>(
+                                            Colors.blueAccent),
+                                  ))))
                       : Container()),
               Positioned.fill(
                 top: 0,

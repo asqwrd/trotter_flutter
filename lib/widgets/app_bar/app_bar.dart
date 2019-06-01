@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:trotter_flutter/utils/index.dart';
 
 class TrotterAppBar extends StatelessWidget {
   const TrotterAppBar({
     Key key,
     @required this.onPush,
     @required this.color,
-    this.leading,
+    this.back,
     this.actions = const <Widget>[],
     this.title,
   }) : super(key: key);
 
   final onPush;
   final Color color;
-  final Widget leading;
+  final bool back;
   final List<Widget> actions;
   final String title;
 
@@ -25,8 +24,16 @@ class TrotterAppBar extends StatelessWidget {
       elevation: 0,
       backgroundColor: Colors.transparent,
       centerTitle: true,
-      leading: leading != null
-          ? leading
+      leading: back == true
+          ? IconButton(
+              padding: EdgeInsets.all(0),
+              icon: Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              iconSize: 30,
+              color: Colors.white,
+            )
           : Container(
               padding: EdgeInsets.symmetric(horizontal: 14),
               child: SvgPicture.asset("images/trotter-logo.svg",

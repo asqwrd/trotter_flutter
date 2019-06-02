@@ -78,7 +78,8 @@ Future<ItineraryData> fetchItinerary(Store<AppState> store, String id) async {
   }
 }
 
-Future<ItineraryData> fetchSelectedItinerary(Store<AppState> store, String id) async {
+Future<ItineraryData> fetchSelectedItinerary(
+    Store<AppState> store, String id) async {
   try {
     final response = await http.get(
         'http://localhost:3002/api/itineraries/get/$id',
@@ -102,14 +103,13 @@ Future<ItineraryData> fetchSelectedItinerary(Store<AppState> store, String id) a
       ));
       return ItineraryData(error: 'Response> $msg');
     }
-  } catch(error){
+  } catch (error) {
     store.dispatch(new ErrorAction('Server is down', 'itinerary'));
     store.dispatch(new OfflineAction(
       true,
     ));
     return ItineraryData(error: 'Server is down');
   }
-  
 }
 
 Future<ItineraryData> fetchItineraryBuilder(
@@ -129,6 +129,9 @@ Future<ItineraryData> fetchItineraryBuilder(
         results.color,
       ));
       store.dispatch(new ErrorAction(null, page));
+      store.dispatch(new OfflineAction(
+        false,
+      ));
       return results;
     } else {
       // If that response was not OK, throw an error.
@@ -177,12 +180,14 @@ Future<DayData> fetchDay(String itineraryId, String dayId) async {
   }
 }
 
-Future<DayData> addToDay(Store<AppState> store, String itineraryId, String dayId, String destinationId, dynamic data,[bool optimize]) async {
+Future<DayData> addToDay(Store<AppState> store, String itineraryId,
+    String dayId, String destinationId, dynamic data,
+    [bool optimize]) async {
   try {
     final response = await http.post(
-      'http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId?optimize=$optimize',
-      body: json.encode(data),
-      headers: {'Authorization': 'security'});
+        'http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId?optimize=$optimize',
+        body: json.encode(data),
+        headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var res = DayData.fromJson(json.decode(response.body));
@@ -206,34 +211,32 @@ Future<DayData> addToDay(Store<AppState> store, String itineraryId, String dayId
       ));
       return DayData(success: false);
     }
-  } catch(error){
+  } catch (error) {
     store.dispatch(new ErrorAction('Server is down', 'add_day'));
     store.dispatch(new OfflineAction(
       true,
     ));
     return DayData(success: false);
   }
-  
 }
 
-Future<DeleteItemData> deleteFromDay(String itineraryId, String dayId, String itineraryItemId) async {
+Future<DeleteItemData> deleteFromDay(
+    String itineraryId, String dayId, String itineraryItemId) async {
   try {
     final response = await http.delete(
-      'http://localhost:3002/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId',
-      headers: {'Authorization': 'security'});
+        'http://localhost:3002/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId',
+        headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
-      
+
       return DeleteItemData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
       return DeleteItemData(success: false);
     }
-
-  } catch(error){
+  } catch (error) {
     return DeleteItemData(success: false);
   }
-  
 }
 
 Future<ItinerariesData> fetchItineraries(String filter) async {
@@ -257,10 +260,7 @@ class ItinerariesData {
   ItinerariesData({this.itineraries, this.success});
 
   factory ItinerariesData.fromJson(Map<String, dynamic> json) {
-    return ItinerariesData(
-      itineraries: json['itineraries'],
-      success: true
-    );
+    return ItinerariesData(itineraries: json['itineraries'], success: true);
   }
 }
 

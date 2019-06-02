@@ -895,9 +895,10 @@ class TripState extends State<Trip> {
         }
       },
       builder: (context, store){
+        print(store.state.offline);
         return Scaffold(
           backgroundColor: Colors.transparent,
-          floatingActionButton: !store.state.offline ? FloatingActionButton(
+          floatingActionButton: store.state.offline == false ? FloatingActionButton(
             backgroundColor: this.color,
             onPressed: () { 
               bottomSheetModal(context, this.trip);

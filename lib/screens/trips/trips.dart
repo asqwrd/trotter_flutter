@@ -409,7 +409,7 @@ class TripsState extends State<Trips> {
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(top: 10, bottom: 20),
                 child: Text(
-                  'Where are you going?',
+                  'Your adventures',
                   style: TextStyle(fontSize: 30),
                 ),
               );
@@ -531,14 +531,13 @@ class TripsState extends State<Trips> {
                                           left: 20,
                                         ),
                                         child: Text(
-                                          tripBuilder[index]['name']
-                                              .toUpperCase(),
+                                          tripBuilder[index]['name'],
                                           overflow: TextOverflow.fade,
                                           textAlign: TextAlign.left,
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 25.0,
-                                              fontWeight: FontWeight.w500),
+                                              fontWeight: FontWeight.w400),
                                         )),
                                   ]),
                             ),

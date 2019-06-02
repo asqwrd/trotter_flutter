@@ -484,69 +484,67 @@ class TripsState extends State<Trips> {
                 },
                 child: Card(
                   semanticContainer: true,
-                  color: Colors.white,
+                  color: Colors.transparent,
                   clipBehavior: Clip.antiAliasWithSaveLayer,
                   child: Column(children: <Widget>[
                     Container(
-                        height: 350.0,
+                        height: 250.0,
                         width: double.infinity,
-                        color: Colors.white,
+                        color: Colors.transparent,
                         child: Stack(
                           children: <Widget>[
                             Positioned.fill(
                                 top: 0,
                                 left: 0,
-                                child: ClipPath(
-                                    clipper: CurveClipper(),
-                                    child: CachedNetworkImage(
-                                      imageUrl: tripBuilder[index]['image'],
-                                      fit: BoxFit.cover,
-                                    ))),
+                                child: CachedNetworkImage(
+                                  imageUrl: tripBuilder[index]['image'],
+                                  fit: BoxFit.cover,
+                                )),
                             Positioned.fill(
                                 top: 0,
                                 left: 0,
-                                child: ClipPath(
-                                    clipper: CurveClipper(),
-                                    child: Container(
-                                      color: color.withOpacity(.3),
-                                    ))),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                          begin: FractionalOffset.topCenter,
+                                          end: FractionalOffset.bottomCenter,
+                                          colors: [
+                                        Colors.grey.withOpacity(0.0),
+                                        color,
+                                      ],
+                                          stops: [
+                                        0.0,
+                                        1.0
+                                      ])),
+                                )),
                             Positioned.fill(
-                              top: 300,
-                              left: 0,
+                              top: 30,
+                              left: 20,
                               child: ListView(
                                   shrinkWrap: true,
                                   primary: false,
                                   children: <Widget>[
                                     Padding(
                                         padding: EdgeInsets.only(
-                                            top: 0.0,
-                                            bottom: 10,
-                                            left: 20,
-                                            right: 20),
+                                          top: 0.0,
+                                          bottom: 10,
+                                          left: 20,
+                                        ),
                                         child: Text(
                                           tripBuilder[index]['name']
                                               .toUpperCase(),
                                           overflow: TextOverflow.fade,
-                                          textAlign: TextAlign.center,
+                                          textAlign: TextAlign.left,
                                           style: TextStyle(
-                                              color: color,
+                                              color: Colors.white,
                                               fontSize: 25.0,
                                               fontWeight: FontWeight.w500),
                                         )),
-                                    Align(
-                                        child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 20),
-                                            width: 130,
-                                            child: Divider(
-                                              color:
-                                                  Color.fromRGBO(0, 0, 0, 0.4),
-                                            ))),
                                   ]),
                             ),
                             Positioned(
                                 top: 20,
-                                left: 20,
+                                right: 20,
                                 child: GestureDetector(
                                   onTap: onPressed2,
                                   child: Container(
@@ -555,23 +553,28 @@ class TripsState extends State<Trips> {
                                           borderRadius:
                                               BorderRadius.circular(15),
                                           color: fontContrast(color)
-                                              .withOpacity(.3)),
+                                              .withOpacity(.35)),
                                       child: Icon(
                                         EvilIcons.close,
                                         color:
                                             fontContrast(color).withOpacity(.8),
-                                        size: 35,
+                                        size: 25,
                                       )),
                                 )),
+                            Positioned(
+                                left: 10,
+                                bottom: 15,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    _buildDestinationInfo(
+                                        tripBuilder[index]['destinations'],
+                                        color),
+                                  ],
+                                ))
                           ],
                         )),
-                    ListView(
-                        shrinkWrap: true,
-                        primary: false,
-                        children: <Widget>[
-                          _buildDestinationInfo(
-                              tripBuilder[index]['destinations'], color),
-                        ])
                   ]),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -588,90 +591,39 @@ class TripsState extends State<Trips> {
     var widgets = <Widget>[];
     var length = destinations.length;
     if (length > 3) {
-      length = 3;
+      length = 2;
     }
     for (var i = 0; i < length; i++) {
       var destination = destinations[i];
-      // var startDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000));
-      // var endDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
+
       widgets.add(Padding(
-          padding: EdgeInsets.only(top: 0, bottom: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                  padding: EdgeInsets.all(3),
-                  margin: EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(200),
-                    color: color,
-                  ),
-                  child: Icon(
-                    EvilIcons.location,
-                    color: fontContrast(color),
-                    size: 15,
-                  )),
-              Text('${destination['destination_name']}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    color: Colors.black,
-                    fontSize: 20,
-                  )),
-              /*destination['start_date'] > 0 && destination['end_date'] > 0 ? 
-              Text(
-                ' ${new HtmlUnescape().convert('&bull;')} $startDate - $endDate',
-                style: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  color: Colors.black,
-                  fontSize: 18
-                )
-              ):
-              Text(
-                ' ${new HtmlUnescape().convert('&bull;')} Dates have not been set',
-                style: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  color: Colors.red,
-                  fontSize: 18
-                )
-              ),*/
-            ],
-          )));
+        padding: EdgeInsets.only(top: 0, bottom: 5),
+        child: Text('${destination['destination_name']}',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: fontContrast(color),
+              fontSize: 20,
+            )),
+      ));
     }
     if (destinations.length > length) {
       widgets.add(Padding(
-          padding: EdgeInsets.only(top: 0, bottom: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                  padding: EdgeInsets.all(3),
-                  margin: EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(200),
-                    color: Color.fromRGBO(0, 0, 0, .3),
-                  ),
-                  child: Icon(
-                    EvilIcons.location,
-                    color: fontContrast(color),
-                    size: 15,
-                  )),
-              Text('$length of ${destinations.length}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w400,
-                    color: Color.fromRGBO(0, 0, 0, .5),
-                    fontSize: 20,
-                  )),
-            ],
-          )));
+        padding: EdgeInsets.only(top: 0, bottom: 10),
+        child: Text('+${destinations.length - length} more',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: fontContrast(color),
+              fontSize: 20,
+            )),
+      ));
     }
     return Container(
         margin: EdgeInsets.only(top: 40, bottom: 20),
-        padding: EdgeInsets.symmetric(horizontal: 60),
+        padding: EdgeInsets.symmetric(horizontal: 30),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: widgets,
         ));
   }

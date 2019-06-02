@@ -895,7 +895,6 @@ class TripState extends State<Trip> {
         }
       },
       builder: (context, store){
-        print(store.state.offline);
         return Scaffold(
           backgroundColor: Colors.transparent,
           floatingActionButton: store.state.offline == false ? FloatingActionButton(

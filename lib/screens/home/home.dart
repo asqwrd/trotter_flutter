@@ -54,6 +54,7 @@ Future<HomeItinerariesData> fetchHomeItineraries() async {
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var data = json.decode(response.body);
+
       return HomeItinerariesData.fromJson(data);
     } else {
       // If that response was not OK, throw an error.
@@ -282,6 +283,9 @@ class HomeState extends State<Home> {
 
   Widget _buildItinerary(
       BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
+    StoreProvider.of<AppState>(context).dispatch(new OfflineAction(
+      false,
+    ));
     var itineraries = snapshot.data.itineraries;
     var widgets = <Widget>[
       Padding(

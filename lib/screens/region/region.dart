@@ -250,6 +250,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
             onPush: onPush,
             color: color,
             title: this.regionName,
+            back: true,
           )),
     ]);
   }

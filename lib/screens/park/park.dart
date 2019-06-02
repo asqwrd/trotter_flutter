@@ -358,45 +358,35 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
-    return NestedScrollView(
-      //controller: _scrollControllerPark,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Colors.white,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: ClipPath(
-                  clipper: BottomWaveClipperTab(),
-                  child: Container(
-                    color: Color.fromRGBO(240, 240, 240, 1),
-                  )),
-            ),
-          ),
-        ];
-      },
-      body: Container(
-          padding: EdgeInsets.only(top: 0.0),
-          decoration: BoxDecoration(color: Colors.white),
-          child: ListView(
-            children: <Widget>[
-              Container(
-                  height: 175.0,
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 30.0),
-                  child: TopListLoading()),
-              Container(
-                  height: 175.0,
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 30.0),
-                  child: TopListLoading()),
-            ],
-          )),
+    var children2 = <Widget>[
+      Center(
+          child: Container(
+        width: 30,
+        height: 5,
+        decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.all(Radius.circular(12.0))),
+      )),
+      Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(top: 10, bottom: 20),
+        child: Text(
+          ' Loading...',
+          style: TextStyle(fontSize: 30),
+        ),
+      ),
+      Center(heightFactor: 12, child: RefreshProgressIndicator()),
+    ];
+    return Container(
+      padding: EdgeInsets.only(top: 0.0),
+      decoration: BoxDecoration(color: Colors.transparent),
+      child: ListView(
+        controller: _sc,
+        physics: disableScroll
+            ? NeverScrollableScrollPhysics()
+            : ClampingScrollPhysics(),
+        children: children2,
+      ),
     );
   }
 }

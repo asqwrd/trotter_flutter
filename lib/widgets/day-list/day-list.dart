@@ -11,6 +11,10 @@ class DayList extends StatelessWidget {
   final Color color;
   final List<dynamic> items;
   final Function(String) callback;
+  final double height;
+  final ScrollController controller;
+  final ScrollPhysics physics;
+  @required final String header;
 
   //passing props in react style
   DayList({
@@ -18,7 +22,11 @@ class DayList extends StatelessWidget {
     this.onLongPressed,
     this.items,
     this.callback,
-    this.color
+    this.color,
+    this.controller,
+    this.physics,
+    this.height,
+    this.header
   });
 
   @override
@@ -27,14 +35,39 @@ class DayList extends StatelessWidget {
   }
   
 
-  Widget buildTimeLine(BuildContext context, List<dynamic> itineraryItems) {
+  Widget buildTimeLine(BuildContext context, List<dynamic> items) {
+    var itineraryItems = ['','',...items];
     return Container(
-      margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-      decoration: BoxDecoration(color: Colors.white),
+      height: this.height ?? this.height,
+      margin: EdgeInsets.only(top: 0.0, left: 0.0, right: 0.0),
+      decoration: BoxDecoration(color: Colors.transparent),
       child: ListView.separated(
-        separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.only(left : 80, bottom: 20, top: 0), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
+        controller: this.controller ?? this.controller,
+        physics: this.physics ?? this.physics,
+        separatorBuilder: (BuildContext serperatorContext, int index) => index > 1 ? Container(margin:EdgeInsets.only(left : 80, bottom: 20, top: 0), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))):Container(),
         itemCount: itineraryItems.length,
         itemBuilder: (BuildContext context, int index){
+        if (index == 0) {
+          return Center(
+              child: Container(
+            width: 30,
+            height: 5,
+            decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.all(Radius.circular(12.0))),
+          ));
+        }
+
+        if (index == 1) {
+          return Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.only(top: 10, bottom: 40),
+            child: Text(
+              '${this.header}',
+              style: TextStyle(fontSize: 30),
+            ),
+          );
+        }
           var color = itineraryItems[index]['color'].isEmpty == false ? Color(hexStringToHexInt(itineraryItems[index]['color'])) : this.color;
           var poi = itineraryItems[index]['poi'];
           var item = itineraryItems[index];
@@ -42,7 +75,8 @@ class DayList extends StatelessWidget {
           var travelTime = itineraryItems[index]['travel'];
           var prevIndex = index - 1;
           var from = 'city center';
-          if(prevIndex >= 0){
+          // value is 2 because first 2 values in the array are empty strings
+          if(prevIndex >= 2){
             from = itineraryItems[prevIndex]['poi']['name'];
           }
 

@@ -29,11 +29,34 @@ class DayListLoading extends StatelessWidget {
         child: ListView.separated(
           physics: NeverScrollableScrollPhysics(),
           separatorBuilder: (BuildContext serperatorContext, int index) =>
-              new Container(
-                  margin: EdgeInsets.only(left: 80, bottom: 20, top: 0),
-                  child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
-          itemCount: 1,
+              index > 1
+                  ? new Container(
+                      margin: EdgeInsets.only(left: 80, bottom: 20, top: 0),
+                      child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)))
+                  : Container(),
+          itemCount: 3,
           itemBuilder: (BuildContext context, int index) {
+            if (index == 0) {
+              return Center(
+                  child: Container(
+                width: 30,
+                height: 5,
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
+              ));
+            }
+
+            if (index == 1) {
+              return Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.only(top: 10, bottom: 40),
+                child: Text(
+                  'Loading...',
+                  style: TextStyle(fontSize: 30),
+                ),
+              );
+            }
             return Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: IntrinsicHeight(

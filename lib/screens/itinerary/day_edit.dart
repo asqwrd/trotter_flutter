@@ -123,10 +123,7 @@ class DayEditState extends State<DayEdit> {
                         return _buildFab(
                             Color(hexStringToHexInt(snapshot.data.color)));
                       }
-                      return FloatingActionButton(
-                        onPressed: () {},
-                        backgroundColor: Color.fromRGBO(240, 240, 240, 1),
-                      );
+                      return Container();
                     }),
                 body: FutureBuilder(
                     future: data,

@@ -21,7 +21,7 @@ class ErrorContainer extends StatelessWidget {
         body: Stack(children: <Widget>[
           Center(
               child: Container(
-                  color: Colors.white,
+                  color: Colors.transparent,
                   padding: EdgeInsets.symmetric(horizontal: 30),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

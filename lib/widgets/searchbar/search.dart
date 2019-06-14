@@ -100,8 +100,8 @@ class SearchState extends State<Search> {
     super.initState();
     txt.text = '';
     selectId = this.id != null && this.id.isNotEmpty ? true : false;
-    data =
-        fetchSearch('', this.location['lat'], this.location['lng'], selectId);
+    data = fetchSearch('', this.location != null ? this.location['lat'] : null,
+        this.location != null ? this.location['lng'] : null, selectId);
   }
 
   @override
@@ -168,13 +168,16 @@ class SearchState extends State<Search> {
                 selectId = !selectId;
                 txt.text = '';
                 data = fetchSearch(
-                    '', this.location['lat'], this.location['lng'], selectId);
+                    '',
+                    this.location != null ? this.location['lat'] : null,
+                    this.location != null ? this.location['lng'] : null,
+                    selectId);
               }
             });
           })
     ];
 
-    if (this.destinationName != null) {
+    if (this.location != null) {
       chips.add(FilterChip(
           selected: selectId,
           label: Text(this.destinationName),
@@ -183,7 +186,10 @@ class SearchState extends State<Search> {
               if (this.id != null) selectId = !selectId;
               txt.text = '';
               data = fetchSearch(
-                  '', this.location['lat'], this.location['lng'], selectId);
+                  '',
+                  this.location != null ? this.location['lat'] : null,
+                  this.location != null ? this.location['lng'] : null,
+                  selectId);
             });
           }));
     }
@@ -209,7 +215,10 @@ class SearchState extends State<Search> {
               setState(() {
                 txt.text = '';
                 data = fetchSearch(
-                    '', this.location['lat'], this.location['lng'], selectId);
+                    '',
+                    this.location != null ? this.location['lat'] : null,
+                    this.location != null ? this.location['lng'] : null,
+                    selectId);
               });
             },
           )

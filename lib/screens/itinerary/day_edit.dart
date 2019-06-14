@@ -33,6 +33,7 @@ class DayEditState extends State<DayEdit> {
   String destinationName;
   String destinationId;
   dynamic destination;
+  dynamic location;
   List<dynamic> itineraryItems = [];
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
@@ -61,11 +62,13 @@ class DayEditState extends State<DayEdit> {
           this.color = Color(hexStringToHexInt(data.color));
           this.itineraryName = data.itinerary['name'];
           this.destinationName = data.destination['name'];
+          this.location = data.destination['location'];
           this.destination = data.destination;
           this.destinationId = data.destination['id'].toString();
           this.itineraryItems = data.day['itinerary_items'].sublist(1);
           this.image = data.destination['image'];
           this.loading = false;
+          print(this.destinationName);
         });
       } else {
         setState(() {
@@ -234,7 +237,8 @@ class DayEditState extends State<DayEdit> {
                 fullscreenDialog: true,
                 builder: (context) => SearchModal(
                     query: '',
-                    location: this.destinationName,
+                    destinationName: this.destinationName,
+                    location: this.location,
                     id: this.destinationId)));
         if (suggestion != null) {
           var data = {
@@ -250,6 +254,7 @@ class DayEditState extends State<DayEdit> {
           setState(() {
             this.color = Color(hexStringToHexInt(response.color));
             this.destinationName = response.destination['name'];
+            this.location = response.destination['location'];
             this.destinationId = response.destination['id'].toString();
             this.itineraryItems = response.day['itinerary_items'];
             this.loading = false;

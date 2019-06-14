@@ -3,20 +3,24 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
 
 class TrotterAppBar extends StatelessWidget {
-  const TrotterAppBar({
-    Key key,
-    @required this.onPush,
-    @required this.color,
-    this.back,
-    this.actions = const <Widget>[],
-    this.title,
-  }) : super(key: key);
+  const TrotterAppBar(
+      {Key key,
+      @required this.onPush,
+      @required this.color,
+      this.back,
+      this.actions = const <Widget>[],
+      this.title,
+      this.id,
+      this.location})
+      : super(key: key);
 
   final onPush;
   final Color color;
   final bool back;
   final List<Widget> actions;
   final String title;
+  final dynamic location;
+  final String id;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +61,15 @@ class TrotterAppBar extends StatelessWidget {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100)),
               onPressed: () {
-                onPush({'query': '', 'level': 'search'});
+                print(this.location);
+                print(this.title);
+                onPush({
+                  'query': '',
+                  'level': 'search',
+                  'id': this.id,
+                  'location': this.location,
+                  'destinationName': this.title
+                });
               },
               child: SvgPicture.asset("images/search-icon.svg",
                   width: 24.0,

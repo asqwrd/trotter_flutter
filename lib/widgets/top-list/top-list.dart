@@ -37,7 +37,7 @@ class TopList extends StatelessWidget {
                   )),
               Container(
                   width: MediaQuery.of(context).size.width,
-                  height: 216,
+                  height: 226,
                   child: ListView.builder(
                     primary: false,
                     scrollDirection: Axis.horizontal,

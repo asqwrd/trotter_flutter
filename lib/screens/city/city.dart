@@ -117,6 +117,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   String image;
   Color color = Colors.transparent;
   String cityName;
+  dynamic location;
 
   @override
   void initState() {
@@ -158,6 +159,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                   this.errorUi = false;
                   this.image = data.city['image'];
                   this.cityName = data.city['name'];
+                  this.location = data.city['location'];
                   this.color = Color(hexStringToHexInt(data.color));
                 })
               }
@@ -246,7 +248,12 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: this.cityName, back: true)),
+              onPush: onPush,
+              color: color,
+              title: this.cityName,
+              back: true,
+              id: this.cityId,
+              location: this.location)),
     ]);
   }
 

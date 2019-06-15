@@ -6,8 +6,6 @@ import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -135,6 +133,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
   String image;
   Color color = Colors.transparent;
   String cityName;
+  dynamic location;
 
   @override
   void initState() {
@@ -176,6 +175,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
                   this.errorUi = false;
                   this.image = data.cityState['image'];
                   this.cityName = data.cityState['name'];
+                  this.location = data.cityState['location'];
                   this.color = Color(hexStringToHexInt(data.color));
                 })
               }
@@ -264,7 +264,12 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: this.cityName, back: true)),
+              onPush: onPush,
+              color: color,
+              title: this.cityName,
+              back: true,
+              id: this.cityStateId,
+              location: this.location)),
     ]);
   }
 
@@ -274,9 +279,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
       return _buildLoadingBody(ctxt);
     }
 
-    var name = snapshot.data.cityState['name'];
     var destination = snapshot.data.cityState;
-    var image = snapshot.data.cityState['image'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
     var discover = snapshot.data.discover;
     var see = snapshot.data.see;

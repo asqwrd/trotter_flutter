@@ -241,7 +241,7 @@ class SearchState extends State<Search> {
                               horizontal: 20.0, vertical: 20.0),
                           hintText: selectId
                               ? 'Search for places in ${this.destinationName}...'
-                              : 'Search cities to travel to...'),
+                              : 'Search for destinations to travel to...'),
                       onChanged: (value) {
                         if (timer != null) {
                           timer.cancel();
@@ -251,8 +251,15 @@ class SearchState extends State<Search> {
                             new Timer(const Duration(milliseconds: 500), () {
                           print('Print $value');
                           setState(() {
-                            data = fetchSearch(value, this.location['lat'],
-                                this.location['lng'], selectId);
+                            data = fetchSearch(
+                                value,
+                                this.location != null
+                                    ? this.location['lat']
+                                    : null,
+                                this.location != null
+                                    ? this.location['lng']
+                                    : null,
+                                selectId);
                           });
                         });
                       },
@@ -385,8 +392,12 @@ class SearchState extends State<Search> {
                                 txt.text = recentSearch[index]['value'];
                                 data = fetchSearch(
                                     recentSearch[index]['value'],
-                                    this.location['lat'],
-                                    this.location['lng'],
+                                    this.location != null
+                                        ? this.location['lat']
+                                        : null,
+                                    this.location != null
+                                        ? this.location['lng']
+                                        : null,
                                     selectId);
                               });
                             },
@@ -402,8 +413,15 @@ class SearchState extends State<Search> {
                       color: Color.fromRGBO(106, 154, 168, 1),
                       onRetry: () {
                         setState(() {
-                          data = fetchSearch('', this.location['lat'],
-                              this.location['lng'], selectId);
+                          data = fetchSearch(
+                              '',
+                              this.location != null
+                                  ? this.location['lat']
+                                  : null,
+                              this.location != null
+                                  ? this.location['lng']
+                                  : null,
+                              selectId);
                         });
                       },
                     ),

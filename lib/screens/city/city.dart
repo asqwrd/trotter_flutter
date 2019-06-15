@@ -330,6 +330,27 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   _buildAllTab(List<dynamic> sections, String description, Color color,
       dynamic destination) {
     var widgets = <Widget>[
+      GestureDetector(
+        onTap: () {
+          onPush(
+              {'id': destination['country_id'].toString(), 'level': 'country'});
+        },
+        child: Container(
+            margin: EdgeInsets.only(top: 30),
+            padding: EdgeInsets.only(right: 20, left: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Text('Info on ${destination['country_name']}',
+                    style: TextStyle(fontSize: 24, color: color)),
+                Icon(
+                  Icons.chevron_right,
+                  size: 24,
+                  color: color,
+                )
+              ],
+            )),
+      ),
       Container(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Text(

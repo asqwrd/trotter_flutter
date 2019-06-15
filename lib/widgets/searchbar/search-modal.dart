@@ -214,7 +214,7 @@ class SearchModalState extends State<SearchModal> {
                               horizontal: 20.0, vertical: 20.0),
                           hintText: selectId
                               ? 'Search for places in $destinationName...'
-                              : 'Search cities to travel to...'),
+                              : 'Search for destinations to travel to...'),
                       onChanged: (value) {
                         if (timer != null) {
                           timer.cancel();

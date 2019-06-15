@@ -264,7 +264,7 @@ class CountryState extends State<Country> {
     _showVisaTextual = _showVisa &&
         visa['visa']['textual'] != null &&
         visa['visa']['textual']['text'] != null;
-    _showVisaAllowedStay = _showVisa && visa['visa']['allowed_stay'] != null;
+    _showVisaAllowedStay = _showVisa && visa['visa']['allowed_stay'].length > 0;
     _showVisaNotes = _showVisa && visa['visa']['notes'] != null;
     _showVisaPassportValid = _showVisa &&
         visa['passport'] != null &&

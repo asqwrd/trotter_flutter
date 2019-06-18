@@ -1,3 +1,4 @@
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
@@ -21,11 +22,22 @@ class AppStateWidget extends State<App> {
   FocusScopeNode _focusA = FocusScopeNode();
   FocusScopeNode _focusB = FocusScopeNode();
   FocusScopeNode _focusC = FocusScopeNode();
-  
 
   @override
   void initState() {
     super.initState();
+    _retrieveDynamicLink();
+  }
+
+  Future<void> _retrieveDynamicLink() async {
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.retrieveDynamicLink();
+    print(data?.link?.queryParameters);
+
+    // if (deepLink != null) {
+    //   Navigator.pushNamed(
+    //       context, deepLink.path); // deeplink.path == '/helloworld'
+    // }
   }
 
   @override
@@ -37,11 +49,11 @@ class AppStateWidget extends State<App> {
 
   void _selectTab(BuildContext context, TabItem tabItem) {
     setState(() {
-      if( tabItem == TabItem.explore)
+      if (tabItem == TabItem.explore)
         FocusScope.of(context).setFirstFocus(_focusA);
-      else if(tabItem == TabItem.trips)
+      else if (tabItem == TabItem.trips)
         FocusScope.of(context).setFirstFocus(_focusB);
-      else if(tabItem == TabItem.profile)
+      else if (tabItem == TabItem.profile)
         FocusScope.of(context).setFirstFocus(_focusC);
 
       currentTab = tabItem;
@@ -56,29 +68,27 @@ class AppStateWidget extends State<App> {
     super.dispose();
   }
 
-
-  
-  
-
   @override
   Widget build(BuildContext context) {
+    //_retrieveDynamicLink();
 
     return WillPopScope(
       onWillPop: () async =>
           !await navigatorKeys[currentTab].currentState.maybePop(),
-      child: SizedBox.expand(child: Scaffold(
+      child: SizedBox.expand(
+          child: Scaffold(
         backgroundColor: Colors.white,
         body: Stack(children: <Widget>[
-          FocusScope(node: _focusA,  child:_buildOffstageNavigator(TabItem.explore)),
-          FocusScope(node: _focusB, child: 
-            _buildOffstageNavigator(TabItem.trips)
-          ),
-          FocusScope(node: _focusC, child:_buildOffstageNavigator(TabItem.profile)),
+          FocusScope(
+              node: _focusA, child: _buildOffstageNavigator(TabItem.explore)),
+          FocusScope(
+              node: _focusB, child: _buildOffstageNavigator(TabItem.trips)),
+          FocusScope(
+              node: _focusC, child: _buildOffstageNavigator(TabItem.profile)),
         ]),
         bottomNavigationBar: BottomNavigation(
-          currentTab: currentTab,
-          onSelectTab: (TabItem tabitem) => _selectTab(context,tabitem)
-        ),
+            currentTab: currentTab,
+            onSelectTab: (TabItem tabitem) => _selectTab(context, tabitem)),
       )),
     );
   }

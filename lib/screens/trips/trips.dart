@@ -12,6 +12,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:share/share.dart';
 
 enum CardActions { delete }
 
@@ -551,12 +552,30 @@ class TripsState extends State<Trips> {
                                       decoration: BoxDecoration(
                                           borderRadius:
                                               BorderRadius.circular(15),
-                                          color: fontContrast(color)
-                                              .withOpacity(.35)),
+                                          color: Colors.white.withOpacity(.65)),
                                       child: Icon(
                                         EvilIcons.close,
-                                        color:
-                                            fontContrast(color).withOpacity(.8),
+                                        color: Colors.black.withOpacity(.8),
+                                        size: 25,
+                                      )),
+                                )),
+                            Positioned(
+                                top: 70,
+                                right: 20,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Share.share(
+                                        'check out my website https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}');
+                                  },
+                                  child: Container(
+                                      padding: EdgeInsets.all(5),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(15),
+                                          color: Colors.white.withOpacity(.65)),
+                                      child: Icon(
+                                        EvilIcons.share_google,
+                                        color: Colors.black.withOpacity(.8),
                                         size: 25,
                                       )),
                                 )),

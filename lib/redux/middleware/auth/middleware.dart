@@ -1,9 +1,9 @@
 // lib/middleware/auth_middleware.dart
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:redux/redux.dart';
 import 'package:trotter_flutter/redux/index.dart';
-
 
 // Recall that middleware is simply functions.
 //
@@ -37,12 +37,11 @@ List<Middleware<AppState>> createAuthMiddleware() {
 //
 Middleware<AppState> _createLogInMiddleware() {
   return (Store store, action, NextDispatcher next) async {
-
-  	// FirebaseUser is the type of your User.
-		FirebaseUser user;
-		// Firebase 'instances' are temporary instances which give
-		// you access to your FirebaseUser. This includes
-		// some tokens we need to sign in.
+    // FirebaseUser is the type of your User.
+    FirebaseUser user;
+    // Firebase 'instances' are temporary instances which give
+    // you access to your FirebaseUser. This includes
+    // some tokens we need to sign in.
     final FirebaseAuth _auth = FirebaseAuth.instance;
 
     // GoogleSignIn is a specific sign in class.
@@ -51,11 +50,11 @@ Middleware<AppState> _createLogInMiddleware() {
     // Actions are classes, so you can Typecheck them
     if (action is LogIn) {
       try {
-      	// Try to sign in the user.
-      	// This method will either log in a user that your Firebase
-      	// is aware of, or it will prompt the user to log in
-      	// if its the first time.
-      	//
+        // Try to sign in the user.
+        // This method will either log in a user that your Firebase
+        // is aware of, or it will prompt the user to log in
+        // if its the first time.
+        //
         GoogleSignInAccount googleUser = await _googleSignIn.signIn();
         GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
@@ -70,6 +69,10 @@ Middleware<AppState> _createLogInMiddleware() {
         user = await _auth.signInWithCredential(credential);
 
         print('Logged in ' + user.displayName);
+        PendingDynamicLinkData data =
+            await FirebaseDynamicLinks.instance.retrieveDynamicLink();
+        print('trip');
+        print(data?.link?.queryParameters);
 
         // This can be tough to reason about -- or at least it was for me.
         // We're going to dispatch a new action if we logged in,
@@ -86,8 +89,8 @@ Middleware<AppState> _createLogInMiddleware() {
 
 Middleware<AppState> _createLogOutMiddleware() {
   return (Store store, action, NextDispatcher next) async {
-		// Temporary instance
-		final FirebaseAuth _auth = FirebaseAuth.instance;
+    // Temporary instance
+    final FirebaseAuth _auth = FirebaseAuth.instance;
     try {
       await _auth.signOut();
       print('logging out...');
@@ -95,13 +98,12 @@ Middleware<AppState> _createLogOutMiddleware() {
     } catch (error) {
       print(error);
     }
-	};
+  };
 }
 
 Middleware<AppState> _createStatusMiddleware() {
   return (Store store, action, NextDispatcher next) async {
-
-		FirebaseUser user;
+    FirebaseUser user;
     final FirebaseAuth _auth = FirebaseAuth.instance;
 
     // Actions are classes, so you can Typecheck them
@@ -116,7 +118,7 @@ Middleware<AppState> _createStatusMiddleware() {
         //
         // We also continue the current cycle below by calling next(action).
         store.dispatch(new LogInSuccessful(user: user));
-      } catch(error){
+      } catch (error) {
         print(error);
       }
     }

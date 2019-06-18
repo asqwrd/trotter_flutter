@@ -98,7 +98,10 @@ class SearchModalState extends State<SearchModal> {
     txt.text = '';
     selectId = this.id != null && this.id.isNotEmpty ? true : false;
     data = fetchSearchModal(
-        '', this.location['lat'], this.location['lng'], selectId);
+        '',
+        this.location != null ? this.location['lat'] : null,
+        this.location != null ? this.location['lng'] : null,
+        selectId);
   }
 
   SearchModalState(
@@ -138,7 +141,6 @@ class SearchModalState extends State<SearchModal> {
     var recentSearchModal =
         snapshot.hasData ? snapshot.data.recentSearchModal : null;
     var results = snapshot.hasData ? snapshot.data.results : null;
-    print(results);
     var chips = [
       FilterChip(
           selected: this.location != null ? !selectId : true,
@@ -149,14 +151,16 @@ class SearchModalState extends State<SearchModal> {
                 selectId = !selectId;
                 txt.text = '';
                 data = fetchSearchModal(
-                    '', this.location['lat'], this.location['lng'], selectId);
+                    '',
+                    this.location != null ? this.location['lat'] : null,
+                    this.location != null ? this.location['lng'] : null,
+                    selectId);
               }
             });
           })
     ];
 
     if (this.destinationName != null) {
-      print(this.destinationName);
       chips.add(FilterChip(
           selected: selectId,
           label: Text(this.destinationName),
@@ -165,7 +169,10 @@ class SearchModalState extends State<SearchModal> {
               if (this.id != null) selectId = !selectId;
               txt.text = '';
               data = fetchSearchModal(
-                  '', this.location['lat'], this.location['lng'], selectId);
+                  '',
+                  this.location != null ? this.location['lat'] : null,
+                  this.location != null ? this.location['lng'] : null,
+                  selectId);
             });
           }));
     }
@@ -191,7 +198,10 @@ class SearchModalState extends State<SearchModal> {
               setState(() {
                 txt.text = '';
                 data = fetchSearchModal(
-                    '', this.location['lat'], this.location['lng'], selectId);
+                    '',
+                    this.location != null ? this.location['lat'] : null,
+                    this.location != null ? this.location['lng'] : null,
+                    selectId);
               });
             },
           )
@@ -223,8 +233,15 @@ class SearchModalState extends State<SearchModal> {
                         timer =
                             new Timer(const Duration(milliseconds: 500), () {
                           setState(() {
-                            data = fetchSearchModal(value, this.location['lat'],
-                                this.location['lng'], selectId);
+                            data = fetchSearchModal(
+                                value,
+                                this.location != null
+                                    ? this.location['lat']
+                                    : null,
+                                this.location != null
+                                    ? this.location['lng']
+                                    : null,
+                                selectId);
                           });
                         });
                       },
@@ -349,8 +366,12 @@ class SearchModalState extends State<SearchModal> {
                             txt.text = recentSearchModal[index]['value'];
                             data = fetchSearchModal(
                                 recentSearchModal[index]['value'],
-                                this.location['lat'],
-                                this.location['lng'],
+                                this.location != null
+                                    ? this.location['lat']
+                                    : null,
+                                this.location != null
+                                    ? this.location['lng']
+                                    : null,
                                 selectId);
                           });
                         },

@@ -10,18 +10,16 @@ class TripViewModel {
   final Future<CreateTripData> Function(dynamic) onCreateTrip;
   final Future<CreateTripData> Function(dynamic, int) undoDeleteTrip;
 
-
-  TripViewModel({
-    this.onGetTrips,
-    this.onDeleteTrip,
-    this.onUpdateTripsFromTrip,
-    this.onCreateTrip,
-    this.undoDeleteTrip
-  });
+  TripViewModel(
+      {this.onGetTrips,
+      this.onDeleteTrip,
+      this.onUpdateTripsFromTrip,
+      this.onCreateTrip,
+      this.undoDeleteTrip});
 
   factory TripViewModel.create(Store<AppState> store) {
     _onGetTrips() async {
-      await fetchTrips(store);  
+      await fetchTrips(store);
     }
 
     _onDeleteTrip(String tripId) async {
@@ -30,15 +28,34 @@ class TripViewModel {
     }
 
     _onCreateTrip(dynamic data) async {
-      var results = await postCreateTrip(store, data);
+      var trip = new Map<String, dynamic>.from(data)
+        ..addAll({
+          "user": {
+            "displayName": store.state.currentUser.displayName,
+            "photoUrl": store.state.currentUser.photoUrl,
+            "email": store.state.currentUser.email,
+            "phoneNumber": store.state.currentUser.phoneNumber,
+            "uid": store.state.currentUser.uid,
+          }
+        });
+      var results = await postCreateTrip(store, trip);
       return results;
     }
 
     _undoDeleteTrip(dynamic trip, int index) async {
-      var results = await postCreateTrip(store, trip, index, true);
+      var data = new Map<String, dynamic>.from(trip)
+        ..addAll({
+          "user": {
+            "displayName": store.state.currentUser.displayName,
+            "photoUrl": store.state.currentUser.photoUrl,
+            "email": store.state.currentUser.email,
+            "phoneNumber": store.state.currentUser.phoneNumber,
+            "uid": store.state.currentUser.uid,
+          }
+        });
+      var results = await postCreateTrip(store, data, index, true);
       return results;
     }
-    
 
     return TripViewModel(
       onGetTrips: _onGetTrips,

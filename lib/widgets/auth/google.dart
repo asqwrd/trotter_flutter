@@ -4,17 +4,16 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:redux/redux.dart';
 
-
 class GoogleAuthButtonContainer extends StatelessWidget {
   GoogleAuthButtonContainer({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-  	// Connect to the store:
+    // Connect to the store:
     return new StoreConnector<AppState, _ViewModel>(
       converter: _ViewModel.fromStore,
       builder: (BuildContext context, _ViewModel vm) {
-      	// We haven't made this yet.
+        // We haven't made this yet.
         return new GoogleAuthButton(
           buttonText: vm.buttonText,
           onPressedCallback: vm.onPressedCallback,
@@ -31,33 +30,30 @@ class _ViewModel {
   _ViewModel({this.onPressedCallback, this.buttonText});
 
   static _ViewModel fromStore(Store<AppState> store) {
-  	// This is a bit of a more complex _viewModel
-  	// constructor. As the state updates, it will
-  	// recreate this _viewModel, and then pass
-  	// buttonText and the callback down to the button
-  	// with the appropriate qualities:
-  	//
+    // This is a bit of a more complex _viewModel
+    // constructor. As the state updates, it will
+    // recreate this _viewModel, and then pass
+    // buttonText and the callback down to the button
+    // with the appropriate qualities:
+    //
     return new _ViewModel(
         buttonText:
-        store.state.currentUser != null ? 'Log Out' : 'Log in with Google',
+            store.state.currentUser != null ? 'Log Out' : 'Log in with Google',
         onPressedCallback: () {
-         if (store.state.currentUser != null) {
+          if (store.state.currentUser != null) {
             store.dispatch(new LogOut());
-            print('null');
-         } else {
-           print('here');
+          } else {
             store.dispatch(new LogIn());
-        }
+          }
         });
   }
 }
-
 
 class GoogleAuthButton extends StatelessWidget {
   final String buttonText;
   final Function onPressedCallback;
 
-	// Passed in from Container
+  // Passed in from Container
   GoogleAuthButton({
     @required this.buttonText,
     this.onPressedCallback,
@@ -65,32 +61,32 @@ class GoogleAuthButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  	// Raised button is a widget that gives some
-  	// automatic Material design styles
+    // Raised button is a widget that gives some
+    // automatic Material design styles
     return RaisedButton(
       onPressed: onPressedCallback,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
       color: Colors.white,
-      child:  Container(
-      	// Explicitly set height
-      	// Contianer has many options you can pass it,
-      	// Most widgets do *not* allow you to explicitly set
-      	// width and height
+      child: Container(
+        // Explicitly set height
+        // Contianer has many options you can pass it,
+        // Most widgets do *not* allow you to explicitly set
+        // width and height
         width: 180.0,
         height: 50.0,
-        
+
         alignment: Alignment.center,
         // Row is a layout widget
         // that lays out its children on a horizontal axis
         child: new Row(
           //mainAxisAlignment: MainAxisAlignment.center,
           children: [
-          	// Padding is a convenience widget that adds Padding to it's child
+            // Padding is a convenience widget that adds Padding to it's child
             new Padding(
               padding: const EdgeInsets.only(right: 20.0),
               // Image, like everyhting, is just a class.
               // This constructor expects an image URL -- I found this one on Google
- 							child: Image.asset(
+              child: Image.asset(
                 'images/google-logo.png',
                 width: 30.0,
                 fit: BoxFit.contain,
@@ -109,4 +105,3 @@ class GoogleAuthButton extends StatelessWidget {
     );
   }
 }
-

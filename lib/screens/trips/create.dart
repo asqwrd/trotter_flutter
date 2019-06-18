@@ -135,13 +135,37 @@ class CreateTripState extends State<CreateTrip> {
                   if (this._formKey.currentState.validate()) {
                     // If the form is valid, display a snackbar. In the real world, you'd
                     // often want to call a server or save the information in a database
+                    print('here');
                     var data = {
                       "trip": {
                         "image": this._destinations[0]["image"],
                         "name": nameController.text
                       },
-                      "destinations": this._destinations
+                      "destinations": this._destinations,
+                      "user": {
+                        "displayName": StoreProvider.of<AppState>(context)
+                            .state
+                            .currentUser
+                            .displayName,
+                        "photoUrl": StoreProvider.of<AppState>(context)
+                            .state
+                            .currentUser
+                            .photoUrl,
+                        "email": StoreProvider.of<AppState>(context)
+                            .state
+                            .currentUser
+                            .email,
+                        "phoneNumber": StoreProvider.of<AppState>(context)
+                            .state
+                            .currentUser
+                            .phoneNumber,
+                        "uid": StoreProvider.of<AppState>(context)
+                            .state
+                            .currentUser
+                            .uid,
+                      }
                     };
+                    // print(data);
                     setState(() {
                       this.loading = true;
                     });

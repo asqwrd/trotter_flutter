@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'dart:core';
 import 'package:trotter_flutter/widgets/auth/index.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -83,6 +82,7 @@ class TripsState extends State<Trips> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
+    final store = Provider.of<TrotterStore>(context);
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
@@ -108,51 +108,7 @@ class TripsState extends State<Trips> {
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(15), topRight: Radius.circular(15)),
         maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: StoreConnector<AppState, TripViewModel>(
-                converter: (store) => TripViewModel.create(store),
-                onInit: (store) async {
-                  if (store.state.currentUser != null) {
-                    store.dispatch(new SetTripsLoadingAction(true));
-                    await fetchTrips(store);
-                    store.dispatch(SetTripsLoadingAction(false));
-                    this.loggedIn = true;
-                  }
-                },
-                rebuildOnChange: true,
-                builder: (context, viewModel) {
-                  var currentUser =
-                      StoreProvider.of<AppState>(context).state.currentUser;
-                  var tripsError =
-                      StoreProvider.of<AppState>(context).state.tripsError;
-                  var offline =
-                      StoreProvider.of<AppState>(context).state.offline;
-                  return Scaffold(
-                      backgroundColor: Colors.transparent,
-                      floatingActionButton: (currentUser != null &&
-                              tripsError == null &&
-                              offline == false)
-                          ? FloatingActionButton(
-                              backgroundColor: color,
-                              onPressed: () {
-                                onPush({"level": "createtrip"});
-                                if (StoreProvider.of<AppState>(context)
-                                        .state
-                                        .trips
-                                        .length ==
-                                    0) {
-                                  setState(() {
-                                    this._showTitle = false;
-                                  });
-                                }
-                              },
-                              tooltip: 'Create trip',
-                              child: Icon(Icons.add),
-                              elevation: 5.0,
-                            )
-                          : null,
-                      body: _buildLoadedBody(context, viewModel, color));
-                })),
+        panel: Center(child: buildScaffold(color, store, context)),
         body: Container(
             height: _bodyHeight,
             child: Stack(children: <Widget>[
@@ -189,11 +145,9 @@ class TripsState extends State<Trips> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100)),
                     onPressed: () async {
-                      StoreProvider.of<AppState>(context)
-                          .dispatch(new SetTripsLoadingAction(true));
-                      await fetchTrips(StoreProvider.of<AppState>(context));
-                      StoreProvider.of<AppState>(context)
-                          .dispatch(SetTripsLoadingAction(false));
+                      store.setTripsLoading(true);
+                      await fetchTrips(store);
+                      store.setTripsLoading(false);
                     },
                     child: SvgPicture.asset("images/refresh_icon.svg",
                         width: 24.0,
@@ -206,22 +160,47 @@ class TripsState extends State<Trips> {
     ]);
   }
 
+  Scaffold buildScaffold(
+      Color color, TrotterStore store, BuildContext context) {
+    var currentUser = store.currentUser;
+    var tripsError = store.tripsError;
+    var offline = store.offline;
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton:
+            (currentUser != null && tripsError == null && offline == false)
+                ? FloatingActionButton(
+                    backgroundColor: color,
+                    onPressed: () {
+                      onPush({"level": "createtrip"});
+                      if (store.trips.length == 0) {
+                        setState(() {
+                          this._showTitle = false;
+                        });
+                      }
+                    },
+                    tooltip: 'Create trip',
+                    child: Icon(Icons.add),
+                    elevation: 5.0,
+                  )
+                : null,
+        body: _buildLoadedBody(context, store, color));
+  }
+
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(
-      BuildContext ctxt, TripViewModel viewModel, Color color) {
-    var error = StoreProvider.of<AppState>(context).state.tripsError;
-    var offline = StoreProvider.of<AppState>(context).state.offline;
-    var trips = StoreProvider.of<AppState>(context).state.trips;
-    var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
-    var loading = StoreProvider.of<AppState>(context).state.tripLoading;
-    var store = StoreProvider.of<AppState>(context);
+  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store, Color color) {
+    var error = store.tripsError;
+    var offline = store.offline;
+    var trips = store.trips;
+    var currentUser = store.currentUser;
+    var loading = store.tripLoading;
 
     if (error != null && offline == false) {
       return ErrorContainer(
         color: color,
         onRetry: () {
-          store.dispatch(new SetTripsLoadingAction(true));
-          viewModel.onGetTrips();
+          store.setTripsLoading(true);
+          fetchTrips(store);
         },
       );
     }
@@ -293,10 +272,30 @@ class TripsState extends State<Trips> {
                 : Container()
           ]));
     } else if (currentUser != null && this.loggedIn == false) {
-      store.dispatch(new SetTripsLoadingAction(true));
       fetchTrips(store);
       this.loggedIn = true;
     }
+
+    if (loading == true || trips == null)
+      return ListView(children: <Widget>[
+        Center(
+            child: Container(
+          width: 30,
+          height: 5,
+          decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.all(Radius.circular(12.0))),
+        )),
+        Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(top: 10, bottom: 20),
+          child: Text(
+            'Getting trips',
+            style: TextStyle(fontSize: 30),
+          ),
+        ),
+        Center(child: RefreshProgressIndicator())
+      ]);
 
     if (trips.length == 0) {
       return Scaffold(
@@ -364,26 +363,6 @@ class TripsState extends State<Trips> {
     }
 
     var tripBuilder = ['', '', ...trips];
-    if (loading == true)
-      return ListView(children: <Widget>[
-        Center(
-            child: Container(
-          width: 30,
-          height: 5,
-          decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.all(Radius.circular(12.0))),
-        )),
-        Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.only(top: 10, bottom: 20),
-          child: Text(
-            'Getting trips',
-            style: TextStyle(fontSize: 30),
-          ),
-        ),
-        Center(child: RefreshProgressIndicator())
-      ]);
 
     return Container(
         height: MediaQuery.of(context).size.height,
@@ -428,8 +407,7 @@ class TripsState extends State<Trips> {
               setState(() {
                 this.refreshing = true;
               });
-              var response =
-                  await viewModel.onDeleteTrip(tripBuilder[index]['id']);
+              var response = await deleteTrip(store, tripBuilder[index]['id']);
               setState(() {
                 this.refreshing = false;
               });
@@ -447,7 +425,7 @@ class TripsState extends State<Trips> {
                         this.refreshing = true;
                       });
                       var response =
-                          await viewModel.undoDeleteTrip(undoData, index);
+                          await undoDeleteTrip(store, undoData, index);
                       setState(() {
                         this.refreshing = false;
                       });

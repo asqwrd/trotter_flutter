@@ -1,8 +1,10 @@
 // containers/auth_button/auth_button_container.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:redux/redux.dart';
+import 'package:trotter_flutter/store/store.dart';
 
 class GoogleAuthButtonContainer extends StatelessWidget {
   GoogleAuthButtonContainer({Key key}) : super(key: key);
@@ -10,44 +12,45 @@ class GoogleAuthButtonContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Connect to the store:
-    return new StoreConnector<AppState, _ViewModel>(
-      converter: _ViewModel.fromStore,
-      builder: (BuildContext context, _ViewModel vm) {
-        // We haven't made this yet.
-        return new GoogleAuthButton(
-          buttonText: vm.buttonText,
-          onPressedCallback: vm.onPressedCallback,
-        );
-      },
-    );
-  }
-}
-
-class _ViewModel {
-  final String buttonText;
-  final Function onPressedCallback;
-
-  _ViewModel({this.onPressedCallback, this.buttonText});
-
-  static _ViewModel fromStore(Store<AppState> store) {
-    // This is a bit of a more complex _viewModel
-    // constructor. As the state updates, it will
-    // recreate this _viewModel, and then pass
-    // buttonText and the callback down to the button
-    // with the appropriate qualities:
-    //
-    return new _ViewModel(
+    final store = Provider.of<TrotterStore>(context);
+    return new GoogleAuthButton(
         buttonText:
-            store.state.currentUser != null ? 'Log Out' : 'Log in with Google',
+            store.currentUser != null ? 'Log out' : 'Log in with Google',
         onPressedCallback: () {
-          if (store.state.currentUser != null) {
-            store.dispatch(new LogOut());
+          if (store.currentUser != null) {
+            store.logout();
           } else {
-            store.dispatch(new LogIn());
+            store.login();
           }
         });
   }
 }
+
+// class _ViewModel {
+//   final String buttonText;
+//   final Function onPressedCallback;
+
+//   _ViewModel({this.onPressedCallback, this.buttonText});
+
+//   static _ViewModel fromStore(Store<AppState> store) {
+//     // This is a bit of a more complex _viewModel
+//     // constructor. As the state updates, it will
+//     // recreate this _viewModel, and then pass
+//     // buttonText and the callback down to the button
+//     // with the appropriate qualities:
+//     //
+//     return new _ViewModel(
+//         buttonText:
+//             store.state.currentUser != null ? 'Log Out' : 'Log in with Google',
+//         onPressedCallback: () {
+//           if (store.state.currentUser != null) {
+//             store.dispatch(new LogOut());
+//           } else {
+//             store.dispatch(new LogIn());
+//           }
+//         });
+//   }
+// }
 
 class GoogleAuthButton extends StatelessWidget {
   final String buttonText;

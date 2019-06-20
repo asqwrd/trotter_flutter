@@ -1,6 +1,8 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:trotter_flutter/redux/index.dart';
 import 'package:redux/redux.dart';
@@ -13,6 +15,7 @@ class App extends StatefulWidget {
 
 class AppStateWidget extends State<App> {
   TabItem currentTab = TabItem.explore;
+  final store = TrotterStore();
   Map<TabItem, GlobalKey<NavigatorState>> navigatorKeys = {
     TabItem.explore: GlobalKey<NavigatorState>(),
     TabItem.trips: GlobalKey<NavigatorState>(),
@@ -26,6 +29,7 @@ class AppStateWidget extends State<App> {
   @override
   void initState() {
     super.initState();
+    store.checkLoginStatus();
     _retrieveDynamicLink();
   }
 
@@ -42,7 +46,6 @@ class AppStateWidget extends State<App> {
 
   @override
   void didChangeDependencies() {
-    StoreProvider.of<AppState>(context).dispatch(CheckStatus());
     super.didChangeDependencies();
     FocusScope.of(context).setFirstFocus(_focusA);
   }
@@ -70,27 +73,29 @@ class AppStateWidget extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    //_retrieveDynamicLink();
-
-    return WillPopScope(
-      onWillPop: () async =>
-          !await navigatorKeys[currentTab].currentState.maybePop(),
-      child: SizedBox.expand(
-          child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Stack(children: <Widget>[
-          FocusScope(
-              node: _focusA, child: _buildOffstageNavigator(TabItem.explore)),
-          FocusScope(
-              node: _focusB, child: _buildOffstageNavigator(TabItem.trips)),
-          FocusScope(
-              node: _focusC, child: _buildOffstageNavigator(TabItem.profile)),
-        ]),
-        bottomNavigationBar: BottomNavigation(
-            currentTab: currentTab,
-            onSelectTab: (TabItem tabitem) => _selectTab(context, tabitem)),
-      )),
-    );
+    return Provider(
+        store: store,
+        child: WillPopScope(
+          onWillPop: () async =>
+              !await navigatorKeys[currentTab].currentState.maybePop(),
+          child: SizedBox.expand(
+              child: Scaffold(
+            backgroundColor: Colors.white,
+            body: Stack(children: <Widget>[
+              FocusScope(
+                  node: _focusA,
+                  child: _buildOffstageNavigator(TabItem.explore)),
+              FocusScope(
+                  node: _focusB, child: _buildOffstageNavigator(TabItem.trips)),
+              FocusScope(
+                  node: _focusC,
+                  child: _buildOffstageNavigator(TabItem.profile)),
+            ]),
+            bottomNavigationBar: BottomNavigation(
+                currentTab: currentTab,
+                onSelectTab: (TabItem tabitem) => _selectTab(context, tabitem)),
+          )),
+        ));
   }
 
   Widget _buildOffstageNavigator(TabItem tabItem) {

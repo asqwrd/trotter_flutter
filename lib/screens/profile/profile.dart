@@ -1,6 +1,7 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_store/flutter_store.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/redux/index.dart';
@@ -39,12 +40,11 @@ class ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<AppState, AppState>(
-        converter: (store) => store.state,
-        builder: (context, store) => _buildContent(context, store));
+    final store = Provider.of<TrotterStore>(context);
+    return _buildContent(context, store);
   }
 
-  Widget _buildContent(BuildContext context, AppState store) {
+  Widget _buildContent(BuildContext context, TrotterStore store) {
     var color = Color.fromRGBO(1, 155, 174, 1);
     return NestedScrollView(
         controller: _scrollController,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:core';
@@ -6,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:redux/redux.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
@@ -18,7 +20,6 @@ import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'add-destination-modal.dart';
 import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -64,6 +65,7 @@ showDateModal(BuildContext context, dynamic destination, Color color,String trip
 }
 _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
   var dateFormat = DateFormat("EEE, MMM d, yyyy");
+  final store = Provider.of<TrotterStore>(context);
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var arrival = destination['start_date'];
   var departure = destination['end_date'];
@@ -217,17 +219,17 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
               )
             ),
             onPressed: () async {
-              if(_formKey.currentState.validate() && StoreProvider.of<AppState>(context).state.tripLoading == false){
+              if(_formKey.currentState.validate() && store.tripLoading == false){
                 destination["start_date"] =  arrival;
                 destination["end_date"] = departure;
-                StoreProvider.of<AppState>(context).dispatch(SetTripsLoadingAction(true)); 
+                store.setTripsLoading(true); 
                 var response = await putUpdateTripDestination(tripId, destination['id'], destination);
                 if(response.success == true){
                     destination["start_date"] =  arrival;
                     destination["end_date"] = departure;
                     Navigator.pop(context,{"arrival": arrival, "departure": departure});   
                 }
-                StoreProvider.of<AppState>(context).dispatch(SetTripsLoadingAction(false)); 
+                store.setTripsLoading(false); 
 
               }
             },
@@ -257,7 +259,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
   );
 }
 
-Future<TripData> fetchTrip(Store<AppState> store, String id) async {
+Future<TripData> fetchTrip(TrotterStore store, String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
@@ -277,10 +279,8 @@ Future<TripData> fetchTrip(Store<AppState> store, String id) async {
     if(cacheData != null) {
       var tripData = json.decode(cacheData);
       var results = TripData.fromJson(tripData);
-      store.dispatch(
-        new OfflineAction(
+      store.setOffline(
           true,
-        )
       );
       return results;
     } else {
@@ -337,6 +337,7 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
 
    @override
   Widget build(BuildContext context) {
+    final store = Provider.of<TrotterStore>(context);
     return Form(
       key: this._formKey,
       child: Container(
@@ -425,7 +426,7 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                       setState(() {
                         var oldName = this.trip['name'];
                         this.trip['name'] = _nameControllerModal.text;
-                        StoreProvider.of<AppState>(context).dispatch(UpdateTripsFromTripAction(this.trip)); 
+                        store.updateTrip(this.trip); 
                         Navigator.pop(context, oldName);
 
                       });
@@ -500,7 +501,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
 
    @override
   Widget build(BuildContext context) {
-
+    final store = Provider.of<TrotterStore>(context);
     return Scaffold(
       floatingActionButton: Builder( builder: (BuildContext builderContext) => FloatingActionButton(
         backgroundColor: this.color,
@@ -530,7 +531,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
               data['id'] = response.destination['ID'];
               setState(() {
                 this.destinations.add(data);
-                StoreProvider.of<AppState>(context).dispatch(UpdateTripsDestinationAction(this.tripId, data)); 
+                store.updateTripDestinations(this.tripId, data); 
                 Scaffold.of(builderContext).showSnackBar(SnackBar(
                   content: Text(
                         '${data['destination_name']}\'s has been added',
@@ -855,6 +856,17 @@ class TripState extends State<Trip> {
      double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
+    final store = Provider.of<TrotterStore>(context);
+    if(store.currentUser != null){
+          data = fetchTrip(store, this.tripId);
+          data.then((data){
+            this.color = Color(hexStringToHexInt(data.trip['color']));
+            this.destinations = data.destinations;
+            this.trip = data.trip;
+            this.trip['destinations'] = this.destinations;
+            this.tripName = data.trip['name'];
+          });
+        }
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingUpPanel(
@@ -880,24 +892,9 @@ class TripState extends State<Trip> {
             topLeft: Radius.circular(15), topRight: Radius.circular(15)),
         maxHeight: _panelHeightOpen,
         panel: Center(
-            child: StoreConnector <AppState, Store<AppState>>(
-      converter: (store) => store,
-      onInit: (store) async {
-        if(store.state.currentUser != null){
-          data = fetchTrip(store, this.tripId);
-          data.then((data){
-            this.color = Color(hexStringToHexInt(data.trip['color']));
-            this.destinations = data.destinations;
-            this.trip = data.trip;
-            this.trip['destinations'] = this.destinations;
-            this.tripName = data.trip['name'];
-          });
-        }
-      },
-      builder: (context, store){
-        return Scaffold(
+            child: Scaffold(
           backgroundColor: Colors.transparent,
-          floatingActionButton: store.state.offline == false ? FloatingActionButton(
+          floatingActionButton: store.offline == false ? FloatingActionButton(
             backgroundColor: this.color,
             onPressed: () { 
               bottomSheetModal(context, this.trip);
@@ -914,7 +911,7 @@ class TripState extends State<Trip> {
             future: data,
             builder: (context, snapshot) {
                if(snapshot.hasData && snapshot.data.error == null){
-                return _buildLoadedBody(context,snapshot);
+                return _buildLoadedBody(context,snapshot, store);
               } else if(snapshot.hasData && snapshot.data.error != null){
                 return ErrorContainer(
                   color: Color.fromRGBO(106,154,168,1),
@@ -928,9 +925,9 @@ class TripState extends State<Trip> {
               return _buildLoadingBody(context);
             }
           )
-        );
-      }
-    )),
+        )
+      
+    ),
         body: Container(
             height: _bodyHeight,
             child: Stack(children: <Widget>[
@@ -1030,7 +1027,7 @@ class TripState extends State<Trip> {
   
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot, TrotterStore store) {
 
     this.trip = snapshot.data.trip;
     this.destinations = snapshot.data.destinations;
@@ -1095,7 +1092,6 @@ class TripState extends State<Trip> {
                 if(fields[index]['id'] != null){
                   onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
                 } else if(destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary/edit'){
-                  var store =  StoreProvider.of<AppState>(context);
                   dynamic data = {
                     "itinerary":{
                       "name": trip['name'],

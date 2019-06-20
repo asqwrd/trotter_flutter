@@ -1,5 +1,3 @@
-
-
 enum TripActions { UpdateTrip, DeleteTrip }
 
 class GetTripsAction {
@@ -8,19 +6,19 @@ class GetTripsAction {
 }
 
 class UpdateTripsFromTripAction {
-  final Map<String,dynamic> trip;
+  final Map<String, dynamic> trip;
   UpdateTripsFromTripAction(this.trip);
 }
 
 class UpdateTripsAfterCreateAction {
-  final Map<String,dynamic> trip;
+  final Map<String, dynamic> trip;
   UpdateTripsAfterCreateAction(this.trip);
 }
 
 class UpdateTripsDestinationAction {
   final String tripId;
   final dynamic destination;
-  
+
   UpdateTripsDestinationAction(this.tripId, this.destination);
 }
 
@@ -32,7 +30,7 @@ class SetTripsLoadingAction {
 class DeleteTripAction {
   final String tripId;
   final bool success;
-  
+
   DeleteTripAction(this.tripId, this.success);
 }
 
@@ -40,13 +38,13 @@ class UndoTripDeleteAction {
   final dynamic trip;
   final int index;
   final bool success;
-  
+
   UndoTripDeleteAction(this.trip, this.index, this.success);
 }
 
 class CreateTripAction {
   final dynamic trip;
   final bool success;
-  
+
   CreateTripAction(this.trip, this.success);
 }

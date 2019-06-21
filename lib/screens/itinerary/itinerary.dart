@@ -1,17 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:redux/redux.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/itineraries/middleware.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class Itinerary extends StatefulWidget {
@@ -65,6 +63,22 @@ class ItineraryState extends State<Itinerary> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
+    final store = Provider.of<TrotterStore>(context);
+    final data = fetchItinerary(store, this.itineraryId);
+    data.then((res) {
+      if (res.error != null) {
+        setState(() {
+          this.errorUi = true;
+        });
+      } else if (res.error == null) {
+        setState(() {
+          this.errorUi = false;
+          this.image = res.destination['image'];
+          this.itineraryName = res.itinerary['name'];
+          this.color = Color(hexStringToHexInt(res.color));
+        });
+      }
+    });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingUpPanel(
@@ -90,27 +104,9 @@ class ItineraryState extends State<Itinerary> {
             topLeft: Radius.circular(15), topRight: Radius.circular(15)),
         maxHeight: _panelHeightOpen,
         panel: Center(
-            child: StoreConnector<AppState, Store<AppState>>(
-                converter: (store) => store,
-                onInit: (store) async {
-                  store.dispatch(new SetItineraryLoadingAction(true));
-                  var data = await fetchItinerary(store, this.itineraryId);
-
-                  if (data.error != null) {
-                    setState(() {
-                      this.errorUi = true;
-                    });
-                  } else if (data.error == null) {
-                    setState(() {
-                      this.errorUi = false;
-                      this.image = data.destination['image'];
-                      this.itineraryName = data.itinerary['name'];
-                      this.color = Color(hexStringToHexInt(data.color));
-                    });
-                  }
-                  store.dispatch(SetItineraryLoadingAction(false));
-                },
-                builder: (context, store) {
+            child: FutureBuilder(
+                future: data,
+                builder: (context, snapshot) {
                   return _buildLoadedBody(context, store);
                 })),
         body: Container(
@@ -163,26 +159,26 @@ class ItineraryState extends State<Itinerary> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, Store<AppState> store) {
-    if (store.state.itinerary == null || store.state.itinerary.loading) {
+  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
+    if (store.itinerary == null || store.itinerary.loading) {
       return _buildLoadingBody(ctxt);
     }
-    if (store.state.itinerary.error != null) {
+    if (store.itinerary.error != null) {
       return ErrorContainer(
         onRetry: () async {
-          store.dispatch(new SetItineraryLoadingAction(true));
+          store.setItineraryLoading(true);
           await fetchItinerary(store, this.itineraryId);
-          store.dispatch(SetItineraryLoadingAction(false));
+          store.setItineraryLoading(false);
         },
       );
     }
-    var itinerary = store.state.itinerary.itinerary;
+    var itinerary = store.itinerary.itinerary;
     var name = itinerary['name'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
-    var destination = store.state.itinerary.destination;
-    var color = Color(hexStringToHexInt(store.state.itinerary.color));
+    var destination = store.itinerary.destination;
+    var color = Color(hexStringToHexInt(store.itinerary.color));
 
     return Container(
         height: MediaQuery.of(context).size.height,

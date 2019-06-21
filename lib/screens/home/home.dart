@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
@@ -15,8 +17,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -283,9 +283,8 @@ class HomeState extends State<Home> {
 
   Widget _buildItinerary(
       BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
-    StoreProvider.of<AppState>(context).dispatch(new OfflineAction(
-      false,
-    ));
+    final store = Provider.of<TrotterStore>(context);
+    //store.setOffline(false);
     var itineraries = snapshot.data.itineraries;
     var widgets = <Widget>[
       Padding(
@@ -366,6 +365,7 @@ class HomeState extends State<Home> {
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     var popularCities = snapshot.hasData ? snapshot.data.popularCities : [];
     var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
+    final store = Provider.of<TrotterStore>(context);
 
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -402,8 +402,7 @@ class HomeState extends State<Home> {
                     onPush({'id': data['id'], 'level': data['level']});
                   },
                   onLongPressed: (data) {
-                    var currentUser =
-                        StoreProvider.of<AppState>(context).state.currentUser;
+                    var currentUser = store.currentUser;
                     if (currentUser == null) {
                       loginBottomSheet(context, data, color);
                     } else {
@@ -422,8 +421,7 @@ class HomeState extends State<Home> {
                     onPush({'id': data['id'], 'level': data['level']});
                   },
                   onLongPressed: (data) {
-                    var currentUser =
-                        StoreProvider.of<AppState>(context).state.currentUser;
+                    var currentUser = store.currentUser;
                     if (currentUser == null) {
                       loginBottomSheet(context, data, color);
                     } else {

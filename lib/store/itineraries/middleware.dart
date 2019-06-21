@@ -52,6 +52,7 @@ Future<ItineraryData> fetchItinerary(TrotterStore store, String id) async {
       );
       store.setItineraryError(null);
       store.setOffline(false);
+      store.setItineraryLoading(false);
       return results;
     } else {
       // If that response was not OK, throw an error.
@@ -77,7 +78,7 @@ Future<ItineraryData> fetchSelectedItinerary(
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
 
-      store.getSelectedItinerary(results.itinerary['id'], false,
+      store.setSelectedItinerary(results.itinerary['id'], false,
           results.destination['id'], results.itinerary);
 
       store.setItineraryError(null);
@@ -98,7 +99,7 @@ Future<ItineraryData> fetchSelectedItinerary(
 }
 
 Future<ItineraryData> fetchItineraryBuilder(
-    TrotterStore store, String id, String page) async {
+    TrotterStore store, String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get(
@@ -115,6 +116,7 @@ Future<ItineraryData> fetchItineraryBuilder(
       );
       store.setItineraryError(null);
       store.setOffline(false);
+      store.setItineraryBuilderLoading(false);
       return results;
     } else {
       // If that response was not OK, throw an error.
@@ -164,8 +166,8 @@ Future<DayData> fetchDay(String itineraryId, String dayId) async {
 
 //Stoping point
 
-Future<DayData> addToDay(Store<AppState> store, String itineraryId,
-    String dayId, String destinationId, dynamic data,
+Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
+    String destinationId, dynamic data,
     [bool optimize]) async {
   try {
     final response = await http.post(
@@ -180,26 +182,24 @@ Future<DayData> addToDay(Store<AppState> store, String itineraryId,
         itineraryItems = itineraryItems.sublist(1);
         res.day['itinerary_items'] = itineraryItems;
       }
-      store.dispatch(new UpdateDayAfterAddAction(
-          dayId, itineraryItems, res.justAdded, res.itinerary, destinationId));
-      store.dispatch(new ErrorAction(null, null));
-      store.dispatch(new OfflineAction(
-        false,
-      ));
+      if (store.selectedItinerary.selectedItineraryId == itineraryId) {
+        store.updateSelectedItinerary(
+            dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
+      }
+      store.updateItineraryBuilder(
+          dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
+      store.setItineraryError(null);
+      store.setOffline(false);
       return res;
     } else {
       // If that response was not OK, throw an error.
-      store.dispatch(new ErrorAction('Server is down', 'add_day'));
-      store.dispatch(new OfflineAction(
-        true,
-      ));
+      store.setItineraryError('Server is down');
+      store.setOffline(true);
       return DayData(success: false);
     }
   } catch (error) {
-    store.dispatch(new ErrorAction('Server is down', 'add_day'));
-    store.dispatch(new OfflineAction(
-      true,
-    ));
+    store.setItineraryError('Server is down');
+    store.setOffline(true);
     return DayData(success: false);
   }
 }

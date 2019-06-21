@@ -21,6 +21,7 @@ class TrotterStore extends Store {
     selectedItinerary: null,
     destinationId: null,
   );
+  get selectedItinerary => _selectedItinerary;
   ItineraryData _itineraryBuilder = ItineraryData(
       itinerary: null,
       loading: true,
@@ -120,7 +121,7 @@ class TrotterStore extends Store {
     });
   }
 
-  getSelectedItinerary(String selectedItineraryId, bool loading,
+  setSelectedItinerary(String selectedItineraryId, bool loading,
       String destinationId, dynamic selectedItinerary) {
     setState(() {
       _selectedItinerary = SelectItineraryData(
@@ -128,6 +129,55 @@ class TrotterStore extends Store {
           selectedItineraryId: selectedItineraryId,
           selectedItinerary: selectedItinerary,
           destinationId: destinationId);
+    });
+  }
+
+  updateSelectedItinerary(String dayId, List<dynamic> itineraryItems,
+      String justAdded, Map<String, dynamic> itinerary, String destinationId) {
+    var selectedItinerary = _selectedItinerary.selectedItinerary;
+    var index =
+        selectedItinerary["days"].indexWhere((day) => day['id'] == dayId);
+    selectedItinerary["days"][index]["itinerary_items"] = itineraryItems;
+
+    setState(() {
+      _selectedItinerary = SelectItineraryData(
+          loading: _selectedItinerary.loading,
+          selectedItineraryId: itinerary['id'],
+          selectedItinerary: selectedItinerary,
+          destinationId: destinationId);
+    });
+  }
+
+  updateItineraryBuilder(String dayId, List<dynamic> itineraryItems,
+      String justAdded, Map<String, dynamic> itinerary, String destinationId) {
+    var itinerary = _itineraryBuilder.itinerary;
+    var index = itinerary["days"].indexWhere((day) => day['id'] == dayId);
+    var justAddedIndex =
+        itineraryItems.indexWhere((itin) => itin['id'] == justAdded);
+    itineraryItems[justAddedIndex]['justAdded'] = true;
+    itinerary["days"][index]["itinerary_items"] = itineraryItems;
+    setState(() {
+      _itineraryBuilder = ItineraryData(
+          color: _itineraryBuilder.color,
+          destination: _itineraryBuilder.destination,
+          loading: _itineraryBuilder.loading,
+          error: _itineraryBuilder.error);
+    });
+  }
+
+  updateItineraryBuilderDelete(String dayId, String id) {
+    var itinerary = _itineraryBuilder.itinerary;
+    var index = itinerary["days"].indexWhere((day) => day['id'] == dayId);
+    var itineraryItems = itinerary["days"][index]["itinerary_items"];
+    itineraryItems.removeWhere((item) => item['id'] == id);
+    itinerary["days"][index]["itinerary_items"] = itineraryItems;
+    setState(() {
+      _itineraryBuilder = ItineraryData(
+          itinerary: itinerary,
+          color: _itineraryBuilder.color,
+          destination: _itineraryBuilder.destination,
+          loading: _itineraryBuilder.loading,
+          error: _itineraryBuilder.error);
     });
   }
 
@@ -161,6 +211,27 @@ class TrotterStore extends Store {
           destination: _itineraryBuilder.destination,
           loading: loading,
           error: _itineraryBuilder.error);
+    });
+  }
+
+  setSelectItineraryLoading(bool loading) {
+    setState(() {
+      _selectedItinerary = SelectItineraryData(
+          loading: loading,
+          selectedItineraryId: _selectedItinerary.selectedItineraryId,
+          selectedItinerary: _selectedItinerary.selectedItinerary,
+          destinationId: _selectedItinerary.destinationId);
+    });
+  }
+
+  setItineraryLoading(bool loading) {
+    setState(() {
+      _itinerary = ItineraryData(
+          itinerary: _itinerary.itinerary,
+          color: _itinerary.color,
+          destination: _itinerary.destination,
+          loading: loading,
+          error: _itinerary.error);
     });
   }
 

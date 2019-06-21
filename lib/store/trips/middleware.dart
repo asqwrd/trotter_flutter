@@ -20,6 +20,7 @@ Future<TripsData> fetchTrips(TrotterStore store) async {
         await prefs.setString('trips', response.body);
         store.setTripsError(null);
         store.setOffline(false);
+        store.getTrips(results.trips);
       } else if (results.error != null) {
         store.setTripsError(results.error);
       }

@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/itineraries/middleware.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -228,6 +229,7 @@ class DayEditState extends State<DayEdit> {
   }
 
   Widget _buildFab(color) {
+    final store = Provider.of<TrotterStore>(context);
     var items = [
       new FabMiniMenuItem.withText(
           new Icon(EvilIcons.location), Colors.deepPurple, 4.0, null, () async {
@@ -249,8 +251,8 @@ class DayEditState extends State<DayEdit> {
           };
 
           this.loading = true;
-          var response = await addToDay(StoreProvider.of<AppState>(context),
-              this.itineraryId, this.dayId, this.destinationId, data, false);
+          var response = await addToDay(store, this.itineraryId, this.dayId,
+              this.destinationId, data, false);
           setState(() {
             this.color = Color(hexStringToHexInt(response.color));
             this.destinationName = response.destination['name'];
@@ -296,6 +298,7 @@ class DayEditState extends State<DayEdit> {
     var name = data['poi']['name'];
     var undoData = data;
     var id = data['id'];
+    final store = Provider.of<TrotterStore>(ctxt);
 
     return showModalBottomSheet(
         context: ctxt,
@@ -309,7 +312,7 @@ class DayEditState extends State<DayEdit> {
                     title: new Text('Move to another day'),
                     onTap: () async {
                       var result = await showDayBottomSheet(
-                          StoreProvider.of<AppState>(context),
+                          store,
                           context,
                           this.itineraryId,
                           data['poi'],
@@ -330,8 +333,7 @@ class DayEditState extends State<DayEdit> {
                             this
                                 .itineraryItems
                                 .removeWhere((item) => item['id'] == id);
-                            StoreProvider.of<AppState>(context).dispatch(
-                                UpdateDayAfterDeleteAction(this.dayId, id));
+                            store.updateItineraryBuilderDelete(this.dayId, id);
                             Navigator.of(context).pop();
                             this.loading = false;
                           });
@@ -361,8 +363,7 @@ class DayEditState extends State<DayEdit> {
                           this
                               .itineraryItems
                               .removeWhere((item) => item['id'] == id);
-                          StoreProvider.of<AppState>(context).dispatch(
-                              UpdateDayAfterDeleteAction(this.dayId, id));
+                          store.updateItineraryBuilderDelete(this.dayId, id);
                           this.loading = false;
                         });
                         Scaffold.of(ctxt).showSnackBar(SnackBar(
@@ -377,7 +378,7 @@ class DayEditState extends State<DayEdit> {
                                 this.loading = true;
                               });
                               var response = await addToDay(
-                                  StoreProvider.of<AppState>(ctxt),
+                                  store,
                                   this.itineraryId,
                                   this.dayId,
                                   this.destinationId,

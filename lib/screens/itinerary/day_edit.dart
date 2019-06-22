@@ -202,11 +202,13 @@ class DayEditState extends State<DayEdit> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text('$destinationName',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 30,
-                                fontWeight: FontWeight.w300)),
+                        destinationName != null
+                            ? Text('$destinationName',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w300))
+                            : Container(),
                       ])),
               this.image == null
                   ? Positioned(
@@ -250,7 +252,10 @@ class DayEditState extends State<DayEdit> {
             "time": {"value": "", "unit": ""}
           };
 
-          this.loading = true;
+          setState(() {
+            this.loading = true;
+          });
+          ;
           var response = await addToDay(store, this.itineraryId, this.dayId,
               this.destinationId, data, false);
           setState(() {
@@ -291,6 +296,13 @@ class DayEditState extends State<DayEdit> {
           bottomSheetModal(context, day['day'] + 1, data);
         },
       ),
+      this.loading
+          ? Align(
+              alignment: Alignment.center,
+              child: RefreshProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(color),
+              ))
+          : Container()
     ]);
   }
 
@@ -333,7 +345,8 @@ class DayEditState extends State<DayEdit> {
                             this
                                 .itineraryItems
                                 .removeWhere((item) => item['id'] == id);
-                            store.updateItineraryBuilderDelete(this.dayId, id);
+                            store.itineraryStore
+                                .updateItineraryBuilderDelete(this.dayId, id);
                             Navigator.of(context).pop();
                             this.loading = false;
                           });
@@ -363,7 +376,8 @@ class DayEditState extends State<DayEdit> {
                           this
                               .itineraryItems
                               .removeWhere((item) => item['id'] == id);
-                          store.updateItineraryBuilderDelete(this.dayId, id);
+                          store.itineraryStore
+                              .updateItineraryBuilderDelete(this.dayId, id);
                           this.loading = false;
                         });
                         Scaffold.of(ctxt).showSnackBar(SnackBar(
@@ -432,8 +446,6 @@ class DayEditState extends State<DayEdit> {
   Widget _buildLoadingBody(BuildContext ctxt) {
     return Column(children: <Widget>[
       Container(
-        height: 200,
-        margin: EdgeInsets.only(bottom: 40),
         color: Color.fromRGBO(240, 240, 240, 1),
       ),
       Flexible(

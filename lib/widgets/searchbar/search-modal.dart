@@ -335,7 +335,7 @@ class SearchModalState extends State<SearchModal> {
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600),
                                   ),
-                                  subtitle: results[index]['description_short']
+                                  subtitle: results[index]['description_short'] != null
                                       ? Text(
                                           results[index]['description_short'],
                                           maxLines: 2,

@@ -37,7 +37,7 @@ Future<CreateItineraryData> postCreateItinerary(
   }
 }
 
-Future<ItineraryData> fetchItinerary(TrotterStore store, String id) async {
+Future<ItineraryData> fetchItinerary(String id, [TrotterStore store]) async {
   try {
     final response = await http.get(
         'http://localhost:3002/api/itineraries/get/$id',
@@ -45,25 +45,25 @@ Future<ItineraryData> fetchItinerary(TrotterStore store, String id) async {
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
-      store.getItinerary(
+      store?.itineraryStore?.getItinerary(
         results.itinerary,
         results.destination,
         results.color,
       );
-      store.setItineraryError(null);
-      store.setOffline(false);
-      store.setItineraryLoading(false);
+      store?.itineraryStore?.setItineraryError(null);
+      store?.setOffline(false);
+      store?.itineraryStore?.setItineraryLoading(false);
       return results;
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
-      store.setItineraryError('Server is down');
-      store.setOffline(true);
+      store?.itineraryStore?.setItineraryError('Server is down');
+      store?.setOffline(true);
       return ItineraryData(error: 'Response> $msg');
     }
   } catch (error) {
-    store.setItineraryError('Server is down');
-    store.setOffline(true);
+    store?.itineraryStore?.setItineraryError('Server is down');
+    store?.setOffline(true);
     return ItineraryData(error: 'Server is down');
   }
 }
@@ -78,28 +78,28 @@ Future<ItineraryData> fetchSelectedItinerary(
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
 
-      store.setSelectedItinerary(results.itinerary['id'], false,
+      store.itineraryStore.setSelectedItinerary(results.itinerary['id'], false,
           results.destination['id'], results.itinerary);
 
-      store.setItineraryError(null);
+      store.itineraryStore.setItineraryError(null);
       store.setOffline(false);
       return results;
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
-      store.setItineraryError('Server is down');
+      store.itineraryStore.setItineraryError('Server is down');
       store.setOffline(true);
       return ItineraryData(error: 'Response> $msg');
     }
   } catch (error) {
-    store.setItineraryError('Server is down');
+    store.itineraryStore.setItineraryError('Server is down');
     store.setOffline(true);
     return ItineraryData(error: 'Server is down');
   }
 }
 
-Future<ItineraryData> fetchItineraryBuilder(
-    TrotterStore store, String id) async {
+Future<ItineraryData> fetchItineraryBuilder(String id,
+    [TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get(
@@ -109,20 +109,20 @@ Future<ItineraryData> fetchItineraryBuilder(
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
       await prefs.setString('itinerary_$id', response.body);
-      store.getItineraryBuilder(
+      store?.itineraryStore?.getItineraryBuilder(
         results.itinerary,
         results.destination,
         results.color,
       );
-      store.setItineraryError(null);
-      store.setOffline(false);
-      store.setItineraryBuilderLoading(false);
+      store?.itineraryStore?.setItineraryError(null);
+      store?.setOffline(false);
+      store?.itineraryStore?.setItineraryBuilderLoading(false);
       return results;
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
       //store.setItineraryError('Server is down');
-      store.setOffline(true);
+      store?.setOffline(true);
       return ItineraryData(error: 'Response> $msg');
     }
   } catch (error) {
@@ -130,18 +130,18 @@ Future<ItineraryData> fetchItineraryBuilder(
     if (cacheData != null) {
       var itineraryData = json.decode(cacheData);
       var results = ItineraryData.fromJson(itineraryData);
-      store.getItineraryBuilder(
+      store?.itineraryStore?.getItineraryBuilder(
         results.itinerary,
         results.destination,
         results.color,
       );
-      store.setItineraryBuilderLoading(false);
-      store.setItineraryBuilderError('Server is down');
-      store.setOffline(true);
+      store?.itineraryStore?.setItineraryBuilderLoading(false);
+      store?.itineraryStore?.setItineraryBuilderError('Server is down');
+      store?.setOffline(true);
       return results;
     }
-    store.setItineraryError('Server is down');
-    store.setItineraryBuilderLoading(false);
+    store?.itineraryStore?.setItineraryError('Server is down');
+    store?.itineraryStore?.setItineraryBuilderLoading(false);
     return ItineraryData(error: 'Server is down');
   }
 }
@@ -182,23 +182,24 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
         itineraryItems = itineraryItems.sublist(1);
         res.day['itinerary_items'] = itineraryItems;
       }
-      if (store.selectedItinerary.selectedItineraryId == itineraryId) {
-        store.updateSelectedItinerary(
+      if (store.itineraryStore.selectedItinerary.selectedItineraryId ==
+          itineraryId) {
+        store.itineraryStore.updateSelectedItinerary(
             dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
       }
-      store.updateItineraryBuilder(
+      store.itineraryStore.updateItineraryBuilder(
           dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
-      store.setItineraryError(null);
+      store.itineraryStore.setItineraryError(null);
       store.setOffline(false);
       return res;
     } else {
       // If that response was not OK, throw an error.
-      store.setItineraryError('Server is down');
+      store.itineraryStore.setItineraryError('Server is down');
       store.setOffline(true);
       return DayData(success: false);
     }
   } catch (error) {
-    store.setItineraryError('Server is down');
+    store.itineraryStore.setItineraryError('Server is down');
     store.setOffline(true);
     return DayData(success: false);
   }

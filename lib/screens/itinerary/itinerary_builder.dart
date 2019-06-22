@@ -48,7 +48,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       });
     });
     super.initState();
-    //data = fetchItinerary(this.itineraryId);
+    data = fetchItineraryBuilder(this.itineraryId);
   }
 
   @override
@@ -65,7 +65,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
     final store = Provider.of<TrotterStore>(context);
-    final data = fetchItineraryBuilder(store, this.itineraryId);
     data.then((res) {
       if (res.error != null) {
         setState(() {
@@ -77,6 +76,12 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           this.image = res.destination['image'];
           this.itineraryName = res.itinerary['name'];
           this.color = Color(hexStringToHexInt(res.color));
+          store.itineraryStore.getItineraryBuilder(
+            res.itinerary,
+            res.destination,
+            res.color,
+          );
+          store.itineraryStore.setItineraryBuilderLoading(false);
         });
       }
     });
@@ -161,24 +166,26 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
-    if (store.itineraryBuilder == null || store.itineraryBuilder.loading) {
+    if (store.itineraryStore.itineraryBuilder == null ||
+        store.itineraryStore.itineraryBuilder.loading) {
       return _buildLoadingBody(ctxt);
     }
-    if (store.itineraryBuilder.error != null) {
+    if (store.itineraryStore.itineraryBuilder.error != null) {
       return ErrorContainer(
         onRetry: () async {
-          store.setItineraryBuilderLoading(true);
-          await fetchItineraryBuilder(store, this.itineraryId);
-          store.setItineraryBuilderLoading(false);
+          store.itineraryStore.setItineraryBuilderLoading(true);
+          await fetchItineraryBuilder(this.itineraryId, store);
+          store.itineraryStore.setItineraryBuilderLoading(false);
         },
       );
     }
 
-    var itinerary = store.itineraryBuilder.itinerary;
+    var itinerary = store.itineraryStore.itineraryBuilder.itinerary;
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
-    var color = Color(hexStringToHexInt(store.itineraryBuilder.color));
+    var color =
+        Color(hexStringToHexInt(store.itineraryStore.itineraryBuilder.color));
 
     return Container(
         height: MediaQuery.of(context).size.height,
@@ -320,7 +327,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
         child: Text(
-          ' Loading...',
+          'Getting itinerary...',
           style: TextStyle(fontSize: 30),
         ),
       ),

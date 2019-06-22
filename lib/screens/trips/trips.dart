@@ -145,9 +145,9 @@ class TripsState extends State<Trips> {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100)),
                     onPressed: () async {
-                      store.setTripsLoading(true);
+                      store.tripStore.setTripsLoading(true);
                       await fetchTrips(store);
-                      store.setTripsLoading(false);
+                      store.tripStore.setTripsLoading(false);
                     },
                     child: SvgPicture.asset("images/refresh_icon.svg",
                         width: 24.0,
@@ -163,7 +163,7 @@ class TripsState extends State<Trips> {
   Scaffold buildScaffold(
       Color color, TrotterStore store, BuildContext context) {
     var currentUser = store.currentUser;
-    var tripsError = store.tripsError;
+    var tripsError = store.tripStore.tripsError;
     var offline = store.offline;
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -173,7 +173,7 @@ class TripsState extends State<Trips> {
                     backgroundColor: color,
                     onPressed: () {
                       onPush({"level": "createtrip"});
-                      if (store.trips.length == 0) {
+                      if (store.tripStore.trips.length == 0) {
                         setState(() {
                           this._showTitle = false;
                         });
@@ -189,17 +189,17 @@ class TripsState extends State<Trips> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store, Color color) {
-    var error = store.tripsError;
+    var error = store.tripStore.tripsError;
     var offline = store.offline;
-    var trips = store.trips;
+    var trips = store.tripStore.trips;
     var currentUser = store.currentUser;
-    var loading = store.tripLoading;
+    var loading = store.tripStore.tripLoading;
 
     if (error != null && offline == false) {
       return ErrorContainer(
         color: color,
         onRetry: () {
-          store.setTripsLoading(true);
+          store.tripStore.setTripsLoading(true);
           fetchTrips(store);
         },
       );
@@ -271,9 +271,12 @@ class TripsState extends State<Trips> {
                 ? Center(child: RefreshProgressIndicator())
                 : Container()
           ]));
-    } else if (currentUser != null && this.loggedIn == false) {
-      fetchTrips(store);
-      this.loggedIn = true;
+    } else if (currentUser != null && store.tripStore.trips == null) {
+      fetchTrips(store).then((res) {
+        setState(() {
+          this.loggedIn = true;
+        });
+      });
     }
 
     if (loading == true || trips == null)
@@ -290,7 +293,7 @@ class TripsState extends State<Trips> {
           alignment: Alignment.center,
           padding: EdgeInsets.only(top: 10, bottom: 20),
           child: Text(
-            'Getting trips',
+            'Getting trips...',
             style: TextStyle(fontSize: 30),
           ),
         ),

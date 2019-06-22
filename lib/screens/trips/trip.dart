@@ -217,17 +217,17 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
               )
             ),
             onPressed: () async {
-              if(_formKey.currentState.validate() && store.tripLoading == false){
+              if(_formKey.currentState.validate() && store.tripStore.tripLoading == false){
                 destination["start_date"] =  arrival;
                 destination["end_date"] = departure;
-                store.setTripsLoading(true); 
+                store.tripStore.setTripsLoading(true); 
                 var response = await putUpdateTripDestination(tripId, destination['id'], destination);
                 if(response.success == true){
                     destination["start_date"] =  arrival;
                     destination["end_date"] = departure;
                     Navigator.pop(context,{"arrival": arrival, "departure": departure});   
                 }
-                store.setTripsLoading(false); 
+                store.tripStore.setTripsLoading(false); 
 
               }
             },
@@ -257,7 +257,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
   );
 }
 
-Future<TripData> fetchTrip(TrotterStore store, String id) async {
+Future<TripData> fetchTrip(String id, [TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
@@ -265,6 +265,9 @@ Future<TripData> fetchTrip(TrotterStore store, String id) async {
       // If server returns an OK response, parse the JSON
       await prefs.setString('trip_$id', response.body);
       var tripData = json.decode(response.body);
+      store?.setOffline(
+          false,
+      );
       return TripData.fromJson(tripData);
     } else {
       // If that response was not OK, throw an error.
@@ -277,7 +280,7 @@ Future<TripData> fetchTrip(TrotterStore store, String id) async {
     if(cacheData != null) {
       var tripData = json.decode(cacheData);
       var results = TripData.fromJson(tripData);
-      store.setOffline(
+      store?.setOffline(
           true,
       );
       return results;
@@ -424,7 +427,7 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                       setState(() {
                         var oldName = this.trip['name'];
                         this.trip['name'] = _nameControllerModal.text;
-                        store.updateTrip(this.trip); 
+                        store.tripStore.updateTrip(this.trip); 
                         Navigator.pop(context, oldName);
 
                       });
@@ -529,7 +532,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
               data['id'] = response.destination['ID'];
               setState(() {
                 this.destinations.add(data);
-                store.updateTripDestinations(this.tripId, data); 
+                store.tripStore.updateTripDestinations(this.tripId, data); 
                 Scaffold.of(builderContext).showSnackBar(SnackBar(
                   content: Text(
                         '${data['destination_name']}\'s has been added',
@@ -768,6 +771,7 @@ class TripState extends State<Trip> {
         }
       });
     });
+    data = fetchTrip(this.tripId);
     super.initState();
     
   }
@@ -856,13 +860,15 @@ class TripState extends State<Trip> {
     double _panelHeightClosed = 100.0;
     final store = Provider.of<TrotterStore>(context);
     if(store.currentUser != null){
-          data = fetchTrip(store, this.tripId);
           data.then((data){
-            this.color = Color(hexStringToHexInt(data.trip['color']));
-            this.destinations = data.destinations;
-            this.trip = data.trip;
-            this.trip['destinations'] = this.destinations;
-            this.tripName = data.trip['name'];
+            setState((){
+              this.color = Color(hexStringToHexInt(data.trip['color']));
+              this.destinations = data.destinations;
+              this.trip = data.trip;
+              this.trip['destinations'] = this.destinations;
+              this.tripName = data.trip['name'];
+            });
+           
           });
         }
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
@@ -915,7 +921,7 @@ class TripState extends State<Trip> {
                   color: Color.fromRGBO(106,154,168,1),
                   onRetry: () {
                     setState(() {
-                      data =  fetchTrip(store,this.tripId); 
+                      data =  fetchTrip(this.tripId, store); 
                     });
                   },
                 );

@@ -47,7 +47,7 @@ class ItineraryState extends State<Itinerary> {
       });
     });
     super.initState();
-    //data = fetchItinerary(this.itineraryId);
+    data = fetchItinerary(this.itineraryId);
   }
 
   @override
@@ -64,7 +64,7 @@ class ItineraryState extends State<Itinerary> {
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
     final store = Provider.of<TrotterStore>(context);
-    final data = fetchItinerary(store, this.itineraryId);
+
     data.then((res) {
       if (res.error != null) {
         setState(() {
@@ -160,25 +160,26 @@ class ItineraryState extends State<Itinerary> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
-    if (store.itinerary == null || store.itinerary.loading) {
+    if (store.itineraryStore.itinerary == null ||
+        store.itineraryStore.itinerary.loading) {
       return _buildLoadingBody(ctxt);
     }
-    if (store.itinerary.error != null) {
+    if (store.itineraryStore.itinerary.error != null) {
       return ErrorContainer(
         onRetry: () async {
-          store.setItineraryLoading(true);
-          await fetchItinerary(store, this.itineraryId);
-          store.setItineraryLoading(false);
+          store.itineraryStore.setItineraryLoading(true);
+          await fetchItinerary(this.itineraryId, store);
+          store.itineraryStore.setItineraryLoading(false);
         },
       );
     }
-    var itinerary = store.itinerary.itinerary;
+    var itinerary = store.itineraryStore.itinerary.itinerary;
     var name = itinerary['name'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
-    var destination = store.itinerary.destination;
-    var color = Color(hexStringToHexInt(store.itinerary.color));
+    var destination = store.itineraryStore.itinerary.destination;
+    var color = Color(hexStringToHexInt(store.itineraryStore.itinerary.color));
 
     return Container(
         height: MediaQuery.of(context).size.height,

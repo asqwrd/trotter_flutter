@@ -7,7 +7,7 @@ import 'dart:convert';
 
 import 'package:trotter_flutter/store/store.dart';
 
-Future<TripsData> fetchTrips(TrotterStore store) async {
+Future<TripsData> fetchTrips([TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get(
@@ -18,13 +18,13 @@ Future<TripsData> fetchTrips(TrotterStore store) async {
       var results = TripsData.fromJson(json.decode(response.body));
       if (results.error == null) {
         await prefs.setString('trips', response.body);
-        store.setTripsError(null);
-        store.setOffline(false);
-        store.getTrips(results.trips);
+        store?.tripStore?.setTripsError(null);
+        store?.setOffline(false);
+        store?.tripStore?.getTrips(results.trips);
       } else if (results.error != null) {
-        store.setTripsError(results.error);
+        store.tripStore.setTripsError(results.error);
       }
-      store.setTripsLoading(false);
+      store?.tripStore?.setTripsLoading(false);
       return results;
     } else {
       // If that response was not OK, throw an error.
@@ -36,14 +36,14 @@ Future<TripsData> fetchTrips(TrotterStore store) async {
     if (cacheData != null) {
       var tripsData = json.decode(cacheData);
       var results = TripsData.fromJson(tripsData);
-      store..getTrips(results.trips);
-      store.setTripsError(null);
-      store.setOffline(true);
-      store.setTripsError(null);
+      store?.tripStore?.getTrips(results.trips);
+      store?.tripStore?.setTripsError(null);
+      store?.setOffline(true);
+      store?.tripStore?.setTripsError(null);
       return results;
     } else {
-      store.setTripsError('Server is down');
-      store.setTripsLoading(false);
+      store?.tripStore?.setTripsError('Server is down');
+      store?.tripStore?.setTripsLoading(false);
       return TripsData(error: "Server is down");
     }
   }
@@ -57,16 +57,16 @@ Future<DeleteTripData> deleteTrip(TrotterStore store, String tripId) async {
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = DeleteTripData.fromJson(json.decode(response.body));
-      store.deleteTrip(tripId);
+      store.tripStore.deleteTrip(tripId);
       return results;
     } else {
       // If that response was not OK, throw an error.
-      store.setTripsLoading(false);
+      store.tripStore.setTripsLoading(false);
       return DeleteTripData(success: false);
     }
   } catch (error) {
     // If that response was not OK, throw an error.
-    store.setTripsLoading(false);
+    store.tripStore.setTripsLoading(false);
     return DeleteTripData(success: false);
   }
 }
@@ -90,22 +90,22 @@ Future<CreateTripData> postCreateTrip(TrotterStore store, dynamic data,
       var trip = results.trip;
       trip['destinations'] = results.destinations;
       if (index != null && undo == true) {
-        store.undoTripDelete(trip, index);
+        store.tripStore.undoTripDelete(trip, index);
       } else {
-        store.createTrip(trip);
+        store.tripStore.createTrip(trip);
       }
-      store.setTripsError(null);
-      store.setTripsLoading(false);
+      store.tripStore.setTripsError(null);
+      store.tripStore.setTripsLoading(false);
       return CreateTripData(trip: trip, success: true);
     } else {
       // If that response was not OK, throw an error.
-      store.setTripsError('Server is down');
+      store.tripStore.setTripsError('Server is down');
       store.setOffline(true);
       return CreateTripData(success: false);
     }
   } catch (error) {
     print(error);
-    store.setTripsError('Server is down');
+    store.tripStore.setTripsError('Server is down');
     store.setOffline(true);
     return CreateTripData(success: false);
   }

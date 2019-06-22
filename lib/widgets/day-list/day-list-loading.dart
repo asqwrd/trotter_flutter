@@ -52,7 +52,7 @@ class DayListLoading extends StatelessWidget {
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(top: 10, bottom: 40),
                 child: Text(
-                  'Loading...',
+                  'Loading day...',
                   style: TextStyle(fontSize: 30),
                 ),
               );

@@ -254,20 +254,17 @@ class CreateTripState extends State<CreateTrip> {
             topLeft: Radius.circular(15), topRight: Radius.circular(15)),
         maxHeight: _panelHeightOpen,
         panel: Center(
-            child: StoreConnector<AppState, TripViewModel>(
-                converter: (store) => TripViewModel.create(store),
-                builder: (context, viewModel) => new Scaffold(
-                    resizeToAvoidBottomPadding: false,
-                    backgroundColor: Colors.transparent,
-                    body: Stack(children: <Widget>[
-                      Positioned.fill(
-                          child: IgnorePointer(
-                              ignoring: this.loading,
-                              child: _buildForm(context, viewModel))),
-                      this.loading
-                          ? Center(child: RefreshProgressIndicator())
-                          : Container()
-                    ])))),
+            child: new Scaffold(
+                resizeToAvoidBottomPadding: false,
+                backgroundColor: Colors.transparent,
+                body: Stack(children: <Widget>[
+                  Positioned.fill(
+                      child: IgnorePointer(
+                          ignoring: this.loading, child: _buildForm(context))),
+                  this.loading
+                      ? Center(child: RefreshProgressIndicator())
+                      : Container()
+                ]))),
         body: Container(
             height: _bodyHeight,
             child: Stack(children: <Widget>[
@@ -526,7 +523,7 @@ class CreateTripState extends State<CreateTrip> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildForm(BuildContext ctxt, TripViewModel viewModel) {
+  Widget _buildForm(BuildContext ctxt) {
     var formFields = ['', '', ...this.fields];
     return Form(
         key: this._formKey,

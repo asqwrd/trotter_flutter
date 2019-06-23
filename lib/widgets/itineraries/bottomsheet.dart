@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
-import 'package:redux/redux.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -20,8 +19,7 @@ Future addToItinerary(BuildContext context, List items, int index, Color color,
     var result = await showDayBottomSheet(store, context, selectedItineraryId,
         poi, destination['id'], color, destination);
     if (result != null && result['change'] != null) {
-      store.itineraryStore
-          .setSelectedItinerary(null, false, destination['id'], null);
+      store.itineraryStore.setSelectedItinerary(null, destination['id'], true);
     }
   } else {
     showItineraryBottomSheet(
@@ -32,7 +30,7 @@ Future addToItinerary(BuildContext context, List items, int index, Color color,
 void showItineraryBottomSheet(TrotterStore store, context, String destinationId,
     dynamic poi, Color color, dynamic destination) {
   var data = fetchItineraries(
-      "destination=$destinationId&ownerId=${store.currentUser.uid}");
+      "destination=$destinationId&owner_id=${store.currentUser.uid}");
   showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -64,7 +62,7 @@ _buildLoadedList(
           margin: EdgeInsets.symmetric(vertical: 20.0),
           child: loading == true && itineraries.length == 0
               ? _buildLoadingList()
-              : itineraries == null
+              : itineraries == null || itineraries.length == 0
                   ? Container(
                       padding: EdgeInsets.symmetric(horizontal: 30),
                       child: Column(
@@ -194,12 +192,13 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
       margin: EdgeInsets.only(right: 20),
       child: InkWell(
           onTap: () async {
+            store.itineraryStore.setSelectItineraryLoading(true);
             Navigator.pop(context);
             var result = await showDayBottomSheet(store, context, item['id'],
                 poi, destinationId, color, destination);
             if (result != null && result['change'] != null) {
               store.itineraryStore
-                  .setSelectedItinerary(null, false, destinationId, null);
+                  .setSelectedItinerary(null, destinationId, null);
             }
           },
           child: Column(
@@ -208,12 +207,13 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
               MiniItineraryList(
                   items: itineraryItems,
                   onPressed: (data) async {
+                    store.itineraryStore.setSelectItineraryLoading(true);
                     Navigator.pop(context);
                     var result = await showDayBottomSheet(store, context,
                         item['id'], poi, destinationId, color, destination);
                     if (result != null && result['change'] != null) {
-                      store.itineraryStore.setSelectedItinerary(
-                          null, false, destinationId, null);
+                      store.itineraryStore
+                          .setSelectedItinerary(null, destinationId, null);
                     }
                   },
                   onLongPressed: (data) {}),
@@ -240,7 +240,6 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
     "description": "",
     "time": {"value": "", "unit": ""}
   };
-
   var response =
       await addToDay(store, item['id'], dayId, destinationId, data, true);
   if (response.success == true) {
@@ -266,16 +265,17 @@ showDayBottomSheet(
     {force: false,
     isSelecting: false,
     String movingFromId}) {
-  final store = Provider.of<TrotterStore>(context);
-  final data = fetchSelectedItinerary(store, itineraryId);
+  final storeApp = Provider.of<TrotterStore>(context);
+  final data = fetchSelectedItinerary(storeApp, itineraryId);
   return showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
         return FutureBuilder(
             future: data,
             builder: (context, snapshot) {
+              final store = Provider.of<TrotterStore>(context);
               var loading = store.itineraryStore.selectedItinerary.loading;
-              if (loading && store.itineraryStore.selectedItinerary == null) {
+              if (loading) {
                 return Container(
                     height: 300,
                     width: 400,
@@ -284,16 +284,23 @@ showDayBottomSheet(
                             valueColor:
                                 new AlwaysStoppedAnimation<Color>(color))));
               }
-              var item = store.itineraryStore.selectedItinerary;
+              var item =
+                  store.itineraryStore.selectedItinerary.selectedItinerary;
               if (item == null) {
-                return Container();
+                return Container(
+                    height: 300,
+                    width: 400,
+                    child: Center(
+                        child: CircularProgressIndicator(
+                            valueColor:
+                                new AlwaysStoppedAnimation<Color>(color))));
               }
               var days = item['days'];
               if (movingFromId != null) {
                 days.removeWhere((day) => movingFromId == day['id']);
               }
               return IgnorePointer(
-                  ignoring: store.itineraryStore.selectedItinerary.loading,
+                  ignoring: store.bottomSheetLoading,
                   child: Stack(children: <Widget>[
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +319,9 @@ showDayBottomSheet(
                                           fontSize: 30,
                                           fontWeight: FontWeight.w300),
                                     ),
-                                    isSelecting == true
+                                    store.itineraryStore.selectedItinerary
+                                                .selectedItinerary !=
+                                            null
                                         ? FlatButton(
                                             onPressed: () {
                                               Navigator.pop(
@@ -353,20 +362,19 @@ showDayBottomSheet(
                                 (BuildContext listContext, int dayIndex) {
                               return ListTile(
                                   onTap: () async {
-                                    store.itineraryStore
-                                        .setSelectItineraryLoading(true);
+                                    store.setBottomSheetLoading(true);
 
                                     await responseFromDayBottomSheet(
-                                        context,
+                                        listContext,
                                         item,
                                         poi,
                                         days[dayIndex]['id'],
                                         destinationId,
                                         days[dayIndex]['day'] + 1);
-                                    store.itineraryStore
-                                        .setSelectItineraryLoading(false);
+
                                     Navigator.pop(
                                         context, {'selected': days[dayIndex]});
+                                    store.setBottomSheetLoading(false);
                                   },
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 20),
@@ -385,12 +393,14 @@ showDayBottomSheet(
                             },
                           ))
                         ]),
-                    store.itineraryStore.selectedItinerary.loading == true
-                        ? Center(
-                            child: RefreshProgressIndicator(
-                                valueColor:
-                                    new AlwaysStoppedAnimation<Color>(color)))
-                        : Container()
+                    Positioned.fill(
+                        child: store.bottomSheetLoading == true
+                            ? Center(
+                                child: RefreshProgressIndicator(
+                                    valueColor:
+                                        new AlwaysStoppedAnimation<Color>(
+                                            color)))
+                            : Container())
                   ]));
             });
       });

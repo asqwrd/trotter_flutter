@@ -22,7 +22,7 @@ dependencies:
   firebase_dynamic_links: ^0.4.0+2
   flutter_store: ^1.0.0+4
   share: ^0.6.1+1
-  http: ^0.12.0
+  http: ^0.12.0+1
   flutter_svg: ^0.7.0+1
   shared_preferences: ^0.4.3
   flutter_statusbarcolor: ^0.1.1

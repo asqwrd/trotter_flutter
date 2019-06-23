@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:redux/redux.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -78,8 +77,8 @@ Future<ItineraryData> fetchSelectedItinerary(
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
 
-      store.itineraryStore.setSelectedItinerary(results.itinerary['id'], false,
-          results.destination['id'], results.itinerary);
+      store.itineraryStore.setSelectedItinerary(results.itinerary['id'],
+          results.destination['id'], results.itinerary, false);
 
       store.itineraryStore.setItineraryError(null);
       store.setOffline(false);
@@ -187,10 +186,14 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
         store.itineraryStore.updateSelectedItinerary(
             dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
       }
-      store.itineraryStore.updateItineraryBuilder(
-          dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
+      if (store.itineraryStore.itineraryBuilder.itinerary['id'] ==
+          itineraryId) {
+        store.itineraryStore.updateItineraryBuilder(
+            dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
+      }
       store.itineraryStore.setItineraryError(null);
       store.setOffline(false);
+
       return res;
     } else {
       // If that response was not OK, throw an error.
@@ -199,6 +202,7 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
       return DayData(success: false);
     }
   } catch (error) {
+    print(error);
     store.itineraryStore.setItineraryError('Server is down');
     store.setOffline(true);
     return DayData(success: false);
@@ -254,9 +258,11 @@ class SelectItineraryData {
   final Map<String, dynamic> selectedItinerary;
   final String destinationId;
   final bool loading;
+  final bool updating;
 
   SelectItineraryData(
       {this.loading,
+      this.updating,
       this.selectedItineraryId,
       this.destinationId,
       this.selectedItinerary});

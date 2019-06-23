@@ -76,6 +76,9 @@ class ItineraryState extends State<Itinerary> {
           this.image = res.destination['image'];
           this.itineraryName = res.itinerary['name'];
           this.color = Color(hexStringToHexInt(res.color));
+          store.itineraryStore.setItineraryLoading(false);
+          store.itineraryStore
+              .getItinerary(res.itinerary, res.destination, res.color);
         });
       }
     });
@@ -160,7 +163,7 @@ class ItineraryState extends State<Itinerary> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
-    if (store.itineraryStore.itinerary == null ||
+    if (store.itineraryStore.itinerary.itinerary == null ||
         store.itineraryStore.itinerary.loading) {
       return _buildLoadingBody(ctxt);
     }
@@ -174,11 +177,9 @@ class ItineraryState extends State<Itinerary> {
       );
     }
     var itinerary = store.itineraryStore.itinerary.itinerary;
-    var name = itinerary['name'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
-    var destination = store.itineraryStore.itinerary.destination;
     var color = Color(hexStringToHexInt(store.itineraryStore.itinerary.color));
 
     return Container(
@@ -296,7 +297,7 @@ class ItineraryState extends State<Itinerary> {
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
         child: Text(
-          ' Loading...',
+          'Getting itinerary...',
           style: TextStyle(fontSize: 30),
         ),
       ),

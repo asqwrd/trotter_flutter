@@ -12,6 +12,7 @@ class ItineraryStore extends Store {
 
   SelectItineraryData _selectedItinerary = SelectItineraryData(
     loading: false,
+    updating: false,
     selectedItineraryId: null,
     selectedItinerary: null,
     destinationId: null,
@@ -32,7 +33,7 @@ class ItineraryStore extends Store {
           itinerary: itinerary,
           color: color,
           destination: destination,
-          loading: true,
+          loading: false,
           error: _itinerary.error);
     });
   }
@@ -48,11 +49,13 @@ class ItineraryStore extends Store {
     });
   }
 
-  setSelectedItinerary(String selectedItineraryId, bool loading,
-      String destinationId, dynamic selectedItinerary) {
+  setSelectedItinerary(String selectedItineraryId, String destinationId,
+      dynamic selectedItinerary,
+      [bool loading]) {
     setState(() {
       _selectedItinerary = SelectItineraryData(
-          loading: loading,
+          loading: loading != null ? loading : _selectedItinerary.loading,
+          updating: _selectedItinerary.updating,
           selectedItineraryId: selectedItineraryId,
           selectedItinerary: selectedItinerary,
           destinationId: destinationId);
@@ -60,7 +63,8 @@ class ItineraryStore extends Store {
   }
 
   updateSelectedItinerary(String dayId, List<dynamic> itineraryItems,
-      String justAdded, Map<String, dynamic> itinerary, String destinationId) {
+      String justAdded, Map<String, dynamic> itinerary, String destinationId,
+      [bool loading]) {
     var selectedItinerary = _selectedItinerary.selectedItinerary;
     var index =
         selectedItinerary["days"].indexWhere((day) => day['id'] == dayId);
@@ -68,7 +72,8 @@ class ItineraryStore extends Store {
 
     setState(() {
       _selectedItinerary = SelectItineraryData(
-          loading: _selectedItinerary.loading,
+          loading: loading != null ? loading : _selectedItinerary.loading,
+          updating: _selectedItinerary.updating,
           selectedItineraryId: itinerary['id'],
           selectedItinerary: selectedItinerary,
           destinationId: destinationId);
@@ -145,6 +150,18 @@ class ItineraryStore extends Store {
     setState(() {
       _selectedItinerary = SelectItineraryData(
           loading: loading,
+          updating: _selectedItinerary.updating,
+          selectedItineraryId: _selectedItinerary.selectedItineraryId,
+          selectedItinerary: _selectedItinerary.selectedItinerary,
+          destinationId: _selectedItinerary.destinationId);
+    });
+  }
+
+  setSelectItineraryUpdating(bool updating) {
+    setState(() {
+      _selectedItinerary = SelectItineraryData(
+          loading: _selectedItinerary.loading,
+          updating: updating,
           selectedItineraryId: _selectedItinerary.selectedItineraryId,
           selectedItinerary: _selectedItinerary.selectedItinerary,
           destinationId: _selectedItinerary.destinationId);

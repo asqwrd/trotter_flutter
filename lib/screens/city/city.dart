@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
@@ -9,8 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 
 Future<CityData> fetchCity(String id) async {
@@ -329,6 +329,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
 
   _buildAllTab(List<dynamic> sections, String description, Color color,
       dynamic destination) {
+    final store = Provider.of<TrotterStore>(context);
     var widgets = <Widget>[
       GestureDetector(
         onTap: () {
@@ -367,8 +368,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
               onPush({'id': data['id'], 'level': data['level']});
             },
             onLongPressed: (data) async {
-              var currentUser =
-                  StoreProvider.of<AppState>(context).state.currentUser;
+              var currentUser = store.currentUser;
               if (currentUser == null) {
                 loginBottomSheet(context, data, color);
               } else {
@@ -384,6 +384,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
 
   _buildListView(
       List<dynamic> items, String key, Color color, dynamic destination) {
+    final store = Provider.of<TrotterStore>(context);
     return Container(
         width: MediaQuery.of(context).size.width,
         child: ListView.builder(
@@ -401,8 +402,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                   onPush({'id': id.toString(), 'level': level.toString()});
                 },
                 onLongPress: () async {
-                  var currentUser =
-                      StoreProvider.of<AppState>(context).state.currentUser;
+                  var currentUser = store.currentUser;
                   if (currentUser == null) {
                     loginBottomSheet(context, data, color);
                   } else {

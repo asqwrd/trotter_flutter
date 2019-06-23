@@ -122,9 +122,9 @@ _buildRow(List<Widget> widgets) {
 }
 
 Widget _buildBody(BuildContext context, dynamic item, dynamic destination) {
-  final store = Provider.of<TrotterStore>(context);
   return new InkWell(
       onTap: () async {
+        final store = Provider.of<TrotterStore>(context);
         //var id = item['id'];
         //var level = item['level'];
         //this.onPressed({'id': id, 'level': level});

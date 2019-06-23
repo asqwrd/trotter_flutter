@@ -49,7 +49,8 @@ Future<HomeData> fetchHome([bool refresh]) async {
 
 Future<HomeItinerariesData> fetchHomeItineraries() async {
   try {
-    final response = await http.get('http://localhost:3002/api/itineraries/all',
+    final response = await http.get(
+        'http://localhost:3002/api/itineraries/all?public=true',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -154,7 +155,7 @@ class HomeState extends State<Home> {
             {
               setState(() {
                 this.errorUi = true;
-                //this.loading = false;
+                this.loading = false;
               })
             }
           else
@@ -162,7 +163,7 @@ class HomeState extends State<Home> {
               {
                 setState(() {
                   this.errorUi = false;
-                  // this.loading = false;
+                  this.loading = false;
                 })
               }
         });
@@ -194,7 +195,8 @@ class HomeState extends State<Home> {
             child: FutureBuilder(
                 future: data,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+                  if (snapshot.connectionState == ConnectionState.waiting ||
+                      this.loading) {
                     return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error == null) {
                     return _buildLoadedBody(context, snapshot);
@@ -406,7 +408,7 @@ class HomeState extends State<Home> {
                     if (currentUser == null) {
                       loginBottomSheet(context, data, color);
                     } else {
-                      bottomSheetModal(context, data['item']);
+                      bottomSheetModal(context, data['poi']);
                     }
                   },
                   header: "Trending cities"),

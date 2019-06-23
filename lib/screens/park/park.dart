@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 
 Future<ParkData> fetchPark(String id) async {
@@ -257,6 +254,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
   }
 
   _buildListView(List<dynamic> items, String key, Color color, destination) {
+    final store = Provider.of<TrotterStore>(context);
     return ListView.builder(
       shrinkWrap: true,
       primary: false,
@@ -270,8 +268,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
               onPush({'id': id.toString(), 'level': level.toString()});
             },
             onLongPress: () async {
-              var currentUser =
-                  StoreProvider.of<AppState>(context).state.currentUser;
+              var currentUser = store.currentUser;
               if (currentUser == null) {
                 loginBottomSheet(context, data, color);
               } else {

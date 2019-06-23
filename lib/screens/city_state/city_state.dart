@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
@@ -10,8 +12,6 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 
 Future<CityStateData> fetchCityState(String id) async {
@@ -447,6 +447,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
     double rating = safety['rating'] * 1.0;
     var plugs = snapshot.data.plugs;
     var emergencyNumbers = snapshot.data.emergencyNumber;
+    final store = Provider.of<TrotterStore>(context);
     _showVisa = visa != null;
     _showVisaTextual = _showVisa &&
         visa['visa']['textual'] != null &&
@@ -612,8 +613,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
             onPush({'id': data['id'], 'level': data['level']});
           },
           onLongPressed: (data) async {
-            var currentUser =
-                StoreProvider.of<AppState>(context).state.currentUser;
+            var currentUser = store.currentUser;
             if (currentUser == null) {
               loginBottomSheet(context, data, color);
             } else {
@@ -628,6 +628,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
 
   _buildListView(
       List<dynamic> items, String key, Color color, dynamic destination) {
+    final store = Provider.of<TrotterStore>(context);
     return ListView.builder(
       controller: _sc,
       physics: disableScroll
@@ -643,8 +644,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
               onPush({'id': id.toString(), 'level': level.toString()});
             },
             onLongPress: () async {
-              var currentUser =
-                  StoreProvider.of<AppState>(context).state.currentUser;
+              var currentUser = store.currentUser;
               if (currentUser == null) {
                 loginBottomSheet(context, data, color);
               } else {

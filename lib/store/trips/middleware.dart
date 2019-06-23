@@ -24,7 +24,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
       } else if (results.error != null) {
         store.tripStore.setTripsError(results.error);
       }
-      store?.tripStore?.setTripsLoading(false);
+      store?.setTripsLoading(false);
       return results;
     } else {
       // If that response was not OK, throw an error.
@@ -43,7 +43,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
       return results;
     } else {
       store?.tripStore?.setTripsError('Server is down');
-      store?.tripStore?.setTripsLoading(false);
+      store?.setTripsLoading(false);
       return TripsData(error: "Server is down");
     }
   }
@@ -61,12 +61,12 @@ Future<DeleteTripData> deleteTrip(TrotterStore store, String tripId) async {
       return results;
     } else {
       // If that response was not OK, throw an error.
-      store.tripStore.setTripsLoading(false);
+      store.setTripsLoading(false);
       return DeleteTripData(success: false);
     }
   } catch (error) {
     // If that response was not OK, throw an error.
-    store.tripStore.setTripsLoading(false);
+    store.setTripsLoading(false);
     return DeleteTripData(success: false);
   }
 }
@@ -95,7 +95,7 @@ Future<CreateTripData> postCreateTrip(TrotterStore store, dynamic data,
         store.tripStore.createTrip(trip);
       }
       store.tripStore.setTripsError(null);
-      store.tripStore.setTripsLoading(false);
+      store.setTripsLoading(false);
       return CreateTripData(trip: trip, success: true);
     } else {
       // If that response was not OK, throw an error.

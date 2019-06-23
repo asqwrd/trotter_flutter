@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
+import 'package:flutter_store/flutter_store.dart';
 import 'dart:core';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
+import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 
 class CreateTrip extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
@@ -130,12 +128,15 @@ class CreateTripState extends State<CreateTrip> {
                 padding: EdgeInsets.symmetric(vertical: 15),
                 color: Colors.blueGrey,
                 onPressed: () async {
+                  final store = Provider.of<TrotterStore>(context);
+
                   // Validate will return true if the form is valid, or false if
                   // the form is invalid.
                   if (this._formKey.currentState.validate()) {
                     // If the form is valid, display a snackbar. In the real world, you'd
                     // often want to call a server or save the information in a database
                     print('here');
+                    print(this._destinations[0]["image"]);
                     var data = {
                       "trip": {
                         "image": this._destinations[0]["image"],
@@ -143,40 +144,23 @@ class CreateTripState extends State<CreateTrip> {
                       },
                       "destinations": this._destinations,
                       "user": {
-                        "displayName": StoreProvider.of<AppState>(context)
-                            .state
-                            .currentUser
-                            .displayName,
-                        "photoUrl": StoreProvider.of<AppState>(context)
-                            .state
-                            .currentUser
-                            .photoUrl,
-                        "email": StoreProvider.of<AppState>(context)
-                            .state
-                            .currentUser
-                            .email,
-                        "phoneNumber": StoreProvider.of<AppState>(context)
-                            .state
-                            .currentUser
-                            .phoneNumber,
-                        "uid": StoreProvider.of<AppState>(context)
-                            .state
-                            .currentUser
-                            .uid,
+                        "displayName": store.currentUser.displayName,
+                        "photoUrl": store.currentUser.photoUrl,
+                        "email": store.currentUser.email,
+                        "phoneNumber": store.currentUser.phoneNumber,
+                        "uid": store.currentUser.uid,
                       }
                     };
                     // print(data);
                     setState(() {
                       this.loading = true;
                     });
-                    var response = await postCreateTrip(
-                        StoreProvider.of<AppState>(context), data);
+                    var response = await postCreateTrip(store, data);
                     setState(() {
                       this.loading = false;
                     });
                     if (response.success == true) {
-                      StoreProvider.of<AppState>(context).dispatch(
-                          UpdateTripsAfterCreateAction(response.trip));
+                      //store.tripStore.createTrip(response.trip);
                       Scaffold.of(context).showSnackBar(SnackBar(
                           content: Text('Trip created!',
                               style: TextStyle(fontSize: 18)),
@@ -213,7 +197,7 @@ class CreateTripState extends State<CreateTrip> {
         "country_name": this.param["country_name"],
         "start_date": null,
         "end_date": null,
-        "image": this.param['image']
+        "image": this.param['image_hd']
       };
       this._destinations.add(destination);
       //this._destinationImages.add(this.param['image']);

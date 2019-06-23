@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
@@ -9,8 +11,6 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 
 Future<RegionData> fetchRegion(String id) async {
@@ -263,9 +263,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return _buildLoadingBody(ctxt);
     }
-    var name = snapshot.data.region['name'];
     var destination = snapshot.data.region;
-    var image = snapshot.data.region['image'];
     var descriptionShort = snapshot.data.region['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
     var discover = snapshot.data.discover;
@@ -331,6 +329,8 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
 
   _buildAllTab(List<dynamic> sections, String description, Color color,
       dynamic destination) {
+    final store = Provider.of<TrotterStore>(context);
+
     var widgets = <Widget>[
       Container(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -348,8 +348,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
               onPush({'id': data['id'], 'level': data['level']});
             },
             onLongPressed: (data) async {
-              var currentUser =
-                  StoreProvider.of<AppState>(context).state.currentUser;
+              var currentUser = store.currentUser;
               if (currentUser == null) {
                 loginBottomSheet(context, data, color);
               } else {
@@ -365,6 +364,8 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
 
   _buildListView(
       List<dynamic> items, String key, Color color, dynamic destination) {
+    final store = Provider.of<TrotterStore>(context);
+
     return ListView.builder(
       controller: _sc,
       physics: disableScroll
@@ -380,8 +381,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
               onPush({'id': id.toString(), 'level': level.toString()});
             },
             onLongPress: () async {
-              var currentUser =
-                  StoreProvider.of<AppState>(context).state.currentUser;
+              var currentUser = store.currentUser;
               if (currentUser == null) {
                 loginBottomSheet(context, data, color);
               } else {

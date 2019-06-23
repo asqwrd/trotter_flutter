@@ -13,12 +13,26 @@ class TrotterStore extends Store {
 
   ItineraryStore itineraryStore = ItineraryStore();
   bool bottomSheetLoading = false;
+  bool tripsLoading = false;
+  bool tripsRefreshing = false;
 
   bool offline = false;
 
   setOffline(bool value) {
     setState(() {
       offline = value;
+    });
+  }
+
+  setTripsLoading(bool value) {
+    setState(() {
+      tripsLoading = value;
+    });
+  }
+
+  setTripsRefreshing(bool value) {
+    setState(() {
+      tripsRefreshing = value;
     });
   }
 

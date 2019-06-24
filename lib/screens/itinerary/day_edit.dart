@@ -292,8 +292,15 @@ class DayEditState extends State<DayEdit> {
         items: itineraryItems,
         color: color,
         onLongPressed: (data) {
-          //print(data);
+          // print(data);
           bottomSheetModal(context, day['day'] + 1, data);
+        },
+        onPressed: (data) {
+          onPush({
+            'id': data['id'],
+            'level': 'poi',
+            'google_place': data['google_place']
+          });
         },
       ),
       this.loading

@@ -83,7 +83,10 @@ class DayList extends StatelessWidget {
           
           return InkWell(
             onLongPress: (){
-              this.onLongPressed(this.items[index]);
+              this.onLongPressed(itineraryItems[index]);
+            },
+            onTap: (){
+              this.onPressed(poi);
             },
             child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),

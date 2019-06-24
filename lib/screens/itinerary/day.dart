@@ -224,6 +224,14 @@ class DayState extends State<Day> {
             : ClampingScrollPhysics(),
         items: itineraryItems,
         color: color,
+        onLongPressed: (data) {},
+        onPressed: (data) {
+          onPush({
+            'id': data['id'],
+            'level': 'poi',
+            'google_place': data['google_place']
+          });
+        },
       ),
     ]);
   }

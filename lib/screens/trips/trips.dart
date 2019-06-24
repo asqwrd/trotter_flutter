@@ -484,9 +484,12 @@ class TripsState extends State<Trips> {
                                   left: 0,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                            begin: FractionalOffset.topCenter,
-                                            end: FractionalOffset.bottomCenter,
+                                        gradient: RadialGradient(
+                                            center: Alignment.center,
+                                            focal: Alignment.center,
+                                            radius: .75,
+                                            // begin: FractionalOffset.topCenter,
+                                            // end: FractionalOffset.bottomCenter,
                                             colors: [
                                           Colors.grey.withOpacity(0.0),
                                           color,
@@ -530,12 +533,11 @@ class TripsState extends State<Trips> {
                                         decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(15),
-                                            color:
-                                                Colors.white.withOpacity(.65)),
+                                            color: Colors.transparent),
                                         child: Icon(
                                           EvilIcons.close,
-                                          color: Colors.black.withOpacity(.8),
-                                          size: 25,
+                                          color: fontContrast(color),
+                                          size: 30,
                                         )),
                                   )),
                               Positioned(
@@ -551,12 +553,11 @@ class TripsState extends State<Trips> {
                                         decoration: BoxDecoration(
                                             borderRadius:
                                                 BorderRadius.circular(15),
-                                            color:
-                                                Colors.white.withOpacity(.65)),
+                                            color: Colors.transparent),
                                         child: Icon(
                                           EvilIcons.share_google,
-                                          color: Colors.black.withOpacity(.8),
-                                          size: 25,
+                                          color: fontContrast(color),
+                                          size: 35,
                                         )),
                                   )),
                               Positioned(

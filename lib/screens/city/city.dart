@@ -152,17 +152,16 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                 this.errorUi = true;
               })
             }
-          else
-            if (data.error == null)
-              {
-                setState(() {
-                  this.errorUi = false;
-                  this.image = data.city['image'];
-                  this.cityName = data.city['name'];
-                  this.location = data.city['location'];
-                  this.color = Color(hexStringToHexInt(data.color));
-                })
-              }
+          else if (data.error == null)
+            {
+              setState(() {
+                this.errorUi = false;
+                this.image = data.city['image'];
+                this.cityName = data.city['name'];
+                this.location = data.city['location'];
+                this.color = Color(hexStringToHexInt(data.color));
+              })
+            }
         });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(

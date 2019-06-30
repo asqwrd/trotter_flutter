@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/services.dart';
 
 Future<FirebaseUser> googleLogin() async {
   // FirebaseUser is the type of your User.
@@ -37,13 +38,38 @@ Future<FirebaseUser> googleLogin() async {
         await FirebaseDynamicLinks.instance.retrieveDynamicLink();
     print('trip');
     print(data?.link?.queryParameters);
+    var tripId = data?.link?.queryParameters;
+    if (tripId != null) {
+      //tripInvite(tripId['trip']);
+    }
 
     // This can be tough to reason about -- or at least it was for me.
     // We're going to dispatch a new action if we logged in,
     //
     // We also continue the current cycle below by calling next(action).
     return user;
-  } catch (error) {
-    return error;
+  } on PlatformException catch (e) {
+    switch (e.code) {
+      case 'ERROR_USER_DISABLED':
+        print('Google Sign-In error: User disabled');
+        break;
+      case 'ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL':
+        print(
+            'Google Sign-In error: Account already exists with a different credential.');
+        break;
+      case 'ERROR_INVALID_CREDENTIAL':
+        print('Google Sign-In error: Invalid credential.');
+        break;
+      case 'ERROR_OPERATION_NOT_ALLOWED':
+        print('Google Sign-In error: Operation not allowed.');
+        break;
+      default:
+        print('Google Sign-In error');
+        break;
+    }
+    print(e);
+  } catch (e) {
+    print('Google Sign-In error');
+    print(e);
   }
 }

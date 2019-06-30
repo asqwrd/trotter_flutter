@@ -517,7 +517,7 @@ class TripsState extends State<Trips> {
                                             overflow: TextOverflow.fade,
                                             textAlign: TextAlign.left,
                                             style: TextStyle(
-                                                color: Colors.white,
+                                                color: fontContrast(color),
                                                 fontSize: 25.0,
                                                 fontWeight: FontWeight.w400),
                                           )),

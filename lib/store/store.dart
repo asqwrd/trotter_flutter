@@ -1,5 +1,6 @@
 import 'package:flutter_store/flutter_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/itineraries/store.dart';
 
@@ -43,16 +44,20 @@ class TrotterStore extends Store {
   }
 
   login() async {
-    var user = await googleLogin();
-    setState(() {
-      _currentUser = user;
-    });
+    try {
+      var user = await googleLogin();
+      setState(() {
+        _currentUser = user;
+      });
+    } catch (err) {}
   }
 
   logout() async {
     final FirebaseAuth _auth = FirebaseAuth.instance;
+    final GoogleSignIn _googleSignIn = new GoogleSignIn();
     try {
       await _auth.signOut();
+      await _googleSignIn.signOut();
       print('logged out!');
       setState(() {
         _currentUser = null;

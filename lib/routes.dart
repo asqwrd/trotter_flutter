@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'app.dart';
 import 'package:flutter/services.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:redux/redux.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+
+import 'store/store.dart';
 
 class MyBehavior extends ScrollBehavior {
   @override
@@ -27,24 +27,23 @@ class Routes {
       TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
       TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
     };
-    final Store store = Store<AppState>(appStateReducer,
-        initialState: AppState.initialState(),
-        middleware: []..addAll(createAuthMiddleware())
-        //..add(new LoggingMiddleware.printer()),
-        );
+    final store = TrotterStore();
 
     runApp(new AnnotatedRegion<SystemUiOverlayStyle>(
         value: mySystemTheme,
-        child: new MaterialApp(
-            theme: ThemeData(
-                scaffoldBackgroundColor: Colors.white,
-                pageTransitionsTheme: PageTransitionsTheme(builders: builders)),
-            builder: (context, child) {
-              return ScrollConfiguration(
-                behavior: MyBehavior(),
-                child: child,
-              );
-            },
-            home: new App())));
+        child: Provider(
+            store: store,
+            child: new MaterialApp(
+                theme: ThemeData(
+                    scaffoldBackgroundColor: Colors.white,
+                    pageTransitionsTheme:
+                        PageTransitionsTheme(builders: builders)),
+                builder: (context, child) {
+                  return ScrollConfiguration(
+                    behavior: MyBehavior(),
+                    child: child,
+                  );
+                },
+                home: new App()))));
   }
 }

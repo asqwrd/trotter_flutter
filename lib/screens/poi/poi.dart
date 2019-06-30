@@ -81,7 +81,7 @@ class PoiState extends State<Poi> {
   final bool googlePlace;
   final String locationId;
   final ValueChanged<dynamic> onPush;
-  GoogleMapController mapController;
+  Completer<GoogleMapController> _controller = Completer();
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -127,17 +127,16 @@ class PoiState extends State<Poi> {
                 this.errorUi = true;
               })
             }
-          else
-            if (data.error == null)
-              {
-                setState(() {
-                  this.errorUi = false;
-                  this.images = data.poi['images'];
-                  this.image = data.poi['image'];
-                  this.poiName = data.poi['name'];
-                  this.color = Color(hexStringToHexInt(data.color));
-                })
-              }
+          else if (data.error == null)
+            {
+              setState(() {
+                this.errorUi = false;
+                this.images = data.poi['images'];
+                this.image = data.poi['image'];
+                this.poiName = data.poi['name'];
+                this.color = Color(hexStringToHexInt(data.color));
+              })
+            }
         });
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
@@ -228,31 +227,31 @@ class PoiState extends State<Poi> {
     var descriptionShort = snapshot.data.poi['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
 
-    void _onMapCreated(GoogleMapController controller) {
-      setState(() {
-        mapController = controller;
-        mapController.addMarker(MarkerOptions(
-          position: LatLng(poi['location']['lat'], poi['location']['lng']),
-        ));
-        /*mapController.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(
-            bearing: 270.0,
-            target: LatLng(poi['location']['lat'], poi['location']['lng']),
-            tilt: 30.0,
-            zoom: 17.0,
-          ),
-        ));*/
-      });
-    }
+    // void _onMapCreated(GoogleMapController controller) {
+    //   setState(() {
+    //     mapController = controller;
+    //     mapController.addMarker(MarkerOptions(
+    //       position: LatLng(poi['location']['lat'], poi['location']['lng']),
+    //     ));
+    //     /*mapController.animateCamera(CameraUpdate.newCameraPosition(
+    //       CameraPosition(
+    //         bearing: 270.0,
+    //         target: LatLng(poi['location']['lat'], poi['location']['lng']),
+    //         tilt: 30.0,
+    //         zoom: 17.0,
+    //       ),
+    //     ));*/
+    //   });
+    // }
 
     return Container(
         height: MediaQuery.of(ctxt).size.height,
-        child: ListView(
+        child: SingleChildScrollView(
           controller: _sc,
           physics: disableScroll
               ? NeverScrollableScrollPhysics()
               : ClampingScrollPhysics(),
-          children: <Widget>[
+          child: ListView(shrinkWrap: true, primary: false, children: <Widget>[
             Center(
                 child: Container(
               width: 30,
@@ -345,19 +344,25 @@ class PoiState extends State<Poi> {
               child: ClipPath(
                   clipper: CornerRadiusClipper(10.0),
                   child: GoogleMap(
-                    onMapCreated: _onMapCreated,
-                    options: GoogleMapOptions(
-                      cameraPosition: CameraPosition(
-                        bearing: 0.0,
-                        target: LatLng(
-                            poi['location']['lat'], poi['location']['lng']),
-                        tilt: 30.0,
-                        zoom: 17.0,
-                      ),
+                    onMapCreated: (GoogleMapController controller) {
+                      _controller.complete(controller);
+                    },
+                    markers: <Marker>[
+                      Marker(
+                          markerId: MarkerId(poi['id']),
+                          position: LatLng(
+                              poi['location']['lat'], poi['location']['lng']))
+                    ].toSet(),
+                    initialCameraPosition: CameraPosition(
+                      bearing: 0.0,
+                      target: LatLng(
+                          poi['location']['lat'], poi['location']['lng']),
+                      tilt: 30.0,
+                      zoom: 17.0,
                     ),
                   )),
             )),
-          ],
+          ]),
         ));
   }
 

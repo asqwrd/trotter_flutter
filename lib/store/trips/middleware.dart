@@ -11,7 +11,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get(
-        'http://localhost:3002/api/trips/all?owner_id=${store.currentUser.uid}',
+        'http://localhost:3002/api/trips/all?user_id=${store.currentUser.uid}',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -68,6 +68,38 @@ Future<DeleteTripData> deleteTrip(TrotterStore store, String tripId) async {
     // If that response was not OK, throw an error.
     store.setTripsLoading(false);
     return DeleteTripData(success: false);
+  }
+}
+
+Future<AddTravelerData> addTraveler(
+    TrotterStore store, String tripId, dynamic data) async {
+  try {
+    final response = await http.post(
+        'http://localhost:3002/api/trips/$tripId/travelers/add',
+        body: json.encode(data),
+        headers: {
+          'Authorization': 'security',
+          "Content-Type": "application/json"
+        });
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results =
+          AddTravelerResponseData.fromJson(json.decode(response.body));
+      var success = results.success;
+      var exists = results.exists;
+      return AddTravelerData(success: success, exists: exists);
+    } else {
+      // If that response was not OK, throw an error.
+      store.tripStore.setTripsError('Server is down');
+      store.setOffline(true);
+      return AddTravelerData(success: false, exists: false);
+    }
+  } catch (error) {
+    print(error);
+    store.tripStore.setTripsError('Server is down');
+    store.setOffline(true);
+    return AddTravelerData(success: false, exists: false);
   }
 }
 
@@ -139,6 +171,29 @@ class CreateTripData {
   }
 }
 
+class AddTravelerResponseData {
+  final bool success;
+  final bool exists;
+
+  AddTravelerResponseData({this.success, this.exists});
+
+  factory AddTravelerResponseData.fromJson(Map<String, dynamic> json) {
+    return AddTravelerResponseData(
+        success: json['success'], exists: json['exists']);
+  }
+}
+
+class AddTravelerData {
+  final bool exists;
+  final bool success;
+
+  AddTravelerData({this.success, this.exists});
+
+  factory AddTravelerData.fromJson(Map<String, dynamic> json) {
+    return AddTravelerData(success: json['success'], exists: json['exists']);
+  }
+}
+
 class TripsData {
   final List<dynamic> trips;
   final String error;
@@ -147,6 +202,17 @@ class TripsData {
 
   factory TripsData.fromJson(Map<String, dynamic> json) {
     return TripsData(trips: json['trips'], error: null);
+  }
+}
+
+class TripsInviteData {
+  final List<dynamic> success;
+  final String error;
+
+  TripsInviteData({this.success, this.error});
+
+  factory TripsInviteData.fromJson(Map<String, dynamic> json) {
+    return TripsInviteData(success: json['success'], error: null);
   }
 }
 

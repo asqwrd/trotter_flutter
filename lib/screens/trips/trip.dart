@@ -75,7 +75,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
           margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
           child:DateTimePickerFormField(
             format: dateFormat,
-            dateOnly: true,
+            inputType: InputType.date,
             editable: false,
             initialValue: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : null,
             //firstDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
@@ -138,7 +138,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
           margin:EdgeInsets.only(left: 20.0, right:20, top: 20.0, bottom:0),
           child: DateTimePickerFormField(
             format: dateFormat,
-            dateOnly: true,
+            inputType: InputType.date,
             editable: false,
             initialValue: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : null,
             //firstDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),

@@ -1,56 +1,35 @@
 // containers/auth_button/auth_button_container.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:flutter_store/flutter_store.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:redux/redux.dart';
 import 'package:trotter_flutter/store/store.dart';
 
 class GoogleAuthButtonContainer extends StatelessWidget {
-  GoogleAuthButtonContainer({Key key}) : super(key: key);
+  final TrotterStore store;
+  final bool isModal;
+  GoogleAuthButtonContainer({Key key, this.store, this.isModal})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // Connect to the store:
-    final store = Provider.of<TrotterStore>(context);
+    print(this.store);
+    final store =
+        this.store != null ? this.store : Provider.of<TrotterStore>(context);
     return new GoogleAuthButton(
         buttonText:
             store.currentUser != null ? 'Log out' : 'Log in with Google',
-        onPressedCallback: () {
+        onPressedCallback: () async {
           if (store.currentUser != null) {
-            store.logout();
+            await store.logout();
           } else {
-            store.login();
+            await store.login();
+          }
+          if (this.isModal == true) {
+            Navigator.pop(context);
           }
         });
   }
 }
-
-// class _ViewModel {
-//   final String buttonText;
-//   final Function onPressedCallback;
-
-//   _ViewModel({this.onPressedCallback, this.buttonText});
-
-//   static _ViewModel fromStore(Store<AppState> store) {
-//     // This is a bit of a more complex _viewModel
-//     // constructor. As the state updates, it will
-//     // recreate this _viewModel, and then pass
-//     // buttonText and the callback down to the button
-//     // with the appropriate qualities:
-//     //
-//     return new _ViewModel(
-//         buttonText:
-//             store.state.currentUser != null ? 'Log Out' : 'Log in with Google',
-//         onPressedCallback: () {
-//           if (store.state.currentUser != null) {
-//             store.dispatch(new LogOut());
-//           } else {
-//             store.dispatch(new LogIn());
-//           }
-//         });
-//   }
-// }
 
 class GoogleAuthButton extends StatelessWidget {
   final String buttonText;

@@ -135,7 +135,6 @@ class CreateTripState extends State<CreateTrip> {
                   if (this._formKey.currentState.validate()) {
                     // If the form is valid, display a snackbar. In the real world, you'd
                     // often want to call a server or save the information in a database
-                    print('here');
                     print(this._destinations[0]["image"]);
                     var data = {
                       "trip": {
@@ -388,7 +387,7 @@ class CreateTripState extends State<CreateTrip> {
                       left: 20.0, right: 10, top: 20.0, bottom: 0),
                   child: DateTimePickerFormField(
                     format: dateFormat,
-                    dateOnly: true,
+                    inputType: InputType.date,
                     editable: false,
                     firstDate: DateTime.now(),
                     decoration: InputDecoration(
@@ -443,7 +442,7 @@ class CreateTripState extends State<CreateTrip> {
                       left: 10.0, right: 20, top: 20.0, bottom: 0),
                   child: DateTimePickerFormField(
                     format: dateFormat,
-                    dateOnly: true,
+                    inputType: InputType.date,
                     editable: false,
                     firstDate: DateTime.now(),
                     decoration: InputDecoration(

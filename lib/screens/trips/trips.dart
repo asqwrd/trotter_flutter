@@ -546,7 +546,7 @@ class TripsState extends State<Trips> {
                                   child: GestureDetector(
                                     onTap: () {
                                       Share.share(
-                                          'check out my website https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}');
+                                          'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}');
                                     },
                                     child: Container(
                                         padding: EdgeInsets.all(5),
@@ -572,6 +572,19 @@ class TripsState extends State<Trips> {
                                           tripBuilder[index]['destinations'],
                                           color),
                                     ],
+                                  )),
+                              Positioned(
+                                  right: 20,
+                                  bottom: 25,
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      ..._buildTravelers(
+                                          tripBuilder[index]['travelers'],
+                                          color),
+                                    ],
                                   ))
                             ],
                           )),
@@ -589,6 +602,27 @@ class TripsState extends State<Trips> {
               ? Center(child: RefreshProgressIndicator())
               : Container()
         ]));
+  }
+
+  List<Widget> _buildTravelers(List<dynamic> travelers, Color color) {
+    var avatars = <Widget>[];
+    for (int i = 0; i < travelers.length; i++) {
+      avatars.add(
+        Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(
+                    style: BorderStyle.solid,
+                    color: Colors.transparent,
+                    width: 2)),
+            child: ClipPath(
+                clipper: CornerRadiusClipper(100),
+                child: Image.network(travelers[i]['photoUrl'],
+                    width: 35.0, height: 35.0, fit: BoxFit.contain))),
+      );
+    }
+
+    return avatars;
   }
 
   _buildDestinationInfo(List<dynamic> destinations, Color color) {

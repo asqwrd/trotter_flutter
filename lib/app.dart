@@ -104,18 +104,20 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     if (response.success == true && response.exists == false) {
       await fetchTrips(store);
       _selectTab(this.appContext, TabItem.trips);
+
+      //TODO: figure out how to go directly to the trip
       //store.setTripsLoading(true);
 
       //var data = {"level": "trip", "id": tripId};
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-            //fullscreenDialog: true,
-            builder: (context) => Trip(
-                  tripId: tripId,
-                  onPush: (data) => TabNavigator().push(context, data),
-                )),
-      );
+      // await Navigator.push(
+      //   this.appContext,
+      //   MaterialPageRoute(
+      //       //fullscreenDialog: true,
+      //       builder: (context) => Trip(
+      //             tripId: tripId,
+      //             onPush: (data) => TabNavigator().push(context, data),
+      //           )),
+      // );
       //store.setTripsLoading(false);
     }
   }

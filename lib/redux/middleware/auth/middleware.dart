@@ -69,10 +69,6 @@ Middleware<AppState> _createLogInMiddleware() {
         user = await _auth.signInWithCredential(credential);
 
         print('Logged in ' + user.displayName);
-        PendingDynamicLinkData data =
-            await FirebaseDynamicLinks.instance.retrieveDynamicLink();
-        print('trip');
-        print(data?.link?.queryParameters);
 
         // This can be tough to reason about -- or at least it was for me.
         // We're going to dispatch a new action if we logged in,

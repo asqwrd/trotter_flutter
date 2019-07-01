@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
-import 'package:redux/redux.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 enum TabItem { explore, trips, profile }
 

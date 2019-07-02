@@ -574,18 +574,12 @@ class TripsState extends State<Trips> {
                                     ],
                                   )),
                               Positioned(
-                                  right: 20,
+                                  right: 35,
                                   bottom: 25,
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      ..._buildTravelers(
-                                          tripBuilder[index]['travelers'],
-                                          color),
-                                    ],
-                                  ))
+                                  width: 220,
+                                  height: 40,
+                                  child: _buildTravelers(
+                                      tripBuilder[index]['travelers'], color))
                             ],
                           )),
                     ]),
@@ -604,25 +598,95 @@ class TripsState extends State<Trips> {
         ]));
   }
 
-  List<Widget> _buildTravelers(List<dynamic> travelers, Color color) {
+  Widget _buildTravelers(List<dynamic> travelers, Color color) {
     var avatars = <Widget>[];
-    for (int i = 0; i < travelers.length; i++) {
+    var length =
+        travelers.length < 4 ? travelers.length : travelers.sublist(0, 4);
+    var more = travelers.length - length;
+    double right = 0;
+    if (more > 0) {
+      var moreText = more > 9 ? '9+' : '+$more';
+      avatars.add(Positioned(
+          right: 0,
+          top: 0,
+          child: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100),
+                  border: Border.all(
+                      style: BorderStyle.solid, color: Colors.white, width: 2)),
+              child: ClipPath(
+                  clipper: CornerRadiusClipper(100),
+                  child: Container(
+                      color: Colors.blueGrey,
+                      alignment: Alignment.center,
+                      width: 35.0,
+                      height: 35,
+                      child: Text(
+                        moreText,
+                        style: TextStyle(color: Colors.white),
+                      ))))));
+      right += 30;
+    }
+    for (int i = 0; i < length; i++) {
       avatars.add(
-        Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100),
-                border: Border.all(
-                    style: BorderStyle.solid,
-                    color: Colors.transparent,
-                    width: 2)),
-            child: ClipPath(
-                clipper: CornerRadiusClipper(100),
-                child: Image.network(travelers[i]['photoUrl'],
-                    width: 35.0, height: 35.0, fit: BoxFit.contain))),
+        Positioned(
+            right: right,
+            top: 0,
+            child: Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                        style: BorderStyle.solid,
+                        color: Colors.white,
+                        width: 2)),
+                child: ClipPath(
+                    clipper: CornerRadiusClipper(100),
+                    child: Image.network(travelers[i]['photoUrl'],
+                        width: 35.0, height: 35.0, fit: BoxFit.contain)))),
       );
+      right += 30;
     }
 
-    return avatars;
+    // avatars.add(Positioned(
+    //     right: 90,
+    //     top: 0,
+    //     child: Container(
+    //         decoration: BoxDecoration(
+    //             borderRadius: BorderRadius.circular(100),
+    //             border: Border.all(
+    //                 style: BorderStyle.solid, color: Colors.white, width: 2)),
+    //         child: ClipPath(
+    //             clipper: CornerRadiusClipper(100),
+    //             child: Image.asset('images/home_bg.jpeg',
+    //                 width: 35.0, height: 35.0, fit: BoxFit.contain)))));
+    // avatars.add(Positioned(
+    //     right: 120,
+    //     top: 0,
+    //     child: Container(
+    //         decoration: BoxDecoration(
+    //             borderRadius: BorderRadius.circular(100),
+    //             border: Border.all(
+    //                 style: BorderStyle.solid, color: Colors.white, width: 2)),
+    //         child: ClipPath(
+    //             clipper: CornerRadiusClipper(100),
+    //             child: Image.asset('images/home_bg.jpeg',
+    //                 width: 35.0, height: 35.0, fit: BoxFit.contain)))));
+    // print(avatars.length);
+    // avatars.add(Positioned(
+    //     right: 120,
+    //     top: 0,
+    //     child: Container(
+    //         decoration: BoxDecoration(
+    //             borderRadius: BorderRadius.circular(100),
+    //             border: Border.all(
+    //                 style: BorderStyle.solid, color: Colors.white, width: 2)),
+    //         child: ClipPath(
+    //             clipper: CornerRadiusClipper(100),
+    //             child: Image.asset('images/home_bg.jpeg',
+    //                 width: 35.0, height: 35.0, fit: BoxFit.contain)))));
+    // print(avatars.length);
+
+    return Row(children: <Widget>[Flexible(child: Stack(children: avatars))]);
   }
 
   _buildDestinationInfo(List<dynamic> destinations, Color color) {

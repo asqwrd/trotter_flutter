@@ -12,7 +12,6 @@ class GoogleAuthButtonContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Connect to the store:
-    print(this.store);
     final store =
         this.store != null ? this.store : Provider.of<TrotterStore>(context);
     return new GoogleAuthButton(

@@ -20,6 +20,10 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'add-destination-modal.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:share/share.dart';
+
+
 
 
 showDateModal(BuildContext context, dynamic destination, Color color,String tripId) {
@@ -719,14 +723,16 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
 class TripData {
   final Map<String, dynamic> trip; 
   final List<dynamic> destinations;
+  final List<dynamic> travelers;
   final String error; 
 
-  TripData({this.trip, this.destinations, this.error});
+  TripData({this.trip, this.destinations, this.travelers, this.error});
 
   factory TripData.fromJson(Map<String, dynamic> json) {
     return TripData(
       trip: json['trip'],
       destinations: json['destinations'],
+      travelers: json['travelers'],
       error:null
     );
   }
@@ -742,7 +748,6 @@ class Trip extends StatefulWidget {
 }
 
 class TripState extends State<Trip> {
-  bool _showTitle = false;
   final ValueChanged<dynamic> onPush;
   final String tripId;
   Color color = Colors.blueGrey;
@@ -755,6 +760,7 @@ class TripState extends State<Trip> {
   bool errorUi = false;
   String image;
   String tripName;
+  dynamic travelers;
 
   
   Future<TripData> data;
@@ -864,6 +870,7 @@ class TripState extends State<Trip> {
             setState((){
               this.color = Color(hexStringToHexInt(data.trip['color']));
               this.destinations = data.destinations;
+              this.travelers = data.travelers;
               this.trip = data.trip;
               this.trip['destinations'] = this.destinations;
               this.tripName = data.trip['name'];
@@ -1025,7 +1032,25 @@ class TripState extends State<Trip> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: this.tripName, back: true)),
+              onPush: onPush, color: color, title: this.tripName, back: true, actions: <Widget>[
+              Container(
+                  width: 58,
+                  height: 58,
+                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  child: FlatButton(
+                    
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () {
+                      Share.share('Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${this.tripId}');
+                    },
+                    child: Icon(
+                      EvilIcons.share_google,
+                      color: fontContrast(color),
+                      size: 40,
+                    ),
+                  ))
+            ],)),
     ]);
   }
   
@@ -1035,12 +1060,14 @@ class TripState extends State<Trip> {
 
     this.trip = snapshot.data.trip;
     this.destinations = snapshot.data.destinations;
+    this.travelers = snapshot.data.travelers;
     this.trip['destinations'] = this.destinations;
     var destTable = new Collection<dynamic>(destinations);
     var result2 = destTable.groupBy<dynamic>((destination) => destination['country_id']);
     this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
     var fields = [
+      {"label": "${this.travelers.length} people traveling", "icon":Container(width: MediaQuery.of(context).size.width/2, height:50, child:buildTravelers(this.travelers))},
       {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},
     ];
  
@@ -1095,7 +1122,7 @@ class TripState extends State<Trip> {
                 dynamic destination = fields[index]['destination'];
                 if(fields[index]['id'] != null){
                   onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
-                } else if(destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary/edit'){
+                } else if(destination != null && destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary/edit'){
                   dynamic data = {
                     "itinerary":{
                       "name": trip['name'],
@@ -1120,7 +1147,7 @@ class TripState extends State<Trip> {
                     destination['itinerary_id'] = response.id;                  
                   });
                   onPush({'id': response.id, 'level': fields[index]['level'].toString()});
-                } else if(!destination['itinerary_id'].isEmpty){
+                } else if(destination != null && !destination['itinerary_id'].isEmpty){
                   onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
                 }
               },

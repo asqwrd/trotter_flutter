@@ -37,8 +37,6 @@ dependencies:
   flutter_typeahead: ^1.6.1
   datetime_picker_formfield: ^0.2.0
   queries: ^0.1.12
-  flutter_redux: ^0.5.2
-  redux_thunk: ^0.2.1
   recase: ^2.0.0+1
   flutter_page_indicator: ^0.0.3
   bubble_bottom_bar: ^1.2.0

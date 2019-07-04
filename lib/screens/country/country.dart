@@ -1,18 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:trotter_flutter/redux/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -139,16 +134,15 @@ class CountryState extends State<Country> {
                 this.errorUi = true;
               })
             }
-          else
-            if (data.error == null)
-              {
-                setState(() {
-                  this.errorUi = false;
-                  this.image = data.country['image'];
-                  this.countryName = data.country['name'];
-                  this.color = Color(hexStringToHexInt(data.color));
-                })
-              }
+          else if (data.error == null)
+            {
+              setState(() {
+                this.errorUi = false;
+                this.image = data.country['image'];
+                this.countryName = data.country['name'];
+                this.color = Color(hexStringToHexInt(data.color));
+              })
+            }
         });
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[

@@ -125,9 +125,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      print(state);
       FirebaseDynamicLinks.instance.retrieveDynamicLink().then((data) {
-        print(data?.link?.queryParameters);
         final tripId = data?.link?.queryParameters != null
             ? data?.link?.queryParameters['trip']
             : null;

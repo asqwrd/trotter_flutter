@@ -44,7 +44,6 @@ class Trips extends StatefulWidget {
 }
 
 class TripsState extends State<Trips> {
-  bool _showTitle = false;
   bool refreshing = false;
   bool loggedIn = false;
   BuildContext context;
@@ -140,7 +139,7 @@ class TripsState extends State<Trips> {
               Container(
                   width: 58,
                   height: 58,
-                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  margin: EdgeInsets.symmetric(horizontal: 0),
                   child: FlatButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100)),
@@ -173,11 +172,6 @@ class TripsState extends State<Trips> {
                     backgroundColor: color,
                     onPressed: () {
                       onPush({"level": "createtrip"});
-                      if (store.tripStore.trips.length == 0) {
-                        setState(() {
-                          this._showTitle = false;
-                        });
-                      }
                     },
                     tooltip: 'Create trip',
                     child: Icon(Icons.add),
@@ -578,8 +572,8 @@ class TripsState extends State<Trips> {
                                   bottom: 25,
                                   width: 220,
                                   height: 40,
-                                  child: _buildTravelers(
-                                      tripBuilder[index]['travelers'], color))
+                                  child: buildTravelers(
+                                      tripBuilder[index]['travelers']))
                             ],
                           )),
                     ]),
@@ -596,97 +590,6 @@ class TripsState extends State<Trips> {
               ? Center(child: RefreshProgressIndicator())
               : Container()
         ]));
-  }
-
-  Widget _buildTravelers(List<dynamic> travelers, Color color) {
-    var avatars = <Widget>[];
-    var length =
-        travelers.length < 4 ? travelers.length : travelers.sublist(0, 4);
-    var more = travelers.length - length;
-    double right = 0;
-    if (more > 0) {
-      var moreText = more > 9 ? '9+' : '+$more';
-      avatars.add(Positioned(
-          right: 0,
-          top: 0,
-          child: Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(
-                      style: BorderStyle.solid, color: Colors.white, width: 2)),
-              child: ClipPath(
-                  clipper: CornerRadiusClipper(100),
-                  child: Container(
-                      color: Colors.blueGrey,
-                      alignment: Alignment.center,
-                      width: 35.0,
-                      height: 35,
-                      child: Text(
-                        moreText,
-                        style: TextStyle(color: Colors.white),
-                      ))))));
-      right += 30;
-    }
-    for (int i = 0; i < length; i++) {
-      avatars.add(
-        Positioned(
-            right: right,
-            top: 0,
-            child: Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-                    border: Border.all(
-                        style: BorderStyle.solid,
-                        color: Colors.white,
-                        width: 2)),
-                child: ClipPath(
-                    clipper: CornerRadiusClipper(100),
-                    child: Image.network(travelers[i]['photoUrl'],
-                        width: 35.0, height: 35.0, fit: BoxFit.contain)))),
-      );
-      right += 30;
-    }
-
-    // avatars.add(Positioned(
-    //     right: 90,
-    //     top: 0,
-    //     child: Container(
-    //         decoration: BoxDecoration(
-    //             borderRadius: BorderRadius.circular(100),
-    //             border: Border.all(
-    //                 style: BorderStyle.solid, color: Colors.white, width: 2)),
-    //         child: ClipPath(
-    //             clipper: CornerRadiusClipper(100),
-    //             child: Image.asset('images/home_bg.jpeg',
-    //                 width: 35.0, height: 35.0, fit: BoxFit.contain)))));
-    // avatars.add(Positioned(
-    //     right: 120,
-    //     top: 0,
-    //     child: Container(
-    //         decoration: BoxDecoration(
-    //             borderRadius: BorderRadius.circular(100),
-    //             border: Border.all(
-    //                 style: BorderStyle.solid, color: Colors.white, width: 2)),
-    //         child: ClipPath(
-    //             clipper: CornerRadiusClipper(100),
-    //             child: Image.asset('images/home_bg.jpeg',
-    //                 width: 35.0, height: 35.0, fit: BoxFit.contain)))));
-    // print(avatars.length);
-    // avatars.add(Positioned(
-    //     right: 120,
-    //     top: 0,
-    //     child: Container(
-    //         decoration: BoxDecoration(
-    //             borderRadius: BorderRadius.circular(100),
-    //             border: Border.all(
-    //                 style: BorderStyle.solid, color: Colors.white, width: 2)),
-    //         child: ClipPath(
-    //             clipper: CornerRadiusClipper(100),
-    //             child: Image.asset('images/home_bg.jpeg',
-    //                 width: 35.0, height: 35.0, fit: BoxFit.contain)))));
-    // print(avatars.length);
-
-    return Row(children: <Widget>[Flexible(child: Stack(children: avatars))]);
   }
 
   _buildDestinationInfo(List<dynamic> destinations, Color color) {

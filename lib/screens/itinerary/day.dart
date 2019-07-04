@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';

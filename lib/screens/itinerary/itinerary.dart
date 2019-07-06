@@ -10,8 +10,6 @@ import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-//Push Messaging token: ezE6jPkRm7I:APA91bGosus2r0cIAqG8L5zMsMtvD9wasjM488B8Oxx4Iy1Qu9Mq3YSEuJD8XsUd93CcJJaqvTEUBXj6BmTFZMHTfPcFfEXlS1m83hdt3xT_JSPHjgSJQAaI22RItf2Skp2wq13rRsG0
-//Push Messaging token: ezE6jPkRm7I:APA91bGosus2r0cIAqG8L5zMsMtvD9wasjM488B8Oxx4Iy1Qu9Mq3YSEuJD8XsUd93CcJJaqvTEUBXj6BmTFZMHTfPcFfEXlS1m83hdt3xT_JSPHjgSJQAaI22RItf2Skp2wq13rRsG0
 
 class Itinerary extends StatefulWidget {
   final String itineraryId;

@@ -1,7 +1,32 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/services.dart';
+import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+Future<UserLoginData> saveUserToFirebase(dynamic data) async {
+  try {
+    final response = await http.post('http://localhost:3002/api/users/login',
+        body: json.encode(data),
+        headers: {
+          'Authorization': 'security',
+          "Content-Type": "application/json"
+        });
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = UserLoginData.fromJson(json.decode(response.body));
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      return UserLoginData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    print("User not saved");
+    return UserLoginData(success: false);
+  }
+}
 
 Future<FirebaseUser> googleLogin() async {
   // FirebaseUser is the type of your User.
@@ -34,14 +59,14 @@ Future<FirebaseUser> googleLogin() async {
     user = await _auth.signInWithCredential(credential);
 
     print('Logged in ' + user.displayName);
-    PendingDynamicLinkData data =
-        await FirebaseDynamicLinks.instance.retrieveDynamicLink();
-    print('trip');
-    print(data?.link?.queryParameters);
-    var tripId = data?.link?.queryParameters;
-    if (tripId != null) {
-      //tripInvite(tripId['trip']);
-    }
+    final data = {
+      "displayName": user.displayName,
+      "photoUrl": user.photoUrl,
+      "email": user.email,
+      "phoneNumber": user.phoneNumber,
+      "uid": user.uid,
+    };
+    await saveUserToFirebase(data);
 
     // This can be tough to reason about -- or at least it was for me.
     // We're going to dispatch a new action if we logged in,
@@ -68,8 +93,21 @@ Future<FirebaseUser> googleLogin() async {
         break;
     }
     print(e);
+    return null;
   } catch (e) {
     print('Google Sign-In error');
     print(e);
+    return null;
+  }
+}
+
+class UserLoginData {
+  final bool success;
+  final bool exists;
+
+  UserLoginData({this.success, this.exists});
+
+  factory UserLoginData.fromJson(Map<String, dynamic> json) {
+    return UserLoginData(success: json['success'], exists: json['exists']);
   }
 }

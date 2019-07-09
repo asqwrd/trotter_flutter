@@ -6,8 +6,6 @@ import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:trotter_flutter/widgets/auth/google.dart';
-
-import 'screens/trips/trip.dart';
 import 'store/trips/middleware.dart';
 
 class App extends StatefulWidget {
@@ -53,10 +51,6 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     _firebaseMessaging.onIosSettingsRegistered
         .listen((IosNotificationSettings settings) {
       print("Settings registered: $settings");
-    });
-    _firebaseMessaging.getToken().then((String token) {
-      assert(token != null);
-      print("Push Messaging token: $token");
     });
   }
 

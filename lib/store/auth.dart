@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 Future<UserLoginData> saveUserToFirebase(dynamic data) async {
   try {
@@ -25,6 +26,29 @@ Future<UserLoginData> saveUserToFirebase(dynamic data) async {
     print(error);
     print("User not saved");
     return UserLoginData(success: false);
+  }
+}
+
+Future<TokenData> saveDeviceTokenFirebase(dynamic data) async {
+  try {
+    final response = await http.post('http://localhost:3002/api/users/device',
+        body: json.encode(data),
+        headers: {
+          'Authorization': 'security',
+          "Content-Type": "application/json"
+        });
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = TokenData.fromJson(json.decode(response.body));
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      return TokenData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    print("Device not saved");
+    return TokenData(success: false);
   }
 }
 
@@ -56,6 +80,7 @@ Future<FirebaseUser> googleLogin() async {
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
+    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
     user = await _auth.signInWithCredential(credential);
 
     print('Logged in ' + user.displayName);
@@ -67,6 +92,11 @@ Future<FirebaseUser> googleLogin() async {
       "uid": user.uid,
     };
     await saveUserToFirebase(data);
+    final token = await _firebaseMessaging.getToken();
+    final dataToken = {"token": token, "uid": user.uid};
+    await saveDeviceTokenFirebase(dataToken);
+
+    print("Push Messaging token: $dataToken");
 
     // This can be tough to reason about -- or at least it was for me.
     // We're going to dispatch a new action if we logged in,
@@ -109,5 +139,16 @@ class UserLoginData {
 
   factory UserLoginData.fromJson(Map<String, dynamic> json) {
     return UserLoginData(success: json['success'], exists: json['exists']);
+  }
+}
+
+class TokenData {
+  final bool success;
+  final bool exists;
+
+  TokenData({this.success, this.exists});
+
+  factory TokenData.fromJson(Map<String, dynamic> json) {
+    return TokenData(success: json['success'], exists: json['exists']);
   }
 }

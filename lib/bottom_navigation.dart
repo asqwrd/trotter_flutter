@@ -5,7 +5,7 @@ import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
-enum TabItem { explore, trips, profile }
+enum TabItem { explore, trips, notifications, profile }
 
 class TabHelper {
   static TabItem item({int index}) {
@@ -15,6 +15,8 @@ class TabHelper {
       case 1:
         return TabItem.trips;
       case 2:
+        return TabItem.notifications;
+      case 3:
         return TabItem.profile;
     }
     return TabItem.explore;
@@ -26,8 +28,10 @@ class TabHelper {
         return 0;
       case TabItem.trips:
         return 1;
-      case TabItem.profile:
+      case TabItem.notifications:
         return 2;
+      case TabItem.profile:
+        return 3;
     }
     return 0;
   }
@@ -38,6 +42,8 @@ class TabHelper {
         return 'Explore';
       case TabItem.trips:
         return 'Trips';
+      case TabItem.notifications:
+        return 'Notifications';
       case TabItem.profile:
         return 'Profile';
     }
@@ -50,6 +56,8 @@ class TabHelper {
         return 'images/explore-icon.svg';
       case TabItem.trips:
         return 'images/trips-icon.svg';
+      case TabItem.notifications:
+        return 'images/notification.svg';
       case TabItem.profile:
         return 'images/avatar-icon.svg';
     }
@@ -64,6 +72,8 @@ class TabHelper {
       case TabItem.trips:
         return Color.fromRGBO(234, 189, 149, 1);
       //return Color.fromRGBO(1, 155, 174, 1);
+      case TabItem.notifications:
+        return Color.fromRGBO(29, 198, 144, 1);
       case TabItem.profile:
         return Color.fromRGBO(1, 155, 174, 1);
     }
@@ -90,6 +100,7 @@ class BottomNavigation extends StatelessWidget {
             items: [
               _buildItem(context: context, tabItem: TabItem.explore),
               _buildItem(context: context, tabItem: TabItem.trips),
+              _buildItem(context: context, tabItem: TabItem.notifications),
               _buildItem(context: context, tabItem: TabItem.profile),
             ],
             onTap: (index) {
@@ -110,7 +121,9 @@ class BottomNavigation extends StatelessWidget {
           margin: EdgeInsets.only(right: 30),
           child: Text(
             text,
-            style: TextStyle(fontSize: 20),
+            style: TextStyle(
+              fontSize: 15,
+            ),
           )),
     );
   }

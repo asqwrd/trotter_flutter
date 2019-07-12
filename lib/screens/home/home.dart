@@ -158,14 +158,13 @@ class HomeState extends State<Home> {
                 this.loading = false;
               })
             }
-          else
-            if (data.error == null)
-              {
-                setState(() {
-                  this.errorUi = false;
-                  this.loading = false;
-                })
-              }
+          else if (data.error == null)
+            {
+              setState(() {
+                this.errorUi = false;
+                this.loading = false;
+              })
+            }
         });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
@@ -307,6 +306,7 @@ class HomeState extends State<Home> {
       widgets.add(ItineraryCard(
         item: itinerary,
         color: color,
+        onLongPressed: (data) {},
         onPressed: (data) {
           onPush(
               {'id': data['id'].toString(), 'level': data['level'].toString()});

@@ -39,13 +39,13 @@ class ItineraryCard extends StatelessWidget {
         onLongPress: () {
           this.onLongPressed({'item': item});
         },
-        child: Column(
+        child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                  width: double.infinity,
-                  height: 250,
+                  width: 90,
+                  height: 90,
                   child: Stack(
                     children: <Widget>[
                       Positioned(
@@ -105,10 +105,15 @@ class ItineraryCard extends StatelessWidget {
                     ],
                   )),
               Container(
-                  padding: EdgeInsets.symmetric(vertical: 10.0),
-                  //width: double.infinity,
-                  child: Row(mainAxisSize: MainAxisSize.max, children: <Widget>[
-                    Flexible(
+                  padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+                  width: MediaQuery.of(ctxt).size.width - 130,
+                  height: 90,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.max, 
+                  children: <Widget>[
+                    Container(
                         child: Text(
                       item['name'],
                       textAlign: TextAlign.left,
@@ -119,9 +124,23 @@ class ItineraryCard extends StatelessWidget {
                           fontWeight: FontWeight.w400,
                           color: this.color),
                     )),
-                    Flexible(
+                    Container(
+                      margin: EdgeInsets.only(top:5),
+                        child: Row(children:<Widget>[
+                          Icon(Icons.place, size: 15, color: Colors.black.withOpacity(.3),),
+                          Text(
+                      '${item['destination_name']}, ${item['destination_country_name']}',
+                      textAlign: TextAlign.left,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w300, color:Colors.black.withOpacity(.5)),
+                    )])),
+                    Container(
+                      height:40,
+                      alignment: Alignment.bottomLeft,
                         child: Text(
-                      ' ${new HtmlUnescape().convert('&bull;')} ${item['destination_name']}, ${item['destination_country_name']}',
+                      '${item['days'].length} day itinerary',
                       textAlign: TextAlign.left,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,

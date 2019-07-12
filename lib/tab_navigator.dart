@@ -7,6 +7,7 @@ import 'package:trotter_flutter/screens/city_state/index.dart';
 import 'package:trotter_flutter/screens/poi/index.dart';
 import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
+import 'package:trotter_flutter/screens/notifications/index.dart';
 import 'package:trotter_flutter/screens/region/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
 import 'package:trotter_flutter/screens/profile/index.dart';
@@ -188,6 +189,11 @@ class TabNavigator extends StatelessWidget {
         return routes;
       case TabItem.trips:
         routes[TabNavigatorRoutes.root] = (context) => Trips(
+              onPush: (data) => push(context, data),
+            );
+        return routes;
+      case TabItem.notifications:
+        routes[TabNavigatorRoutes.root] = (context) => Notifications(
               onPush: (data) => push(context, data),
             );
         return routes;

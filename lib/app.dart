@@ -27,6 +27,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
   FocusNode _focusA = FocusNode();
   FocusNode _focusB = FocusNode();
   FocusNode _focusC = FocusNode();
+  FocusNode _focusD = FocusNode();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TrotterStore store;
@@ -133,6 +134,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     _focusA.dispose();
     _focusB.dispose();
     _focusC.dispose();
+    _focusD.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -198,6 +200,9 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
           Focus(
               focusNode: _focusB,
               child: _buildOffstageNavigator(TabItem.trips)),
+          Focus(
+              focusNode: _focusD,
+              child: _buildOffstageNavigator(TabItem.notifications)),
           Focus(
               focusNode: _focusC,
               child: _buildOffstageNavigator(TabItem.profile)),

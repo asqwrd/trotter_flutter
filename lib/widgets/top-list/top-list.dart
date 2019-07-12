@@ -37,7 +37,7 @@ class TopList extends StatelessWidget {
                   )),
               Container(
                   width: MediaQuery.of(context).size.width,
-                  height: 226,
+                  height: 240,
                   child: ListView.builder(
                     primary: false,
                     scrollDirection: Axis.horizontal,
@@ -101,8 +101,8 @@ class TopList extends StatelessWidget {
                                     image: AssetImage('images/placeholder.jpg'),
                                     fit: BoxFit.cover),
                               ))),
-                    width: 175.0,
-                    height: 160.0,
+                    width: 140.0,
+                    height: 178.0,
                   ),
                   Container(
                       padding: EdgeInsets.symmetric(vertical: 10.0),

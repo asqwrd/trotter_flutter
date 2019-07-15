@@ -262,6 +262,29 @@ Future<dynamic> postAddToTrip(String tripId, dynamic data) async {
   }
 }
 
+Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
+    String tripId, dynamic data) async {
+  try {
+    final response = await http.post(
+        'http://localhost:3002/api/trips/add/flights_accomodations/$tripId',
+        body: json.encode(data),
+        headers: {
+          'Authorization': 'security',
+          "Content-Type": "application/json"
+        });
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return AddFlightsAndAccomodationsData.fromJson(
+          json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      return AddFlightsAndAccomodationsData(success: false);
+    }
+  } catch (error) {
+    return AddFlightsAndAccomodationsData(success: false);
+  }
+}
+
 Future<dynamic> putUpdateTripDestination(
     String tripId, String destinationId, dynamic data) async {
   final response = await http.put(
@@ -327,6 +350,18 @@ class AddTripData {
   factory AddTripData.fromJson(Map<String, dynamic> json) {
     return AddTripData(
         destination: json['destination'], exists: false, success: true);
+  }
+}
+
+class AddFlightsAndAccomodationsData {
+  final dynamic result;
+  final bool success;
+
+  AddFlightsAndAccomodationsData({this.result, this.success});
+
+  factory AddFlightsAndAccomodationsData.fromJson(Map<String, dynamic> json) {
+    return AddFlightsAndAccomodationsData(
+        result: json['result'], success: true);
   }
 }
 

@@ -6,17 +6,18 @@ import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 
-void showTripsBottomSheet(context, dynamic destination) {
+void showTripsBottomSheet(context,
+    [dynamic destination, dynamic notification]) {
   final store = Provider.of<TrotterStore>(context);
   showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
-        return _buildLoadedList(context, store, destination);
+        return _buildLoadedList(context, store, destination, notification);
       });
 }
 
-_buildLoadedList(
-    BuildContext context, TrotterStore store, dynamic destination) {
+_buildLoadedList(BuildContext context, TrotterStore store,
+    [dynamic destination, dynamic notification]) {
   var trips = store.tripStore.trips;
   var loading = store.tripStore.tripLoading;
   return IgnorePointer(
@@ -78,8 +79,8 @@ _buildLoadedList(
                             scrollDirection: Axis.horizontal,
                             child: Container(
                                 margin: EdgeInsets.only(left: 20.0),
-                                child: _buildRow(
-                                    _buildItems(context, trips, destination)))),
+                                child: _buildRow(_buildItems(context, trips,
+                                    destination, notification)))),
                         loading
                             ? Center(child: RefreshProgressIndicator())
                             : Container()
@@ -104,10 +105,11 @@ _buildLoadingList() {
       ]);
 }
 
-_buildItems(BuildContext context, List<dynamic> items, dynamic destination) {
+_buildItems(BuildContext context, List<dynamic> items,
+    [dynamic destination, dynamic notification]) {
   var widgets = List<Widget>();
   for (var item in items) {
-    widgets.add(_buildBody(context, item, destination));
+    widgets.add(_buildBody(context, item, destination, notification));
   }
   return widgets;
 }
@@ -121,47 +123,60 @@ _buildRow(List<Widget> widgets) {
   );
 }
 
-Widget _buildBody(BuildContext context, dynamic item, dynamic destination) {
+Widget _buildBody(BuildContext context, dynamic item,
+    [dynamic destination, dynamic notification]) {
   return new InkWell(
       onTap: () async {
         final store = Provider.of<TrotterStore>(context);
-        //var id = item['id'];
-        //var level = item['level'];
-        //this.onPressed({'id': id, 'level': level});
-        //Navigator.push(context, MaterialPageRoute(fullscreenDialog: true, builder: (context) => AddTrip()),);
-        var data = {
-          "location": destination['location'],
-          "destination_id": destination['id'],
-          "destination_name": destination['name'],
-          "level": destination['level'],
-          "country_id": destination['country_id'],
-          "country_name": destination["country_name"],
-          "start_date": 0,
-          "end_date": 0,
-        };
-        var response = await postAddToTrip(item['id'], data);
-        if (response.exists == false) {
-          store.tripStore.updateTripDestinations(item['id'], data);
-          Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text('${destination['name']} added to ${item['name']}',
-                style: TextStyle(fontSize: 18)),
-            duration: Duration(seconds: 2),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: Colors.blueGrey,
-              onPressed: () {
-                TabNavigator().push(
-                    context, {"id": item['id'].toString(), "level": "trip"});
-                Scaffold.of(context).removeCurrentSnackBar();
-              },
-            ),
-          ));
-        } else {
-          Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(
-                  '${destination['name']} was already added to ${item['name']}',
+        if (destination != null) {
+          var data = {
+            "location": destination['location'],
+            "destination_id": destination['id'],
+            "destination_name": destination['name'],
+            "level": destination['level'],
+            "country_id": destination['country_id'],
+            "country_name": destination["country_name"],
+            "start_date": 0,
+            "end_date": 0,
+          };
+          var response = await postAddToTrip(item['id'], data);
+          if (response.exists == false) {
+            store.tripStore.updateTripDestinations(item['id'], data);
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text('${destination['name']} added to ${item['name']}',
                   style: TextStyle(fontSize: 18)),
-              duration: Duration(seconds: 2)));
+              duration: Duration(seconds: 2),
+              action: SnackBarAction(
+                label: 'View',
+                textColor: Colors.blueGrey,
+                onPressed: () {
+                  TabNavigator().push(
+                      context, {"id": item['id'].toString(), "level": "trip"});
+                  Scaffold.of(context).removeCurrentSnackBar();
+                },
+              ),
+            ));
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text(
+                    '${destination['name']} was already added to ${item['name']}',
+                    style: TextStyle(fontSize: 18)),
+                duration: Duration(seconds: 2)));
+          }
+        } else if (notification != null) {
+          var data = {
+            "source": notification['source'],
+            "segments": notification['segments'],
+            "travelers": [store.currentUser.uid],
+          };
+          var response = await postAddFlightsAndAccomodations(item['id'], data);
+          Navigator.pop(context);
+          if (response.success == true) {
+            Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text('Details successfully added to trip',
+                    style: TextStyle(fontSize: 18)),
+                duration: Duration(seconds: 2)));
+          }
         }
       },
       child: Container(
@@ -203,7 +218,7 @@ Widget _buildBody(BuildContext context, dynamic item, dynamic destination) {
                               fit: BoxFit.cover),
                         ))),
               width: 140.0,
-              height: 90.0,
+              height: 178.0,
             ),
             Container(
                 padding: EdgeInsets.symmetric(vertical: 10.0),

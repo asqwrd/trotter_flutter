@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
+import 'package:trotter_flutter/widgets/trips/index.dart';
 
 class Notifications extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
@@ -79,12 +81,53 @@ class NotificationsState extends State<Notifications> {
             separatorBuilder: (BuildContext context, int index) =>
                 new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
             itemCount: notifications.length,
-            itemBuilder: (BuildContext context, int index) {
+            itemBuilder: (BuildContext listcontext, int index) {
               final data = notifications[index]['data'];
+              final type = notifications[index]['type'];
               return ListTile(
+                leading: icon(type),
                 title: Text(data['subject']),
-                trailing: Icon(Icons.more_vert),
+                trailing: IconButton(
+                  icon: Icon(Icons.more_horiz),
+                  onPressed: () {
+                    //print("object");
+                    bottomSheetModal(context, data, type);
+                  },
+                ),
               );
             }));
+  }
+
+  bottomSheetModal(BuildContext context, dynamic data, String type) {
+    return showModalBottomSheet(
+        context: context,
+        builder: (BuildContext listcontext) {
+          return new Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            new ListTile(
+                leading: new Icon(EvilIcons.check),
+                title: new Text('Mark as read'),
+                onTap: () {
+                  Navigator.pop(context);
+                }),
+            type == 'email'
+                ? new ListTile(
+                    leading: new Icon(EvilIcons.plus),
+                    title: new Text('Add to Trip'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      showTripsBottomSheet(context, null, data);
+                    })
+                : null,
+          ]);
+        });
+  }
+
+  static Icon icon(String type) {
+    switch (type) {
+      case 'email':
+        return Icon(EvilIcons.envelope);
+    }
+
+    return null;
   }
 }

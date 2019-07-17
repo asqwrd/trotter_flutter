@@ -169,14 +169,35 @@ Widget _buildBody(BuildContext context, dynamic item,
             "segments": notification['segments'],
             "travelers": [store.currentUser.uid],
           };
-          var response = await postAddFlightsAndAccomodations(item['id'], data);
+          final List<Widget> destinations = item['destinations']
+              .map<Widget>((destination) => new ListTile(
+                  title: new Text(
+                      '${destination['destination_name']}, ${destination["country_name"]}'),
+                  onTap: () async {
+                    var response = await postAddFlightsAndAccomodations(
+                        item['id'], destination['id'], data);
+                    Navigator.pop(context);
+                    if (response.success == true) {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                          content: Text('Details successfully added to trip',
+                              style: TextStyle(fontSize: 18)),
+                          duration: Duration(seconds: 2)));
+                    }
+                  }))
+              .toList();
           Navigator.pop(context);
-          if (response.success == true) {
-            Scaffold.of(context).showSnackBar(SnackBar(
-                content: Text('Details successfully added to trip',
-                    style: TextStyle(fontSize: 18)),
-                duration: Duration(seconds: 2)));
-          }
+          await showModalBottomSheet(
+              context: context,
+              builder: (BuildContext modalContext) {
+                return new Column(mainAxisSize: MainAxisSize.min, children: [
+                  Padding(
+                      padding: EdgeInsets.only(top: 20.0),
+                      child: Text("Which destination is this for?",
+                          style: TextStyle(
+                              fontSize: 24, fontWeight: FontWeight.w300))),
+                  ...destinations
+                ]);
+              });
         }
       },
       child: Container(

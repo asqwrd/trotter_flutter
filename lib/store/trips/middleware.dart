@@ -263,10 +263,10 @@ Future<dynamic> postAddToTrip(String tripId, dynamic data) async {
 }
 
 Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
-    String tripId, dynamic data) async {
+    String tripId, String destinationId, dynamic data) async {
   try {
     final response = await http.post(
-        'http://localhost:3002/api/trips/add/flights_accomodations/$tripId',
+        'http://localhost:3002/api/trips/add/flights_accomodations/$tripId/destination/$destinationId',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',

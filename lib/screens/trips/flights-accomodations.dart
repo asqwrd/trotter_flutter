@@ -89,16 +89,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
         backdropColor: color,
         backdropTapClosesPanel: false,
         backdropOpacity: .8,
-        onPanelOpened: () {
-          setState(() {
-            disableScroll = false;
-          });
-        },
-        onPanelClosed: () {
-          setState(() {
-            disableScroll = true;
-          });
-        },
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(15), topRight: Radius.circular(15)),
         maxHeight: _panelHeightOpen,
@@ -140,7 +130,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: Container(color: this.color.withOpacity(.3)),
+                child: Container(color: this.color.withOpacity(.8)),
               )
             ])),
       )),
@@ -150,7 +140,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
           child: new TrotterAppBar(
               onPush: onPush,
               color: color,
-              title: this.itineraryName,
+              title: 'Flights & Accommodations',
               back: true)),
     ]);
   }

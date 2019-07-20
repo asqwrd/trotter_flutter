@@ -255,7 +255,15 @@ Widget buildTravelers(List<dynamic> travelers) {
     right += 30;
   }
 
-  return Row(children: <Widget>[Flexible(child: Stack(children: avatars))]);
+  return ConstrainedBox(
+      constraints: new BoxConstraints(
+        minHeight: 40.0,
+        minWidth: 40.0,
+        maxHeight: 40,
+        maxWidth: 40,
+      ),
+      child:
+          Row(children: <Widget>[Flexible(child: Stack(children: avatars))]));
 }
 
 typedef String2VoidFunc = void Function(Map<String, dynamic>);

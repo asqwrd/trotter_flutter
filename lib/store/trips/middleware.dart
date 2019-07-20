@@ -49,6 +49,25 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
   }
 }
 
+Future<FlightsAndAccomodationsData> fetchFlightsAccomodations(
+    String tripId) async {
+  try {
+    final response = await http.get(
+        'http://localhost:3002/api/trips/$tripId/flights_accomodations/',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return FlightsAndAccomodationsData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return FlightsAndAccomodationsData(error: 'Response> $msg');
+    }
+  } catch (error) {
+    return FlightsAndAccomodationsData(error: 'Server is down');
+  }
+}
+
 Future<DeleteTripData> deleteTrip(TrotterStore store, String tripId) async {
   try {
     final response = await http.delete(
@@ -362,6 +381,18 @@ class AddFlightsAndAccomodationsData {
   factory AddFlightsAndAccomodationsData.fromJson(Map<String, dynamic> json) {
     return AddFlightsAndAccomodationsData(
         result: json['result'], success: true);
+  }
+}
+
+class FlightsAndAccomodationsData {
+  final dynamic flightsAccomodations;
+  final String error;
+
+  FlightsAndAccomodationsData({this.flightsAccomodations, this.error});
+
+  factory FlightsAndAccomodationsData.fromJson(Map<String, dynamic> json) {
+    return FlightsAndAccomodationsData(
+        flightsAccomodations: json['flightsAccomodations'], error: null);
   }
 }
 

@@ -19,6 +19,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
+  duration: ^2.0.8
   firebase_dynamic_links: ^0.4.0+4
   flutter_store: ^1.0.0+4
   firebase_messaging: ^5.0.4
@@ -32,7 +33,7 @@ dependencies:
   transformer_page_view: ^0.1.6
   google_maps_flutter: ^0.5.19
   shimmer: ^0.0.6
-  intl: ^0.15.7
+  intl: ^0.15.8
   html_unescape: ^1.0.1+2
   flutter_typeahead: ^1.6.1
   datetime_picker_formfield: ^0.2.0
@@ -47,6 +48,7 @@ dependencies:
   simple_moment: ^1.0.2
   firebase_auth: ^0.11.1+7
   google_sign_in: ^4.0.2
+  timezone: ^0.5.4
 
 
 
@@ -114,6 +116,7 @@ flutter:
   - images/M.png
   - images/N.png
   - images/trips-empty.png
+  - packages/timezone/data/2019a.tzf
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

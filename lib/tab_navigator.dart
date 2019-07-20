@@ -29,6 +29,7 @@ class TabNavigatorRoutes {
   static const String day_edit = '/itinerary/day/edit';
   static const String day = '/itinerary/day';
   static const String createtrip = '/trip/create';
+  static const String travelinfo = '/trip/travelinfo';
 }
 
 class Contexts {
@@ -86,6 +87,9 @@ class TabNavigator extends StatelessWidget {
         break;
       case 'createtrip':
         goTo = TabNavigatorRoutes.createtrip;
+        break;
+      case 'travelinfo':
+        goTo = TabNavigatorRoutes.travelinfo;
         break;
       default:
         break;
@@ -171,6 +175,8 @@ class TabNavigator extends StatelessWidget {
           itineraryId: data['itineraryId'],
           dayId: data['dayId'],
           onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
+          tripId: data['tripId'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(
           param: data['param'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.search: (context) => Search(

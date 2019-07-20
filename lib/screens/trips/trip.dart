@@ -1068,7 +1068,7 @@ class TripState extends State<Trip> {
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
     var fields = [
       {"label": "${this.travelers.length} people traveling", "icon":Container(width: MediaQuery.of(context).size.width/2, height:50, child:buildTravelers(this.travelers))},
-      {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor)},
+      {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor), "level":"travelinfo"},
     ];
  
     for (var group in result2.asIterable()) {
@@ -1122,7 +1122,7 @@ class TripState extends State<Trip> {
                 dynamic destination = fields[index]['destination'];
                 if(fields[index]['id'] != null){
                   onPush({'id': fields[index]['id'].toString(), 'level': fields[index]['level'].toString()});
-                } else if(destination != null && destination['itinerary_id'].isEmpty && fields[index]['level'] == 'itinerary/edit'){
+                } else if(destination != null && destination['itinerary_id'].isEmpty && fields[index]['route'] == 'itinerary/edit'){
                   dynamic data = {
                     "itinerary":{
                       "name": trip['name'],
@@ -1149,6 +1149,8 @@ class TripState extends State<Trip> {
                   onPush({'id': response.id, 'level': fields[index]['level'].toString()});
                 } else if(destination != null && !destination['itinerary_id'].isEmpty){
                   onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
+                } else if(fields[index]['level'] == 'travelinfo'){
+                  onPush({'tripId':this.tripId, "level": "travelinfo"});
                 }
               },
               trailing: fields[index]['icon'],

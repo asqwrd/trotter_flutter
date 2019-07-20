@@ -204,6 +204,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                       },
                     );
                   }
+                  return Container();
                 })),
         body: Container(
             height: _bodyHeight,

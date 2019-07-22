@@ -39,6 +39,10 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
+        if (message['notification'] != null) {
+          print(store.notifications.notifications);
+          fetchNotifications(store);
+        }
       },
       onLaunch: (Map<String, dynamic> message) async {
         print("onLaunch: $message");

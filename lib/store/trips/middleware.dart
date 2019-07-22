@@ -50,10 +50,10 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
 }
 
 Future<FlightsAndAccomodationsData> fetchFlightsAccomodations(
-    String tripId) async {
+    String tripId, String userId) async {
   try {
     final response = await http.get(
-        'http://localhost:3002/api/trips/$tripId/flights_accomodations/',
+        'http://localhost:3002/api/trips/$tripId/flights_accomodations?user_id=$userId',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON

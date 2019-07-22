@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart';
 import 'package:duration/duration.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class FlightsAccomodationsList extends StatelessWidget {
   final dynamic destination;
@@ -31,6 +31,9 @@ class FlightsAccomodationsList extends StatelessWidget {
   Widget buildTimeLine(BuildContext context, dynamic item) {
     final details = item['details'];
     final destination = item['destination'];
+    if (details.length == 0) {
+      return renderEmpty(destination);
+    }
     return Container(
         height: this.height ?? this.height,
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -54,14 +57,16 @@ class FlightsAccomodationsList extends StatelessWidget {
               itemBuilder: (BuildContext segmentContext, int segIndex) {
                 final segment = segments[segIndex];
                 return IntrinsicHeight(
-                    child: renderSegment(segment, segIndex, travelers));
+                    child: renderSegment(
+                        segmentContext, segment, segIndex, travelers));
               },
             ));
           },
         ));
   }
 
-  renderSegment(dynamic segment, index, dynamic travelers) {
+  renderSegment(
+      BuildContext context, dynamic segment, index, dynamic travelers) {
     TextStyle style = TextStyle(
         fontSize: 40, color: Colors.black, fontWeight: FontWeight.w400);
     TextStyle topstyle = TextStyle(
@@ -82,12 +87,13 @@ class FlightsAccomodationsList extends StatelessWidget {
             arrTime.month, arrTime.day, arrTime.hour, arrTime.minute);
 
         final difference = arrivalTime.difference(departureTime);
-        final timeInAir = printDuration(difference);
+        final timeInAir =
+            prettyDuration(difference, tersity: DurationTersity.minute);
         return Center(
             child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.only(top: 20),
-                margin: EdgeInsets.only(bottom: 40, top: index == 0 ? 20 : 10),
+                padding: EdgeInsets.only(top: 0),
+                margin: EdgeInsets.only(bottom: 40, top: index == 0 ? 0 : 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -132,7 +138,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                               style: substyle,
                             ),
                             Container(
-                                margin: EdgeInsets.only(top: 30),
+                                margin: EdgeInsets.only(top: 60),
                                 child: Row(children: <Widget>[
                                   Text(
                                       '${segment['number_of_pax']} ${segment['number_of_pax'] > 1 ? 'people' : 'person'} traveling'),
@@ -145,15 +151,26 @@ class FlightsAccomodationsList extends StatelessWidget {
                                   buildTravelers(travelers)
                                 ])),
                             Container(
-                              margin: EdgeInsets.only(top: 90),
+                              margin: EdgeInsets.only(top: 60),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  Text("$timeInAir in air",
+                                  Text(
+                                      "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
                                       style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w400)),
+                                  Container(
+                                      width: 30,
+                                      height: 1,
+                                      margin:
+                                          EdgeInsets.only(left: 5, right: 3),
+                                      color: Colors.black.withOpacity(0.3)),
+                                  Text("$timeInAir in air",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w300)),
                                 ],
                               ),
                             )
@@ -194,18 +211,135 @@ class FlightsAccomodationsList extends StatelessWidget {
                   ],
                 )));
       case 'Hotel':
-        return Container();
+        final hotelInfo = [
+          {"label": "Checkin", "value": segment['checkin_date']},
+          {"label": "Checkout", "value": segment['checkout_date']},
+          {'label': "Guests", "value": travelers}
+        ];
+        return Container(
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <
+                Widget>[
+          Container(
+              margin: EdgeInsets.only(right: 20), child: icon(segment['type'])),
+          Flexible(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                Container(child: Text(segment['hotel_name'], style: topstyle)),
+                Container(
+                    height: 200,
+                    width: MediaQuery.of(context).size.width,
+                    child: ClipPath(
+                        clipper: CornerRadiusClipper(10.0),
+                        child: GoogleMap(
+                          // onMapCreated: (GoogleMapController controller) {
+                          //   _controller.complete(controller);
+                          // },
+                          markers: <Marker>[
+                            Marker(
+                                markerId: MarkerId(segment['confirmation_no']),
+                                position: LatLng(double.parse(segment['lat']),
+                                    double.parse(segment['lon'])))
+                          ].toSet(),
+                          initialCameraPosition: CameraPosition(
+                            bearing: 0.0,
+                            target: LatLng(double.parse(segment['lat']),
+                                double.parse(segment['lon'])),
+                            tilt: 30.0,
+                            zoom: 17.0,
+                          ),
+                        ))),
+                Container(
+                    height: 130,
+                    margin: EdgeInsets.only(top: 10),
+                    width: MediaQuery.of(context).size.width,
+                    child: ListView.builder(
+                      primary: false,
+                      shrinkWrap: true,
+                      itemCount: hotelInfo.length,
+                      itemBuilder: (BuildContext hotelContext, int index) {
+                        if (hotelInfo[index]['label'] == 'Guests') {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(hotelInfo[index]['label'], style: substyle),
+                              buildTravelers(travelers)
+                            ],
+                          );
+                        }
+                        return Container(
+                            height: 35,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(hotelInfo[index]['label'],
+                                    style: substyle),
+                                Text(
+                                    DateFormat("MMMM d, y").format(
+                                        DateTime.parse(
+                                            hotelInfo[index]['value'])),
+                                    style: substyle)
+                              ],
+                            ));
+                      },
+                    ))
+              ]))
+        ]));
     }
   }
 
   static Icon icon(String type) {
     switch (type) {
       case 'Air':
-        return Icon(Icons.flight_takeoff);
+        return Icon(
+          Icons.flight_takeoff,
+          color: Colors.black.withOpacity(.3),
+        );
       case 'Hotel':
-        return Icon(Icons.hotel);
+        return Icon(
+          Icons.hotel,
+          color: Colors.black.withOpacity(.3),
+        );
     }
 
     return null;
+  }
+
+  renderEmpty(dynamic destination) {
+    return Stack(children: <Widget>[
+      Center(
+          child: Container(
+              color: Colors.transparent,
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SvgPicture.asset('images/forward.svg',
+                      color: Colors.blueGrey,
+                      width: 170,
+                      height: 170,
+                      fit: BoxFit.contain),
+                  Text(
+                    'No details available for ${destination["destination_name"]}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 35,
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.w300),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Forward confirmation emails for flights and hotels to trips@ajibade.me',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 25,
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.w300),
+                  ),
+                ],
+              ))),
+    ]);
   }
 }

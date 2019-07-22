@@ -8,22 +8,32 @@ import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/flights-accomodation-list/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:flutter_store/flutter_store.dart';
+import 'package:trotter_flutter/store/store.dart';
 
 class FlightsAccomodations extends StatefulWidget {
   final String tripId;
+  final String currentUserId;
   final String destinationId;
   final ValueChanged<dynamic> onPush;
   FlightsAccomodations(
-      {Key key, @required this.tripId, this.destinationId, this.onPush})
+      {Key key,
+      @required this.tripId,
+      this.destinationId,
+      this.currentUserId,
+      this.onPush})
       : super(key: key);
   @override
-  FlightsAccomodationsState createState() =>
-      new FlightsAccomodationsState(tripId: this.tripId, onPush: this.onPush);
+  FlightsAccomodationsState createState() => new FlightsAccomodationsState(
+      tripId: this.tripId,
+      currentUserId: this.currentUserId,
+      onPush: this.onPush);
 }
 
 class FlightsAccomodationsState extends State<FlightsAccomodations> {
   final String tripId;
   final String destinationId;
+  final String currentUserId;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.blueGrey;
   String destinationName = '';
@@ -42,17 +52,11 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
 
   @override
   void initState() {
-    // _sc.addListener(() {
-    //   setState(() {
-    //     if (_pc.isPanelOpen()) {
-    //       disableScroll = _sc.offset <= 0;
-    //     }
-    //   });
-    // });
     super.initState();
-    data = fetchFlightsAccomodations(this.tripId);
+    data = fetchFlightsAccomodations(this.tripId, this.currentUserId);
     data.then((data) {
       if (data.error == null) {
+        print(data.flightsAccomodations);
         setState(() {
           this.loading = false;
           this.flightsAccomodations = data.flightsAccomodations;
@@ -71,13 +75,13 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     super.dispose();
   }
 
-  FlightsAccomodationsState({this.tripId, this.destinationId, this.onPush});
+  FlightsAccomodationsState(
+      {this.tripId, this.destinationId, this.currentUserId, this.onPush});
 
   @override
   Widget build(BuildContext context) {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    var store = Provider.of<TrotterStore>(context);
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingUpPanel(
@@ -109,7 +113,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                           color: Color.fromRGBO(106, 154, 168, 1),
                           onRetry: () {
                             setState(() {
-                              data = fetchFlightsAccomodations(this.tripId);
+                              data = fetchFlightsAccomodations(
+                                  this.tripId, store.currentUser.uid);
                               data.then((data) {
                                 if (data.error == null) {
                                   setState(() {
@@ -140,7 +145,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
           child: new TrotterAppBar(
               onPush: onPush,
               color: color,
-              title: 'Flights & Accommodations',
+              title: 'Flights & accommodation',
               back: true)),
     ]);
   }
@@ -158,20 +163,20 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     }
     return Container(
         height: _panelHeightOpen,
+        width: MediaQuery.of(ctxt).size.width,
         child: DefaultTabController(
             length: this.flightsAccomodations.length,
-            child: ListView(
-              primary: true,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Container(
                     color: Colors.transparent,
                     child: _renderTabBar(Colors.blueGrey, Colors.black)),
-                Container(
-                    width: MediaQuery.of(ctxt).size.width,
-                    height: _panelHeightOpen - 70,
-                    child: TabBarView(children: tabContents))
+                Flexible(
+                    child: Container(
+                        width: MediaQuery.of(ctxt).size.width,
+                        child: TabBarView(children: tabContents)))
               ],
             )));
   }

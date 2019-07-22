@@ -1150,7 +1150,7 @@ class TripState extends State<Trip> {
                 } else if(destination != null && !destination['itinerary_id'].isEmpty){
                   onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
                 } else if(fields[index]['level'] == 'travelinfo'){
-                  onPush({'tripId':this.tripId, "level": "travelinfo"});
+                  onPush({'tripId':this.tripId, 'currentUserId': store.currentUser.uid,"level": "travelinfo"});
                 }
               },
               trailing: fields[index]['icon'],

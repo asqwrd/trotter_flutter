@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bubble_bottom_bar/bubble_bottom_bar.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:badges/badges.dart';
 
 enum TabItem { explore, trips, notifications, profile }
 
@@ -113,6 +114,36 @@ class BottomNavigation extends StatelessWidget {
   BubbleBottomBarItem _buildItem({BuildContext context, TabItem tabItem}) {
     String text = TabHelper.description(tabItem);
     //SvgPicture icon = TabHelper.icon(tabItem);
+    final store = Provider.of<TrotterStore>(context);
+    if (tabItem == TabItem.notifications) {
+      return BubbleBottomBarItem(
+        icon: Badge(
+            toAnimate: false,
+            badgeContent: Text(
+              '${store.notifications.notifications.length}',
+              style: TextStyle(color: Colors.white),
+            ),
+            child: _icon(context, item: tabItem)),
+        activeIcon: Badge(
+            toAnimate: false,
+            showBadge: store.notifications != null &&
+                store.notifications.notifications.length > 0,
+            badgeContent: Text(
+              '${store.notifications.notifications.length}',
+              style: TextStyle(color: Colors.white),
+            ),
+            child: _icon(context, item: tabItem)),
+        backgroundColor: _colorTabMatching(item: tabItem),
+        title: Container(
+            margin: EdgeInsets.only(right: 30),
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 15,
+              ),
+            )),
+      );
+    }
     return BubbleBottomBarItem(
       icon: _icon(context, item: tabItem),
       activeIcon: _icon(context, item: tabItem),

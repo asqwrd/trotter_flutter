@@ -64,7 +64,10 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     super.didChangeDependencies();
     FocusScope.of(context).requestFocus(_focusA);
     store = Provider.of<TrotterStore>(context);
-    if (store.currentUser == null) store.checkLoginStatus();
+    if (store.currentUser == null) {
+      store.checkLoginStatus();
+      fetchNotifications(store);
+    }
   }
 
   void _selectTab(BuildContext context, TabItem tabItem) {

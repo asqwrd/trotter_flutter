@@ -61,6 +61,7 @@ Future<FlightsAndAccomodationsData> fetchFlightsAccomodations(
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      print(msg);
       return FlightsAndAccomodationsData(error: 'Response> $msg');
     }
   } catch (error) {
@@ -304,6 +305,27 @@ Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
   }
 }
 
+Future<FlightsAndAccomodationsTravelersData>
+    putUpdateFlightsAccommodationTravelers(String tripId, String destinationId,
+        String detailId, dynamic data) async {
+  final response = await http.put(
+      'http://localhost:3002/api/trips/update/$tripId/destination/$destinationId/details/$detailId',
+      body: json.encode(data),
+      headers: {
+        'Authorization': 'security',
+        "Content-Type": "application/json"
+      });
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return FlightsAndAccomodationsTravelersData.fromJson(
+        json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    print(response.statusCode);
+    return FlightsAndAccomodationsTravelersData(error: 'Server is down');
+  }
+}
+
 Future<dynamic> putUpdateTripDestination(
     String tripId, String destinationId, dynamic data) async {
   final response = await http.put(
@@ -393,6 +415,19 @@ class FlightsAndAccomodationsData {
   factory FlightsAndAccomodationsData.fromJson(Map<String, dynamic> json) {
     return FlightsAndAccomodationsData(
         flightsAccomodations: json['flightsAccomodations'], error: null);
+  }
+}
+
+class FlightsAndAccomodationsTravelersData {
+  final dynamic travelers;
+  final String error;
+
+  FlightsAndAccomodationsTravelersData({this.travelers, this.error});
+
+  factory FlightsAndAccomodationsTravelersData.fromJson(
+      Map<String, dynamic> json) {
+    return FlightsAndAccomodationsTravelersData(
+        travelers: json['travelers'], error: null);
   }
 }
 

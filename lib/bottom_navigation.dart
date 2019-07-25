@@ -119,6 +119,8 @@ class BottomNavigation extends StatelessWidget {
       return BubbleBottomBarItem(
         icon: Badge(
             toAnimate: false,
+            showBadge: store.notifications != null &&
+                store.notifications.notifications.length > 0,
             badgeContent: Text(
               '${store.notifications.notifications.length}',
               style: TextStyle(color: Colors.white),

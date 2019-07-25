@@ -8,20 +8,16 @@ import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/flights-accomodation-list/index.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/store/store.dart';
 
 class FlightsAccomodations extends StatefulWidget {
   final String tripId;
   final String currentUserId;
-  final String destinationId;
   final ValueChanged<dynamic> onPush;
   FlightsAccomodations(
-      {Key key,
-      @required this.tripId,
-      this.destinationId,
-      this.currentUserId,
-      this.onPush})
+      {Key key, @required this.tripId, this.currentUserId, this.onPush})
       : super(key: key);
   @override
   FlightsAccomodationsState createState() => new FlightsAccomodationsState(
@@ -32,7 +28,6 @@ class FlightsAccomodations extends StatefulWidget {
 
 class FlightsAccomodationsState extends State<FlightsAccomodations> {
   final String tripId;
-  final String destinationId;
   final String currentUserId;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.blueGrey;
@@ -56,7 +51,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     data = fetchFlightsAccomodations(this.tripId, this.currentUserId);
     data.then((data) {
       if (data.error == null) {
-        print(data.flightsAccomodations);
         setState(() {
           this.loading = false;
           this.flightsAccomodations = data.flightsAccomodations;
@@ -75,8 +69,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     super.dispose();
   }
 
-  FlightsAccomodationsState(
-      {this.tripId, this.destinationId, this.currentUserId, this.onPush});
+  FlightsAccomodationsState({this.tripId, this.currentUserId, this.onPush});
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +96,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                     future: data,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return _buildLoadingBody(context);
+                        return Center(child: RefreshProgressIndicator());
                       }
                       if (snapshot.hasData && snapshot.data.error == null) {
                         return _buildLoadedBody(context, snapshot);
@@ -127,7 +120,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                           },
                         );
                       }
-                      return _buildLoadingBody(context);
+                      return Center(child: RefreshProgressIndicator());
                     }))),
         body: Container(
             height: _panelHeightOpen,
@@ -154,31 +147,84 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     double _panelHeightOpen = MediaQuery.of(ctxt).size.height - 130;
     var tabContents = <Widget>[];
-    for (var destination in this.flightsAccomodations) {
+    for (var i = 0; i < this.flightsAccomodations.length; i++) {
+      var destination = this.flightsAccomodations[i];
       tabContents.add(
         FlightsAccomodationsList(
-          destination: destination,
-        ),
+            destination: destination,
+            onAddPressed: (data) async {
+              var dialogData = await showGeneralDialog(
+                context: ctxt,
+                pageBuilder: (BuildContext buildContext,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation) {
+                  return TravelersModal(
+                      tripId: this.tripId, travelers: data['travelers']);
+                },
+                transitionBuilder: (BuildContext context,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation,
+                    Widget child) {
+                  return new FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                barrierDismissible: true,
+                barrierLabel:
+                    MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                barrierColor: Colors.black.withOpacity(0.5),
+                transitionDuration: const Duration(milliseconds: 300),
+              );
+              if (dialogData != null) {
+                final detailId = data['id'];
+                final destinationId = data['destinationId'];
+                final travelers = dialogData['travelers'];
+                final response = await putUpdateFlightsAccommodationTravelers(
+                    this.tripId,
+                    destinationId,
+                    detailId,
+                    {"travelers": travelers});
+                if (response.error == null) {
+                  setState(() {
+                    this.loading = true;
+                  });
+                  var res = await fetchFlightsAccomodations(
+                      this.tripId, this.currentUserId);
+                  setState(() {
+                    this.loading = false;
+                    this.flightsAccomodations = res.flightsAccomodations;
+                  });
+                }
+              }
+            }),
       );
     }
     return Container(
         height: _panelHeightOpen,
         width: MediaQuery.of(ctxt).size.width,
-        child: DefaultTabController(
-            length: this.flightsAccomodations.length,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                    color: Colors.transparent,
-                    child: _renderTabBar(Colors.blueGrey, Colors.black)),
-                Flexible(
-                    child: Container(
-                        width: MediaQuery.of(ctxt).size.width,
-                        child: TabBarView(children: tabContents)))
-              ],
-            )));
+        child: Stack(children: <Widget>[
+          DefaultTabController(
+              length: this.flightsAccomodations.length,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                      color: Colors.transparent,
+                      child: _renderTabBar(Colors.blueGrey, Colors.black)),
+                  Flexible(
+                      child: Container(
+                          width: MediaQuery.of(ctxt).size.width,
+                          child: TabBarView(children: tabContents)))
+                ],
+              )),
+          this.loading
+              ? Center(
+                  child: RefreshProgressIndicator(),
+                )
+              : Container()
+        ]));
   }
 
   _renderTab(String label) {

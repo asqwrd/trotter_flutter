@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart';
 import 'package:duration/duration.dart';
@@ -9,7 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class FlightsAccomodationsList extends StatelessWidget {
   final dynamic destination;
-  final Function(String) callback;
+  final ValueChanged onAddPressed;
   final double height;
   final ScrollController controller;
   final ScrollPhysics physics;
@@ -17,7 +18,7 @@ class FlightsAccomodationsList extends StatelessWidget {
   //passing props in react style
   FlightsAccomodationsList({
     this.destination,
-    this.callback,
+    this.onAddPressed,
     this.controller,
     this.physics,
     this.height,
@@ -36,7 +37,7 @@ class FlightsAccomodationsList extends StatelessWidget {
     }
     return Container(
         height: this.height ?? this.height,
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: 10),
         margin: EdgeInsets.only(top: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
         child: ListView.builder(
@@ -47,20 +48,67 @@ class FlightsAccomodationsList extends StatelessWidget {
             final segments = details[index]['segments'];
             final travelers = details[index]['travelers_full'];
 
-            return Container(
-                child: ListView.separated(
-              separatorBuilder: (BuildContext context, int index) =>
-                  new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-              primary: false,
-              shrinkWrap: true,
-              itemCount: segments.length,
-              itemBuilder: (BuildContext segmentContext, int segIndex) {
-                final segment = segments[segIndex];
-                return IntrinsicHeight(
-                    child: renderSegment(
-                        segmentContext, segment, segIndex, travelers));
-              },
-            ));
+            return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      child: ListTile(
+                          title: Text(details[index]['source'],
+                              style: TextStyle(fontSize: 24)),
+                          subtitle: Container(
+                            margin: EdgeInsets.only(top: 20, left: 10),
+                            width: 250,
+                            child: InkWell(
+                                onTap: () {
+                                  this.onAddPressed({
+                                    "id": details[index]['id'],
+                                    "destinationId": destination['id'],
+                                    "travelers": travelers,
+                                    "index": index,
+                                  });
+                                },
+                                child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      Container(
+                                        padding: EdgeInsets.all(5),
+                                        margin: EdgeInsets.only(top: 0),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(100),
+                                            color: Colors.transparent),
+                                        child: SvgPicture.asset(
+                                            'images/edit-icon.svg',
+                                            color: Colors.blueAccent,
+                                            width: 25,
+                                            height: 25),
+                                      ),
+                                      Text('Edit travelers',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              color: Colors.blueAccent))
+                                    ])),
+                          ))),
+                  Container(
+                      margin: EdgeInsets.symmetric(horizontal: 10),
+                      child: ListView.separated(
+                        separatorBuilder: (BuildContext context, int index) =>
+                            new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                        primary: false,
+                        shrinkWrap: true,
+                        itemCount: segments.length,
+                        itemBuilder:
+                            (BuildContext segmentContext, int segIndex) {
+                          final segment = segments[segIndex];
+                          return IntrinsicHeight(
+                              child: renderSegment(segmentContext, segment,
+                                  segIndex, travelers));
+                        },
+                      ))
+                ]);
           },
         ));
   }
@@ -92,7 +140,7 @@ class FlightsAccomodationsList extends StatelessWidget {
         return Center(
             child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.only(top: 0),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 margin: EdgeInsets.only(bottom: 40, top: index == 0 ? 0 : 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,17 +187,23 @@ class FlightsAccomodationsList extends StatelessWidget {
                             ),
                             Container(
                                 margin: EdgeInsets.only(top: 60),
-                                child: Row(children: <Widget>[
-                                  Text(
-                                      '${segment['number_of_pax']} ${segment['number_of_pax'] > 1 ? 'people' : 'person'} traveling'),
-                                  Container(
-                                      width: 50,
-                                      height: 1,
-                                      margin:
-                                          EdgeInsets.only(left: 5, right: 3),
-                                      color: Colors.black.withOpacity(0.3)),
-                                  buildTravelers(travelers)
-                                ])),
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Text(
+                                          '${segment['number_of_pax']} ${segment['number_of_pax'] > 1 ? 'people' : 'person'} traveling'),
+                                      Container(
+                                          width: 50,
+                                          height: 1,
+                                          margin: EdgeInsets.only(
+                                              left: 5, right: 3),
+                                          color: Colors.black.withOpacity(0.3)),
+                                      Container(
+                                          //width: double.infinity,
+                                          child: buildTravelers(travelers))
+                                    ])),
                             Container(
                               margin: EdgeInsets.only(top: 60),
                               child: Row(
@@ -217,76 +271,84 @@ class FlightsAccomodationsList extends StatelessWidget {
           {'label': "Guests", "value": travelers}
         ];
         return Container(
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <
                 Widget>[
-          Container(
-              margin: EdgeInsets.only(right: 20), child: icon(segment['type'])),
-          Flexible(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                Container(child: Text(segment['hotel_name'], style: topstyle)),
-                Container(
-                    height: 200,
-                    width: MediaQuery.of(context).size.width,
-                    child: ClipPath(
-                        clipper: CornerRadiusClipper(10.0),
-                        child: GoogleMap(
-                          // onMapCreated: (GoogleMapController controller) {
-                          //   _controller.complete(controller);
-                          // },
-                          markers: <Marker>[
-                            Marker(
-                                markerId: MarkerId(segment['confirmation_no']),
-                                position: LatLng(double.parse(segment['lat']),
-                                    double.parse(segment['lon'])))
-                          ].toSet(),
-                          initialCameraPosition: CameraPosition(
-                            bearing: 0.0,
-                            target: LatLng(double.parse(segment['lat']),
-                                double.parse(segment['lon'])),
-                            tilt: 30.0,
-                            zoom: 17.0,
-                          ),
-                        ))),
-                Container(
-                    height: 130,
-                    margin: EdgeInsets.only(top: 10),
-                    width: MediaQuery.of(context).size.width,
-                    child: ListView.builder(
-                      primary: false,
-                      shrinkWrap: true,
-                      itemCount: hotelInfo.length,
-                      itemBuilder: (BuildContext hotelContext, int index) {
-                        if (hotelInfo[index]['label'] == 'Guests') {
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(hotelInfo[index]['label'], style: substyle),
-                              buildTravelers(travelers)
-                            ],
-                          );
-                        }
-                        return Container(
-                            height: 35,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Text(hotelInfo[index]['label'],
-                                    style: substyle),
-                                Text(
-                                    DateFormat("MMMM d, y").format(
-                                        DateTime.parse(
-                                            hotelInfo[index]['value'])),
-                                    style: substyle)
-                              ],
-                            ));
-                      },
-                    ))
-              ]))
-        ]));
+              Container(
+                  margin: EdgeInsets.only(right: 20),
+                  child: icon(segment['type'])),
+              Flexible(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                    Container(
+                        child: Text(segment['hotel_name'], style: topstyle)),
+                    Container(
+                        height: 200,
+                        width: MediaQuery.of(context).size.width,
+                        child: ClipPath(
+                            clipper: CornerRadiusClipper(10.0),
+                            child: GoogleMap(
+                              // onMapCreated: (GoogleMapController controller) {
+                              //   _controller.complete(controller);
+                              // },
+                              markers: <Marker>[
+                                Marker(
+                                    markerId:
+                                        MarkerId(segment['confirmation_no']),
+                                    position: LatLng(
+                                        double.parse(segment['lat']),
+                                        double.parse(segment['lon'])))
+                              ].toSet(),
+                              initialCameraPosition: CameraPosition(
+                                bearing: 0.0,
+                                target: LatLng(double.parse(segment['lat']),
+                                    double.parse(segment['lon'])),
+                                tilt: 30.0,
+                                zoom: 17.0,
+                              ),
+                            ))),
+                    Container(
+                        height: 130,
+                        margin: EdgeInsets.only(top: 10),
+                        width: MediaQuery.of(context).size.width,
+                        child: ListView.builder(
+                          primary: false,
+                          shrinkWrap: true,
+                          itemCount: hotelInfo.length,
+                          itemBuilder: (BuildContext hotelContext, int index) {
+                            if (hotelInfo[index]['label'] == 'Guests') {
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Text(hotelInfo[index]['label'],
+                                      style: substyle),
+                                  buildTravelers(travelers)
+                                ],
+                              );
+                            }
+                            return Container(
+                                height: 35,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Text(hotelInfo[index]['label'],
+                                        style: substyle),
+                                    Text(
+                                        DateFormat("MMMM d, y").format(
+                                            DateTime.parse(
+                                                hotelInfo[index]['value'])),
+                                        style: substyle)
+                                  ],
+                                ));
+                          },
+                        ))
+                  ]))
+            ]));
     }
   }
 

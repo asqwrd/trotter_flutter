@@ -210,8 +210,7 @@ arrayString(List<dynamic> list) {
 
 Widget buildTravelers(List<dynamic> travelers) {
   var avatars = <Widget>[];
-  var length =
-      travelers.length < 4 ? travelers.length : travelers.sublist(0, 4);
+  var length = travelers.length < 4 ? travelers.length : 4;
   var more = travelers.length - length;
   double right = 0;
   if (more > 0) {
@@ -254,13 +253,21 @@ Widget buildTravelers(List<dynamic> travelers) {
     );
     right += 30;
   }
+  double maxWidth = 40;
+  if (length == 2) {
+    maxWidth = 70;
+  } else if (length == 3) {
+    maxWidth = 110;
+  } else if (length == 4) {
+    maxWidth = 140;
+  }
 
   return ConstrainedBox(
       constraints: new BoxConstraints(
         minHeight: 40.0,
         minWidth: 40.0,
         maxHeight: 40,
-        maxWidth: 40,
+        maxWidth: maxWidth,
       ),
       child:
           Row(children: <Widget>[Flexible(child: Stack(children: avatars))]));

@@ -22,6 +22,7 @@ class GoogleAuthButtonContainer extends StatelessWidget {
             await store.logout();
           } else {
             await store.login();
+            fetchNotifications(store);
           }
           if (this.isModal == true) {
             Navigator.pop(context);

@@ -344,7 +344,7 @@ Future<dynamic> putUpdateTripDestination(
   }
 }
 
-Future<dynamic> putUpdateTrip(String tripId, dynamic data) async {
+Future<UpdateTripData> putUpdateTrip(String tripId, dynamic data) async {
   final response = await http.put(
       'http://localhost:3002/api/trips/update/trip/$tripId',
       body: json.encode(data),
@@ -357,7 +357,7 @@ Future<dynamic> putUpdateTrip(String tripId, dynamic data) async {
     return UpdateTripData.fromJson(json.decode(response.body));
   } else {
     // If that response was not OK, throw an error.
-    return {"success": false};
+    return UpdateTripData(success: false);
   }
 }
 
@@ -433,13 +433,13 @@ class FlightsAndAccomodationsTravelersData {
 
 class UpdateTripData {
   final bool success;
+  final List<dynamic> travelers;
 
-  UpdateTripData({this.success});
+  UpdateTripData({this.success, this.travelers});
 
   factory UpdateTripData.fromJson(Map<String, dynamic> json) {
     return UpdateTripData(
-      success: json['success'],
-    );
+        success: json['success'], travelers: json['travelers']);
   }
 }
 

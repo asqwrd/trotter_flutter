@@ -68,9 +68,16 @@ class TravelersModalState extends State<TravelersModal> {
     super.initState();
     for (var traveler in this.travelers) {
       this.selectedUsersUid.add(traveler['uid']);
-      this.selectedUsers.add(FilterChip(
+      this.selectedUsers.add(Chip(
+          avatar: CircleAvatar(
+              backgroundImage: CachedNetworkImageProvider(
+            traveler['photoUrl'],
+          )),
           label: Text("${traveler['displayName']}"),
-          onSelected: (bool value) {}));
+          deleteIcon: Icon(Icons.close),
+          onDeleted: () {
+            this._deleteChip(traveler['uid']);
+          }));
     }
     data = fetchTravelersModal(
       this.tripId,
@@ -103,6 +110,14 @@ class TravelersModalState extends State<TravelersModal> {
             }));
   }
 
+  _deleteChip(String uid) {
+    setState(() {
+      var index = this.selectedUsersUid.indexOf(uid);
+      this.selectedUsersUid.removeAt(index);
+      this.selectedUsers.removeAt(index);
+    });
+  }
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading, String id) {
@@ -115,7 +130,7 @@ class TravelersModalState extends State<TravelersModal> {
           brightness: Brightness.light,
           // centerTitle: true,
           title: Text(
-            'Travelers',
+            'Select travelers',
             style: TextStyle(
                 color: Colors.black, fontWeight: FontWeight.w300, fontSize: 24),
           ),
@@ -125,13 +140,13 @@ class TravelersModalState extends State<TravelersModal> {
                     margin: EdgeInsets.only(right: 20),
                     child: FlatButton(
                       child: Text(
-                        'Add',
+                        'Save',
                         style: TextStyle(
-                            fontWeight: FontWeight.w400, fontSize: 18),
+                            fontWeight: FontWeight.w500, fontSize: 18),
                       ),
-                      textColor: Colors.white,
+                      textColor: Colors.lightBlue,
                       padding: EdgeInsets.all(0),
-                      color: Colors.blueGrey.withOpacity(.5),
+                      color: Colors.lightBlue.withOpacity(.3),
                       onPressed: () {
                         Navigator.pop(
                             context, {"travelers": this.selectedUsersUid});
@@ -170,10 +185,16 @@ class TravelersModalState extends State<TravelersModal> {
                       if (exists == false) {
                         setState(() {
                           this.selectedUsersUid.add(results[index]['uid']);
-                          this.selectedUsers.add(FilterChip(
-                              selected: false,
+                          this.selectedUsers.add(Chip(
+                              avatar: CircleAvatar(
+                                  backgroundImage: CachedNetworkImageProvider(
+                                results[index]['photoUrl'],
+                              )),
                               label: Text("${results[index]['displayName']}"),
-                              onSelected: (bool value) {}));
+                              deleteIcon: Icon(Icons.close),
+                              onDeleted: () {
+                                this._deleteChip(results[index]['uid']);
+                              }));
                         });
                       }
                     },

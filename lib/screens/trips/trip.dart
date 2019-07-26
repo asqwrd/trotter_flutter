@@ -461,8 +461,9 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                       setState(() {
                         var oldName = this.trip['name'];
                         this.trip['name'] = this.controller.text;
+                        this.trip['travelers'] = this.travelers;
                         store.tripStore.updateTrip(this.trip); 
-                        Navigator.pop(context, oldName);
+                        Navigator.pop(context, {"oldName": oldName, "trip": this.trip});
 
                       });
                     }
@@ -859,29 +860,34 @@ class TripState extends State<Trip> {
             title: new Text('Edit trip name'),
             onTap: () async {
               Navigator.pop(buildercontext);
-              var oldName = await Navigator.push(buildercontext,MaterialPageRoute(builder: (BuildContext bc){
-                return _nameDialog;
-              }));
-              // showGeneralDialog(
-              //   context: buildercontext,
-              //   pageBuilder: (BuildContext buildContext, Animation<double> animation,
-              //     Animation<double> secondaryAnimation) {
-              //     return Dialog(
-              //       child: _nameDialog
-              //     );
-              //   },
-              //   transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-              //     return new FadeTransition(
-              //           opacity: animation,
-              //           child: child,
-              //         );
-              //   },
-              //   barrierDismissible: true,
-              //   barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-              //   barrierColor: Colors.black.withOpacity(0.5),
-              //   transitionDuration: const Duration(milliseconds: 300),
-              // );
-              if(oldName != null && oldName is String){
+              var data = await showGeneralDialog(
+                context: buildercontext,
+                pageBuilder: (BuildContext buildContext, Animation<double> animation,
+                  Animation<double> secondaryAnimation) {
+                  return Dialog(
+                    child: _nameDialog
+                  );
+                },
+                transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+                  return new FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                },
+                barrierDismissible: true,
+                barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                barrierColor: Colors.black.withOpacity(0.5),
+                transitionDuration: const Duration(milliseconds: 300),
+              );
+
+              if(data['trip'] != null){
+                setState(() {
+                  this.tripName = data['trip']['name'];
+                 });
+              }
+          
+              if(data['oldName'] != null){
+                 var oldName = data['oldName'];
                 Scaffold.of(topcontext).showSnackBar(SnackBar(
                     content: Text(
                       '$oldName has been changed to ${this.trip['name']}',

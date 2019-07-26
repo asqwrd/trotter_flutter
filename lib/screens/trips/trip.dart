@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:async/async.dart';
 import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,6 +23,8 @@ import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:share/share.dart';
+import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
+
 
 
 
@@ -263,6 +266,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
 
 Future<TripData> fetchTrip(String id, [TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
+
   try {
     final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
@@ -315,36 +319,59 @@ class TripNameDialogContent extends StatefulWidget {
     Key key,
     this.trip,
     this.color,
+    this.travelers,
+    this.controller,
     @required this.tripId
   }): super(key: key);
   final dynamic trip;
+  final List<dynamic> travelers;
   final String tripId;
   final Color color;
+  final TextEditingController controller;
   @override
-  _TripNameDialogContentState createState() => new _TripNameDialogContentState(color: this.color, tripId: this.tripId, trip: this.trip);
+  _TripNameDialogContentState createState() => new _TripNameDialogContentState(controller: this.controller,color: this.color, tripId: this.tripId, trip: this.trip, travelers: this.travelers);
 
 }
 
 class _TripNameDialogContentState extends State<TripNameDialogContent> {
-  _TripNameDialogContentState({this.color,this.tripId,this.trip});
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _nameControllerModal = TextEditingController();
-    
+  _TripNameDialogContentState({this.color,this.tripId,this.trip, this.travelers, this.controller});
+  static final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   
   final dynamic trip;
+  final TextEditingController controller;
+  final List<dynamic> travelers;
   final String tripId;
   final Color color;
+  Form _form; 
+
   @override
   void initState(){
-    _nameControllerModal.text = this.trip['name'];
+    this.controller.text = this.trip['name'];
     super.initState();
   }
 
+  @override
+  void dispose(){
+    super.dispose();
+  }
+
+
+
    @override
   Widget build(BuildContext context) {
+    print(_form);
+    if(_form == null) {
+      _form = _createForm(context);
+    }
+
+    return _form;
+  }
+
+  _createForm(BuildContext context){
     final store = Provider.of<TrotterStore>(context);
     return Form(
-      key: this._formKey,
+      key: _formKey,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal:0.0, vertical: 10),
         child: Column(
@@ -399,11 +426,12 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                   ),
                   hintText: 'Name your trip',
                 ),
-                controller: _nameControllerModal,
+                controller: this.controller,
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Please name your trip.';
                   }
+                  return null;
                 },
               )
             ),
@@ -425,12 +453,14 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                   )
                 ),
                 onPressed: () async {
+                  print(_formKey.currentState.validate());
                   if(_formKey.currentState.validate() ){
-                    var response = await putUpdateTrip(tripId, {"name": _nameControllerModal.text});
+                    var response = await putUpdateTrip(tripId, {"name": this.controller.text});
+                    print(response.success);
                     if(response.success == true){
                       setState(() {
                         var oldName = this.trip['name'];
-                        this.trip['name'] = _nameControllerModal.text;
+                        this.trip['name'] = this.controller.text;
                         store.tripStore.updateTrip(this.trip); 
                         Navigator.pop(context, oldName);
 
@@ -492,12 +522,16 @@ class AddButtonModal extends StatelessWidget {
 
 class _TripDestinationDialogContentState extends State<TripDestinationDialogContent> {
   _TripDestinationDialogContentState({this.color,this.tripId,this.destinations});
-  
+  AddDestinationModal destinationModal;
   final List<dynamic> destinations;
   final String tripId;
   final Color color;
   @override
   void initState(){
+    setState(() {
+      destinationModal = AddDestinationModal(tripId: this.tripId,color: this.color);
+
+    });
     super.initState();
   }
   
@@ -511,12 +545,13 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
       floatingActionButton: Builder( builder: (BuildContext builderContext) => FloatingActionButton(
         backgroundColor: this.color,
         onPressed: () async { 
-          var data = await showGeneralDialog(
+          var data = 
+           await showGeneralDialog(
             context: builderContext,
             pageBuilder: (BuildContext buildContext, Animation<double> animation,
               Animation<double> secondaryAnimation) {
               return Dialog(
-                child: AddDestinationModal(tripId: this.tripId,color: this.color)
+                child: destinationModal
               );
             },
             transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
@@ -761,6 +796,10 @@ class TripState extends State<Trip> {
   String image;
   String tripName;
   dynamic travelers;
+  TripNameDialogContent _nameDialog;
+  TripDestinationDialogContent destinationDialog;
+  static final TextEditingController _nameControllerModal = TextEditingController();
+  TrotterStore store;
 
   
   Future<TripData> data;
@@ -778,6 +817,20 @@ class TripState extends State<Trip> {
       });
     });
     data = fetchTrip(this.tripId);
+    data.then((data){
+      setState((){
+        this.color = Color(hexStringToHexInt(data.trip['color']));
+        this.destinations = data.destinations;
+        this.travelers = data.travelers;
+        this.trip = data.trip;
+        this.trip['destinations'] = this.destinations;
+        this.tripName = data.trip['name'];
+        _nameControllerModal.text = this.tripName;
+        _nameDialog = TripNameDialogContent(tripId:this.tripId, trip:this.trip, color:this.color, travelers: this.travelers, controller: _nameControllerModal,);
+        this.destinationDialog = TripDestinationDialogContent(color: color, tripId: this.tripId, destinations:destinations);
+      });
+      
+    });
     super.initState();
     
   }
@@ -797,7 +850,7 @@ class TripState extends State<Trip> {
   bottomSheetModal(BuildContext topcontext, dynamic data){
     
   return showModalBottomSheet(context: topcontext,
-    builder: (BuildContext context) {
+    builder: (BuildContext buildercontext) {
       return new Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -805,26 +858,29 @@ class TripState extends State<Trip> {
             leading: new Icon(Icons.card_travel),
             title: new Text('Edit trip name'),
             onTap: () async {
-              Navigator.pop(context);
-              var oldName = await showGeneralDialog(
-                context: context,
-                pageBuilder: (BuildContext buildContext, Animation<double> animation,
-                  Animation<double> secondaryAnimation) {
-                  return Dialog(
-                    child: TripNameDialogContent(tripId:this.tripId, trip:data, color:this.color)
-                  );
-                },
-                transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-                  return new FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      );
-                },
-                barrierDismissible: true,
-                barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-                barrierColor: Colors.black.withOpacity(0.5),
-                transitionDuration: const Duration(milliseconds: 300),
-              );
+              Navigator.pop(buildercontext);
+              var oldName = await Navigator.push(buildercontext,MaterialPageRoute(builder: (BuildContext bc){
+                return _nameDialog;
+              }));
+              // showGeneralDialog(
+              //   context: buildercontext,
+              //   pageBuilder: (BuildContext buildContext, Animation<double> animation,
+              //     Animation<double> secondaryAnimation) {
+              //     return Dialog(
+              //       child: _nameDialog
+              //     );
+              //   },
+              //   transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+              //     return new FadeTransition(
+              //           opacity: animation,
+              //           child: child,
+              //         );
+              //   },
+              //   barrierDismissible: true,
+              //   barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+              //   barrierColor: Colors.black.withOpacity(0.5),
+              //   transitionDuration: const Duration(milliseconds: 300),
+              // );
               if(oldName != null && oldName is String){
                 Scaffold.of(topcontext).showSnackBar(SnackBar(
                     content: Text(
@@ -861,23 +917,13 @@ class TripState extends State<Trip> {
 
   @override
   Widget build(BuildContext context) {
-     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
-    final store = Provider.of<TrotterStore>(context);
-    if(store.currentUser != null){
-          data.then((data){
-            setState((){
-              this.color = Color(hexStringToHexInt(data.trip['color']));
-              this.destinations = data.destinations;
-              this.travelers = data.travelers;
-              this.trip = data.trip;
-              this.trip['destinations'] = this.destinations;
-              this.tripName = data.trip['name'];
-            });
-           
-          });
-        }
+    final double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    final double _bodyHeight = MediaQuery.of(context).size.height - 110;
+    final double _panelHeightClosed = 100.0;
+    if(store == null){
+      store = Provider.of<TrotterStore>(context);
+    }
+   
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingUpPanel(
@@ -890,6 +936,7 @@ class TripState extends State<Trip> {
         backdropTapClosesPanel: false,
         backdropOpacity: .8,
         onPanelOpened: () {
+          
           setState(() {
             disableScroll = false;
           });
@@ -904,6 +951,7 @@ class TripState extends State<Trip> {
         maxHeight: _panelHeightOpen,
         panel: Center(
             child: Scaffold(
+              resizeToAvoidBottomPadding: false,
           backgroundColor: Colors.transparent,
           floatingActionButton: store.offline == false ? FloatingActionButton(
             backgroundColor: this.color,
@@ -1067,7 +1115,49 @@ class TripState extends State<Trip> {
     this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
     var fields = [
-      {"label": "${this.travelers.length} people traveling", "icon":Container(width: MediaQuery.of(context).size.width/2, height:50, child:buildTravelers(this.travelers))},
+      {"label": "${this.travelers.length} ${this.travelers.length != 1 ? 'people': 'person'} traveling", "icon":Container(width: MediaQuery.of(context).size.width/2, height:50, 
+      child:InkWell(
+        onTap: () async {
+          var dialogData = await showGeneralDialog(
+                context: ctxt,
+                pageBuilder: (BuildContext buildContext,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation) {
+                  return TravelersModal(
+                      tripId: this.tripId, travelers: this.travelers);
+                },
+                transitionBuilder: (BuildContext context,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation,
+                    Widget child) {
+                  return new FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                barrierDismissible: true,
+                barrierLabel:
+                    MaterialLocalizations.of(context).modalBarrierDismissLabel,
+                barrierColor: Colors.black.withOpacity(0.5),
+                transitionDuration: const Duration(milliseconds: 300),
+              );
+              
+              if (dialogData != null) {
+                final travelers = dialogData['travelers'];
+                var response = await putUpdateTrip(tripId, {"group": travelers});
+                  if(response.success == true){
+                    setState(() {
+                      this.trip['group'] = travelers;
+                      this.trip['travelers'] = response.travelers;
+                      this.travelers = response.travelers;
+                      store.tripStore.updateTrip(this.trip); 
+                      data = fetchTrip(this.tripId);
+
+                    });
+                  }
+              }
+        }, 
+        child:buildTravelers(this.travelers)))},
       {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor), "level":"travelinfo"},
     ];
  
@@ -1174,7 +1264,7 @@ class TripState extends State<Trip> {
       context: context,
       pageBuilder: (BuildContext buildContext, Animation<double> animation,
         Animation<double> secondaryAnimation) {
-        return TripDestinationDialogContent(color: color, tripId: this.tripId, destinations:destinations);
+        return destinationDialog;
       },
       transitionBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
         return new FadeTransition(

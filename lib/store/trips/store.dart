@@ -21,9 +21,9 @@ class TripsStore extends Store {
   }
 
   updateTrip(dynamic trip) {
-    var tripIndex = _trips.indexWhere((trip) => trip['id'] == trip['id']);
     var trips = []..addAll(_trips);
-    trips.replaceRange(tripIndex, tripIndex + 1, [trip]);
+    trips.removeWhere((item) => item['id'] == trip['id']);
+    trips.add(trip);
     setState(() {
       _trips = trips;
     });

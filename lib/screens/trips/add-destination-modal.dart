@@ -17,6 +17,7 @@ class AddDestinationModal extends StatefulWidget {
 class _AddDestinationModal extends State<AddDestinationModal> {
   _AddDestinationModal({this.color, this.tripId, this.destination});
   TextEditingController _typeAheadController = TextEditingController();
+  final init = DateTime.now();
 
   dynamic destination;
   final String tripId;
@@ -34,6 +35,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
 
   _buildDestField(BuildContext context, color, formKey) {
     var dateFormat = DateFormat("EEE, MMM d, yyyy");
+
     return Column(children: <Widget>[
       Padding(
           padding: EdgeInsets.only(bottom: 20),
@@ -122,7 +124,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
             format: dateFormat,
             inputType: InputType.date,
             editable: false,
-            firstDate: DateTime.now(),
+            firstDate: init.subtract(Duration(hours: 1)),
             decoration: InputDecoration(
               hintText: 'Arrival date',
               contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -169,7 +171,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
             format: dateFormat,
             inputType: InputType.date,
             editable: false,
-            firstDate: DateTime.now(),
+            firstDate: init.subtract(Duration(hours: 1)),
             decoration: InputDecoration(
               hintText: 'Departure date',
               contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -211,6 +213,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
                   this.destination['start_date']) {
                 return "Please choose a later departure date";
               }
+              return null;
             },
           )),
       Container(

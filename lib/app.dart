@@ -24,10 +24,10 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
   };
   BuildContext appContext;
 
-  FocusNode _focusA = FocusNode();
-  FocusNode _focusB = FocusNode();
-  FocusNode _focusC = FocusNode();
-  FocusNode _focusD = FocusNode();
+  static final FocusNode _focusA = FocusNode();
+  static final FocusNode _focusB = FocusNode();
+  static final FocusNode _focusC = FocusNode();
+  static final FocusNode _focusD = FocusNode();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TrotterStore store;
@@ -62,9 +62,8 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    FocusScope.of(context).requestFocus(_focusA);
-    store = Provider.of<TrotterStore>(context);
-    if (store.currentUser == null) {
+    if (store == null) {
+      store = Provider.of<TrotterStore>(context);
       store.checkLoginStatus();
       fetchNotifications(store);
     }

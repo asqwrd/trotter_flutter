@@ -84,6 +84,7 @@ class TrotterStore extends Store {
       print('logged out!');
       setState(() {
         _currentUser = null;
+        _notifications = NotificationsData(notifications: [], success: true);
       });
     } catch (error) {
       print('store.dart error');

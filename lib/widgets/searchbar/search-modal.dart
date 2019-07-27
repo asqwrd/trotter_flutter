@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -284,7 +286,7 @@ class SearchModalState extends State<SearchModal> {
                                 margin: EdgeInsets.symmetric(vertical: 20),
                                 child: ListTile(
                                   leading: Container(
-                                    width: 130.0,
+                                    width: 80.0,
                                     height: 80.0,
                                     child: ClipPath(
                                         clipper: ShapeBorderClipper(
@@ -292,35 +294,58 @@ class SearchModalState extends State<SearchModal> {
                                                 borderRadius:
                                                     BorderRadius.circular(8))),
                                         child: results[index]['image'] != null
-                                            ? CachedNetworkImage(
-                                                placeholder: (context, url) =>
-                                                    SizedBox(
-                                                        width: 50,
-                                                        height: 50,
-                                                        child: Align(
-                                                            alignment: Alignment
-                                                                .center,
-                                                            child:
-                                                                CircularProgressIndicator(
-                                                              valueColor:
-                                                                  new AlwaysStoppedAnimation<
-                                                                          Color>(
-                                                                      Colors
-                                                                          .blueAccent),
-                                                            ))),
+                                            ? TransitionToImage(
+                                                image: AdvancedNetworkImage(
+                                                  results[index]['image'],
+                                                  useDiskCache: true,
+                                                  cacheRule: CacheRule(
+                                                      maxAge: const Duration(
+                                                          days: 7)),
+                                                ),
+                                                loadingWidgetBuilder: (BuildContext
+                                                            context,
+                                                        double progress,
+                                                        test) =>
+                                                    Center(
+                                                        child:
+                                                            RefreshProgressIndicator(
+                                                  backgroundColor: Colors.white,
+                                                )),
                                                 fit: BoxFit.cover,
-                                                imageUrl: results[index]
-                                                    ['image'],
-                                                errorWidget: (context, url,
-                                                        error) =>
-                                                    Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                      image: DecorationImage(
-                                                          image: AssetImage(
-                                                              'images/placeholder.jpg'),
-                                                          fit: BoxFit.cover),
-                                                    )))
+                                                alignment: Alignment.center,
+                                                placeholder:
+                                                    const Icon(Icons.refresh),
+                                                enableRefresh: true,
+                                              )
+                                            // CachedNetworkImage(
+                                            //     placeholder: (context, url) =>
+                                            //         SizedBox(
+                                            //             width: 50,
+                                            //             height: 50,
+                                            //             child: Align(
+                                            //                 alignment: Alignment
+                                            //                     .center,
+                                            //                 child:
+                                            //                     CircularProgressIndicator(
+                                            //                   valueColor:
+                                            //                       new AlwaysStoppedAnimation<
+                                            //                               Color>(
+                                            //                           Colors
+                                            //                               .blueAccent),
+                                            //                 ))),
+                                            //     fit: BoxFit.cover,
+                                            //     imageUrl: results[index]
+                                            //         ['image'],
+                                            //     errorWidget: (context, url,
+                                            //             error) =>
+                                            //         Container(
+                                            //             decoration:
+                                            //                 BoxDecoration(
+                                            //           image: DecorationImage(
+                                            //               image: AssetImage(
+                                            //                   'images/placeholder.jpg'),
+                                            //               fit: BoxFit.cover),
+                                            //         )))
                                             : Container(
                                                 decoration: BoxDecoration(
                                                 image: DecorationImage(
@@ -335,7 +360,9 @@ class SearchModalState extends State<SearchModal> {
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600),
                                   ),
-                                  subtitle: results[index]['description_short'] != null
+                                  subtitle: results[index]
+                                              ['description_short'] !=
+                                          null
                                       ? Text(
                                           results[index]['description_short'],
                                           maxLines: 2,

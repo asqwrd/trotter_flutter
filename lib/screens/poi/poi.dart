@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -187,20 +189,39 @@ class PoiState extends State<Poi> {
                   top: 0,
                   child: this.image == null
                       ? Container()
-                      : CachedNetworkImage(
-                          imageUrl: this.image,
+                      : TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            this.image,
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )),
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
-                          placeholder: (context, url) => SizedBox(
-                              width: 50,
-                              height: 50,
-                              child: Align(
-                                  alignment: Alignment.center,
-                                  child: CircularProgressIndicator(
-                                    valueColor:
-                                        new AlwaysStoppedAnimation<Color>(
-                                            Colors.blueAccent),
-                                  ))))),
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
+                        )
+                  // CachedNetworkImage(
+                  //     imageUrl: this.image,
+                  //     fit: BoxFit.cover,
+                  //     alignment: Alignment.center,
+                  //     placeholder: (context, url) => SizedBox(
+                  //         width: 50,
+                  //         height: 50,
+                  //         child: Align(
+                  //             alignment: Alignment.center,
+                  //             child: CircularProgressIndicator(
+                  //               valueColor:
+                  //                   new AlwaysStoppedAnimation<Color>(
+                  //                       Colors.blueAccent),
+                  //             ))))
+                  ),
               this.image == null
                   ? Positioned(
                       child: Center(
@@ -285,21 +306,39 @@ class PoiState extends State<Poi> {
                   child: Swiper(
                     itemBuilder: (BuildContext context, int index) {
                       return Stack(fit: StackFit.expand, children: <Widget>[
-                        CachedNetworkImage(
-                          placeholder: (context, url) => SizedBox(
-                              width: 50,
-                              height: 50,
-                              child: Align(
-                                  alignment: Alignment.center,
-                                  child: CircularProgressIndicator(
-                                    valueColor:
-                                        new AlwaysStoppedAnimation<Color>(
-                                            color),
-                                  ))),
-                          imageUrl: this.images[index]['sizes']['original']
-                              ['url'],
+                        TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            this.images[index]['sizes']['medium']['url'],
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )),
                           fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
                         )
+                        // CachedNetworkImage(
+                        //   placeholder: (context, url) => SizedBox(
+                        //       width: 50,
+                        //       height: 50,
+                        //       child: Align(
+                        //           alignment: Alignment.center,
+                        //           child: CircularProgressIndicator(
+                        //             valueColor:
+                        //                 new AlwaysStoppedAnimation<Color>(
+                        //                     color),
+                        //           ))),
+                        //   imageUrl: this.images[index]['sizes']['original']
+                        //       ['url'],
+                        //   fit: BoxFit.cover,
+                        // )
                       ]);
                     },
                     loop: true,

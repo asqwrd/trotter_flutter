@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -168,17 +170,16 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
                 this.errorUi = true;
               })
             }
-          else
-            if (data.error == null)
-              {
-                setState(() {
-                  this.errorUi = false;
-                  this.image = data.cityState['image'];
-                  this.cityName = data.cityState['name'];
-                  this.location = data.cityState['location'];
-                  this.color = Color(hexStringToHexInt(data.color));
-                })
-              }
+          else if (data.error == null)
+            {
+              setState(() {
+                this.errorUi = false;
+                this.image = data.cityState['image'];
+                this.cityName = data.cityState['name'];
+                this.location = data.cityState['location'];
+                this.color = Color(hexStringToHexInt(data.color));
+              })
+            }
         });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
@@ -231,20 +232,38 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
                   top: 0,
                   left: 0,
                   child: this.image != null
-                      ? CachedNetworkImage(
-                          imageUrl: this.image,
+                      ? TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            this.image,
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )),
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
-                          placeholder: (context, url) => SizedBox(
-                              width: 50,
-                              height: 50,
-                              child: Align(
-                                  alignment: Alignment.center,
-                                  child: CircularProgressIndicator(
-                                    valueColor:
-                                        new AlwaysStoppedAnimation<Color>(
-                                            Colors.blueAccent),
-                                  ))))
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
+                        )
+                      // CachedNetworkImage(
+                      //     imageUrl: this.image,
+                      //     fit: BoxFit.cover,
+                      //     alignment: Alignment.center,
+                      //     placeholder: (context, url) => SizedBox(
+                      //         width: 50,
+                      //         height: 50,
+                      //         child: Align(
+                      //             alignment: Alignment.center,
+                      //             child: CircularProgressIndicator(
+                      //               valueColor:
+                      //                   new AlwaysStoppedAnimation<Color>(
+                      //                       Colors.blueAccent),
+                      //             ))))
                       : Container()),
               Positioned.fill(
                 top: 0,
@@ -460,6 +479,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
     _showVisaBlankPages = _showVisa &&
         visa['passport'] != null &&
         visa['passport']['blank_pages'] != null;
+
     String ambulance = arrayString(emergencyNumbers['ambulance']['all']);
     String police = arrayString(emergencyNumbers['police']['all']);
     String fire = arrayString(emergencyNumbers['fire']['all']);
@@ -481,7 +501,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
           padding: EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
           child: Text(descriptionShort,
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300))),
-      _showVisa
+      _showVisa == true
           ? Container(
               margin: EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
               decoration: BoxDecoration(
@@ -527,7 +547,7 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
                             : Container(),
                       ])))
           : Container(),
-      buildDivider(),
+      _showVisa ? buildDivider() : Container(),
       Container(
         margin: EdgeInsets.symmetric(vertical: 40.0),
         child: Column(
@@ -548,7 +568,9 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
                           fontSize: 20.0,
                           fontWeight: FontWeight.w300,
                           color: _getAdviceColor(rating)))),
-              VaccineList(vaccines: visa['vaccination']),
+              _showVisa
+                  ? VaccineList(vaccines: visa['vaccination'])
+                  : Container(),
             ]),
       ),
       buildDivider(),
@@ -666,27 +688,45 @@ class CityStateState extends State<CityState> with TickerProviderStateMixin {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8))),
                             child: items[index]['image'] != null
-                                ? CachedNetworkImage(
-                                    placeholder: (context, url) => SizedBox(
-                                        width: 50,
-                                        height: 50,
-                                        child: Align(
-                                            alignment: Alignment.center,
-                                            child: CircularProgressIndicator(
-                                              valueColor:
-                                                  new AlwaysStoppedAnimation<
-                                                      Color>(Colors.blueAccent),
-                                            ))),
+                                ? TransitionToImage(
+                                    image: AdvancedNetworkImage(
+                                      items[index]['image'],
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    ),
+                                    loadingWidgetBuilder: (BuildContext context,
+                                            double progress, test) =>
+                                        Center(
+                                            child: RefreshProgressIndicator(
+                                      backgroundColor: Colors.white,
+                                    )),
                                     fit: BoxFit.cover,
-                                    imageUrl: items[index]['image'],
-                                    errorWidget: (context, url, error) =>
-                                        Container(
-                                            decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                              image: AssetImage(
-                                                  'images/placeholder.jpg'),
-                                              fit: BoxFit.cover),
-                                        )))
+                                    alignment: Alignment.center,
+                                    placeholder: const Icon(Icons.refresh),
+                                    enableRefresh: true,
+                                  )
+                                // CachedNetworkImage(
+                                //     placeholder: (context, url) => SizedBox(
+                                //         width: 50,
+                                //         height: 50,
+                                //         child: Align(
+                                //             alignment: Alignment.center,
+                                //             child: CircularProgressIndicator(
+                                //               valueColor:
+                                //                   new AlwaysStoppedAnimation<
+                                //                       Color>(Colors.blueAccent),
+                                //             ))),
+                                //     fit: BoxFit.cover,
+                                //     imageUrl: items[index]['image'],
+                                //     errorWidget: (context, url, error) =>
+                                //         Container(
+                                //             decoration: BoxDecoration(
+                                //           image: DecorationImage(
+                                //               image: AssetImage(
+                                //                   'images/placeholder.jpg'),
+                                //               fit: BoxFit.cover),
+                                //         )))
                                 : Container(
                                     decoration: BoxDecoration(
                                     image: DecorationImage(

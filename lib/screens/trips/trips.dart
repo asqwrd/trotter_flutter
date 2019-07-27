@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -469,10 +471,29 @@ class TripsState extends State<Trips> {
                               Positioned.fill(
                                   top: 0,
                                   left: 0,
-                                  child: CachedNetworkImage(
-                                    imageUrl: tripBuilder[index]['image'],
+                                  child: TransitionToImage(
+                                    image: AdvancedNetworkImage(
+                                      tripBuilder[index]['image'],
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    ),
+                                    loadingWidgetBuilder: (BuildContext context,
+                                            double progress, test) =>
+                                        Center(
+                                            child: RefreshProgressIndicator(
+                                      backgroundColor: Colors.white,
+                                    )),
                                     fit: BoxFit.cover,
-                                  )),
+                                    alignment: Alignment.center,
+                                    placeholder: const Icon(Icons.refresh),
+                                    enableRefresh: true,
+                                  )
+                                  //  CachedNetworkImage(
+                                  //   imageUrl: tripBuilder[index]['image'],
+                                  //   fit: BoxFit.cover,
+                                  // )
+                                  ),
                               Positioned.fill(
                                   top: 0,
                                   left: 0,

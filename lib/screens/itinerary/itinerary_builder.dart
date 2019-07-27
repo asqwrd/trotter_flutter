@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
@@ -123,20 +125,38 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                   top: 0,
                   left: 0,
                   child: this.image != null
-                      ? CachedNetworkImage(
-                          imageUrl: this.image,
+                      ? TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            this.image,
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )),
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
-                          placeholder: (context, url) => SizedBox(
-                              width: 50,
-                              height: 50,
-                              child: Align(
-                                  alignment: Alignment.center,
-                                  child: CircularProgressIndicator(
-                                    valueColor:
-                                        new AlwaysStoppedAnimation<Color>(
-                                            Colors.blueAccent),
-                                  ))))
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
+                        )
+                      // CachedNetworkImage(
+                      //     imageUrl: this.image,
+                      //     fit: BoxFit.cover,
+                      //     alignment: Alignment.center,
+                      //     placeholder: (context, url) => SizedBox(
+                      //         width: 50,
+                      //         height: 50,
+                      //         child: Align(
+                      //             alignment: Alignment.center,
+                      //             child: CircularProgressIndicator(
+                      //               valueColor:
+                      //                   new AlwaysStoppedAnimation<Color>(
+                      //                       Colors.blueAccent),
+                      //             ))))
                       : Container()),
               Positioned.fill(
                 top: 0,

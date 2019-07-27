@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -70,9 +72,16 @@ class TravelersModalState extends State<TravelersModal> {
       this.selectedUsersUid.add(traveler['uid']);
       this.selectedUsers.add(Chip(
           avatar: CircleAvatar(
-              backgroundImage: CachedNetworkImageProvider(
+              backgroundImage: AdvancedNetworkImage(
             traveler['photoUrl'],
-          )),
+            useDiskCache: true,
+            cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+          )
+
+              //     CachedNetworkImageProvider(
+              //   traveler['photoUrl'],
+              // )
+              ),
           label: Text("${traveler['displayName']}"),
           deleteIcon: Icon(Icons.close),
           onDeleted: () {
@@ -207,20 +216,39 @@ class TravelersModalState extends State<TravelersModal> {
                           clipper: ShapeBorderClipper(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(100))),
-                          child: CachedNetworkImage(
-                            placeholder: (context, url) => SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: Align(
-                                    alignment: Alignment.center,
-                                    child: CircularProgressIndicator(
-                                      valueColor:
-                                          new AlwaysStoppedAnimation<Color>(
-                                              Colors.blueAccent),
-                                    ))),
+                          child: TransitionToImage(
+                            image: AdvancedNetworkImage(
+                              results[index]['photoUrl'],
+                              useDiskCache: true,
+                              cacheRule:
+                                  CacheRule(maxAge: const Duration(days: 7)),
+                            ),
+                            loadingWidgetBuilder:
+                                (BuildContext context, double progress, test) =>
+                                    Center(
+                                        child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                            )),
                             fit: BoxFit.cover,
-                            imageUrl: results[index]['photoUrl'],
-                          )),
+                            alignment: Alignment.center,
+                            placeholder: const Icon(Icons.refresh),
+                            enableRefresh: true,
+                          )
+                          // CachedNetworkImage(
+                          //   placeholder: (context, url) => SizedBox(
+                          //       width: 50,
+                          //       height: 50,
+                          //       child: Align(
+                          //           alignment: Alignment.center,
+                          //           child: CircularProgressIndicator(
+                          //             valueColor:
+                          //                 new AlwaysStoppedAnimation<Color>(
+                          //                     Colors.blueAccent),
+                          //           ))),
+                          //   fit: BoxFit.cover,
+                          //   imageUrl: results[index]['photoUrl'],
+                          // )
+                          ),
                     ),
                     title: Text(
                       results[index]['displayName'],

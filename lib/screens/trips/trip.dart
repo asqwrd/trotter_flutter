@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:async/async.dart';
 import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1005,17 +1006,35 @@ class TripState extends State<Trip> {
                         return Stack(
                           fit: StackFit.expand,
                           children: <Widget>[
-                            CachedNetworkImage(
-                              placeholder: (context, url) => SizedBox(
-                                width: 50, 
-                                height:50, 
-                                child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
-                                  valueColor: new AlwaysStoppedAnimation<Color>(color),
-                                )
-                              )),
-                              imageUrl: this.destinations[index]['image'],
-                              fit: BoxFit.cover,
-                            ),
+                            TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            this.destinations[index]['image'],
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
+                        ),
+                            // CachedNetworkImage(
+                            //   placeholder: (context, url) => SizedBox(
+                            //     width: 50, 
+                            //     height:50, 
+                            //     child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
+                            //       valueColor: new AlwaysStoppedAnimation<Color>(color),
+                            //     )
+                            //   )),
+                            //   imageUrl: this.destinations[index]['image'],
+                            //   fit: BoxFit.cover,
+                            // ),
                             Container(
                               color:Colors.black.withOpacity(0.5)
                             ),

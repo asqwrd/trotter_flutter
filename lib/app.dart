@@ -65,7 +65,6 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
       store.checkLoginStatus();
-      fetchNotifications(store);
     }
   }
 

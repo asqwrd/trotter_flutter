@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -153,17 +155,16 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
                 this.errorUi = true;
               })
             }
-          else
-            if (data.error == null)
-              {
-                setState(() {
-                  this.errorUi = false;
-                  this.image = data.region['image'];
-                  this.regionName = data.region['name'];
-                  this.location = data.region['location'];
-                  this.color = Color(hexStringToHexInt(data.color));
-                })
-              }
+          else if (data.error == null)
+            {
+              setState(() {
+                this.errorUi = false;
+                this.image = data.region['image'];
+                this.regionName = data.region['name'];
+                this.location = data.region['location'];
+                this.color = Color(hexStringToHexInt(data.color));
+              })
+            }
         });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
@@ -209,41 +210,61 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
                 })),
         body: Container(
             height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
-                  top: 0,
-                  left: 0,
-                  child: this.image != null
-                      ? CachedNetworkImage(
-                          imageUrl: this.image,
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: (context, url) => SizedBox(
-                              width: 50,
-                              height: 50,
-                              child: Align(
-                                  alignment: Alignment.center,
-                                  child: CircularProgressIndicator(
-                                    valueColor:
-                                        new AlwaysStoppedAnimation<Color>(
-                                            Colors.blueAccent),
-                                  ))))
-                      : Container()),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(color: this.color.withOpacity(.3)),
-              ),
-              this.image == null
-                  ? Positioned(
-                      child: Center(
-                          child: RefreshProgressIndicator(
-                      backgroundColor: Colors.white,
-                    )))
-                  : Container()
-            ])),
+            child: Container(
+                height: _bodyHeight,
+                child: Stack(children: <Widget>[
+                  Positioned(
+                      width: MediaQuery.of(context).size.width,
+                      height: _bodyHeight,
+                      top: 0,
+                      left: 0,
+                      child: this.image != null
+                          ? TransitionToImage(
+                              image: AdvancedNetworkImage(
+                                this.image,
+                                useDiskCache: true,
+                                cacheRule:
+                                    CacheRule(maxAge: const Duration(days: 7)),
+                              ),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                                backgroundColor: Colors.white,
+                              )),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: const Icon(Icons.refresh),
+                              enableRefresh: true,
+                            )
+                          // CachedNetworkImage(
+                          //     imageUrl: this.image,
+                          //     fit: BoxFit.cover,
+                          //     alignment: Alignment.center,
+                          //     placeholder: (context, url) => SizedBox(
+                          //         width: 50,
+                          //         height: 50,
+                          //         child: Align(
+                          //             alignment: Alignment.center,
+                          //             child: CircularProgressIndicator(
+                          //               valueColor:
+                          //                   new AlwaysStoppedAnimation<Color>(
+                          //                       Colors.blueAccent),
+                          //             ))))
+                          : Container()),
+                  Positioned.fill(
+                    top: 0,
+                    left: 0,
+                    child: Container(color: this.color.withOpacity(.3)),
+                  ),
+                  this.image == null
+                      ? Positioned(
+                          child: Center(
+                              child: RefreshProgressIndicator(
+                          backgroundColor: Colors.white,
+                        )))
+                      : Container()
+                ]))),
       )),
       Positioned(
           top: 0,
@@ -395,7 +416,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Container(
-                        width: 150,
+                        width: 120,
                         height: 90,
                         margin: EdgeInsets.only(right: 20),
                         child: ClipPath(
@@ -403,27 +424,45 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8))),
                             child: items[index]['image'] != null
-                                ? CachedNetworkImage(
-                                    placeholder: (context, url) => SizedBox(
-                                        width: 50,
-                                        height: 50,
-                                        child: Align(
-                                            alignment: Alignment.center,
-                                            child: CircularProgressIndicator(
-                                              valueColor:
-                                                  new AlwaysStoppedAnimation<
-                                                      Color>(Colors.blueAccent),
-                                            ))),
+                                ? TransitionToImage(
+                                    image: AdvancedNetworkImage(
+                                      items[index]['image'],
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    ),
+                                    loadingWidgetBuilder: (BuildContext context,
+                                            double progress, test) =>
+                                        Center(
+                                            child: RefreshProgressIndicator(
+                                      backgroundColor: Colors.white,
+                                    )),
                                     fit: BoxFit.cover,
-                                    imageUrl: items[index]['image'],
-                                    errorWidget: (context, url, error) =>
-                                        Container(
-                                            decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                              image: AssetImage(
-                                                  'images/placeholder.jpg'),
-                                              fit: BoxFit.cover),
-                                        )))
+                                    alignment: Alignment.center,
+                                    placeholder: const Icon(Icons.refresh),
+                                    enableRefresh: true,
+                                  )
+                                // CachedNetworkImage(
+                                //     placeholder: (context, url) => SizedBox(
+                                //         width: 50,
+                                //         height: 50,
+                                //         child: Align(
+                                //             alignment: Alignment.center,
+                                //             child: CircularProgressIndicator(
+                                //               valueColor:
+                                //                   new AlwaysStoppedAnimation<
+                                //                       Color>(Colors.blueAccent),
+                                //             ))),
+                                //     fit: BoxFit.cover,
+                                //     imageUrl: items[index]['image'],
+                                //     errorWidget: (context, url, error) =>
+                                //         Container(
+                                //             decoration: BoxDecoration(
+                                //           image: DecorationImage(
+                                //               image: AssetImage(
+                                //                   'images/placeholder.jpg'),
+                                //               fit: BoxFit.cover),
+                                //         )))
                                 : Container(
                                     decoration: BoxDecoration(
                                     image: DecorationImage(

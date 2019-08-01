@@ -79,7 +79,7 @@ class ItineraryState extends State<Itinerary> {
           this.color = Color(hexStringToHexInt(res.color));
           store.itineraryStore.setItineraryLoading(false);
           store.itineraryStore
-              .getItinerary(res.itinerary, res.destination, res.color);
+              .setItinerary(res.itinerary, res.destination, res.color);
         });
       }
     });

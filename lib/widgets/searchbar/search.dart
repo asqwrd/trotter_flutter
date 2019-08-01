@@ -335,7 +335,7 @@ class SearchState extends State<Search> {
                                                         test) =>
                                                     Center(
                                                         child:
-                                                            RefreshProgressIndicator(
+                                                            CircularProgressIndicator(
                                                   backgroundColor: Colors.white,
                                                 )),
                                                 fit: BoxFit.cover,

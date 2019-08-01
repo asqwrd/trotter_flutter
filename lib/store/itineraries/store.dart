@@ -27,7 +27,7 @@ class ItineraryStore extends Store {
       error: null);
   get itineraryBuilder => _itineraryBuilder;
 
-  getItinerary(dynamic itinerary, dynamic destination, String color) {
+  setItinerary(dynamic itinerary, dynamic destination, String color) {
     setState(() {
       _itinerary = ItineraryData(
           itinerary: itinerary,
@@ -38,7 +38,7 @@ class ItineraryStore extends Store {
     });
   }
 
-  getItineraryBuilder(dynamic itinerary, dynamic destination, String color) {
+  setItineraryBuilder(dynamic itinerary, dynamic destination, String color) {
     setState(() {
       _itineraryBuilder = ItineraryData(
           itinerary: itinerary,
@@ -90,6 +90,20 @@ class ItineraryStore extends Store {
     itinerary["days"][index]["itinerary_items"] = itineraryItems;
     setState(() {
       _itineraryBuilder = ItineraryData(
+          itinerary: itinerary,
+          color: _itineraryBuilder.color,
+          destination: _itineraryBuilder.destination,
+          loading: _itineraryBuilder.loading,
+          error: _itineraryBuilder.error);
+    });
+  }
+
+  updateStartLocation(dynamic startLocation) {
+    var itinerary = _itineraryBuilder.itinerary;
+    itinerary['start_location'] = startLocation;
+    setState(() {
+      _itineraryBuilder = ItineraryData(
+          itinerary: itinerary,
           color: _itineraryBuilder.color,
           destination: _itineraryBuilder.destination,
           loading: _itineraryBuilder.loading,

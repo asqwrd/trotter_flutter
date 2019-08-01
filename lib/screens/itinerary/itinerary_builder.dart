@@ -81,7 +81,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           this.itineraryName = res.itinerary['name'];
           this.color = Color(hexStringToHexInt(res.color));
           this.hotels = res.hotels;
-          store.itineraryStore.getItineraryBuilder(
+          store.itineraryStore.setItineraryBuilder(
             res.itinerary,
             res.destination,
             res.color,
@@ -203,6 +203,23 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                       destination: this.destination,
                                     )));
                         print(latlng);
+                        if (latlng != null) {
+                          final response = await updateStartLocation(
+                              this.itineraryId, latlng, store);
+                          if (response.success == true) {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                              content: Text('Updated start location',
+                                  style: TextStyle(fontSize: 18)),
+                              duration: Duration(seconds: 2),
+                            ));
+                          } else {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                              content: Text('Failed to update start location',
+                                  style: TextStyle(fontSize: 18)),
+                              duration: Duration(seconds: 2),
+                            ));
+                          }
+                        }
                       },
                       child: SvgPicture.asset("images/place-icon.svg",
                           width: 25.0,
@@ -285,7 +302,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         var itineraryItems = dayBuilder[dayIndex]['itinerary_items'];
         var dayId = dayBuilder[dayIndex]['id'];
 
-        return GestureDetector(
+        return InkWell(
             onTap: () => onPush({
                   'itineraryId': this.itineraryId,
                   'dayId': dayId,

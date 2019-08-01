@@ -38,6 +38,7 @@ class DayEditState extends State<DayEdit> {
   String destinationName;
   String destinationId;
   dynamic destination;
+  dynamic startLocation;
   dynamic location;
   List<dynamic> itineraryItems = [];
   final ScrollController _sc = ScrollController();
@@ -71,6 +72,7 @@ class DayEditState extends State<DayEdit> {
           this.destination = data.destination;
           this.destinationId = data.destination['id'].toString();
           this.itineraryItems = data.day['itinerary_items'].sublist(1);
+          this.startLocation = data.itinerary['start_location'];
           this.image = data.destination['image'];
           this.loading = false;
           print(this.destinationName);
@@ -267,6 +269,7 @@ class DayEditState extends State<DayEdit> {
                                     query: '',
                                     destinationName: this.destinationName,
                                     location: this.location,
+                                    near: this.startLocation,
                                     id: this.destinationId)));
                         if (suggestion != null) {
                           var data = {
@@ -367,6 +370,7 @@ class DayEditState extends State<DayEdit> {
             : ClampingScrollPhysics(),
         items: itineraryItems,
         color: color,
+        startLocation: this.startLocation,
         onLongPressed: (data) {
           // print(data);
           bottomSheetModal(context, day['day'] + 1, data);

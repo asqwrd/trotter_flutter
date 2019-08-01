@@ -463,7 +463,8 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                                                 double progress,
                                                 test) =>
                                             Center(
-                                                child: RefreshProgressIndicator(
+                                                child:
+                                                    CircularProgressIndicator(
                                           backgroundColor: Colors.white,
                                         )),
                                         fit: BoxFit.cover,

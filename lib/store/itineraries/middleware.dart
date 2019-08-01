@@ -44,7 +44,7 @@ Future<ItineraryData> fetchItinerary(String id, [TrotterStore store]) async {
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
-      store?.itineraryStore?.getItinerary(
+      store?.itineraryStore?.setItinerary(
         results.itinerary,
         results.destination,
         results.color,
@@ -64,6 +64,29 @@ Future<ItineraryData> fetchItinerary(String id, [TrotterStore store]) async {
     store?.itineraryStore?.setItineraryError('Server is down');
     store?.setOffline(true);
     return ItineraryData(error: 'Server is down');
+  }
+}
+
+Future<StartLocationData> updateStartLocation(String id, dynamic data,
+    [TrotterStore store]) async {
+  try {
+    final response = await http.put(
+        'http://localhost:3002/api/itineraries/update/$id/startLocation',
+        body: json.encode(data),
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = StartLocationData.fromJson(json.decode(response.body));
+      store?.itineraryStore?.updateStartLocation(results.startLocation);
+
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return StartLocationData(success: false);
+    }
+  } catch (error) {
+    return StartLocationData(success: false);
   }
 }
 
@@ -108,7 +131,7 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
       await prefs.setString('itinerary_$id', response.body);
-      store?.itineraryStore?.getItineraryBuilder(
+      store?.itineraryStore?.setItineraryBuilder(
         results.itinerary,
         results.destination,
         results.color,
@@ -129,7 +152,7 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
     if (cacheData != null) {
       var itineraryData = json.decode(cacheData);
       var results = ItineraryData.fromJson(itineraryData);
-      store?.itineraryStore?.getItineraryBuilder(
+      store?.itineraryStore?.setItineraryBuilder(
         results.itinerary,
         results.destination,
         results.color,
@@ -345,6 +368,21 @@ class ItineraryData {
         color: json['color'],
         hotels: json['hotels'],
         error: null);
+  }
+}
+
+class StartLocationData {
+  final Map<String, dynamic> startLocation;
+  final bool success;
+
+  StartLocationData({
+    this.startLocation,
+    this.success,
+  });
+
+  factory StartLocationData.fromJson(Map<String, dynamic> json) {
+    return StartLocationData(
+        success: json['success'], startLocation: json['start_location']);
   }
 }
 

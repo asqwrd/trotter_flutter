@@ -434,7 +434,7 @@ class RegionsState extends State<Region> with SingleTickerProviderStateMixin {
                                     loadingWidgetBuilder: (BuildContext context,
                                             double progress, test) =>
                                         Center(
-                                            child: RefreshProgressIndicator(
+                                            child: CircularProgressIndicator(
                                       backgroundColor: Colors.white,
                                     )),
                                     fit: BoxFit.cover,

@@ -9,6 +9,7 @@ import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:trotter_flutter/widgets/itineraries/start-location-modal.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,7 +26,6 @@ class ItineraryBuilder extends StatefulWidget {
 }
 
 class ItineraryBuilderState extends State<ItineraryBuilder> {
-  bool _showTitle = false;
   static String id;
   final String itineraryId;
   final ValueChanged<dynamic> onPush;
@@ -35,6 +35,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   bool errorUi = false;
   bool loading = true;
   String image;
+  List<dynamic> hotels;
+  dynamic destination;
   Color color = Colors.transparent;
   String itineraryName;
   Future<ItineraryData> data;
@@ -75,8 +77,10 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         setState(() {
           this.errorUi = false;
           this.image = res.destination['image'];
+          this.destination = res.destination;
           this.itineraryName = res.itinerary['name'];
           this.color = Color(hexStringToHexInt(res.color));
+          this.hotels = res.hotels;
           store.itineraryStore.getItineraryBuilder(
             res.itinerary,
             res.destination,
@@ -179,6 +183,34 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
               onPush: onPush,
               color: color,
               title: this.itineraryName,
+              actions: <Widget>[
+                Container(
+                    width: 50,
+                    height: 50,
+                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      onPressed: () async {
+                        final store = Provider.of<TrotterStore>(context);
+
+                        var latlng = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                fullscreenDialog: true,
+                                builder: (context) => StartLocationModal(
+                                      hotels: this.hotels,
+                                      destination: this.destination,
+                                    )));
+                        print(latlng);
+                      },
+                      child: SvgPicture.asset("images/place-icon.svg",
+                          width: 25.0,
+                          height: 25.0,
+                          //color: fontContrast(color),
+                          fit: BoxFit.cover),
+                    )),
+              ],
               back: true)),
     ]);
   }

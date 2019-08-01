@@ -93,6 +93,9 @@ flutter:
   - images/placeholder.jpg
   - images/search2.jpg
   - images/search-icon.svg
+  - images/setting-icon.svg
+  - images/add-location.svg
+  - images/add-location-bold.svg
   - images/trip-icon.svg 
   - images/notification.svg 
   - images/itinerary-icon.svg 

@@ -8,6 +8,7 @@ class TrotterAppBar extends StatelessWidget {
       @required this.onPush,
       @required this.color,
       this.back,
+      this.showSearch,
       this.actions = const <Widget>[],
       this.title,
       this.id,
@@ -21,6 +22,7 @@ class TrotterAppBar extends StatelessWidget {
   final String title;
   final dynamic location;
   final String id;
+  final bool showSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -53,30 +55,32 @@ class TrotterAppBar extends StatelessWidget {
             ),
       actions: <Widget>[
         ...actions,
-        Container(
-            width: 58,
-            height: 58,
-            margin: EdgeInsets.symmetric(horizontal: 0),
-            child: FlatButton(
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100)),
-              onPressed: () {
-                print(this.location);
-                print(this.title);
-                onPush({
-                  'query': '',
-                  'level': 'search',
-                  'id': this.id,
-                  'location': this.location,
-                  'destinationName': this.title
-                });
-              },
-              child: SvgPicture.asset("images/search-icon.svg",
-                  width: 24.0,
-                  height: 24.0,
-                  //color: fontContrast(color),
-                  fit: BoxFit.contain),
-            ))
+        this.showSearch == true || this.showSearch == null
+            ? Container(
+                width: 58,
+                height: 58,
+                margin: EdgeInsets.symmetric(horizontal: 0),
+                child: FlatButton(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100)),
+                  onPressed: () {
+                    print(this.location);
+                    print(this.title);
+                    onPush({
+                      'query': '',
+                      'level': 'search',
+                      'id': this.id,
+                      'location': this.location,
+                      'destinationName': this.title
+                    });
+                  },
+                  child: SvgPicture.asset("images/search-icon.svg",
+                      width: 24.0,
+                      height: 24.0,
+                      //color: fontContrast(color),
+                      fit: BoxFit.contain),
+                ))
+            : Container()
       ],
     );
   }

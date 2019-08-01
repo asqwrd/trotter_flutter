@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as prefix0;
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -246,6 +248,60 @@ class DayEditState extends State<DayEdit> {
               onPush: onPush,
               color: color,
               title: this.itineraryName,
+              showSearch: false,
+              actions: <Widget>[
+                Container(
+                    width: 70,
+                    height: 70,
+                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      onPressed: () async {
+                        final store = Provider.of<TrotterStore>(context);
+                        var suggestion = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                fullscreenDialog: true,
+                                builder: (context) => SearchModal(
+                                    query: '',
+                                    destinationName: this.destinationName,
+                                    location: this.location,
+                                    id: this.destinationId)));
+                        if (suggestion != null) {
+                          var data = {
+                            "poi": suggestion,
+                            "title": "",
+                            "description": "",
+                            "time": {"value": "", "unit": ""}
+                          };
+
+                          setState(() {
+                            this.loading = true;
+                          });
+                          ;
+                          var response = await addToDay(store, this.itineraryId,
+                              this.dayId, this.destinationId, data, false);
+                          setState(() {
+                            this.color =
+                                Color(hexStringToHexInt(response.color));
+                            this.destinationName = response.destination['name'];
+                            this.location = response.destination['location'];
+                            this.destinationId =
+                                response.destination['id'].toString();
+                            this.itineraryItems =
+                                response.day['itinerary_items'];
+                            this.loading = false;
+                          });
+                        }
+                      },
+                      child: SvgPicture.asset("images/add-location-bold.svg",
+                          width: 35,
+                          height: 35,
+                          //color: fontContrast(color),
+                          fit: BoxFit.cover),
+                    ))
+              ],
               back: true)),
     ]);
   }

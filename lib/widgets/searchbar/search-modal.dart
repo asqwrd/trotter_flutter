@@ -63,6 +63,7 @@ class SearchModal extends StatefulWidget {
   final String query;
   final String id;
   final dynamic location;
+  final dynamic near;
   final String destinationName;
   final ValueChanged<dynamic> onSelect;
   SearchModal(
@@ -71,6 +72,7 @@ class SearchModal extends StatefulWidget {
       this.onSelect,
       this.id,
       this.location,
+      this.near,
       this.destinationName})
       : super(key: key);
   @override
@@ -79,6 +81,7 @@ class SearchModal extends StatefulWidget {
       id: this.id,
       destinationName: this.destinationName,
       onSelect: this.onSelect,
+      near: this.near,
       location: this.location);
 }
 
@@ -87,7 +90,9 @@ class SearchModalState extends State<SearchModal> {
   String id;
   String destinationName;
   dynamic location;
+  dynamic near;
   bool selectId = false;
+  bool nearId = false;
   final ValueChanged<dynamic> onSelect;
   GoogleMapController mapController;
 
@@ -99,6 +104,7 @@ class SearchModalState extends State<SearchModal> {
     super.initState();
     txt.text = '';
     selectId = this.id != null && this.id.isNotEmpty ? true : false;
+    nearId = this.id != null && this.id.isNotEmpty && this.near != null;
     data = fetchSearchModal(
         '',
         this.location != null ? this.location['lat'] : null,
@@ -111,6 +117,7 @@ class SearchModalState extends State<SearchModal> {
       this.onSelect,
       this.id,
       this.destinationName,
+      this.near,
       this.location});
 
   @override
@@ -150,7 +157,8 @@ class SearchModalState extends State<SearchModal> {
           onSelected: (bool value) {
             setState(() {
               if (this.id.isNotEmpty) {
-                selectId = !selectId;
+                selectId = false;
+                nearId = false;
                 txt.text = '';
                 data = fetchSearchModal(
                     '',
@@ -169,12 +177,37 @@ class SearchModalState extends State<SearchModal> {
           onSelected: (bool value) {
             setState(() {
               if (this.id != null) selectId = !selectId;
+              if (selectId == false) {
+                nearId = selectId;
+              }
               txt.text = '';
               data = fetchSearchModal(
                   '',
                   this.location != null ? this.location['lat'] : null,
                   this.location != null ? this.location['lng'] : null,
                   selectId);
+            });
+          }));
+    }
+
+    if (this.near != null) {
+      chips.add(ChoiceChip(
+          selected: nearId,
+          label: Container(
+              width: 150,
+              child: Text(
+                'near ${this.near['name']}',
+                overflow: TextOverflow.ellipsis,
+              )),
+          onSelected: (bool value) {
+            setState(() {
+              if (this.id != null && this.near != null) nearId = !nearId;
+              if (nearId == true) {
+                selectId = true;
+              }
+              txt.text = '';
+              data = fetchSearchModal('', this.near['location']['lat'],
+                  this.near['location']['lng'], nearId || selectId);
             });
           }));
     }
@@ -308,7 +341,7 @@ class SearchModalState extends State<SearchModal> {
                                                         test) =>
                                                     Center(
                                                         child:
-                                                            RefreshProgressIndicator(
+                                                            CircularProgressIndicator(
                                                   backgroundColor: Colors.white,
                                                 )),
                                                 fit: BoxFit.cover,

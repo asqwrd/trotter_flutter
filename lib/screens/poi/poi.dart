@@ -199,7 +199,7 @@ class PoiState extends State<Poi> {
                           loadingWidgetBuilder:
                               (BuildContext context, double progress, test) =>
                                   Center(
-                                      child: RefreshProgressIndicator(
+                                      child: CircularProgressIndicator(
                             backgroundColor: Colors.white,
                           )),
                           fit: BoxFit.cover,

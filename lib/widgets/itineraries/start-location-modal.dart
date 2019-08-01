@@ -39,8 +39,8 @@ class StartLocationModalState extends State<StartLocationModal> {
     final cityCenter = {
       "hotel_name": 'City Center',
       "type": 'Meeting point',
-      "lat": this.destination['location']['lat'],
-      "lon": this.destination['location']['lng']
+      "lat": this.destination['location']['lat'].toString(),
+      "lon": this.destination['location']['lng'].toString()
     };
     final List<dynamic> options = [
       {"hotel": cityCenter, "travelers": []},
@@ -78,8 +78,11 @@ class StartLocationModalState extends State<StartLocationModal> {
               selected: false,
               onTap: () {
                 Navigator.pop(context, {
-                  "lat": options[index]['hotel']['lat'],
-                  "lon": options[index]['hotel']['lon']
+                  "location": {
+                    "lat": double.parse(options[index]['hotel']['lat']),
+                    "lng": double.parse(options[index]['hotel']['lon']),
+                  },
+                  "name": options[index]['hotel']['hotel_name']
                 });
               },
               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
@@ -93,39 +96,5 @@ class StartLocationModalState extends State<StartLocationModal> {
             );
           },
         ));
-  }
-
-  // function for rendering while data is loading
-  Widget _buildLoadingBody() {
-    return ListView(
-        //crossAxisAlignment: CrossAxisAlignment.start,
-        shrinkWrap: true,
-        primary: false,
-        children: <Widget>[
-          Align(alignment: Alignment.centerLeft, child: TextLoading()),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: TextLoading(width: 200.0)),
-          Align(alignment: Alignment.centerLeft, child: TextLoading()),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: TextLoading(width: 220.0)),
-          Align(alignment: Alignment.centerLeft, child: TextLoading()),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: TextLoading(width: 180.0)),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: TextLoading(width: 180.0)),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: TextLoading(width: 150.0)),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: TextLoading(width: 200.0)),
-          Align(
-              alignment: Alignment.centerLeft,
-              child: TextLoading(width: 180.0)),
-        ]);
   }
 }

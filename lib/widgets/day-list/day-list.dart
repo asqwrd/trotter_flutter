@@ -15,6 +15,7 @@ class DayList extends StatelessWidget {
   final double height;
   final ScrollController controller;
   final ScrollPhysics physics;
+  final dynamic startLocation;
   @required final String header;
 
   //passing props in react style
@@ -27,7 +28,8 @@ class DayList extends StatelessWidget {
     this.controller,
     this.physics,
     this.height,
-    this.header
+    this.header,
+    this.startLocation
   });
 
   @override
@@ -75,7 +77,7 @@ class DayList extends StatelessWidget {
           var justAdded = itineraryItems[index]['justAdded'];
           var travelTime = itineraryItems[index]['travel'];
           var prevIndex = index - 1;
-          var from = 'city center';
+          var from = this.startLocation != null ? this.startLocation['name'] : 'City Center';
           // value is 2 because first 2 values in the array are empty strings
           if(prevIndex >= 2){
             from = itineraryItems[prevIndex]['poi']['name'];

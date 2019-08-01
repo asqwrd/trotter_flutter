@@ -326,10 +326,16 @@ class ItineraryData {
   final bool loading;
   final Map<String, dynamic> itinerary;
   final Map<String, dynamic> destination;
+  final List<dynamic> hotels;
   final String error;
 
   ItineraryData(
-      {this.color, this.loading, this.itinerary, this.destination, this.error});
+      {this.color,
+      this.loading,
+      this.itinerary,
+      this.destination,
+      this.error,
+      this.hotels});
 
   factory ItineraryData.fromJson(Map<String, dynamic> json) {
     return ItineraryData(
@@ -337,6 +343,7 @@ class ItineraryData {
         itinerary: json['itinerary'],
         destination: json['destination'],
         color: json['color'],
+        hotels: json['hotels'],
         error: null);
   }
 }

@@ -144,7 +144,7 @@ class SearchModalState extends State<SearchModal> {
         snapshot.hasData ? snapshot.data.recentSearchModal : null;
     var results = snapshot.hasData ? snapshot.data.results : null;
     var chips = [
-      FilterChip(
+      ChoiceChip(
           selected: this.location != null ? !selectId : true,
           label: Text("Anywhere"),
           onSelected: (bool value) {
@@ -163,7 +163,7 @@ class SearchModalState extends State<SearchModal> {
     ];
 
     if (this.destinationName != null) {
-      chips.add(FilterChip(
+      chips.add(ChoiceChip(
           selected: selectId,
           label: Text(this.destinationName),
           onSelected: (bool value) {

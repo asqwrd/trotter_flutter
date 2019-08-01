@@ -161,12 +161,12 @@ class SearchState extends State<Search> {
     var results = snapshot.hasData ? snapshot.data.results : null;
     var error = snapshot.hasData ? snapshot.data.error : null;
     var chips = [
-      FilterChip(
+      ChoiceChip(
           selected: this.id != null && this.id.isNotEmpty ? !selectId : true,
           label: Text("Anywhere"),
           onSelected: (bool value) {
             setState(() {
-              if (this.id.isNotEmpty) {
+              if (this.id != null && this.id.isNotEmpty) {
                 selectId = !selectId;
                 txt.text = '';
                 data = fetchSearch(
@@ -180,7 +180,7 @@ class SearchState extends State<Search> {
     ];
 
     if (this.location != null) {
-      chips.add(FilterChip(
+      chips.add(ChoiceChip(
           selected: selectId,
           label: Text(this.destinationName),
           onSelected: (bool value) {

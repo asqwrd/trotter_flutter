@@ -152,6 +152,39 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
       tabContents.add(
         FlightsAccomodationsList(
             destination: destination,
+            onDeletePressed: (data) async {
+              print(data);
+              final detailId = data['id'];
+              final destinationId = data['destinationId'];
+              setState(() {
+                this.loading = true;
+              });
+              final response = await deleteFlightsAndAccomodations(
+                  this.tripId, destinationId, detailId);
+              print(response);
+              if (response.success == true) {
+                var res = await fetchFlightsAccomodations(
+                    this.tripId, this.currentUserId);
+                setState(() {
+                  this.loading = false;
+                  this.flightsAccomodations = res.flightsAccomodations;
+                });
+                Scaffold.of(this.context).showSnackBar(SnackBar(
+                  content:
+                      Text('Delete successful', style: TextStyle(fontSize: 18)),
+                  duration: Duration(seconds: 2),
+                ));
+              } else {
+                setState(() {
+                  this.loading = false;
+                });
+                Scaffold.of(this.context).showSnackBar(SnackBar(
+                  content:
+                      Text('Unable to delete', style: TextStyle(fontSize: 18)),
+                  duration: Duration(seconds: 2),
+                ));
+              }
+            },
             onAddPressed: (data) async {
               var dialogData = await showGeneralDialog(
                 context: ctxt,

@@ -59,7 +59,8 @@ _buildLoadedList(
   return IgnorePointer(
       ignoring: loading,
       child: Container(
-          margin: EdgeInsets.symmetric(vertical: 20.0),
+          color: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 20.0),
           child: loading == true && itineraries.length == 0
               ? _buildLoadingList()
               : itineraries == null || itineraries.length == 0
@@ -68,8 +69,26 @@ _buildLoadedList(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Image.asset('images/trips-empty.png',
-                              width: 170, height: 170, fit: BoxFit.contain),
+                          Container(
+                              width: 200,
+                              height: 200,
+                              foregroundDecoration: BoxDecoration(
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      Colors.white.withOpacity(.2),
+                                      Colors.white.withOpacity(1),
+                                      Colors.white.withOpacity(1),
+                                    ],
+                                    center: Alignment.center,
+                                    focal: Alignment.center,
+                                    radius: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(130)),
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image: AssetImage('images/day-empty.jpg'),
+                                      fit: BoxFit.contain),
+                                  borderRadius: BorderRadius.circular(130))),
                           Text(
                             'No itineraries created yet?',
                             textAlign: TextAlign.center,

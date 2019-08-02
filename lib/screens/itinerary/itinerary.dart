@@ -254,7 +254,7 @@ class ItineraryState extends State<Itinerary> {
           }
         }
 
-        return GestureDetector(
+        return InkWell(
             onTap: () => onPush({
                   'itineraryId': this.itineraryId,
                   'dayId': dayId,

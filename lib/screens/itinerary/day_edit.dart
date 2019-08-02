@@ -126,15 +126,6 @@ class DayEditState extends State<DayEdit> {
         panel: Center(
             child: Scaffold(
                 backgroundColor: Colors.transparent,
-                floatingActionButton: FutureBuilder(
-                    future: data,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data.error == null) {
-                        return _buildFab(
-                            Color(hexStringToHexInt(snapshot.data.color)));
-                      }
-                      return Container();
-                    }),
                 body: FutureBuilder(
                     future: data,
                     builder: (context, snapshot) {
@@ -307,52 +298,6 @@ class DayEditState extends State<DayEdit> {
               ],
               back: true)),
     ]);
-  }
-
-  Widget _buildFab(color) {
-    final store = Provider.of<TrotterStore>(context);
-    var items = [
-      new FabMiniMenuItem.withText(
-          new Icon(EvilIcons.location), Colors.deepPurple, 4.0, null, () async {
-        var suggestion = await Navigator.push(
-            context,
-            MaterialPageRoute(
-                fullscreenDialog: true,
-                builder: (context) => SearchModal(
-                    query: '',
-                    destinationName: this.destinationName,
-                    location: this.location,
-                    id: this.destinationId)));
-        if (suggestion != null) {
-          var data = {
-            "poi": suggestion,
-            "title": "",
-            "description": "",
-            "time": {"value": "", "unit": ""}
-          };
-
-          setState(() {
-            this.loading = true;
-          });
-          ;
-          var response = await addToDay(store, this.itineraryId, this.dayId,
-              this.destinationId, data, false);
-          setState(() {
-            this.color = Color(hexStringToHexInt(response.color));
-            this.destinationName = response.destination['name'];
-            this.location = response.destination['location'];
-            this.destinationId = response.destination['id'].toString();
-            this.itineraryItems = response.day['itinerary_items'];
-            this.loading = false;
-          });
-        }
-      }, "Add a place", Colors.blueGrey, Colors.white, true),
-      new FabMiniMenuItem.withText(
-          new Icon(EvilIcons.bell), Colors.red, 4.0, null, () async {
-        print('add reminder');
-      }, "Add a reminder", Colors.blueGrey, Colors.white, true),
-    ];
-    return new FabDialer(items, color, new Icon(Icons.add));
   }
 
 // function for rendering view after data is loaded

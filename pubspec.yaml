@@ -76,6 +76,10 @@ flutter:
   - images/header.png
   - images/headerPreview.jpeg
   - images/trips.jpg
+  - images/day-empty.jpg
+  - images/trips-empty.jpg
+  - images/notification-empty.jpg
+  - images/error-icon.jpg
   - images/trips2.jpg
   - images/trips-login.png
   - images/server-error-icon.png
@@ -94,6 +98,7 @@ flutter:
   - images/search2.jpg
   - images/search-icon.svg
   - images/setting-icon.svg
+  - images/back-icon.svg
   - images/add-location.svg
   - images/add-location-bold.svg
   - images/trip-icon.svg 

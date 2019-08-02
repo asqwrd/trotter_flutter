@@ -306,6 +306,28 @@ Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
   }
 }
 
+Future<AddFlightsAndAccomodationsData> deleteFlightsAndAccomodations(
+    String tripId, String destinationId, String detailId) async {
+  try {
+    final response = await http.delete(
+        'http://localhost:3002/api/trips/delete/flights_accomodations/$tripId/destination/$destinationId/detail/$detailId',
+        headers: {
+          'Authorization': 'security',
+          "Content-Type": "application/json"
+        });
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return AddFlightsAndAccomodationsData.fromJson(
+          json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      return AddFlightsAndAccomodationsData(success: false);
+    }
+  } catch (error) {
+    return AddFlightsAndAccomodationsData(success: false);
+  }
+}
+
 Future<FlightsAndAccomodationsTravelersData>
     putUpdateFlightsAccommodationTravelers(String tripId, String destinationId,
         String detailId, dynamic data) async {

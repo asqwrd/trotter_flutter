@@ -22,6 +22,7 @@ class NotificationsState extends State<Notifications> {
   var kExpandedHeight = 280;
   TrotterStore store;
   var data;
+  final Color color = Color.fromRGBO(29, 198, 144, 1);
 
   @override
   void initState() {
@@ -39,7 +40,6 @@ class NotificationsState extends State<Notifications> {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = Color.fromRGBO(29, 198, 144, 1);
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     store = Provider.of<TrotterStore>(context);
     if (store.currentUser != null && data == null) {
@@ -76,6 +76,55 @@ class NotificationsState extends State<Notifications> {
 
   Widget _buildContent(BuildContext context, TrotterStore store) {
     var notifications = store.notifications.notifications;
+    if (notifications.length == 0) {
+      return Center(
+          child: Container(
+              color: Colors.transparent,
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                      width: 270,
+                      height: 270,
+                      foregroundDecoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withOpacity(0),
+                              Colors.white.withOpacity(1),
+                              Colors.white.withOpacity(1),
+                            ],
+                            center: Alignment.center,
+                            focal: Alignment.center,
+                            radius: 1.02,
+                          ),
+                          borderRadius: BorderRadius.circular(130)),
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image:
+                                  AssetImage('images/notification-empty.jpg'),
+                              fit: BoxFit.contain),
+                          borderRadius: BorderRadius.circular(130))),
+                  Text(
+                    'All caught up!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 35,
+                        color: color,
+                        fontWeight: FontWeight.w300),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'Check back later',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 25,
+                        color: color,
+                        fontWeight: FontWeight.w300),
+                  ),
+                ],
+              )));
+    }
     return Container(
         child: ListView.separated(
             separatorBuilder: (BuildContext context, int index) =>

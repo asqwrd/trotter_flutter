@@ -26,8 +26,26 @@ class ErrorContainer extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Image.asset('images/server-error-icon.png',
-                          width: 170, height: 170, fit: BoxFit.contain),
+                      Container(
+                          width: 270,
+                          height: 270,
+                          foregroundDecoration: BoxDecoration(
+                              gradient: RadialGradient(
+                                colors: [
+                                  Colors.white.withOpacity(.3),
+                                  Colors.white.withOpacity(1),
+                                  Colors.white.withOpacity(1),
+                                ],
+                                center: Alignment.center,
+                                focal: Alignment.center,
+                                radius: 1.05,
+                              ),
+                              borderRadius: BorderRadius.circular(130)),
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: AssetImage('images/error-icon.jpg'),
+                                  fit: BoxFit.contain),
+                              borderRadius: BorderRadius.circular(130))),
                       Text(
                         'Uh Oh! our connection failed.',
                         textAlign: TextAlign.center,

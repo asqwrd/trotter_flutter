@@ -25,7 +25,8 @@ _buildLoadedList(BuildContext context, TrotterStore store,
   return IgnorePointer(
       ignoring: loading,
       child: Container(
-          margin: EdgeInsets.symmetric(vertical: 20.0),
+          color: Colors.white,
+          padding: EdgeInsets.symmetric(vertical: 20.0),
           child: loading == true && trips.length == 0
               ? _buildLoadingList()
               : trips.length == 0
@@ -34,8 +35,27 @@ _buildLoadedList(BuildContext context, TrotterStore store,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Image.asset('images/trips-empty.png',
-                              width: 170, height: 170, fit: BoxFit.contain),
+                          Container(
+                              width: 200,
+                              height: 200,
+                              foregroundDecoration: BoxDecoration(
+                                  gradient: RadialGradient(
+                                    colors: [
+                                      Colors.white.withOpacity(.2),
+                                      Colors.white.withOpacity(1),
+                                      Colors.white.withOpacity(1),
+                                    ],
+                                    center: Alignment.center,
+                                    focal: Alignment.center,
+                                    radius: 1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(130)),
+                              decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                      image:
+                                          AssetImage('images/trips-empty.jpg'),
+                                      fit: BoxFit.contain),
+                                  borderRadius: BorderRadius.circular(130))),
                           Text(
                             'No trips planned yet?',
                             textAlign: TextAlign.center,
@@ -58,7 +78,7 @@ _buildLoadedList(BuildContext context, TrotterStore store,
                             padding: EdgeInsets.symmetric(
                                 vertical: 20, horizontal: 20),
                             shape: RoundedRectangleBorder(
-                                borderRadius: new BorderRadius.circular(5.0)),
+                                borderRadius: new BorderRadius.circular(50.0)),
                             child: Text(
                               'Start planning',
                               style: TextStyle(
@@ -225,7 +245,7 @@ Widget _buildBody(BuildContext context, dynamic item,
                           loadingWidgetBuilder:
                               (BuildContext context, double progress, test) =>
                                   Center(
-                                      child: RefreshProgressIndicator(
+                                      child: CircularProgressIndicator(
                             backgroundColor: Colors.white,
                           )),
                           fit: BoxFit.cover,

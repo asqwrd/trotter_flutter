@@ -11,6 +11,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 class FlightsAccomodationsList extends StatelessWidget {
   final dynamic destination;
   final ValueChanged onAddPressed;
+  final ValueChanged onDeletePressed;
   final double height;
   final ScrollController controller;
   final ScrollPhysics physics;
@@ -19,6 +20,7 @@ class FlightsAccomodationsList extends StatelessWidget {
   FlightsAccomodationsList({
     this.destination,
     this.onAddPressed,
+    this.onDeletePressed,
     this.controller,
     this.physics,
     this.height,
@@ -54,7 +56,17 @@ class FlightsAccomodationsList extends StatelessWidget {
                   Container(
                       margin: EdgeInsets.only(bottom: 20),
                       child: ListTile(
-                          title: Text(details[index]['source'],
+                          trailing: IconButton(
+                            icon: Icon(EvilIcons.trash),
+                            iconSize: 32,
+                            onPressed: () {
+                              this.onDeletePressed({
+                                "id": details[index]['id'],
+                                "destinationId": destination['id'],
+                              });
+                            },
+                          ),
+                          title: Text('${details[index]['source']}',
                               style: TextStyle(fontSize: 24)),
                           subtitle: Container(
                             margin: EdgeInsets.only(top: 20, left: 10),
@@ -185,6 +197,10 @@ class FlightsAccomodationsList extends StatelessWidget {
                                       segment['departure_datetime'])),
                               style: substyle,
                             ),
+                            Text(
+                              'Confirmation #: ${segment['confirmation_no']}',
+                              style: substyle,
+                            ),
                             Container(
                                 margin: EdgeInsets.only(top: 60),
                                 child: Row(
@@ -268,6 +284,7 @@ class FlightsAccomodationsList extends StatelessWidget {
         final hotelInfo = [
           {"label": "Checkin", "value": segment['checkin_date']},
           {"label": "Checkout", "value": segment['checkout_date']},
+          {"label": "Confirmation number", "value": segment['confirmation_no']},
           {'label': "Guests", "value": travelers}
         ];
         return Container(
@@ -309,12 +326,13 @@ class FlightsAccomodationsList extends StatelessWidget {
                               ),
                             ))),
                     Container(
-                        height: 130,
+                        height: 170,
                         margin: EdgeInsets.only(top: 10),
                         width: MediaQuery.of(context).size.width,
                         child: ListView.builder(
                           primary: false,
                           shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
                           itemCount: hotelInfo.length,
                           itemBuilder: (BuildContext hotelContext, int index) {
                             if (hotelInfo[index]['label'] == 'Guests') {
@@ -328,6 +346,23 @@ class FlightsAccomodationsList extends StatelessWidget {
                                   buildTravelers(travelers)
                                 ],
                               );
+                            }
+                            if (hotelInfo[index]['label'] ==
+                                'Confirmation number') {
+                              return Container(
+                                  height: 35,
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: <Widget>[
+                                      Text(hotelInfo[index]['label'],
+                                          style: substyle),
+                                      Text(hotelInfo[index]['value'],
+                                          style: substyle)
+                                    ],
+                                  ));
                             }
                             return Container(
                                 height: 35,

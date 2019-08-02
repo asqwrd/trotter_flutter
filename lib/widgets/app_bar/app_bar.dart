@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:shimmer/shimmer.dart';
 
 class TrotterAppBar extends StatelessWidget {
@@ -33,7 +34,11 @@ class TrotterAppBar extends StatelessWidget {
       leading: back == true
           ? IconButton(
               padding: EdgeInsets.all(0),
-              icon: Icon(Icons.arrow_back),
+              icon: SvgPicture.asset(
+                'images/back-icon.svg',
+                width: 30,
+                height: 30,
+              ),
               onPressed: () {
                 Navigator.pop(context);
               },

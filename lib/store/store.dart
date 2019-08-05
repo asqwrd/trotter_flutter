@@ -124,6 +124,19 @@ class NotificationsData {
   }
 }
 
+class PlacesData {
+  final dynamic places;
+  final bool more;
+  final bool success;
+
+  PlacesData({this.places, this.success, this.more});
+
+  factory PlacesData.fromJson(Map<String, dynamic> json) {
+    return PlacesData(
+        places: json['places'], success: true, more: json['more']);
+  }
+}
+
 Future<NotificationsData> fetchNotifications([TrotterStore store]) async {
   try {
     final response = await http.get(

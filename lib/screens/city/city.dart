@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:loadmore/loadmore.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -45,23 +46,42 @@ Future<CityData> fetchCity(String id) async {
   }
 }
 
+Future<PlacesData> fetchMore(String id, String placeType, int offset) async {
+  try {
+    print(id);
+    final response = await http.get(
+        'http://localhost:3002/api/explore/places?levelId=$id&type=$placeType&offset=$offset',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return PlacesData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return PlacesData(success: false);
+    }
+  } catch (error) {
+    return PlacesData(success: false);
+  }
+}
+
 class CityData {
   final String color;
   final Map<String, dynamic> city;
-  final List<dynamic> discover;
-  final List<dynamic> discoverLocations;
-  final List<dynamic> eat;
-  final List<dynamic> eatLocations;
-  final List<dynamic> nightlife;
-  final List<dynamic> nightlifeLocations;
-  final List<dynamic> play;
-  final List<dynamic> playLocations;
-  final List<dynamic> relax;
-  final List<dynamic> relaxLocations;
-  final List<dynamic> see;
-  final List<dynamic> seeLocations;
-  final List<dynamic> shop;
-  final List<dynamic> shopLocations;
+  final dynamic discover;
+  final dynamic discoverLocations;
+  final dynamic eat;
+  final dynamic eatLocations;
+  final dynamic nightlife;
+  final dynamic nightlifeLocations;
+  final dynamic play;
+  final dynamic playLocations;
+  final dynamic relax;
+  final dynamic relaxLocations;
+  final dynamic see;
+  final dynamic seeLocations;
+  final dynamic shop;
+  final dynamic shopLocations;
   final String error;
 
   CityData(
@@ -121,6 +141,13 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   Color color = Colors.transparent;
   String cityName;
   dynamic location;
+  dynamic discover = [];
+  dynamic eat = [];
+  dynamic play = [];
+  dynamic nightlife = [];
+  dynamic shop = [];
+  dynamic relax = [];
+  dynamic see = [];
 
   @override
   void initState() {
@@ -164,6 +191,13 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                 this.cityName = data.city['name'];
                 this.location = data.city['location'];
                 this.color = Color(hexStringToHexInt(data.color));
+                this.discover = data.discover;
+                this.eat = data.eat;
+                this.see = data.see;
+                this.relax = data.relax;
+                this.play = data.play;
+                this.nightlife = data.nightlife;
+                this.shop = data.shop;
               })
             }
         });
@@ -289,21 +323,21 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
     var city = snapshot.data.city;
     var descriptionShort = snapshot.data.city['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
-    var discover = snapshot.data.discover;
-    var see = snapshot.data.see;
-    var eat = snapshot.data.eat;
-    var relax = snapshot.data.relax;
-    var play = snapshot.data.play;
-    var shop = snapshot.data.shop;
-    var nightlife = snapshot.data.nightlife;
-    var allTab = [
-      {'items': discover, 'header': 'Discover'},
-      {'items': see, 'header': 'See'},
-      {'items': eat, 'header': 'Eat'},
-      {'items': relax, 'header': 'Relax'},
-      {'items': play, 'header': 'Play'},
-      {'items': shop, 'header': 'Shop'},
-      {'items': nightlife, 'header': 'Nightlife'},
+    // var discover = snapshot.data.discover;
+    // var see = snapshot.data.see;
+    // var eat = snapshot.data.eat;
+    // var relax = snapshot.data.relax;
+    // var play = snapshot.data.play;
+    // var shop = snapshot.data.shop;
+    // var nightlife = snapshot.data.nightlife;
+    List<dynamic> allTab = [
+      {'items': this.discover['places'], 'header': 'Discover'},
+      {'items': this.see['places'], 'header': 'See'},
+      {'items': this.eat['places'], 'header': 'Eat'},
+      {'items': this.relax['places'], 'header': 'Relax'},
+      {'items': this.play['places'], 'header': 'Play'},
+      {'items': this.shop['places'], 'header': 'Shop'},
+      {'items': this.nightlife['places'], 'header': 'Nightlife'},
     ];
     var tabContents = <Widget>[
       _buildTabContent(
@@ -409,134 +443,213 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   _buildListView(
       List<dynamic> items, String key, Color color, dynamic destination) {
     final store = Provider.of<TrotterStore>(context);
+    dynamic data;
+    switch (key) {
+      case 'Discover':
+        data = this.discover;
+        break;
+      case 'See':
+        data = this.see;
+        break;
+      case 'Relax':
+        data = this.relax;
+        break;
+      case 'Shop':
+        data = this.shop;
+        break;
+      case 'Eat':
+        data = this.eat;
+        break;
+      case 'Nightlife':
+        data = this.nightlife;
+        break;
+      case 'Play':
+        data = this.play;
+    }
     return Container(
         width: MediaQuery.of(context).size.width,
-        child: ListView.builder(
-          controller: _sc,
-          physics: disableScroll
-              ? NeverScrollableScrollPhysics()
-              : ClampingScrollPhysics(),
-          key: new PageStorageKey(key),
-          itemCount: items.length,
-          itemBuilder: (BuildContext context, int index) {
-            return InkWell(
-                onTap: () {
-                  var id = items[index]['id'];
-                  var level = items[index]['level'];
-                  onPush({'id': id.toString(), 'level': level.toString()});
-                },
-                onLongPress: () async {
-                  var currentUser = store.currentUser;
-                  if (currentUser == null) {
-                    loginBottomSheet(context, data, color);
-                  } else {
-                    await addToItinerary(
-                        context, items, index, color, destination);
-                  }
-                },
-                child: Padding(
-                    padding:
-                        EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                            width: 120,
-                            height: 90,
-                            margin: EdgeInsets.only(right: 20),
-                            child: ClipPath(
-                                clipper: ShapeBorderClipper(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8))),
-                                child: items[index]['image'] != null
-                                    ? TransitionToImage(
-                                        image: AdvancedNetworkImage(
-                                          items[index]['image'],
-                                          useDiskCache: true,
-                                          cacheRule: CacheRule(
-                                              maxAge: const Duration(days: 7)),
-                                        ),
-                                        loadingWidgetBuilder: (BuildContext
-                                                    context,
-                                                double progress,
-                                                test) =>
-                                            Center(
-                                                child:
-                                                    CircularProgressIndicator(
-                                          backgroundColor: Colors.white,
-                                        )),
-                                        fit: BoxFit.cover,
-                                        alignment: Alignment.center,
-                                        placeholder: const Icon(Icons.refresh),
-                                        enableRefresh: true,
-                                      )
-                                    // CachedNetworkImage(
-                                    //     placeholder: (context, url) => SizedBox(
-                                    //         width: 50,
-                                    //         height: 50,
-                                    //         child: Align(
-                                    //             alignment: Alignment.center,
-                                    //             child:
-                                    //                 CircularProgressIndicator(
-                                    //               valueColor:
-                                    //                   new AlwaysStoppedAnimation<
-                                    //                           Color>(
-                                    //                       Colors.blueAccent),
-                                    //             ))),
-                                    //     fit: BoxFit.cover,
-                                    //     imageUrl: items[index]['image'],
-                                    //     errorWidget: (context, url, error) =>
-                                    //         Container(
-                                    //             decoration: BoxDecoration(
-                                    //           image: DecorationImage(
-                                    //               image: AssetImage(
-                                    //                   'images/placeholder.jpg'),
-                                    //               fit: BoxFit.cover),
-                                    //         )))
-                                    : Container(
-                                        decoration: BoxDecoration(
-                                        image: DecorationImage(
-                                            image: AssetImage(
-                                                'images/placeholder.jpg'),
-                                            fit: BoxFit.cover),
-                                      )))),
-                        Container(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              Container(
-                                  width:
-                                      MediaQuery.of(context).size.width - 210,
-                                  child: Text(
-                                    items[index]['name'],
-                                    maxLines: 2,
-                                    overflow: TextOverflow.fade,
-                                    style: TextStyle(
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.w500),
-                                  )),
-                              Container(
-                                  margin: EdgeInsets.only(top: 5),
-                                  width:
-                                      MediaQuery.of(context).size.width - 210,
-                                  child: Text(
-                                    items[index]['description_short'],
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 3,
-                                    style: TextStyle(
-                                        fontSize: 18.0,
-                                        fontWeight: FontWeight.w300),
-                                  ))
-                            ],
-                          ),
-                        )
-                      ],
-                    )));
-          },
-        ));
+        child: LoadMore(
+            textBuilder: (LoadMoreStatus status) {
+              return '';
+            },
+            isFinish: data['more'] == false,
+            onLoadMore: () async {
+              if (data['more'] == true) {
+                //print(data);
+                var res = await fetchMore(
+                    this.cityId, key.toLowerCase(), data['places'].length);
+                if (res.success == true) {
+                  setState(() {
+                    switch (key) {
+                      case 'Discover':
+                        this.discover['places'] = this.see['places']
+                          ..addAll(res.places);
+                        this.discover['more'] = res.more;
+                        break;
+                      case 'See':
+                        this.see['places'] = this.see['places']
+                          ..addAll(res.places);
+                        this.see['more'] = res.more;
+                        break;
+                      case 'Relax':
+                        this.relax['places'] = this.relax['places']
+                          ..addAll(res.places);
+                        this.relax['more'] = res.more;
+                        break;
+                      case 'Shop':
+                        this.shop['places'] = this.shop['places']
+                          ..addAll(res.places);
+                        this.shop['more'] = res.more;
+                        break;
+                      case 'Eat':
+                        this.eat['places'] = this.eat['places']
+                          ..addAll(res.places);
+                        this.eat['more'] = res.more;
+                        break;
+                      case 'Nightlife':
+                        this.nightlife['places'] = this.nightlife['places']
+                          ..addAll(res.places);
+                        this.nightlife['more'] = res.more;
+                        break;
+                      case 'Play':
+                        this.play['places'] = this.play['places']
+                          ..addAll(res.places);
+                        this.play['more'] = res.more;
+                        break;
+                    }
+                  });
+                }
+              }
+              return true;
+            },
+            child: ListView.builder(
+              controller: _sc,
+              physics: disableScroll
+                  ? NeverScrollableScrollPhysics()
+                  : ClampingScrollPhysics(),
+              key: new PageStorageKey(key),
+              itemCount: items.length,
+              itemBuilder: (BuildContext context, int index) {
+                return InkWell(
+                    onTap: () {
+                      var id = items[index]['id'];
+                      var level = items[index]['level'];
+                      onPush({'id': id.toString(), 'level': level.toString()});
+                    },
+                    onLongPress: () async {
+                      var currentUser = store.currentUser;
+                      if (currentUser == null) {
+                        loginBottomSheet(context, data, color);
+                      } else {
+                        await addToItinerary(
+                            context, items, index, color, destination);
+                      }
+                    },
+                    child: Padding(
+                        padding: EdgeInsets.symmetric(
+                            vertical: 20.0, horizontal: 20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                                width: 120,
+                                height: 90,
+                                margin: EdgeInsets.only(right: 20),
+                                child: ClipPath(
+                                    clipper: ShapeBorderClipper(
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8))),
+                                    child: items[index]['image'] != null
+                                        ? TransitionToImage(
+                                            image: AdvancedNetworkImage(
+                                              items[index]['image'],
+                                              useDiskCache: true,
+                                              cacheRule: CacheRule(
+                                                  maxAge:
+                                                      const Duration(days: 7)),
+                                            ),
+                                            loadingWidgetBuilder: (BuildContext
+                                                        context,
+                                                    double progress,
+                                                    test) =>
+                                                Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                              backgroundColor: Colors.white,
+                                            )),
+                                            fit: BoxFit.cover,
+                                            alignment: Alignment.center,
+                                            placeholder:
+                                                const Icon(Icons.refresh),
+                                            enableRefresh: true,
+                                          )
+                                        // CachedNetworkImage(
+                                        //     placeholder: (context, url) => SizedBox(
+                                        //         width: 50,
+                                        //         height: 50,
+                                        //         child: Align(
+                                        //             alignment: Alignment.center,
+                                        //             child:
+                                        //                 CircularProgressIndicator(
+                                        //               valueColor:
+                                        //                   new AlwaysStoppedAnimation<
+                                        //                           Color>(
+                                        //                       Colors.blueAccent),
+                                        //             ))),
+                                        //     fit: BoxFit.cover,
+                                        //     imageUrl: items[index]['image'],
+                                        //     errorWidget: (context, url, error) =>
+                                        //         Container(
+                                        //             decoration: BoxDecoration(
+                                        //           image: DecorationImage(
+                                        //               image: AssetImage(
+                                        //                   'images/placeholder.jpg'),
+                                        //               fit: BoxFit.cover),
+                                        //         )))
+                                        : Container(
+                                            decoration: BoxDecoration(
+                                            image: DecorationImage(
+                                                image: AssetImage(
+                                                    'images/placeholder.jpg'),
+                                                fit: BoxFit.cover),
+                                          )))),
+                            Container(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: <Widget>[
+                                  Container(
+                                      width: MediaQuery.of(context).size.width -
+                                          210,
+                                      child: Text(
+                                        items[index]['name'],
+                                        maxLines: 2,
+                                        overflow: TextOverflow.fade,
+                                        style: TextStyle(
+                                            fontSize: 20.0,
+                                            fontWeight: FontWeight.w500),
+                                      )),
+                                  Container(
+                                      margin: EdgeInsets.only(top: 5),
+                                      width: MediaQuery.of(context).size.width -
+                                          210,
+                                      child: Text(
+                                        items[index]['description_short'],
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 3,
+                                        style: TextStyle(
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.w300),
+                                      ))
+                                ],
+                              ),
+                            )
+                          ],
+                        )));
+              },
+            )));
   }
 
   _renderTab(String label) {

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:simple_moment/simple_moment.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class Notifications extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
@@ -132,22 +134,28 @@ class NotificationsState extends State<Notifications> {
             itemCount: notifications.length,
             itemBuilder: (BuildContext listcontext, int index) {
               final data = notifications[index]['data'];
+              final createdAt = notifications[index]['created_at'];
               final type = notifications[index]['type'];
+              final id = notifications[index]['id'];
               return ListTile(
                 leading: icon(type),
                 title: Text(data['subject']),
+                subtitle: Text(timeago
+                    .format(DateTime.fromMillisecondsSinceEpoch(createdAt))),
                 trailing: IconButton(
                   icon: Icon(Icons.more_horiz),
                   onPressed: () {
                     //print("object");
-                    bottomSheetModal(context, data, type);
+                    bottomSheetModal(context, data, type, id);
                   },
                 ),
               );
             }));
   }
 
-  bottomSheetModal(BuildContext context, dynamic data, String type) {
+  bottomSheetModal(
+      BuildContext context, dynamic data, String type, String notificationId) {
+    store = Provider.of<TrotterStore>(context);
     return showModalBottomSheet(
         context: context,
         builder: (BuildContext listcontext) {
@@ -155,7 +163,9 @@ class NotificationsState extends State<Notifications> {
             new ListTile(
                 leading: new Icon(EvilIcons.check),
                 title: new Text('Mark as read'),
-                onTap: () {
+                onTap: () async {
+                  print(notificationId);
+                  await markNotificationRead(notificationId, store);
                   Navigator.pop(context);
                 }),
             type == 'email'

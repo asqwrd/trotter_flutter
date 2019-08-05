@@ -5,6 +5,8 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:loadmore/loadmore.dart';
+import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
@@ -68,6 +70,28 @@ Future<HomeItinerariesData> fetchHomeItineraries() async {
   }
 }
 
+Future<HomeItinerariesData> fetchHomeItinerariesNext(lastId) async {
+  print(lastId);
+  try {
+    final response = await http.get(
+        'http://localhost:3002/api/itineraries/all?public=true&last=$lastId',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var data = json.decode(response.body);
+
+      return HomeItinerariesData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return HomeItinerariesData(error: "Api returned a $msg");
+    }
+  } catch (error) {
+    //print('Response> $error');
+    return HomeItinerariesData(error: "Server is down");
+  }
+}
+
 class HomeData {
   final List<dynamic> popularCities;
   final List<dynamic> popularIslands;
@@ -85,12 +109,16 @@ class HomeData {
 
 class HomeItinerariesData {
   final List<dynamic> itineraries;
+  final dynamic totalPublic;
   final String error;
 
-  HomeItinerariesData({this.itineraries, this.error});
+  HomeItinerariesData({this.itineraries, this.error, this.totalPublic});
 
   factory HomeItinerariesData.fromJson(Map<String, dynamic> json) {
-    return HomeItinerariesData(itineraries: json['itineraries'], error: null);
+    return HomeItinerariesData(
+        itineraries: json['itineraries'],
+        totalPublic: json['total_public'],
+        error: null);
   }
 }
 
@@ -108,6 +136,8 @@ class HomeState extends State<Home> {
   bool disableScroll = true;
   bool errorUi = false;
   bool loading = true;
+  List<dynamic> itineraries = [];
+  int totalPublic = 0;
   final Color color = Color.fromRGBO(216, 167, 177, 1);
   @override
   void initState() {
@@ -139,6 +169,7 @@ class HomeState extends State<Home> {
     setState(() {
       loading = true;
       data = fetchHome(true);
+      this.itineraries = [];
       dataItineraries = fetchHomeItineraries();
     });
 
@@ -150,6 +181,15 @@ class HomeState extends State<Home> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
+    dataItineraries.then((data) => {
+          if (data.error == null)
+            {
+              setState(() {
+                this.itineraries = data.itineraries;
+                this.totalPublic = data.totalPublic['count'];
+              })
+            }
+        });
     data.then((data) => {
           if (data.error != null)
             {
@@ -286,7 +326,7 @@ class HomeState extends State<Home> {
       BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
     final store = Provider.of<TrotterStore>(context);
     //store.setOffline(false);
-    var itineraries = snapshot.data.itineraries;
+    //var itineraries = snapshot.data.itineraries;
     var widgets = <Widget>[
       Padding(
           padding: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
@@ -371,102 +411,120 @@ class HomeState extends State<Home> {
 
     return Container(
       height: MediaQuery.of(context).size.height,
-      child: ListView(
-        controller: _sc,
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
-        children: <Widget>[
-          Center(
-              child: Container(
-            width: 30,
-            height: 5,
-            decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.all(Radius.circular(12.0))),
+      child: LoadMore(
+          textBuilder: (LoadMoreStatus status) {
+            return '';
+          },
+          isFinish: this.itineraries.length >= this.totalPublic,
+          onLoadMore: () async {
+            if (this.itineraries.length > 0) {
+              var lastId = this.itineraries[this.itineraries.length - 1]['id'];
+              var res = await fetchHomeItinerariesNext(lastId);
+              setState(() {
+                this.itineraries = this.itineraries..addAll(res.itineraries);
+              });
+            }
+            return true;
+          },
+          child: ListView(
+            controller: _sc,
+            physics: disableScroll
+                ? NeverScrollableScrollPhysics()
+                : ClampingScrollPhysics(),
+            children: <Widget>[
+              Center(
+                  child: Container(
+                width: 30,
+                height: 5,
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
+              )),
+              Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.only(top: 10, bottom: 20),
+                child: Text(
+                  'Explore',
+                  style: TextStyle(fontSize: 30),
+                ),
+              ),
+              snapshot.connectionState == ConnectionState.waiting
+                  ? Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(bottom: 30.0),
+                      child: TopListLoading())
+                  : TopList(
+                      items: popularCities,
+                      onPressed: (data) {
+                        onPush({'id': data['id'], 'level': data['level']});
+                      },
+                      onLongPressed: (data) {
+                        var currentUser = store.currentUser;
+                        if (currentUser == null) {
+                          loginBottomSheet(context, data, color);
+                        } else {
+                          bottomSheetModal(context, data['poi']);
+                        }
+                      },
+                      header: "Trending cities"),
+              snapshot.connectionState == ConnectionState.waiting
+                  ? Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.only(bottom: 30.0),
+                      child: TopListLoading())
+                  : TopList(
+                      items: popularIslands,
+                      onPressed: (data) {
+                        onPush({'id': data['id'], 'level': data['level']});
+                      },
+                      onLongPressed: (data) {
+                        var currentUser = store.currentUser;
+                        if (currentUser == null) {
+                          loginBottomSheet(context, data, color);
+                        } else {
+                          bottomSheetModal(context, data['item']);
+                        }
+                      },
+                      header: "Explore the island life"),
+              FutureBuilder(
+                  future: dataItineraries,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return _buildItineraryLoading(context);
+                    } else if (snapshot.hasData &&
+                        snapshot.data.error == null) {
+                      return _buildItinerary(context, snapshot, color);
+                    } else if (snapshot.hasData &&
+                        snapshot.data.error != null) {
+                      return Container(
+                          margin: EdgeInsets.only(bottom: 20),
+                          child: Column(
+                            children: <Widget>[
+                              Container(
+                                  margin: EdgeInsets.only(bottom: 20),
+                                  child: Text(
+                                    'Failed to get itineraries.',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w300),
+                                  )),
+                              RetryButton(
+                                color: color,
+                                width: 100,
+                                height: 50,
+                                onPressed: () {
+                                  setState(() {
+                                    dataItineraries = fetchHomeItineraries();
+                                  });
+                                },
+                              )
+                            ],
+                          ));
+                    }
+                    return _buildItineraryLoading(context);
+                  })
+            ],
           )),
-          Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(top: 10, bottom: 20),
-            child: Text(
-              'Explore',
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-          snapshot.connectionState == ConnectionState.waiting
-              ? Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 30.0),
-                  child: TopListLoading())
-              : TopList(
-                  items: popularCities,
-                  onPressed: (data) {
-                    onPush({'id': data['id'], 'level': data['level']});
-                  },
-                  onLongPressed: (data) {
-                    var currentUser = store.currentUser;
-                    if (currentUser == null) {
-                      loginBottomSheet(context, data, color);
-                    } else {
-                      bottomSheetModal(context, data['poi']);
-                    }
-                  },
-                  header: "Trending cities"),
-          snapshot.connectionState == ConnectionState.waiting
-              ? Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 30.0),
-                  child: TopListLoading())
-              : TopList(
-                  items: popularIslands,
-                  onPressed: (data) {
-                    onPush({'id': data['id'], 'level': data['level']});
-                  },
-                  onLongPressed: (data) {
-                    var currentUser = store.currentUser;
-                    if (currentUser == null) {
-                      loginBottomSheet(context, data, color);
-                    } else {
-                      bottomSheetModal(context, data['item']);
-                    }
-                  },
-                  header: "Explore the island life"),
-          FutureBuilder(
-              future: dataItineraries,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _buildItineraryLoading(context);
-                } else if (snapshot.hasData && snapshot.data.error == null) {
-                  return _buildItinerary(context, snapshot, color);
-                } else if (snapshot.hasData && snapshot.data.error != null) {
-                  return Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      child: Column(
-                        children: <Widget>[
-                          Container(
-                              margin: EdgeInsets.only(bottom: 20),
-                              child: Text(
-                                'Failed to get itineraries.',
-                                style: TextStyle(
-                                    fontSize: 24, fontWeight: FontWeight.w300),
-                              )),
-                          RetryButton(
-                            color: color,
-                            width: 100,
-                            height: 50,
-                            onPressed: () {
-                              setState(() {
-                                dataItineraries = fetchHomeItineraries();
-                              });
-                            },
-                          )
-                        ],
-                      ));
-                }
-                return _buildItineraryLoading(context);
-              })
-        ],
-      ),
     );
   }
 }

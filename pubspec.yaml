@@ -51,6 +51,13 @@ dependencies:
   timezone: ^0.5.4
   badges: ^1.1.0
   flutter_advanced_networkimage: ^0.5.0
+  timeago: ^2.0.18
+  notification_permissions: ^0.4.0
+  location: ^2.3.5
+  loadmore: ^1.0.3
+
+
+
 
 
 

@@ -147,3 +147,28 @@ Future<NotificationsData> fetchNotifications([TrotterStore store]) async {
     return NotificationsData(success: false);
   }
 }
+
+Future<NotificationsData> markNotificationRead(String notificationId,
+    [TrotterStore store]) async {
+  try {
+    final response = await http.put(
+        'http://localhost:3002/api/notifications/$notificationId?user_id=${store.currentUser.uid}',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = NotificationsData.fromJson(json.decode(response.body));
+      store?.setNotificationsError(false);
+      store?.setOffline(false);
+      store?.setNotifications(results.notifications);
+      store?.setNotificationsLoading(false);
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      return NotificationsData(success: false);
+    }
+  } catch (error) {
+    store?.setNotificationsError(true);
+    store?.setNotificationsLoading(false);
+    return NotificationsData(success: false);
+  }
+}

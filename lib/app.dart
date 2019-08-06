@@ -2,6 +2,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';

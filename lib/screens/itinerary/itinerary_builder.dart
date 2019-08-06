@@ -235,7 +235,9 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
     if (store.itineraryStore.itineraryBuilder.itinerary == null ||
-        store.itineraryStore.itineraryBuilder.loading) {
+        store.itineraryStore.itineraryBuilder.loading ||
+        store.itineraryStore.itineraryBuilder.itinerary['id'] !=
+            this.itineraryId) {
       return _buildLoadingBody(ctxt);
     }
     if (store.itineraryStore.itineraryBuilder.error != null) {

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:loadmore/loadmore.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -11,7 +13,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 
 Future<ParkData> fetchPark(String id) async {
@@ -46,7 +47,7 @@ Future<ParkData> fetchPark(String id) async {
 class ParkData {
   final String color;
   final Map<String, dynamic> park;
-  final List<dynamic> pois;
+  final dynamic pois;
   final String error;
 
   ParkData({this.color, this.park, this.pois, this.error});
@@ -70,7 +71,6 @@ class Park extends StatefulWidget {
 }
 
 class ParkState extends State<Park> with SingleTickerProviderStateMixin {
-  bool _showTitle = false;
   static String id;
   final String parkId;
   Future<ParkData> data;
@@ -83,6 +83,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
   String image;
   Color color = Colors.transparent;
   String parkName;
+  dynamic pois = [];
 
   @override
   void initState() {
@@ -123,6 +124,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                 this.errorUi = false;
                 this.image = data.park['image'];
                 this.parkName = data.park['name'];
+                this.pois = data.pois;
                 this.color = Color(hexStringToHexInt(data.color));
               })
             }
@@ -202,20 +204,6 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                                   placeholder: const Icon(Icons.refresh),
                                   enableRefresh: true,
                                 )
-                              // CachedNetworkImage(
-                              //     imageUrl: this.image,
-                              //     fit: BoxFit.cover,
-                              //     alignment: Alignment.center,
-                              //     placeholder: (context, url) => SizedBox(
-                              //         width: 50,
-                              //         height: 50,
-                              //         child: Align(
-                              //             alignment: Alignment.center,
-                              //             child: CircularProgressIndicator(
-                              //               valueColor:
-                              //                   new AlwaysStoppedAnimation<
-                              //                       Color>(Colors.blueAccent),
-                              //             ))))
                               : Container()),
                       Positioned.fill(
                         top: 0,
@@ -245,41 +233,58 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
       return _buildLoadingBody(ctxt);
     }
     var destination = snapshot.data.park;
-    var name = snapshot.data.park['name'];
     var descriptionShort = snapshot.data.park['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
-    var pois = snapshot.data.pois;
 
     return Container(
         height: MediaQuery.of(context).size.height,
-        child: ListView(
-            controller: _sc,
-            physics: disableScroll
-                ? NeverScrollableScrollPhysics()
-                : ClampingScrollPhysics(),
-            children: <Widget>[
-              Center(
-                  child: Container(
-                width: 30,
-                height: 5,
-                decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
-              )),
-              Container(
-                  padding:
-                      EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
-                  child: Text(
-                    descriptionShort,
-                    style:
-                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+        child: LoadMore(
+            delegate: TrotterLoadMoreDelegate(this.color),
+            isFinish: this.pois['more'] == false,
+            onLoadMore: () async {
+              if (this.pois['more'] == true) {
+                //print(data);
+                var res = await fetchMorePlaces(
+                    this.parkId, 'poi', this.pois['places'].length);
+                if (res.success == true) {
+                  setState(() {
+                    this.pois['places'] = this.pois['places']
+                      ..addAll(res.places);
+                    this.pois['more'] = res.more;
+                  });
+                }
+              }
+              return true;
+            },
+            child: ListView(
+                controller: _sc,
+                physics: disableScroll
+                    ? NeverScrollableScrollPhysics()
+                    : ClampingScrollPhysics(),
+                children: <Widget>[
+                  Center(
+                      child: Container(
+                    width: 30,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.all(Radius.circular(12.0))),
                   )),
-              Container(child: _buildListView(pois, 'Poi', color, destination))
-            ]));
+                  Container(
+                      padding: EdgeInsets.only(
+                          top: 20, left: 20, right: 20, bottom: 20),
+                      child: Text(
+                        descriptionShort,
+                        style: TextStyle(
+                            fontSize: 18.0, fontWeight: FontWeight.w300),
+                      )),
+                  Container(child: _buildListView('poi', color, destination))
+                ])));
   }
 
-  _buildListView(List<dynamic> items, String key, Color color, destination) {
+  _buildListView(String key, Color color, destination) {
     final store = Provider.of<TrotterStore>(context);
+    final items = this.pois["places"];
     return ListView.builder(
       shrinkWrap: true,
       primary: false,
@@ -327,33 +332,15 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                                         Center(
                                             child: CircularProgressIndicator(
                                       backgroundColor: Colors.white,
+                                      valueColor:
+                                          new AlwaysStoppedAnimation<Color>(
+                                              this.color),
                                     )),
                                     fit: BoxFit.cover,
                                     alignment: Alignment.center,
                                     placeholder: const Icon(Icons.refresh),
                                     enableRefresh: true,
                                   )
-                                // CachedNetworkImage(
-                                //     placeholder: (context, url) => SizedBox(
-                                //         width: 50,
-                                //         height: 50,
-                                //         child: Align(
-                                //             alignment: Alignment.center,
-                                //             child: CircularProgressIndicator(
-                                //               valueColor:
-                                //                   new AlwaysStoppedAnimation<
-                                //                       Color>(Colors.blueAccent),
-                                //             ))),
-                                //     fit: BoxFit.cover,
-                                //     imageUrl: items[index]['image'],
-                                //     errorWidget: (context, url, error) =>
-                                //         Container(
-                                //             decoration: BoxDecoration(
-                                //           image: DecorationImage(
-                                //               image: AssetImage(
-                                //                   'images/placeholder.jpg'),
-                                //               fit: BoxFit.cover),
-                                //         )))
                                 : Container(
                                     decoration: BoxDecoration(
                                     image: DecorationImage(

@@ -1,4 +1,6 @@
+import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
+import 'package:loadmore/loadmore.dart';
 import 'package:simple_moment/simple_moment.dart';
 
 class PixelRatioDivider {
@@ -274,3 +276,85 @@ Widget buildTravelers(List<dynamic> travelers) {
 }
 
 typedef String2VoidFunc = void Function(Map<String, dynamic>);
+
+class TrotterLoadMoreDelegate extends LoadMoreDelegate {
+  final Color color;
+  const TrotterLoadMoreDelegate(this.color);
+
+  @override
+  Widget buildChild(LoadMoreStatus status,
+      {LoadMoreTextBuilder builder = DefaultLoadMoreTextBuilder.chinese}) {
+    if (status == LoadMoreStatus.fail) {
+      return Container(
+        child: Text('failed to load'),
+      );
+    }
+    if (status == LoadMoreStatus.idle) {
+      return Text('');
+    }
+    if (status == LoadMoreStatus.loading) {
+      return Container(
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            SizedBox(
+              width: 50,
+              height: 50,
+              child: AwesomeLoader(
+                loaderType: AwesomeLoader.AwesomeLoader4,
+                color: this.color,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(''),
+            ),
+          ],
+        ),
+      );
+    }
+    if (status == LoadMoreStatus.nomore) {
+      return Center(
+          child: Container(
+              color: Colors.transparent,
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                children: <Widget>[
+                  Container(
+                      width: 50,
+                      height: 50,
+                      foregroundDecoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withOpacity(0),
+                              Colors.white.withOpacity(1),
+                              Colors.white.withOpacity(1),
+                            ],
+                            center: Alignment.center,
+                            focal: Alignment.center,
+                            radius: 1.02,
+                          ),
+                          borderRadius: BorderRadius.circular(130)),
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image:
+                                  AssetImage('images/notification-empty.jpg'),
+                              fit: BoxFit.contain),
+                          borderRadius: BorderRadius.circular(130))),
+                  Text(
+                    'All caught up!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: color,
+                        fontWeight: FontWeight.w300),
+                  ),
+                ],
+              )));
+    }
+
+    return Text('');
+  }
+}

@@ -911,6 +911,10 @@ class TripState extends State<Trip> {
               showDestinationsModal(context,this.destinations, this.color);
             }        
           ),
+          ListTile(leading: Icon(Icons.share), title: Text('Invite travelers'), onTap: (){
+            Share.share('Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${this.tripId}');
+            Navigator.pop(context);
+          },)
         ]
       );
     }
@@ -960,19 +964,6 @@ class TripState extends State<Trip> {
             child: Scaffold(
               resizeToAvoidBottomPadding: false,
           backgroundColor: Colors.transparent,
-          floatingActionButton: store.offline == false ? FloatingActionButton(
-            backgroundColor: this.color,
-            onPressed: () { 
-              bottomSheetModal(context, this.trip);
-            },
-            tooltip: 'Edit trip',
-            child: SvgPicture.asset(
-              'images/edit-icon.svg',
-              width: 30,
-              height: 30
-            ),
-            elevation: 5.0,
-          ) : null,
           body: FutureBuilder(
             future: data,
             builder: (context, snapshot) {
@@ -1105,7 +1096,7 @@ class TripState extends State<Trip> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: this.tripName, back: true, actions: <Widget>[
+              onPush: onPush, color: color, title: this.tripName, back: true, actions: store.offline == false ? <Widget>[
               Container(
                   width: 58,
                   height: 58,
@@ -1114,16 +1105,16 @@ class TripState extends State<Trip> {
                     
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100)),
-                    onPressed: () {
-                      Share.share('Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${this.tripId}');
+                    onPressed: () { 
+                      bottomSheetModal(context, this.trip);
                     },
-                    child: Icon(
-                      EvilIcons.share_google,
-                      color: fontContrast(color),
-                      size: 40,
-                    ),
+                    child:  SvgPicture.asset("images/setting-icon.svg",
+                          width: 35,
+                          height: 35,
+                          //color: fontContrast(color),
+                          fit: BoxFit.cover),
                   ))
-            ],)),
+            ] : null)),
     ]);
   }
   
@@ -1194,11 +1185,11 @@ class TripState extends State<Trip> {
           {"label":"Activities in ${destination['destination_name']}", "icon": Icon(Icons.local_activity, color: iconColor), "id":destination['destination_id'].toString(), "level": destination['level'].toString()}
         ]);
       }
-      if(group.asIterable().first['level'] != 'city_state'){
+      
         fields.add(
-          {"label":"Must knows about ${group.asIterable().first['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": key.toString(), "level":"country"}
+          {"label":"Tips & requirements for ${group.asIterable().first['country_name']}", "icon": Icon(Icons.info_outline, color: iconColor), "id": key.toString(), "level":"country"}
         );
-      }
+      
     }
   
     return Container(

@@ -324,9 +324,6 @@ class HomeState extends State<Home> {
 
   Widget _buildItinerary(
       BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
-    final store = Provider.of<TrotterStore>(context);
-    //store.setOffline(false);
-    //var itineraries = snapshot.data.itineraries;
     var widgets = <Widget>[
       Padding(
           padding: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
@@ -410,12 +407,10 @@ class HomeState extends State<Home> {
     final store = Provider.of<TrotterStore>(context);
 
     return Container(
-      height: MediaQuery.of(context).size.height,
       child: LoadMore(
-          textBuilder: (LoadMoreStatus status) {
-            return '';
-          },
-          isFinish: this.itineraries.length >= this.totalPublic,
+          delegate: TrotterLoadMoreDelegate(this.color),
+          isFinish: this.itineraries.length >= this.totalPublic ||
+              this.errorUi == true,
           onLoadMore: () async {
             if (this.itineraries.length > 0) {
               var lastId = this.itineraries[this.itineraries.length - 1]['id'];

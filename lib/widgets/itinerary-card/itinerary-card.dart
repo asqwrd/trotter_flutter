@@ -57,14 +57,6 @@ class ItineraryCard extends StatelessWidget {
                         valueColor: new AlwaysStoppedAnimation<Color>(color),
                       )))),
                       Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.black.withOpacity(0.05),
-                          ),
-                        ),
-                      ),
-                      Positioned.fill(
                         child: ClipPath(
                             clipper: ShapeBorderClipper(
                                 shape: RoundedRectangleBorder(
@@ -85,7 +77,7 @@ class ItineraryCard extends StatelessWidget {
                                     loadingWidgetBuilder: (BuildContext context,
                                             double progress, test) =>
                                         Center(
-                                            child: RefreshProgressIndicator(
+                                            child: CircularProgressIndicator(
                                       backgroundColor: Colors.white,
                                     )),
                                     fit: BoxFit.cover,

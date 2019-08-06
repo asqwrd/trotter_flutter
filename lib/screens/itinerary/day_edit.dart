@@ -189,20 +189,6 @@ class DayEditState extends State<DayEdit> {
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
                         )
-                      // CachedNetworkImage(
-                      //     imageUrl: this.image,
-                      //     fit: BoxFit.cover,
-                      //     alignment: Alignment.center,
-                      //     placeholder: (context, url) => SizedBox(
-                      //         width: 50,
-                      //         height: 50,
-                      //         child: Align(
-                      //             alignment: Alignment.center,
-                      //             child: CircularProgressIndicator(
-                      //               valueColor:
-                      //                   new AlwaysStoppedAnimation<Color>(
-                      //                       Colors.blueAccent),
-                      //             ))))
                       : Container()),
               Positioned.fill(
                 top: 0,

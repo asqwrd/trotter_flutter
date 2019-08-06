@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/screens/home/index.dart';
 import 'package:trotter_flutter/screens/country/index.dart';
-import 'package:trotter_flutter/screens/city/index.dart';
-import 'package:trotter_flutter/screens/city_state/index.dart';
+import 'package:trotter_flutter/screens/destination/index.dart';
 import 'package:trotter_flutter/screens/poi/index.dart';
 import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/screens/notifications/index.dart';
-import 'package:trotter_flutter/screens/region/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
 import 'package:trotter_flutter/screens/profile/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
@@ -146,14 +144,22 @@ class TabNavigator extends StatelessWidget {
             countryId: data['id'],
             onPush: (data) => push(context, data),
           ),
-      TabNavigatorRoutes.city: (context) =>
-          City(cityId: data['id'], onPush: (data) => push(context, data)),
-      TabNavigatorRoutes.region: (context) =>
-          Region(regionId: data['id'], onPush: (data) => push(context, data)),
-      TabNavigatorRoutes.island: (context) =>
-          City(cityId: data['id'], onPush: (data) => push(context, data)),
-      TabNavigatorRoutes.cityState: (context) => CityState(
-          cityStateId: data['id'], onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.city: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.region: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.island: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.cityState: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.poi: (context) => Poi(
           poiId: data['id'],
           locationId: data['locationId'],

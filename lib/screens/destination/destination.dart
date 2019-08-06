@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:loadmore/loadmore.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:trotter_flutter/store/itineraries/middleware.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -11,63 +11,44 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 
-Future<CityData> fetchCity(String id) async {
+Future<DestinationData> fetchDestination(
+    String id, String destinationType) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String cacheData = prefs.getString('city_$id') ?? null;
+  final String cacheData = prefs.getString('destination_$id') ?? null;
   if (cacheData != null) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
-    return CityData.fromJson(json.decode(cacheData));
+    return DestinationData.fromJson(json.decode(cacheData));
   } else {
     try {
       print('no-cached');
       print(id);
       final response = await http.get(
-          'http://localhost:3002/api/explore/cities/$id/',
+          'http://localhost:3002/api/explore/destinations/$id?type=$destinationType',
           headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
-        await prefs.setString('city_$id', response.body);
-        return CityData.fromJson(json.decode(response.body));
+        await prefs.setString('destination_$id', response.body);
+        return DestinationData.fromJson(json.decode(response.body));
       } else {
         // If that response was not OK, throw an error.
         var msg = response.statusCode;
-        return CityData(error: 'Response > $msg');
+        return DestinationData(error: 'Response > $msg');
       }
     } catch (error) {
-      return CityData(error: 'Server is down');
+      return DestinationData(error: 'Server is down');
     }
   }
 }
 
-Future<PlacesData> fetchMore(String id, String placeType, int offset) async {
-  try {
-    print(id);
-    final response = await http.get(
-        'http://localhost:3002/api/explore/places?levelId=$id&type=$placeType&offset=$offset',
-        headers: {'Authorization': 'security'});
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      return PlacesData.fromJson(json.decode(response.body));
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      return PlacesData(success: false);
-    }
-  } catch (error) {
-    return PlacesData(success: false);
-  }
-}
-
-class CityData {
+class DestinationData {
   final String color;
-  final Map<String, dynamic> city;
+  final Map<String, dynamic> destination;
   final dynamic discover;
   final dynamic discoverLocations;
   final dynamic eat;
@@ -84,9 +65,9 @@ class CityData {
   final dynamic shopLocations;
   final String error;
 
-  CityData(
+  DestinationData(
       {this.color,
-      this.city,
+      this.destination,
       this.discover,
       this.eat,
       this.nightlife,
@@ -103,10 +84,10 @@ class CityData {
       this.shopLocations,
       this.error});
 
-  factory CityData.fromJson(Map<String, dynamic> json) {
-    return CityData(
+  factory DestinationData.fromJson(Map<String, dynamic> json) {
+    return DestinationData(
         color: json['color'],
-        city: json['city'],
+        destination: json['destination'],
         discover: json['discover'],
         eat: json['eat'],
         nightlife: json['nightlife'],
@@ -118,19 +99,29 @@ class CityData {
   }
 }
 
-class City extends StatefulWidget {
-  final String cityId;
+class Destination extends StatefulWidget {
+  final String destinationId;
+  final String destinationType;
   final ValueChanged<dynamic> onPush;
-  City({Key key, @required this.cityId, this.onPush}) : super(key: key);
+  Destination(
+      {Key key,
+      @required this.destinationId,
+      @required this.destinationType,
+      this.onPush})
+      : super(key: key);
   @override
-  CitiesState createState() =>
-      new CitiesState(cityId: this.cityId, onPush: this.onPush);
+  DestinationState createState() => new DestinationState(
+      destinationId: this.destinationId,
+      destinationType: this.destinationType,
+      onPush: this.onPush);
 }
 
-class CitiesState extends State<City> with SingleTickerProviderStateMixin {
+class DestinationState extends State<Destination>
+    with SingleTickerProviderStateMixin {
   static String id;
-  final String cityId;
-  Future<CityData> data;
+  final String destinationId;
+  final String destinationType;
+  Future<DestinationData> data;
   final ValueChanged<dynamic> onPush;
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
@@ -139,7 +130,7 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
   bool loading = true;
   String image;
   Color color = Colors.transparent;
-  String cityName;
+  String destinationName;
   dynamic location;
   dynamic discover = [];
   dynamic eat = [];
@@ -159,10 +150,10 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
       });
     });
     super.initState();
-    data = fetchCity(this.cityId);
+    data = fetchDestination(this.destinationId, this.destinationType);
   }
 
-  CitiesState({this.cityId, this.onPush});
+  DestinationState({this.destinationId, this.destinationType, this.onPush});
 
   @override
   void dispose() {
@@ -186,10 +177,10 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
             {
               setState(() {
                 this.errorUi = false;
-                this.image = data.city['image'];
+                this.image = data.destination['image'];
                 //print(this.image);
-                this.cityName = data.city['name'];
-                this.location = data.city['location'];
+                this.destinationName = data.destination['name'];
+                this.location = data.destination['location'];
                 this.color = Color(hexStringToHexInt(data.color));
                 this.discover = data.discover;
                 this.eat = data.eat;
@@ -239,7 +230,8 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                         return ErrorContainer(
                           onRetry: () {
                             setState(() {
-                              data = fetchCity(this.cityId);
+                              data = fetchDestination(
+                                  this.destinationId, this.destinationType);
                             });
                           },
                         );
@@ -308,9 +300,9 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
           child: new TrotterAppBar(
               onPush: onPush,
               color: color,
-              title: this.cityName,
+              title: this.destinationName,
               back: true,
-              id: this.cityId,
+              id: this.destinationId,
               location: this.location)),
     ]);
   }
@@ -320,8 +312,8 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return _buildLoadingBody(ctxt);
     }
-    var city = snapshot.data.city;
-    var descriptionShort = snapshot.data.city['description_short'];
+    var destination = snapshot.data.destination;
+    var descriptionShort = snapshot.data.destination['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
     // var discover = snapshot.data.discover;
     // var see = snapshot.data.see;
@@ -341,12 +333,12 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
     ];
     var tabContents = <Widget>[
       _buildTabContent(
-          _buildAllTab(allTab, descriptionShort, color, city), 'All'),
+          _buildAllTab(allTab, descriptionShort, color, destination), 'All'),
     ];
     for (var tab in allTab) {
       if (tab['items'].length > 0) {
         tabContents.add(
-          _buildListView(tab['items'], tab['header'], color, city),
+          _buildListView(tab['items'], tab['header'], color, destination),
         );
       }
     }
@@ -469,20 +461,18 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
     return Container(
         width: MediaQuery.of(context).size.width,
         child: LoadMore(
-            textBuilder: (LoadMoreStatus status) {
-              return '';
-            },
+            delegate: TrotterLoadMoreDelegate(this.color),
             isFinish: data['more'] == false,
             onLoadMore: () async {
               if (data['more'] == true) {
                 //print(data);
-                var res = await fetchMore(
-                    this.cityId, key.toLowerCase(), data['places'].length);
+                var res = await fetchMorePlaces(this.destinationId,
+                    key.toLowerCase(), data['places'].length);
                 if (res.success == true) {
                   setState(() {
                     switch (key) {
                       case 'Discover':
-                        this.discover['places'] = this.see['places']
+                        this.discover['places'] = this.discover['places']
                           ..addAll(res.places);
                         this.discover['more'] = res.more;
                         break;
@@ -578,6 +568,9 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                                                     child:
                                                         CircularProgressIndicator(
                                               backgroundColor: Colors.white,
+                                              valueColor:
+                                                  new AlwaysStoppedAnimation<
+                                                      Color>(this.color),
                                             )),
                                             fit: BoxFit.cover,
                                             alignment: Alignment.center,
@@ -585,29 +578,6 @@ class CitiesState extends State<City> with SingleTickerProviderStateMixin {
                                                 const Icon(Icons.refresh),
                                             enableRefresh: true,
                                           )
-                                        // CachedNetworkImage(
-                                        //     placeholder: (context, url) => SizedBox(
-                                        //         width: 50,
-                                        //         height: 50,
-                                        //         child: Align(
-                                        //             alignment: Alignment.center,
-                                        //             child:
-                                        //                 CircularProgressIndicator(
-                                        //               valueColor:
-                                        //                   new AlwaysStoppedAnimation<
-                                        //                           Color>(
-                                        //                       Colors.blueAccent),
-                                        //             ))),
-                                        //     fit: BoxFit.cover,
-                                        //     imageUrl: items[index]['image'],
-                                        //     errorWidget: (context, url, error) =>
-                                        //         Container(
-                                        //             decoration: BoxDecoration(
-                                        //           image: DecorationImage(
-                                        //               image: AssetImage(
-                                        //                   'images/placeholder.jpg'),
-                                        //               fit: BoxFit.cover),
-                                        //         )))
                                         : Container(
                                             decoration: BoxDecoration(
                                             image: DecorationImage(

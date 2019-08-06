@@ -140,20 +140,6 @@ class ItineraryState extends State<Itinerary> {
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
                         )
-                      // CachedNetworkImage(
-                      //     imageUrl: this.image,
-                      //     fit: BoxFit.cover,
-                      //     alignment: Alignment.center,
-                      //     placeholder: (context, url) => SizedBox(
-                      //         width: 50,
-                      //         height: 50,
-                      //         child: Align(
-                      //             alignment: Alignment.center,
-                      //             child: CircularProgressIndicator(
-                      //               valueColor:
-                      //                   new AlwaysStoppedAnimation<Color>(
-                      //                       Colors.blueAccent),
-                      //             ))))
                       : Container()),
               Positioned.fill(
                 top: 0,
@@ -183,7 +169,8 @@ class ItineraryState extends State<Itinerary> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
     if (store.itineraryStore.itinerary.itinerary == null ||
-        store.itineraryStore.itinerary.loading) {
+        store.itineraryStore.itinerary.loading ||
+        store.itineraryStore.itinerary.itinerary['id'] != this.itineraryId) {
       return _buildLoadingBody(ctxt);
     }
     if (store.itineraryStore.itinerary.error != null) {

@@ -106,8 +106,10 @@ class ItineraryList extends StatelessWidget {
                             loadingWidgetBuilder:
                                 (BuildContext context, double progress, test) =>
                                     Center(
-                                        child: RefreshProgressIndicator(
+                                        child: CircularProgressIndicator(
                               backgroundColor: Colors.white,
+                              valueColor:
+                                  new AlwaysStoppedAnimation<Color>(this.color),
                             )),
                             fit: BoxFit.cover,
                             alignment: Alignment.center,

@@ -326,7 +326,7 @@ class CountryState extends State<Country> {
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: 10, bottom: 20),
               child: Text(
-                'Country Facts',
+                'Tips & Requirements',
                 style: TextStyle(fontSize: 30),
               ),
             ),
@@ -340,11 +340,9 @@ class CountryState extends State<Country> {
                     margin:
                         EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.0),
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 0.8,
-                        )),
+                      color: this.color,
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
                     child: Padding(
                         padding: EdgeInsets.all(20.0),
                         child: Column(
@@ -353,6 +351,7 @@ class CountryState extends State<Country> {
                               Text(
                                 'VISA SNAPSHOT',
                                 style: TextStyle(
+                                  color: fontContrast(this.color),
                                   fontWeight: FontWeight.w300,
                                   fontSize: 18.0,
                                 ),
@@ -415,7 +414,8 @@ class CountryState extends State<Country> {
                                 color: _getAdviceColor(
                                     safety['rating'].toDouble())))),
                     _showVisa
-                        ? VaccineList(vaccines: visa['vaccination'])
+                        ? VaccineList(
+                            vaccines: visa['vaccination'], color: this.color)
                         : Container(),
                   ]),
             ),
@@ -437,11 +437,9 @@ class CountryState extends State<Country> {
                         margin: EdgeInsets.only(
                             left: 20.0, right: 20.0, top: 20.0, bottom: 40.0),
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8.0),
-                            border: Border.all(
-                              color: Colors.black,
-                              width: 0.8,
-                            )),
+                          color: this.color,
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
@@ -488,11 +486,9 @@ class CountryState extends State<Country> {
                                   top: 0.0,
                                   bottom: 40.0),
                               decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border: Border.all(
-                                    color: Colors.black,
-                                    width: 0.8,
-                                  )),
+                                color: this.color,
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
                               child: Wrap(children: _getPlugs(plugs, name))),
                         ]),
 
@@ -519,6 +515,7 @@ class CountryState extends State<Country> {
             '$name uses a frequency of ${plugsData[0]['frequency']} and voltage of ${plugsData[0]['voltage']} in sockets.  Below are the types of plugs you need when traveling to $name.',
             style: TextStyle(
               fontSize: 20.0,
+              color: fontContrast(this.color),
               fontWeight: FontWeight.w400,
             ),
           ))
@@ -529,15 +526,13 @@ class CountryState extends State<Country> {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Image.asset(
-                  'images/${plug['type']}.png',
-                  width: 100.0,
-                  height: 100.0,
-                ),
+                Image.asset('images/${plug['type']}.png',
+                    width: 100.0,
+                    height: 100.0,
+                    color: fontContrast(this.color)),
                 Text('Type ${plug['type']}',
                     style: TextStyle(
-                      fontSize: 20.0,
-                    ))
+                        fontSize: 20.0, color: fontContrast(this.color)))
               ])));
     }
     return plugs;
@@ -551,9 +546,15 @@ class CountryState extends State<Country> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text(label,
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0)),
+                style: TextStyle(
+                    color: fontContrast(this.color),
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20.0)),
             Text(numbers,
-                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w300))
+                style: TextStyle(
+                    color: fontContrast(this.color),
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w300))
           ],
         ));
   }
@@ -566,14 +567,18 @@ class CountryState extends State<Country> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(label,
-                  style:
-                      TextStyle(fontWeight: FontWeight.w700, fontSize: 18.0)),
+                  style: TextStyle(
+                      color: fontContrast(this.color),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18.0)),
               Padding(
                   padding: EdgeInsets.symmetric(vertical: 5.0),
                   child: Text(
                     obj[key].join(' ').trim(),
-                    style:
-                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+                    style: TextStyle(
+                        color: fontContrast(this.color),
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w300),
                   ))
             ]));
   }
@@ -587,6 +592,7 @@ class CountryState extends State<Country> {
             children: <Widget>[
               Text(label,
                   style: TextStyle(
+                    color: fontContrast(this.color),
                     fontWeight: FontWeight.w600,
                     fontSize: 18.0,
                   )),
@@ -594,8 +600,10 @@ class CountryState extends State<Country> {
                   padding: EdgeInsets.symmetric(vertical: 5.0),
                   child: Text(
                     '$value $objValue'.trim(),
-                    style:
-                        TextStyle(fontSize: 20.0, fontWeight: FontWeight.w300),
+                    style: TextStyle(
+                        color: fontContrast(this.color),
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w300),
                   ))
             ]));
   }
@@ -615,7 +623,7 @@ class CountryState extends State<Country> {
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
         child: Text(
-          'Country Facts',
+          'Loading...',
           style: TextStyle(fontSize: 30),
         ),
       ),

@@ -1,6 +1,7 @@
 // containers/auth_button/auth_button_container.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 
 class GoogleAuthButtonContainer extends StatelessWidget {

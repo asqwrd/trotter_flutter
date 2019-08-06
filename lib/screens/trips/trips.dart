@@ -419,9 +419,18 @@ class TripsState extends State<Trips> {
                 var undoData = {
                   "trip": {
                     "image": tripBuilder[index]['image'],
-                    "name": tripBuilder[index]['name']
+                    "name": tripBuilder[index]['name'],
+                    "owner_id": currentUser.uid,
+                    "group": tripBuilder[index]['group']
                   },
-                  "destinations": tripBuilder[index]['destinations']
+                  "destinations": tripBuilder[index]['destinations'],
+                  "user": {
+                    "displayName": store.currentUser.displayName,
+                    "photoUrl": store.currentUser.photoUrl,
+                    "email": store.currentUser.email,
+                    "phoneNumber": store.currentUser.phoneNumber,
+                    "uid": store.currentUser.uid,
+                  }
                 };
                 store.setTripsRefreshing(true);
 
@@ -441,7 +450,7 @@ class TripsState extends State<Trips> {
                       onPressed: () async {
                         store.setTripsRefreshing(true);
                         var response =
-                            await undoDeleteTrip(store, undoData, index);
+                            await undoDeleteTrip(store, undoData, index - 2);
                         store.setTripsRefreshing(false);
                         if (response.success == true) {
                           Scaffold.of(this.context).removeCurrentSnackBar();
@@ -556,23 +565,25 @@ class TripsState extends State<Trips> {
                                           )),
                                     ]),
                               ),
-                              Positioned(
-                                  top: 20,
-                                  right: 20,
-                                  child: GestureDetector(
-                                    onTap: onPressed2,
-                                    child: Container(
-                                        padding: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(15),
-                                            color: Colors.transparent),
-                                        child: Icon(
-                                          EvilIcons.close,
-                                          color: fontContrast(color),
-                                          size: 30,
-                                        )),
-                                  )),
+                              tripBuilder[index]['owner_id'] == currentUser.uid
+                                  ? Positioned(
+                                      top: 20,
+                                      right: 20,
+                                      child: GestureDetector(
+                                        onTap: onPressed2,
+                                        child: Container(
+                                            padding: EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
+                                                color: Colors.transparent),
+                                            child: Icon(
+                                              EvilIcons.close,
+                                              color: fontContrast(color),
+                                              size: 30,
+                                            )),
+                                      ))
+                                  : Container(),
                               Positioned(
                                   top: 70,
                                   right: 20,

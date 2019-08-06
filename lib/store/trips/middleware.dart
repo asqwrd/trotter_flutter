@@ -137,6 +137,7 @@ Future<CreateTripData> postCreateTrip(TrotterStore store, dynamic data,
           "Content-Type": "application/json"
         });
     print(response.statusCode);
+    print(index);
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = CreateTripResponseData.fromJson(json.decode(response.body));

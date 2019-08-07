@@ -11,9 +11,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
-Future<CountryData> fetchCountry(String id) async {
+Future<CountryData> fetchCountry(String id, String userId) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('country_$id') ?? null;
   if (cacheData != null) {
@@ -24,7 +23,7 @@ Future<CountryData> fetchCountry(String id) async {
     try {
       print('no-cached');
       final response = await http.get(
-          'http://localhost:3002/api/explore/countries/$id',
+          'http://localhost:3002/api/explore/countries/$id?user_id=$userId',
           headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
@@ -79,17 +78,19 @@ class CountryData {
 
 class Country extends StatefulWidget {
   final String countryId;
+  final String userId;
   final ValueChanged<dynamic> onPush;
-  Country({Key key, @required this.countryId, this.onPush}) : super(key: key);
+  Country({Key key, @required this.countryId, this.userId, this.onPush})
+      : super(key: key);
   @override
-  CountryState createState() =>
-      new CountryState(countryId: this.countryId, onPush: this.onPush);
+  CountryState createState() => new CountryState(
+      countryId: this.countryId, userId: this.userId, onPush: this.onPush);
 }
 
 class CountryState extends State<Country> {
-  bool _showTitle = false;
   static String id;
   final String countryId;
+  final String userId;
   final ValueChanged<dynamic> onPush;
   ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
@@ -113,7 +114,7 @@ class CountryState extends State<Country> {
       });
     });
     super.initState();
-    data = fetchCountry(this.countryId);
+    data = fetchCountry(this.countryId, this.userId);
   }
 
   @override
@@ -122,7 +123,7 @@ class CountryState extends State<Country> {
     super.dispose();
   }
 
-  CountryState({this.countryId, this.onPush});
+  CountryState({this.countryId, this.userId, this.onPush});
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +179,7 @@ class CountryState extends State<Country> {
                 return ErrorContainer(
                   onRetry: () {
                     setState(() {
-                      data = fetchCountry(this.countryId);
+                      data = fetchCountry(this.countryId, this.userId);
                     });
                   },
                 );
@@ -212,20 +213,6 @@ class CountryState extends State<Country> {
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
                         )
-                      // CachedNetworkImage(
-                      //     imageUrl: this.image,
-                      //     fit: BoxFit.cover,
-                      //     alignment: Alignment.center,
-                      //     placeholder: (context, url) => SizedBox(
-                      //         width: 50,
-                      //         height: 50,
-                      //         child: Align(
-                      //             alignment: Alignment.center,
-                      //             child: CircularProgressIndicator(
-                      //               valueColor:
-                      //                   new AlwaysStoppedAnimation<Color>(
-                      //                       Colors.blueAccent),
-                      //             ))))
                       : Container()),
               Positioned.fill(
                 top: 0,
@@ -266,20 +253,20 @@ class CountryState extends State<Country> {
     bool _showVisaBlankPages = false;
 
     var name = snapshot.data.country['name'];
-    var image = snapshot.data.country['image'];
     var visa = snapshot.data.visa;
+    var currency = snapshot.data.currency;
     var safety = snapshot.data.safety;
     var plugs = snapshot.data.plugs;
     var descriptionShort = snapshot.data.country['description_short'];
     var emergencyNumbers = snapshot.data.emergencyNumber;
-    var popularDestinations = snapshot.data.popularDestinations;
-    var color = Color(hexStringToHexInt(snapshot.data.color));
     _showVisa = visa != null;
     _showVisaTextual = _showVisa &&
         visa['visa']['textual'] != null &&
         visa['visa']['textual']['text'] != null;
     _showVisaAllowedStay = _showVisa && visa['visa']['allowed_stay'].length > 0;
-    _showVisaNotes = _showVisa && visa['visa']['notes'] != null;
+    _showVisaNotes = _showVisa &&
+        visa['visa']['notes'] != null &&
+        visa['visa']['notes'].length > 0;
     _showVisaPassportValid = _showVisa &&
         visa['passport'] != null &&
         visa['passport']['passport_validity'] != null;
@@ -340,7 +327,7 @@ class CountryState extends State<Country> {
                     margin:
                         EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
                     decoration: BoxDecoration(
-                      color: this.color,
+                      //color: this.color.withOpacity(.3),
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     child: Padding(
@@ -351,7 +338,7 @@ class CountryState extends State<Country> {
                               Text(
                                 'VISA SNAPSHOT',
                                 style: TextStyle(
-                                  color: fontContrast(this.color),
+                                  //color: fontContrast(this.color),
                                   fontWeight: FontWeight.w300,
                                   fontSize: 18.0,
                                 ),
@@ -415,7 +402,8 @@ class CountryState extends State<Country> {
                                     safety['rating'].toDouble())))),
                     _showVisa
                         ? VaccineList(
-                            vaccines: visa['vaccination'], color: this.color)
+                            vaccines: visa['vaccination'],
+                            color: this.color.withOpacity(.3))
                         : Container(),
                   ]),
             ),
@@ -437,7 +425,7 @@ class CountryState extends State<Country> {
                         margin: EdgeInsets.only(
                             left: 20.0, right: 20.0, top: 20.0, bottom: 40.0),
                         decoration: BoxDecoration(
-                          color: this.color,
+                          //color: this.color.withOpacity(.3),
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         child: Column(
@@ -486,10 +474,39 @@ class CountryState extends State<Country> {
                                   top: 0.0,
                                   bottom: 40.0),
                               decoration: BoxDecoration(
-                                color: this.color,
+                                //color: this.color.withOpacity(.3),
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
                               child: Wrap(children: _getPlugs(plugs, name))),
+                        ]),
+                    buildDivider(),
+                    Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Padding(
+                              padding: EdgeInsets.only(
+                                  left: 20.0,
+                                  right: 20.0,
+                                  top: 40.0,
+                                  bottom: 20.0),
+                              child: Text(
+                                'Currency rates',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20.0),
+                              )),
+                          Container(
+                              padding: EdgeInsets.all(20.0),
+                              margin: EdgeInsets.only(
+                                  left: 20.0,
+                                  right: 20.0,
+                                  top: 0.0,
+                                  bottom: 40.0),
+                              decoration: BoxDecoration(
+                                //color: this.color.withOpacity(.3),
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              child: _getCurrency(currency)),
                         ]),
 
                     /*TopList(
@@ -506,6 +523,40 @@ class CountryState extends State<Country> {
         ));
   }
 
+  _getCurrency(dynamic currency) {
+    return ListView(
+      primary: false,
+      shrinkWrap: true,
+      children: <Widget>[
+        ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 0),
+            title: Text('Currency in ${currency['converted_unit']['name']}',
+                style: TextStyle(
+                    //color: fontContrast(this.color),
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w400)),
+            trailing: Text(currency['converted_unit']['currencyName'],
+                style: TextStyle(
+                    //color: fontContrast(this.color),
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w300))),
+        ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 0),
+            title: Text('1 ${currency['unit']['currencyName']}',
+                style: TextStyle(
+                    // color: fontContrast(this.color),
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w400)),
+            trailing: Text(
+                '${currency['converted_unit']['currencySymbol']}${currency['converted_currency']}',
+                style: TextStyle(
+                    //color: fontContrast(this.color),
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w300))),
+      ],
+    );
+  }
+
   _getPlugs(List<dynamic> plugsData, String name) {
     var plugs = <Widget>[
       Container(
@@ -515,7 +566,7 @@ class CountryState extends State<Country> {
             '$name uses a frequency of ${plugsData[0]['frequency']} and voltage of ${plugsData[0]['voltage']} in sockets.  Below are the types of plugs you need when traveling to $name.',
             style: TextStyle(
               fontSize: 20.0,
-              color: fontContrast(this.color),
+              //color: fontContrast(this.color),
               fontWeight: FontWeight.w400,
             ),
           ))
@@ -526,13 +577,13 @@ class CountryState extends State<Country> {
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Image.asset('images/${plug['type']}.png',
-                    width: 100.0,
-                    height: 100.0,
-                    color: fontContrast(this.color)),
-                Text('Type ${plug['type']}',
-                    style: TextStyle(
-                        fontSize: 20.0, color: fontContrast(this.color)))
+                Image.asset(
+                  'images/${plug['type']}.png',
+                  width: 100.0,
+                  height: 100.0,
+                  //color: fontContrast(this.color)),
+                ),
+                Text('Type ${plug['type']}', style: TextStyle(fontSize: 20.0))
               ])));
     }
     return plugs;
@@ -547,12 +598,12 @@ class CountryState extends State<Country> {
           children: <Widget>[
             Text(label,
                 style: TextStyle(
-                    color: fontContrast(this.color),
+                    //color: fontContrast(this.color),
                     fontWeight: FontWeight.w500,
                     fontSize: 20.0)),
             Text(numbers,
                 style: TextStyle(
-                    color: fontContrast(this.color),
+                    //color: fontContrast(this.color),
                     fontSize: 20.0,
                     fontWeight: FontWeight.w300))
           ],
@@ -568,7 +619,7 @@ class CountryState extends State<Country> {
             children: <Widget>[
               Text(label,
                   style: TextStyle(
-                      color: fontContrast(this.color),
+                      //color: fontContrast(this.color),
                       fontWeight: FontWeight.w700,
                       fontSize: 18.0)),
               Padding(
@@ -576,7 +627,7 @@ class CountryState extends State<Country> {
                   child: Text(
                     obj[key].join(' ').trim(),
                     style: TextStyle(
-                        color: fontContrast(this.color),
+                        //color: fontContrast(this.color),
                         fontSize: 18.0,
                         fontWeight: FontWeight.w300),
                   ))
@@ -592,7 +643,7 @@ class CountryState extends State<Country> {
             children: <Widget>[
               Text(label,
                   style: TextStyle(
-                    color: fontContrast(this.color),
+                    //color: fontContrast(this.color),
                     fontWeight: FontWeight.w600,
                     fontSize: 18.0,
                   )),
@@ -601,7 +652,7 @@ class CountryState extends State<Country> {
                   child: Text(
                     '$value $objValue'.trim(),
                     style: TextStyle(
-                        color: fontContrast(this.color),
+                        //color: fontContrast(this.color),
                         fontSize: 20.0,
                         fontWeight: FontWeight.w300),
                   ))

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:simple_moment/simple_moment.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -173,9 +172,9 @@ class NotificationsState extends State<Notifications> {
                 ? new ListTile(
                     leading: new Icon(EvilIcons.plus),
                     title: new Text('Add to Trip'),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.pop(context);
-                      showTripsBottomSheet(context, null, data);
+                      showTripsBottomSheet(context, null, data, notificationId);
                     })
                 : null,
           ]);

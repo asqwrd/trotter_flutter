@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/screens/home/index.dart';
 import 'package:trotter_flutter/screens/country/index.dart';
@@ -9,6 +10,7 @@ import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/screens/notifications/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
 import 'package:trotter_flutter/screens/profile/index.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
 class TabNavigatorRoutes {
@@ -139,9 +141,11 @@ class TabNavigator extends StatelessWidget {
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context,
       {Map<String, dynamic> data}) {
+    final store = Provider.of<TrotterStore>(context);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
             countryId: data['id'],
+            userId: store.currentUser.uid,
             onPush: (data) => push(context, data),
           ),
       TabNavigatorRoutes.city: (context) => Destination(

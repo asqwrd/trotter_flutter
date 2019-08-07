@@ -45,7 +45,6 @@ dependencies:
   flutter_vector_icons: ^0.1.0
   transparent_image: ^0.1.0
   cached_network_image: ^1.0.0
-  simple_moment: ^1.0.2
   firebase_auth: ^0.11.1+7
   google_sign_in: ^4.0.2
   timezone: ^0.5.4
@@ -56,6 +55,8 @@ dependencies:
   location: ^2.3.5
   loadmore: ^1.0.3
   awesome_loader: ^0.0.3
+  country_code_picker: ^1.1.7
+
 
 
 
@@ -88,8 +89,10 @@ flutter:
   - images/trips-empty.jpg
   - images/notification-empty.jpg
   - images/error-icon.jpg
+  - images/email-icon.jpg
   - images/trips2.jpg
   - images/trips-login.png
+  - images/trips-login.jpg
   - images/server-error-icon.png
   - images/header.svg
   - images/google-logo.svg

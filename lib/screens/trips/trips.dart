@@ -239,8 +239,26 @@ class TripsState extends State<Trips> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Image.asset('images/trips-login.png',
-                            width: 170, height: 170, fit: BoxFit.contain),
+                        Container(
+                            width: 270,
+                            height: 270,
+                            foregroundDecoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(.3),
+                                    Colors.white.withOpacity(1),
+                                    Colors.white.withOpacity(1),
+                                  ],
+                                  center: Alignment.center,
+                                  focal: Alignment.center,
+                                  radius: 1.05,
+                                ),
+                                borderRadius: BorderRadius.circular(130)),
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage('images/trips-login.jpg'),
+                                    fit: BoxFit.contain),
+                                borderRadius: BorderRadius.circular(130))),
                         Text(
                           'Want to create a trip?',
                           textAlign: TextAlign.center,
@@ -416,6 +434,8 @@ class TripsState extends State<Trips> {
               var color = Color(hexStringToHexInt(tripBuilder[index]['color']));
               //var maincolor = Color.fromRGBO(1, 155, 174, 1);
               var onPressed2 = () async {
+                final details = await fetchFlightsAccomodations(
+                    tripBuilder[index]['id'], store.currentUser.uid);
                 var undoData = {
                   "trip": {
                     "image": tripBuilder[index]['image'],
@@ -449,8 +469,24 @@ class TripsState extends State<Trips> {
                       textColor: color,
                       onPressed: () async {
                         store.setTripsRefreshing(true);
-                        var response =
+
+                        var undoResponse =
                             await undoDeleteTrip(store, undoData, index - 2);
+
+                        for (var detail in details.flightsAccomodations) {
+                          for (var item in detail['details']) {
+                            final destination = undoResponse
+                                .trip['destinations']
+                                .firstWhere((item) {
+                              return item['destination_id'] ==
+                                  detail['destination']['destination_id'];
+                            });
+                            postAddFlightsAndAccomodations(
+                                undoResponse.trip['id'],
+                                destination['id'],
+                                item);
+                          }
+                        }
                         store.setTripsRefreshing(false);
                         if (response.success == true) {
                           Scaffold.of(this.context).removeCurrentSnackBar();
@@ -565,45 +601,46 @@ class TripsState extends State<Trips> {
                                           )),
                                     ]),
                               ),
-                              tripBuilder[index]['owner_id'] == currentUser.uid
-                                  ? Positioned(
-                                      top: 20,
-                                      right: 20,
-                                      child: GestureDetector(
-                                        onTap: onPressed2,
-                                        child: Container(
-                                            padding: EdgeInsets.all(5),
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(15),
-                                                color: Colors.transparent),
-                                            child: Icon(
-                                              EvilIcons.close,
-                                              color: fontContrast(color),
-                                              size: 30,
-                                            )),
-                                      ))
-                                  : Container(),
                               Positioned(
-                                  top: 70,
+                                  top: 20,
                                   right: 20,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Share.share(
-                                          'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}');
-                                    },
-                                    child: Container(
-                                        padding: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(15),
-                                            color: Colors.transparent),
-                                        child: Icon(
-                                          EvilIcons.share_google,
-                                          color: fontContrast(color),
-                                          size: 35,
-                                        )),
-                                  )),
+                                  child: Column(children: <Widget>[
+                                    tripBuilder[index]['owner_id'] ==
+                                            currentUser.uid
+                                        ? GestureDetector(
+                                            onTap: onPressed2,
+                                            child: Container(
+                                                padding: EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                    color: Colors.transparent),
+                                                child: Icon(
+                                                  EvilIcons.close,
+                                                  color: fontContrast(color),
+                                                  size: 30,
+                                                )),
+                                          )
+                                        : Container(),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Share.share(
+                                            'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}');
+                                      },
+                                      child: Container(
+                                          padding: EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                              color: Colors.transparent),
+                                          child: Icon(
+                                            EvilIcons.share_google,
+                                            color: fontContrast(color),
+                                            size: 35,
+                                          )),
+                                    )
+                                  ])),
                               Positioned(
                                   left: 10,
                                   bottom: 15,

@@ -4,22 +4,24 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 
 void showTripsBottomSheet(context,
-    [dynamic destination, dynamic notification]) {
+    [dynamic destination, dynamic notification, String notificationId]) {
   final store = Provider.of<TrotterStore>(context);
   showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
-        return _buildLoadedList(context, store, destination, notification);
+        return _buildLoadedList(
+            context, store, destination, notification, notificationId);
       });
 }
 
 _buildLoadedList(BuildContext context, TrotterStore store,
-    [dynamic destination, dynamic notification]) {
+    [dynamic destination, dynamic notification, String notificationId]) {
   var trips = store.tripStore.trips;
   var loading = store.tripStore.tripLoading;
   return IgnorePointer(
@@ -101,8 +103,12 @@ _buildLoadedList(BuildContext context, TrotterStore store,
                             scrollDirection: Axis.horizontal,
                             child: Container(
                                 margin: EdgeInsets.only(left: 20.0),
-                                child: _buildRow(_buildItems(context, trips,
-                                    destination, notification)))),
+                                child: _buildRow(_buildItems(
+                                    context,
+                                    trips,
+                                    destination,
+                                    notification,
+                                    notificationId)))),
                         loading
                             ? Center(child: RefreshProgressIndicator())
                             : Container()
@@ -128,10 +134,11 @@ _buildLoadingList() {
 }
 
 _buildItems(BuildContext context, List<dynamic> items,
-    [dynamic destination, dynamic notification]) {
+    [dynamic destination, dynamic notification, String notificationId]) {
   var widgets = List<Widget>();
   for (var item in items) {
-    widgets.add(_buildBody(context, item, destination, notification));
+    widgets.add(
+        _buildBody(context, item, destination, notification, notificationId));
   }
   return widgets;
 }
@@ -146,7 +153,7 @@ _buildRow(List<Widget> widgets) {
 }
 
 Widget _buildBody(BuildContext context, dynamic item,
-    [dynamic destination, dynamic notification]) {
+    [dynamic destination, dynamic notification, String notificationId]) {
   return new InkWell(
       onTap: () async {
         final store = Provider.of<TrotterStore>(context);
@@ -200,6 +207,7 @@ Widget _buildBody(BuildContext context, dynamic item,
                         item['id'], destination['id'], data);
                     Navigator.pop(context);
                     if (response.success == true) {
+                      await markNotificationRead(notificationId, store);
                       Scaffold.of(context).showSnackBar(SnackBar(
                           content: Text('Details successfully added to trip',
                               style: TextStyle(fontSize: 18)),

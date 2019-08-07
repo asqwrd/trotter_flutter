@@ -165,7 +165,8 @@ Future<CreateTripData> postCreateTrip(TrotterStore store, dynamic data,
   }
 }
 
-undoDeleteTrip(TrotterStore store, dynamic data, int index) async {
+Future<CreateTripData> undoDeleteTrip(
+    TrotterStore store, dynamic data, int index) async {
   var results = await postCreateTrip(store, data, index, true);
   return results;
 }
@@ -184,12 +185,14 @@ class CreateTripResponseData {
 
 class CreateTripData {
   final Map<String, dynamic> trip;
+  final List<dynamic> destinations;
   final bool success;
 
-  CreateTripData({this.trip, this.success});
+  CreateTripData({this.trip, this.destinations, this.success});
 
   factory CreateTripData.fromJson(Map<String, dynamic> json) {
-    return CreateTripData(trip: json['trip'], success: true);
+    return CreateTripData(
+        trip: json['trip'], destinations: json['destinations'], success: true);
   }
 }
 
@@ -431,7 +434,7 @@ class AddFlightsAndAccomodationsData {
 }
 
 class FlightsAndAccomodationsData {
-  final dynamic flightsAccomodations;
+  final List<dynamic> flightsAccomodations;
   final String error;
 
   FlightsAndAccomodationsData({this.flightsAccomodations, this.error});

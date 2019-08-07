@@ -7,8 +7,9 @@ import 'package:trotter_flutter/store/middleware.dart';
 import 'trips/store.dart';
 
 class TrotterStore extends Store {
-  FirebaseUser _currentUser;
-  get currentUser => _currentUser;
+  TrotterUser _currentUser;
+  bool profileLoading = false;
+  TrotterUser get currentUser => _currentUser;
 
   TripsStore tripStore = TripsStore();
 
@@ -22,6 +23,18 @@ class TrotterStore extends Store {
   get notifications => _notifications;
 
   bool offline = false;
+
+  updateUserNotification(bool value) {
+    setState(() {
+      _currentUser.notificationOn = value;
+    });
+  }
+
+  updateUserCountry(String value) {
+    setState(() {
+      _currentUser.country = value;
+    });
+  }
 
   setOffline(bool value) {
     setState(() {
@@ -66,10 +79,14 @@ class TrotterStore extends Store {
   }
 
   login() async {
+    setState(() {
+      profileLoading = true;
+    });
     try {
       var user = await googleLogin();
       setState(() {
         _currentUser = user;
+        profileLoading = false;
       });
     } catch (err) {}
   }
@@ -77,6 +94,9 @@ class TrotterStore extends Store {
   logout() async {
     final FirebaseAuth _auth = FirebaseAuth.instance;
     final GoogleSignIn _googleSignIn = new GoogleSignIn();
+    setState(() {
+      profileLoading = true;
+    });
     try {
       await _auth.signOut();
       await _googleSignIn.signOut();
@@ -84,6 +104,9 @@ class TrotterStore extends Store {
       setState(() {
         _currentUser = null;
         _notifications = NotificationsData(notifications: [], success: true);
+        tripStore = TripsStore();
+        itineraryStore = ItineraryStore();
+        profileLoading = false;
       });
     } catch (error) {
       print('store.dart error');
@@ -92,12 +115,15 @@ class TrotterStore extends Store {
   }
 
   checkLoginStatus() async {
-    FirebaseUser user;
+    FirebaseUser userFirebase;
+    TrotterUser user;
     final FirebaseAuth _auth = FirebaseAuth.instance;
 
     // Actions are classes, so you can Typecheck them
     try {
-      user = await _auth.currentUser();
+      userFirebase = await _auth.currentUser();
+      final userTrotter = await getUser(userFirebase.uid);
+      user = userTrotter.user;
 
       print('Logged in ' + user.displayName);
 

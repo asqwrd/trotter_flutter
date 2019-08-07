@@ -81,13 +81,13 @@ class VaccineList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Image.asset(icon,
-                      color: fontContrast(this.color),
+                      //color: fontContrast(this.color),
                       width: 45.0,
                       height: 45.0,
                       fit: BoxFit.contain),
                   Text(label,
                       style: TextStyle(
-                          color: fontContrast(this.color),
+                          //color: fontContrast(this.color),
                           fontSize: 18.0,
                           fontWeight: FontWeight.w600)),
                   Padding(
@@ -107,7 +107,7 @@ class VaccineList extends StatelessWidget {
       vaccineWidgets.add(Text(
           '${vaccine['type'][0]}${vaccine['type'].toLowerCase().replaceAll(new RegExp(r'_'), ' ').substring(1)}',
           style: TextStyle(
-              color: fontContrast(this.color),
+              //color: fontContrast(this.color),
               fontSize: 18.0,
               fontWeight: FontWeight.w300)));
     }

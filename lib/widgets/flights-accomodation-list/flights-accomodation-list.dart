@@ -413,13 +413,28 @@ class FlightsAccomodationsList extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  SvgPicture.asset('images/forward.svg',
-                      color: Colors.blueGrey,
-                      width: 170,
-                      height: 170,
-                      fit: BoxFit.contain),
+                  Container(
+                      width: 270,
+                      height: 270,
+                      foregroundDecoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withOpacity(.3),
+                              Colors.white.withOpacity(1),
+                              Colors.white.withOpacity(1),
+                            ],
+                            center: Alignment.center,
+                            focal: Alignment.center,
+                            radius: 1.05,
+                          ),
+                          borderRadius: BorderRadius.circular(130)),
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage('images/email-icon.jpg'),
+                              fit: BoxFit.contain),
+                          borderRadius: BorderRadius.circular(130))),
                   Text(
-                    'No details available for ${destination["destination_name"]}',
+                    'Your missing details for ${destination["destination_name"]}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 35,
@@ -428,7 +443,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'Forward confirmation emails for flights and hotels to trips@ajibade.me',
+                    'Forward your travel confirmation emails to trips@ajibade.me',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 25,

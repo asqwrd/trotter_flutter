@@ -197,7 +197,7 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
       results.currentPosition = results.usedCurrentPoistion == true
           ? {
               "location": {'lat': position.latitude, 'lng': position.longitude},
-              "name": "near me"
+              "name": "you"
             }
           : null;
       print(results.usedCurrentPoistion);

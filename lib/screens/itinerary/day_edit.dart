@@ -288,7 +288,7 @@ class DayEditState extends State<DayEdit> {
                       child: SvgPicture.asset("images/add-location-bold.svg",
                           width: 35,
                           height: 35,
-                          //color: fontContrast(color),
+                          color: fontContrast(color),
                           fit: BoxFit.cover),
                     ))
               ],
@@ -311,7 +311,9 @@ class DayEditState extends State<DayEdit> {
             : ClampingScrollPhysics(),
         items: itineraryItems,
         color: color,
-        startLocation: this.startLocation,
+        startLocation: this.currentPosition != null
+            ? this.currentPosition
+            : this.startLocation,
         onLongPressed: (data) {
           // print(data);
           bottomSheetModal(context, day['day'] + 1, data);

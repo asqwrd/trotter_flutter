@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart' as prefix0;
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
@@ -14,20 +13,27 @@ import 'package:trotter_flutter/widgets/day-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
 
 class DayEdit extends StatefulWidget {
   final String dayId;
   final String itineraryId;
+  final dynamic startLocation;
   final ValueChanged<dynamic> onPush;
-  DayEdit({Key key, @required this.dayId, this.itineraryId, this.onPush})
+  DayEdit(
+      {Key key,
+      @required this.dayId,
+      this.startLocation,
+      this.itineraryId,
+      this.onPush})
       : super(key: key);
   @override
   DayEditState createState() => new DayEditState(
-      dayId: this.dayId, itineraryId: this.itineraryId, onPush: this.onPush);
+      dayId: this.dayId,
+      itineraryId: this.itineraryId,
+      startLocation: this.startLocation,
+      onPush: this.onPush);
 }
 
 class DayEditState extends State<DayEdit> {
@@ -48,6 +54,7 @@ class DayEditState extends State<DayEdit> {
   bool loading = true;
   String image;
   String itineraryName;
+  dynamic currentPosition;
 
   Future<DayData> data;
 
@@ -61,7 +68,7 @@ class DayEditState extends State<DayEdit> {
       });
     });
     super.initState();
-    data = fetchDay(this.itineraryId, this.dayId);
+    data = fetchDay(this.itineraryId, this.dayId, this.startLocation);
     data.then((data) {
       if (data.error == null) {
         setState(() {
@@ -73,6 +80,7 @@ class DayEditState extends State<DayEdit> {
           this.destinationId = data.destination['id'].toString();
           this.itineraryItems = data.day['itinerary_items'].sublist(1);
           this.startLocation = data.itinerary['start_location'];
+          this.currentPosition = data.currentPosition;
           this.image = data.destination['image'];
           this.loading = false;
           print(this.destinationName);
@@ -91,7 +99,7 @@ class DayEditState extends State<DayEdit> {
     super.dispose();
   }
 
-  DayEditState({this.dayId, this.itineraryId, this.onPush});
+  DayEditState({this.dayId, this.itineraryId, this.startLocation, this.onPush});
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +254,9 @@ class DayEditState extends State<DayEdit> {
                                     query: '',
                                     destinationName: this.destinationName,
                                     location: this.location,
-                                    near: this.startLocation,
+                                    near: this.currentPosition != null
+                                        ? this.currentPosition
+                                        : this.startLocation,
                                     id: this.destinationId)));
                         if (suggestion != null) {
                           var data = {

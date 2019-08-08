@@ -251,6 +251,9 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     }
 
     var itinerary = store.itineraryStore.itineraryBuilder.itinerary;
+    var startLocation = itinerary['start_location'] != null
+        ? itinerary['start_location']['location']
+        : itinerary['location'];
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
@@ -260,11 +263,16 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     return Container(
         height: MediaQuery.of(context).size.height,
         child: _buildDay(days, destinationName, destinationCountryName,
-            itinerary['destination'], color));
+            itinerary['destination'], color, startLocation));
   }
 
-  _buildDay(List<dynamic> days, String destinationName,
-      String destinationCountryName, String locationId, Color color) {
+  _buildDay(
+      List<dynamic> days,
+      String destinationName,
+      String destinationCountryName,
+      String locationId,
+      Color color,
+      dynamic startLocation) {
     var dayBuilder = ['', '', ...days];
     return ListView.separated(
       controller: _sc,
@@ -308,6 +316,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
             onTap: () => onPush({
                   'itineraryId': this.itineraryId,
                   'dayId': dayId,
+                  "startLocation": startLocation,
                   'level': 'itinerary/day/edit'
                 }),
             child: Column(children: <Widget>[
@@ -340,6 +349,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           onPush({
                             'itineraryId': this.itineraryId,
                             'dayId': dayId,
+                            "startLocation": startLocation,
                             'level': 'itinerary/day/edit'
                           });
                         },
@@ -363,6 +373,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                             onPush({
                               'itineraryId': this.itineraryId,
                               'dayId': dayId,
+                              "startLocation": startLocation,
                               'level': 'itinerary/day/edit'
                             });
                           },

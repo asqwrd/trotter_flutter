@@ -180,6 +180,7 @@ class TabNavigator extends StatelessWidget {
       TabNavigatorRoutes.day_edit: (context) => DayEdit(
           itineraryId: data['itineraryId'],
           dayId: data['dayId'],
+          startLocation: data['startLocation'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.day: (context) => Day(
           itineraryId: data['itineraryId'],

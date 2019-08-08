@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:geolocator/geolocator.dart';
 import 'package:trotter_flutter/store/store.dart';
 
 Future<CreateItineraryData> postCreateItinerary(
@@ -168,14 +168,40 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
   }
 }
 
-Future<DayData> fetchDay(String itineraryId, String dayId) async {
+Future<DayData> fetchDay(String itineraryId, String dayId,
+    [dynamic startLocation]) async {
+  var location = '';
+  double distanceInMeters = -1;
+  Position position;
+  if (startLocation != null) {
+    position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    distanceInMeters = await Geolocator().distanceBetween(position.latitude,
+        position.longitude, startLocation['lat'], startLocation['lng']);
+
+    location = '${position.latitude},${position.longitude}';
+    if (distanceInMeters > 50000) {
+      location = '${startLocation['lat']},${startLocation['lng']}';
+    }
+  }
+
   try {
     final response = await http.get(
-        'http://localhost:3002/api/itineraries/get/$itineraryId/day/$dayId',
+        'http://localhost:3002/api/itineraries/get/$itineraryId/day/$dayId?latlng=$location',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
-      return DayData.fromJson(json.decode(response.body));
+      var results = DayData.fromJson(json.decode(response.body));
+      results.usedCurrentPoistion =
+          distanceInMeters >= 0 && distanceInMeters <= 50000;
+      results.currentPosition = results.usedCurrentPoistion == true
+          ? {
+              "location": {'lat': position.latitude, 'lng': position.longitude},
+              "name": "near me"
+            }
+          : null;
+      print(results.usedCurrentPoistion);
+      return results;
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
@@ -321,6 +347,8 @@ class DayData {
   final String color;
   final String justAdded;
   final bool success;
+  bool usedCurrentPoistion;
+  dynamic currentPosition;
   final String error;
 
   DayData(
@@ -330,6 +358,8 @@ class DayData {
       this.destination,
       this.justAdded,
       this.success,
+      this.usedCurrentPoistion,
+      this.currentPosition,
       this.error});
 
   factory DayData.fromJson(Map<String, dynamic> json) {
@@ -340,6 +370,8 @@ class DayData {
         destination: json['itinerary']['destination'],
         itinerary: json['itinerary']['itinerary'],
         success: true,
+        usedCurrentPoistion: false,
+        currentPosition: null,
         error: null);
   }
 }

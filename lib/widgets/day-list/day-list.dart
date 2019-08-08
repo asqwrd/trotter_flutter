@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class DayList extends StatelessWidget {
   final String2VoidFunc onPressed;
@@ -335,26 +334,6 @@ class DayList extends StatelessWidget {
                                                             Icons.refresh),
                                                         enableRefresh: true,
                                                       )
-                                                    //   CachedNetworkImage(
-                                                    //     placeholder: (context, url) => SizedBox(
-                                                    //       width: 50,
-                                                    //       height:50,
-                                                    //       child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
-                                                    //         valueColor: new AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-                                                    //       )
-                                                    //     )),
-                                                    //   fit: BoxFit.cover,
-                                                    //   imageUrl: item['image'],
-                                                    //   errorWidget: (context,url, error) =>  Container(
-                                                    //     decoration: BoxDecoration(
-                                                    //       image: DecorationImage(
-                                                    //         image:AssetImage('images/placeholder.jpg'),
-                                                    //         fit: BoxFit.cover
-                                                    //       ),
-
-                                                    //     )
-                                                    //   )
-                                                    // )
                                                     : Container(
                                                         decoration:
                                                             BoxDecoration(

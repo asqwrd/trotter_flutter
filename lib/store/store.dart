@@ -5,6 +5,7 @@ import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/itineraries/store.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'trips/store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TrotterStore extends Store {
   TrotterUser _currentUser;
@@ -100,6 +101,8 @@ class TrotterStore extends Store {
     try {
       await _auth.signOut();
       await _googleSignIn.signOut();
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
       print('logged out!');
       setState(() {
         _currentUser = null;

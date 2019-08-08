@@ -21,8 +21,6 @@ import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'add-destination-modal.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:share/share.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
 
@@ -139,6 +137,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
               if (value == null) {
                 return 'Please select an arrival date';
               }
+              return null;
             },
           )
         ),
@@ -204,6 +203,7 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
               } else if(departure < arrival){
                 return "Please choose a later departure date";
               }
+              return null;
             },
           )
         ),
@@ -1015,17 +1015,7 @@ class TripState extends State<Trip> {
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
                         ),
-                            // CachedNetworkImage(
-                            //   placeholder: (context, url) => SizedBox(
-                            //     width: 50, 
-                            //     height:50, 
-                            //     child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
-                            //       valueColor: new AlwaysStoppedAnimation<Color>(color),
-                            //     )
-                            //   )),
-                            //   imageUrl: this.destinations[index]['image'],
-                            //   fit: BoxFit.cover,
-                            // ),
+
                             Container(
                               color:Colors.black.withOpacity(0.5)
                             ),
@@ -1140,6 +1130,8 @@ class TripState extends State<Trip> {
                     Animation<double> animation,
                     Animation<double> secondaryAnimation) {
                   return TravelersModal(
+                    currentUserId: store.currentUser.uid,
+                      ownerId: this.trip['owner_id'],
                       tripId: this.tripId, travelers: this.travelers);
                 },
                 transitionBuilder: (BuildContext context,
@@ -1256,7 +1248,7 @@ class TripState extends State<Trip> {
                 } else if(destination != null && !destination['itinerary_id'].isEmpty){
                   onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
                 } else if(fields[index]['level'] == 'travelinfo'){
-                  onPush({'tripId':this.tripId, 'currentUserId': store.currentUser.uid,"level": "travelinfo"});
+                  onPush({'tripId':this.tripId, 'currentUserId': store.currentUser.uid,"level": "travelinfo","ownerId": this.trip['owner_id']});
                 }
               },
               trailing: fields[index]['icon'],

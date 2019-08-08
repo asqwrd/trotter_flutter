@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -45,18 +44,31 @@ class TravelersModal extends StatefulWidget {
   final String tripId;
   final ValueChanged<dynamic> onAdd;
   final List<dynamic> travelers;
-  TravelersModal({Key key, @required this.tripId, this.onAdd, this.travelers})
+  final String ownerId;
+  final String currentUserId;
+
+  TravelersModal(
+      {Key key,
+      @required this.tripId,
+      @required this.ownerId,
+      @required this.currentUserId,
+      this.onAdd,
+      this.travelers})
       : super(key: key);
   @override
   TravelersModalState createState() => new TravelersModalState(
         tripId: this.tripId,
         travelers: this.travelers,
+        ownerId: this.ownerId,
+        currentUserId: this.currentUserId,
         onAdd: this.onAdd,
       );
 }
 
 class TravelersModalState extends State<TravelersModal> {
   String tripId;
+  final String ownerId;
+  final String currentUserId;
   List<dynamic> travelers;
   final ValueChanged<dynamic> onAdd;
   GoogleMapController mapController;
@@ -76,16 +88,16 @@ class TravelersModalState extends State<TravelersModal> {
             traveler['photoUrl'],
             useDiskCache: true,
             cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-          )
-
-              //     CachedNetworkImageProvider(
-              //   traveler['photoUrl'],
-              // )
-              ),
+          )),
           label: Text("${traveler['displayName']}"),
-          deleteIcon: Icon(Icons.close),
+          deleteIcon: this.ownerId == this.currentUserId ||
+                  this.currentUserId == traveler['uid']
+              ? Icon(Icons.close)
+              : Container(),
           onDeleted: () {
-            this._deleteChip(traveler['uid']);
+            if (this.ownerId == this.currentUserId ||
+                this.currentUserId == traveler['uid'])
+              this._deleteChip(traveler['uid']);
           }));
     }
     data = fetchTravelersModal(
@@ -93,7 +105,12 @@ class TravelersModalState extends State<TravelersModal> {
     );
   }
 
-  TravelersModalState({this.tripId, this.onAdd, this.travelers});
+  TravelersModalState(
+      {this.tripId,
+      this.onAdd,
+      this.currentUserId,
+      this.ownerId,
+      this.travelers});
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +133,7 @@ class TravelersModalState extends State<TravelersModal> {
                     return Text('No Connection');
                   }
               }
+              return _buildLoadedBody(context, snapshot, true, '');
             }));
   }
 
@@ -181,9 +199,7 @@ class TravelersModalState extends State<TravelersModal> {
         body: isLoading
             ? _buildLoadingBody()
             : ListView.builder(
-                //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
                 itemCount: results.length,
-                //shrinkWrap: true,
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                     selected:
@@ -196,7 +212,7 @@ class TravelersModalState extends State<TravelersModal> {
                           this.selectedUsersUid.add(results[index]['uid']);
                           this.selectedUsers.add(Chip(
                               avatar: CircleAvatar(
-                                  backgroundImage: CachedNetworkImageProvider(
+                                  backgroundImage: NetworkImage(
                                 results[index]['photoUrl'],
                               )),
                               label: Text("${results[index]['displayName']}"),
@@ -233,22 +249,7 @@ class TravelersModalState extends State<TravelersModal> {
                             alignment: Alignment.center,
                             placeholder: const Icon(Icons.refresh),
                             enableRefresh: true,
-                          )
-                          // CachedNetworkImage(
-                          //   placeholder: (context, url) => SizedBox(
-                          //       width: 50,
-                          //       height: 50,
-                          //       child: Align(
-                          //           alignment: Alignment.center,
-                          //           child: CircularProgressIndicator(
-                          //             valueColor:
-                          //                 new AlwaysStoppedAnimation<Color>(
-                          //                     Colors.blueAccent),
-                          //           ))),
-                          //   fit: BoxFit.cover,
-                          //   imageUrl: results[index]['photoUrl'],
-                          // )
-                          ),
+                          )),
                     ),
                     title: Text(
                       results[index]['displayName'],

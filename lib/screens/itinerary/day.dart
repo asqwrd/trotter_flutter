@@ -8,7 +8,6 @@ import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 
 class Day extends StatefulWidget {
@@ -23,7 +22,6 @@ class Day extends StatefulWidget {
 }
 
 class DayState extends State<Day> {
-  bool _showTitle = false;
   final String dayId;
   final String itineraryId;
   final ValueChanged<dynamic> onPush;
@@ -176,20 +174,6 @@ class DayState extends State<Day> {
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
                         )
-                      // CachedNetworkImage(
-                      //     imageUrl: this.image,
-                      //     fit: BoxFit.cover,
-                      //     alignment: Alignment.center,
-                      //     placeholder: (context, url) => SizedBox(
-                      //         width: 50,
-                      //         height: 50,
-                      //         child: Align(
-                      //             alignment: Alignment.center,
-                      //             child: CircularProgressIndicator(
-                      //               valueColor:
-                      //                   new AlwaysStoppedAnimation<Color>(
-                      //                       Colors.blueAccent),
-                      //             ))))
                       : Container()),
               Positioned.fill(
                 top: 0,

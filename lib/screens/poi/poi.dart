@@ -13,13 +13,16 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 Future<PoiData> fetchPoi(String id,
     [bool googlePlace, String locationId]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('poi_$id') ?? null;
-  if (cacheData != null) {
+  final int cacheDataExpire = prefs.getInt('poi_$id-expiration') ?? null;
+  final currentTime = DateTime.now().millisecondsSinceEpoch;
+  if (cacheData != null &&
+      cacheDataExpire != null &&
+      (currentTime < cacheDataExpire)) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
     return PoiData.fromJson(json.decode(cacheData));
@@ -32,6 +35,8 @@ Future<PoiData> fetchPoi(String id,
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('poi_$id', response.body);
+        await prefs.setInt('poi_$id-expiration',
+            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         return PoiData.fromJson(json.decode(response.body));
       } else {
         // If that response was not OK, throw an error.
@@ -77,7 +82,6 @@ class Poi extends StatefulWidget {
 }
 
 class PoiState extends State<Poi> {
-  bool _showTitle = false;
   static String id;
   final String poiId;
   final bool googlePlace;
@@ -206,22 +210,7 @@ class PoiState extends State<Poi> {
                           alignment: Alignment.center,
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
-                        )
-                  // CachedNetworkImage(
-                  //     imageUrl: this.image,
-                  //     fit: BoxFit.cover,
-                  //     alignment: Alignment.center,
-                  //     placeholder: (context, url) => SizedBox(
-                  //         width: 50,
-                  //         height: 50,
-                  //         child: Align(
-                  //             alignment: Alignment.center,
-                  //             child: CircularProgressIndicator(
-                  //               valueColor:
-                  //                   new AlwaysStoppedAnimation<Color>(
-                  //                       Colors.blueAccent),
-                  //             ))))
-                  ),
+                        )),
               this.image == null
                   ? Positioned(
                       child: Center(
@@ -241,29 +230,10 @@ class PoiState extends State<Poi> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var name = snapshot.data.poi['name'];
     var poi = snapshot.data.poi;
     var properties = poi['properties'];
-    var images = snapshot.data.poi['images'];
     var descriptionShort = snapshot.data.poi['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
-
-    // void _onMapCreated(GoogleMapController controller) {
-    //   setState(() {
-    //     mapController = controller;
-    //     mapController.addMarker(MarkerOptions(
-    //       position: LatLng(poi['location']['lat'], poi['location']['lng']),
-    //     ));
-    //     /*mapController.animateCamera(CameraUpdate.newCameraPosition(
-    //       CameraPosition(
-    //         bearing: 270.0,
-    //         target: LatLng(poi['location']['lat'], poi['location']['lng']),
-    //         tilt: 30.0,
-    //         zoom: 17.0,
-    //       ),
-    //     ));*/
-    //   });
-    // }
 
     return Container(
         height: MediaQuery.of(ctxt).size.height,
@@ -324,21 +294,6 @@ class PoiState extends State<Poi> {
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
                         )
-                        // CachedNetworkImage(
-                        //   placeholder: (context, url) => SizedBox(
-                        //       width: 50,
-                        //       height: 50,
-                        //       child: Align(
-                        //           alignment: Alignment.center,
-                        //           child: CircularProgressIndicator(
-                        //             valueColor:
-                        //                 new AlwaysStoppedAnimation<Color>(
-                        //                     color),
-                        //           ))),
-                        //   imageUrl: this.images[index]['sizes']['original']
-                        //       ['url'],
-                        //   fit: BoxFit.cover,
-                        // )
                       ]);
                     },
                     loop: true,

@@ -20,7 +20,12 @@ Future<DestinationData> fetchDestination(
     String id, String destinationType) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('destination_$id') ?? null;
-  if (cacheData != null) {
+  final int cacheDataExpire =
+      prefs.getInt('destination_$id-expiration') ?? null;
+  final currentTime = DateTime.now().millisecondsSinceEpoch;
+  if (cacheData != null &&
+      cacheDataExpire != null &&
+      (currentTime < cacheDataExpire)) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
     return DestinationData.fromJson(json.decode(cacheData));
@@ -34,6 +39,8 @@ Future<DestinationData> fetchDestination(
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('destination_$id', response.body);
+        await prefs.setInt('destination_$id-expiration',
+            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         return DestinationData.fromJson(json.decode(response.body));
       } else {
         // If that response was not OK, throw an error.
@@ -265,20 +272,6 @@ class DestinationState extends State<Destination>
                               placeholder: const Icon(Icons.refresh),
                               enableRefresh: true,
                             )
-                          // CachedNetworkImage(
-                          //     imageUrl: this.image,
-                          //     fit: BoxFit.cover,
-                          //     alignment: Alignment.center,
-                          //     placeholder: (context, url) => SizedBox(
-                          //         width: 50,
-                          //         height: 50,
-                          //         child: Align(
-                          //             alignment: Alignment.center,
-                          //             child: CircularProgressIndicator(
-                          //               valueColor:
-                          //                   new AlwaysStoppedAnimation<Color>(
-                          //                       Colors.blueAccent),
-                          //             ))))
                           : Container()),
                   Positioned.fill(
                     top: 0,

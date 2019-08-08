@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/utils.dart';
-import 'package:trotter_flutter/widgets/loaders/index.dart';
 
 class StartLocationModal extends StatefulWidget {
   final ValueChanged<dynamic> onSelect;

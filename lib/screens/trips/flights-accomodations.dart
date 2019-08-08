@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
-import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/flights-accomodation-list/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
 import 'package:flutter_store/flutter_store.dart';
@@ -14,20 +12,27 @@ import 'package:trotter_flutter/store/store.dart';
 
 class FlightsAccomodations extends StatefulWidget {
   final String tripId;
+  final String ownerId;
   final String currentUserId;
   final ValueChanged<dynamic> onPush;
   FlightsAccomodations(
-      {Key key, @required this.tripId, this.currentUserId, this.onPush})
+      {Key key,
+      @required this.tripId,
+      this.ownerId,
+      this.currentUserId,
+      this.onPush})
       : super(key: key);
   @override
   FlightsAccomodationsState createState() => new FlightsAccomodationsState(
       tripId: this.tripId,
+      ownerId: this.ownerId,
       currentUserId: this.currentUserId,
       onPush: this.onPush);
 }
 
 class FlightsAccomodationsState extends State<FlightsAccomodations> {
   final String tripId;
+  final String ownerId;
   final String currentUserId;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.blueGrey;
@@ -69,7 +74,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     super.dispose();
   }
 
-  FlightsAccomodationsState({this.tripId, this.currentUserId, this.onPush});
+  FlightsAccomodationsState(
+      {this.tripId, this.ownerId, this.currentUserId, this.onPush});
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +198,10 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                     Animation<double> animation,
                     Animation<double> secondaryAnimation) {
                   return TravelersModal(
-                      tripId: this.tripId, travelers: data['travelers']);
+                      ownerId: this.ownerId,
+                      currentUserId: this.currentUserId,
+                      tripId: this.tripId,
+                      travelers: data['travelers']);
                 },
                 transitionBuilder: (BuildContext context,
                     Animation<double> animation,
@@ -285,12 +294,5 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
           border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
       tabs: tabs,
     );
-  }
-
-  // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
-    return Stack(fit: StackFit.expand, children: <Widget>[
-      FlightsAccomodationsListLoading(),
-    ]);
   }
 }

@@ -269,7 +269,7 @@ class DayEditState extends State<DayEdit> {
                           setState(() {
                             this.loading = true;
                           });
-                          ;
+
                           var response = await addToDay(store, this.itineraryId,
                               this.dayId, this.destinationId, data, false);
                           setState(() {

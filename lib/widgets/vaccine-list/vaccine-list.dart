@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/utils/index.dart';
 
 typedef String2VoidFunc = void Function(String);
 
@@ -62,43 +61,47 @@ class VaccineList extends StatelessWidget {
 
   Widget buildBody(
       BuildContext ctxt, List<dynamic> vaccines, String label, String icon) {
-    return new Container(
+    return Container(
         //margin: EdgeInsets.only(right: 20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-            Widget>[
-      Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.0),
-          child: Container(
-              // A fixed-height child.
-              padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-              decoration: BoxDecoration(
-                color: this.color,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              width: 250.0,
-              //height: 70.0,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Image.asset(icon,
-                      //color: fontContrast(this.color),
-                      width: 45.0,
-                      height: 45.0,
-                      fit: BoxFit.contain),
-                  Text(label,
-                      style: TextStyle(
-                          //color: fontContrast(this.color),
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w600)),
-                  Padding(
-                      padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+          Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: 180, minWidth: 280),
+                  child: Container(
+                      // A fixed-height child.
+                      padding: EdgeInsets.symmetric(
+                          vertical: 20.0, horizontal: 20.0),
+                      decoration: BoxDecoration(
+                        color: this.color,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      //width: 250.0,
+                      //height: 180.0,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: buildBodyList(vaccines),
-                      ))
-                ],
-              )))
-    ]));
+                        children: <Widget>[
+                          Image.asset(icon,
+                              //color: fontContrast(this.color),
+                              width: 45.0,
+                              height: 45.0,
+                              fit: BoxFit.contain),
+                          Text(label,
+                              style: TextStyle(
+                                  //color: fontContrast(this.color),
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w600)),
+                          Padding(
+                              padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: buildBodyList(vaccines),
+                              ))
+                        ],
+                      ))))
+        ]));
   }
 
   buildBodyList(List<dynamic> vaccines) {

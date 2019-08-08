@@ -145,7 +145,7 @@ class TabNavigator extends StatelessWidget {
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
             countryId: data['id'],
-            userId: store.currentUser.uid,
+            userId: store.currentUser != null ? store.currentUser.uid : '',
             onPush: (data) => push(context, data),
           ),
       TabNavigatorRoutes.city: (context) => Destination(
@@ -188,6 +188,7 @@ class TabNavigator extends StatelessWidget {
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
           tripId: data['tripId'],
+          ownerId: data['ownerId'],
           currentUserId: data['currentUserId'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(

@@ -40,6 +40,7 @@ Future<PlacesData> fetchMorePlaces(
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      print(msg);
       return PlacesData(success: false);
     }
   } catch (error) {

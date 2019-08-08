@@ -83,6 +83,7 @@ Future<StartLocationData> updateStartLocation(String id, dynamic data,
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      print(msg);
       return StartLocationData(success: false);
     }
   } catch (error) {
@@ -287,6 +288,7 @@ Future<ItinerariesData> fetchItineraries(String filter) async {
   } else {
     // If that response was not OK, throw an error.
     var msg = response.statusCode;
+    print(msg);
     return ItinerariesData(success: false);
   }
 }

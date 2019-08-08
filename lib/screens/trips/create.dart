@@ -20,7 +20,6 @@ class CreateTrip extends StatefulWidget {
 }
 
 class CreateTripState extends State<CreateTrip> {
-  bool _showTitle = false;
   final ValueChanged<dynamic> onPush;
   final dynamic param;
   GoogleMapController mapController;
@@ -30,7 +29,6 @@ class CreateTripState extends State<CreateTrip> {
   //final TextEditingController _typeAheadController = TextEditingController();
 
   List<dynamic> _destinations = [];
-  List<dynamic> _destinationImages = [];
   String name;
   var destinationsCount = 0;
   List<Widget> fields;
@@ -93,6 +91,7 @@ class CreateTripState extends State<CreateTrip> {
               if (value.isEmpty) {
                 return 'Please name your trip.';
               }
+              return null;
             },
           )),
       _buildDestField(0, this.param),
@@ -327,6 +326,7 @@ class CreateTripState extends State<CreateTrip> {
                         print('here');
                         return 'Please select a destination';
                       }
+                      return null;
                     },
                   )),
               onTap: () async {
@@ -434,6 +434,7 @@ class CreateTripState extends State<CreateTrip> {
                       if (value == null) {
                         return 'Please select an arrival date';
                       }
+                      return null;
                     },
                   ))),
           Flexible(
@@ -491,6 +492,7 @@ class CreateTripState extends State<CreateTrip> {
                           this._destinations[index]['start_date']) {
                         return "Please choose a later departure date";
                       }
+                      return null;
                     },
                   ))),
         ],

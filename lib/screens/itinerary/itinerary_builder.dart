@@ -13,7 +13,6 @@ import 'package:trotter_flutter/widgets/itineraries/start-location-modal.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ItineraryBuilder extends StatefulWidget {
   final String itineraryId;
@@ -147,20 +146,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
                         )
-                      // CachedNetworkImage(
-                      //     imageUrl: this.image,
-                      //     fit: BoxFit.cover,
-                      //     alignment: Alignment.center,
-                      //     placeholder: (context, url) => SizedBox(
-                      //         width: 50,
-                      //         height: 50,
-                      //         child: Align(
-                      //             alignment: Alignment.center,
-                      //             child: CircularProgressIndicator(
-                      //               valueColor:
-                      //                   new AlwaysStoppedAnimation<Color>(
-                      //                       Colors.blueAccent),
-                      //             ))))
                       : Container()),
               Positioned.fill(
                 top: 0,

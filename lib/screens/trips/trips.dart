@@ -10,7 +10,6 @@ import 'dart:core';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:share/share.dart';
@@ -552,10 +551,7 @@ class TripsState extends State<Trips> {
                                     placeholder: const Icon(Icons.refresh),
                                     enableRefresh: true,
                                   )
-                                  //  CachedNetworkImage(
-                                  //   imageUrl: tripBuilder[index]['image'],
-                                  //   fit: BoxFit.cover,
-                                  // )
+
                                   ),
                               Positioned.fill(
                                   top: 0,

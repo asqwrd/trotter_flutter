@@ -11,7 +11,6 @@ import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class Itinerary extends StatefulWidget {
   final String itineraryId;
@@ -24,7 +23,6 @@ class Itinerary extends StatefulWidget {
 }
 
 class ItineraryState extends State<Itinerary> {
-  bool _showTitle = false;
   static String id;
   final String itineraryId;
   final ValueChanged<dynamic> onPush;

@@ -6,7 +6,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:loadmore/loadmore.dart';
-import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
@@ -25,7 +24,12 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 Future<HomeData> fetchHome([bool refresh]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
-  if (cacheData != null && refresh != true) {
+  final int cacheDataExpire = prefs.getInt('home-expiration') ?? null;
+  final currentTime = DateTime.now().millisecondsSinceEpoch;
+  if (cacheData != null &&
+      cacheDataExpire != null &&
+      refresh != true &&
+      (currentTime < cacheDataExpire)) {
     // If server returns an OK response, parse the JSON
     var homeData = json.decode(cacheData);
     return HomeData.fromJson(homeData);
@@ -36,6 +40,8 @@ Future<HomeData> fetchHome([bool refresh]) async {
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('home', response.body);
+        await prefs.setInt('home-expiration',
+            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         var homeData = json.decode(response.body);
         return HomeData.fromJson(homeData);
       } else {
@@ -234,12 +240,7 @@ class HomeState extends State<Home> {
             child: FutureBuilder(
                 future: data,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting ||
-                      this.loading) {
-                    return _buildLoadedBody(context, snapshot);
-                  } else if (snapshot.hasData && snapshot.data.error == null) {
-                    return _buildLoadedBody(context, snapshot);
-                  } else if (snapshot.hasData && snapshot.data.error != null) {
+                  if (snapshot.hasData && snapshot.data.error != null) {
                     return ErrorContainer(
                       color: color,
                       onRetry: () {
@@ -250,6 +251,7 @@ class HomeState extends State<Home> {
                       },
                     );
                   }
+                  return _buildLoadedBody(context, snapshot);
                 })),
         body: Container(
             height: _bodyHeight,

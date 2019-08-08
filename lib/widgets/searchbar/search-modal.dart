@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -25,7 +24,7 @@ Future<SearchModalData> fetchSearchModal(
           headers: {'Authorization': 'security'});
     } else if (query.isNotEmpty && (lat != null && lng != null) && searchPoi) {
       response = await http.get(
-          'http://localhost:3002/api/search/google/$query?lat=${lat}&lng=$lng',
+          'http://localhost:3002/api/search/google/$query?lat=$lat&lng=$lng',
           headers: {'Authorization': 'security'});
     } else {
       response = await http.get('http://localhost:3002/api/search/find/$query',
@@ -140,6 +139,7 @@ class SearchModalState extends State<SearchModal> {
                     return Text('No Connection');
                   }
               }
+              return _buildLoadedBody(context, snapshot, true, '');
             }));
   }
 
@@ -350,35 +350,6 @@ class SearchModalState extends State<SearchModal> {
                                                     const Icon(Icons.refresh),
                                                 enableRefresh: true,
                                               )
-                                            // CachedNetworkImage(
-                                            //     placeholder: (context, url) =>
-                                            //         SizedBox(
-                                            //             width: 50,
-                                            //             height: 50,
-                                            //             child: Align(
-                                            //                 alignment: Alignment
-                                            //                     .center,
-                                            //                 child:
-                                            //                     CircularProgressIndicator(
-                                            //                   valueColor:
-                                            //                       new AlwaysStoppedAnimation<
-                                            //                               Color>(
-                                            //                           Colors
-                                            //                               .blueAccent),
-                                            //                 ))),
-                                            //     fit: BoxFit.cover,
-                                            //     imageUrl: results[index]
-                                            //         ['image'],
-                                            //     errorWidget: (context, url,
-                                            //             error) =>
-                                            //         Container(
-                                            //             decoration:
-                                            //                 BoxDecoration(
-                                            //           image: DecorationImage(
-                                            //               image: AssetImage(
-                                            //                   'images/placeholder.jpg'),
-                                            //               fit: BoxFit.cover),
-                                            //         )))
                                             : Container(
                                                 decoration: BoxDecoration(
                                                 image: DecorationImage(

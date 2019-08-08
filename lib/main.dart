@@ -15,11 +15,12 @@ void main() async {
   try {
     var permission = await location.hasPermission();
     if (permission == false) {
-      var request = await location.requestPermission();
+      await location.requestPermission();
     }
   } on PlatformException catch (e) {
     if (e.code == 'PERMISSION_DENIED') {
       var error = 'Permission denied';
+      print(error);
     }
   }
 

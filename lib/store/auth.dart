@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Future<UserLoginData> saveUserToFirebase(dynamic data) async {
   try {
@@ -130,6 +131,8 @@ Future<TrotterUser> googleLogin() async {
     );
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
     user = await _auth.signInWithCredential(credential);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
 
     print('Logged in ' + user.displayName);
     final data = {

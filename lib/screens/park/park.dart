@@ -18,7 +18,11 @@ import 'package:trotter_flutter/widgets/auth/index.dart';
 Future<ParkData> fetchPark(String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('park_$id') ?? null;
-  if (cacheData != null) {
+  final int cacheDataExpire = prefs.getInt('park_$id-expiration') ?? null;
+  final currentTime = DateTime.now().millisecondsSinceEpoch;
+  if (cacheData != null &&
+      cacheDataExpire != null &&
+      (currentTime < cacheDataExpire)) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
     return ParkData.fromJson(json.decode(cacheData));
@@ -32,6 +36,8 @@ Future<ParkData> fetchPark(String id) async {
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('park_$id', response.body);
+        await prefs.setInt('park_$id-expiration',
+            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         return ParkData.fromJson(json.decode(response.body));
       } else {
         // If that response was not OK, throw an error.
@@ -158,14 +164,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                   child: FutureBuilder(
                       future: data,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return _buildLoadedBody(context, snapshot);
-                        } else if (snapshot.hasData &&
-                            snapshot.data.error == null) {
-                          return _buildLoadedBody(context, snapshot);
-                        } else if (snapshot.hasData &&
-                            snapshot.data.error != null) {
+                        if (snapshot.hasData && snapshot.data.error != null) {
                           return ErrorContainer(
                             onRetry: () {
                               setState(() {
@@ -174,6 +173,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                             },
                           );
                         }
+                        return _buildLoadedBody(context, snapshot);
                       })),
               body: Container(
                 height: _bodyHeight,

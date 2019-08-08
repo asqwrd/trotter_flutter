@@ -82,6 +82,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
                       if (value.isEmpty) {
                         return 'Please select a destination';
                       }
+                      return null;
                     },
                   )),
               onTap: () async {
@@ -163,6 +164,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
               if (value == null) {
                 return 'Please select an arrival date';
               }
+              return null;
             },
           )),
       Container(

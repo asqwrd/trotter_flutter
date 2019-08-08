@@ -15,7 +15,11 @@ import 'package:trotter_flutter/utils/index.dart';
 Future<CountryData> fetchCountry(String id, String userId) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('country_$id') ?? null;
-  if (cacheData != null) {
+  final int cacheDataExpire = prefs.getInt('country_$id-expiration') ?? null;
+  final currentTime = DateTime.now().millisecondsSinceEpoch;
+  if (cacheData != null &&
+      cacheDataExpire != null &&
+      (currentTime < cacheDataExpire)) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
     return CountryData.fromJson(json.decode(cacheData));
@@ -28,6 +32,8 @@ Future<CountryData> fetchCountry(String id, String userId) async {
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('country_$id', response.body);
+        await prefs.setInt('country_$id-expiration',
+            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         return CountryData.fromJson(json.decode(response.body));
       } else {
         // If that response was not OK, throw an error.
@@ -479,35 +485,37 @@ class CountryState extends State<Country> {
                               ),
                               child: Wrap(children: _getPlugs(plugs, name))),
                         ]),
-                    buildDivider(),
-                    Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Padding(
-                              padding: EdgeInsets.only(
-                                  left: 20.0,
-                                  right: 20.0,
-                                  top: 40.0,
-                                  bottom: 20.0),
-                              child: Text(
-                                'Currency rates',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 20.0),
-                              )),
-                          Container(
-                              padding: EdgeInsets.all(20.0),
-                              margin: EdgeInsets.only(
-                                  left: 20.0,
-                                  right: 20.0,
-                                  top: 0.0,
-                                  bottom: 40.0),
-                              decoration: BoxDecoration(
-                                //color: this.color.withOpacity(.3),
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                              child: _getCurrency(currency)),
-                        ]),
+                    this.userId.length > 0 ? buildDivider() : Container(),
+                    this.userId.length > 0
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                                Padding(
+                                    padding: EdgeInsets.only(
+                                        left: 20.0,
+                                        right: 20.0,
+                                        top: 40.0,
+                                        bottom: 20.0),
+                                    child: Text(
+                                      'Currency rates',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 20.0),
+                                    )),
+                                Container(
+                                    padding: EdgeInsets.all(20.0),
+                                    margin: EdgeInsets.only(
+                                        left: 20.0,
+                                        right: 20.0,
+                                        top: 0.0,
+                                        bottom: 40.0),
+                                    decoration: BoxDecoration(
+                                      //color: this.color.withOpacity(.3),
+                                      borderRadius: BorderRadius.circular(15.0),
+                                    ),
+                                    child: _getCurrency(currency))
+                              ])
+                        : Container(),
 
                     /*TopList(
                     items: popularDestinations,

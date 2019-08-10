@@ -16,7 +16,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="trotter"
+        android:label="Trotter"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
                android:value="AIzaSyBGMENZRkGzoOY0DiRgq3dBuJ1OcEFjlPA"/>

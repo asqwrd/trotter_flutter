@@ -4,14 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:trotter_flutter/globals.dart';
 import 'package:trotter_flutter/store/store.dart';
 
 Future<TripsData> fetchTrips([TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get(
-        'http://localhost:3002/api/trips/all?user_id=${store.currentUser.uid}',
+        '$ApiDomain/api/trips/all?user_id=${store.currentUser.uid}',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -53,7 +53,7 @@ Future<FlightsAndAccomodationsData> fetchFlightsAccomodations(
     String tripId, String userId) async {
   try {
     final response = await http.get(
-        'http://localhost:3002/api/trips/$tripId/flights_accomodations?user_id=$userId',
+        '$ApiDomain/api/trips/$tripId/flights_accomodations?user_id=$userId',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -72,7 +72,7 @@ Future<FlightsAndAccomodationsData> fetchFlightsAccomodations(
 Future<DeleteTripData> deleteTrip(TrotterStore store, String tripId) async {
   try {
     final response = await http.delete(
-        'http://localhost:3002/api/trips/delete/trip/$tripId',
+        '$ApiDomain/api/trips/delete/trip/$tripId',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -95,7 +95,7 @@ Future<AddTravelerData> addTraveler(
     TrotterStore store, String tripId, dynamic data) async {
   try {
     final response = await http.post(
-        'http://localhost:3002/api/trips/$tripId/travelers/add',
+        '$ApiDomain/api/trips/$tripId/travelers/add',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -129,7 +129,7 @@ Future<CreateTripData> postCreateTrip(TrotterStore store, dynamic data,
     var owner = store.currentUser.uid;
     data['trip']['owner_id'] = owner;
     data['trip']['group'] = [owner];
-    final response = await http.post('http://localhost:3002/api/trips/create/',
+    final response = await http.post('$ApiDomain/api/trips/create/',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -265,8 +265,7 @@ class DeleteTripError {
 
 Future<dynamic> postAddToTrip(String tripId, dynamic data) async {
   try {
-    final response = await http.post(
-        'http://localhost:3002/api/trips/add/$tripId',
+    final response = await http.post('$ApiDomain/api/trips/add/$tripId',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -290,7 +289,7 @@ Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
     String tripId, String destinationId, dynamic data) async {
   try {
     final response = await http.post(
-        'http://localhost:3002/api/trips/add/flights_accomodations/$tripId/destination/$destinationId',
+        '$ApiDomain/api/trips/add/flights_accomodations/$tripId/destination/$destinationId',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -313,7 +312,7 @@ Future<AddFlightsAndAccomodationsData> deleteFlightsAndAccomodations(
     String tripId, String destinationId, String detailId) async {
   try {
     final response = await http.delete(
-        'http://localhost:3002/api/trips/delete/flights_accomodations/$tripId/destination/$destinationId/detail/$detailId',
+        '$ApiDomain/api/trips/delete/flights_accomodations/$tripId/destination/$destinationId/detail/$detailId',
         headers: {
           'Authorization': 'security',
           "Content-Type": "application/json"
@@ -335,7 +334,7 @@ Future<FlightsAndAccomodationsTravelersData>
     putUpdateFlightsAccommodationTravelers(String tripId, String destinationId,
         String detailId, dynamic data) async {
   final response = await http.put(
-      'http://localhost:3002/api/trips/update/$tripId/destination/$destinationId/details/$detailId',
+      '$ApiDomain/api/trips/update/$tripId/destination/$destinationId/details/$detailId',
       body: json.encode(data),
       headers: {
         'Authorization': 'security',
@@ -355,7 +354,7 @@ Future<FlightsAndAccomodationsTravelersData>
 Future<dynamic> putUpdateTripDestination(
     String tripId, String destinationId, dynamic data) async {
   final response = await http.put(
-      'http://localhost:3002/api/trips/update/$tripId/destination/$destinationId',
+      '$ApiDomain/api/trips/update/$tripId/destination/$destinationId',
       body: json.encode(data),
       headers: {
         'Authorization': 'security',
@@ -371,8 +370,7 @@ Future<dynamic> putUpdateTripDestination(
 }
 
 Future<UpdateTripData> putUpdateTrip(String tripId, dynamic data) async {
-  final response = await http.put(
-      'http://localhost:3002/api/trips/update/trip/$tripId',
+  final response = await http.put('$ApiDomain/api/trips/update/trip/$tripId',
       body: json.encode(data),
       headers: {
         'Authorization': 'security',
@@ -390,7 +388,7 @@ Future<UpdateTripData> putUpdateTrip(String tripId, dynamic data) async {
 Future<dynamic> deleteDestination(String tripId, String destinationId) async {
   try {
     final response = await http.delete(
-        'http://localhost:3002/api/trips/delete/$tripId/destination/$destinationId',
+        '$ApiDomain/api/trips/delete/$tripId/destination/$destinationId',
         headers: {
           'Authorization': 'security',
           "Content-Type": "application/json"

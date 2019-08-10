@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:trotter_flutter/globals.dart';
 
 Future<TravelersModalData> fetchTravelersModal(
   String tripId,
@@ -13,8 +14,7 @@ Future<TravelersModalData> fetchTravelersModal(
   try {
     var response;
 
-    response = await http.get(
-        'http://localhost:3002/api/trips/$tripId/travelers',
+    response = await http.get('$ApiDomain/api/trips/$tripId/travelers',
         headers: {'Authorization': 'security'});
 
     if (response.statusCode == 200) {

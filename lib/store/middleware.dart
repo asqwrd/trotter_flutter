@@ -1,6 +1,8 @@
 import 'package:trotter_flutter/store/store.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:trotter_flutter/globals.dart';
+
 
 class NotificationsData {
   final List<dynamic> notifications;
@@ -32,7 +34,7 @@ Future<PlacesData> fetchMorePlaces(
   try {
     print(id);
     final response = await http.get(
-        'http://localhost:3002/api/explore/places?levelId=$id&type=$placeType&offset=$offset',
+        '$ApiDomain/api/explore/places?levelId=$id&type=$placeType&offset=$offset',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -51,7 +53,7 @@ Future<PlacesData> fetchMorePlaces(
 Future<NotificationsData> fetchNotifications([TrotterStore store]) async {
   try {
     final response = await http.get(
-        'http://localhost:3002/api/notifications?user_id=${store.currentUser.uid}',
+        '$ApiDomain/api/notifications?user_id=${store.currentUser.uid}',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -76,7 +78,7 @@ Future<NotificationsData> markNotificationRead(String notificationId,
     [TrotterStore store]) async {
   try {
     final response = await http.put(
-        'http://localhost:3002/api/notifications/$notificationId?user_id=${store.currentUser.uid}',
+        '$ApiDomain/api/notifications/$notificationId?user_id=${store.currentUser.uid}',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON

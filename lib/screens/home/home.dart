@@ -14,6 +14,7 @@ import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/index.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
+import 'package:trotter_flutter/globals.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,7 +36,7 @@ Future<HomeData> fetchHome([bool refresh]) async {
     return HomeData.fromJson(homeData);
   } else {
     try {
-      var response = await http.get('http://localhost:3002/api/explore/home/',
+      var response = await http.get('$ApiDomain/api/explore/home/',
           headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
@@ -56,9 +57,10 @@ Future<HomeData> fetchHome([bool refresh]) async {
 }
 
 Future<HomeItinerariesData> fetchHomeItineraries() async {
+  print(ApiDomain);
   try {
     final response = await http.get(
-        'http://localhost:3002/api/itineraries/all?public=true',
+        '$ApiDomain/api/itineraries/all?public=true',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -77,10 +79,9 @@ Future<HomeItinerariesData> fetchHomeItineraries() async {
 }
 
 Future<HomeItinerariesData> fetchHomeItinerariesNext(lastId) async {
-  print(lastId);
   try {
     final response = await http.get(
-        'http://localhost:3002/api/itineraries/all?public=true&last=$lastId',
+        '$ApiDomain/api/itineraries/all?public=true&last=$lastId',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON

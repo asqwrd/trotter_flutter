@@ -14,6 +14,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
+import 'package:trotter_flutter/globals.dart';
+
 
 Future<ParkData> fetchPark(String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -31,7 +33,7 @@ Future<ParkData> fetchPark(String id) async {
       print('no-cached');
       print(id);
       final response = await http.get(
-          'http://localhost:3002/api/explore/national_parks/$id/',
+          '$ApiDomain/api/explore/national_parks/$id/',
           headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON

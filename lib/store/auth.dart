@@ -6,10 +6,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trotter_flutter/globals.dart';
+
 
 Future<UserLoginData> saveUserToFirebase(dynamic data) async {
   try {
-    final response = await http.post('http://localhost:3002/api/users/login',
+    final response = await http.post('$ApiDomain/api/users/login',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -33,11 +35,10 @@ Future<UserLoginData> saveUserToFirebase(dynamic data) async {
 Future<UserData> getUser(String id) async {
   print(id);
   try {
-    final response = await http.get('http://localhost:3002/api/users/get/$id',
-        headers: {
-          'Authorization': 'security',
-          "Content-Type": "application/json"
-        });
+    final response = await http.get('$ApiDomain/api/users/get/$id', headers: {
+      'Authorization': 'security',
+      "Content-Type": "application/json"
+    });
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = UserData.fromJson(json.decode(response.body));
@@ -56,8 +57,7 @@ Future<UserData> getUser(String id) async {
 
 Future<UserData> updateUser(String id, dynamic data) async {
   try {
-    final response = await http.put(
-        'http://localhost:3002/api/users/update/$id',
+    final response = await http.put('$ApiDomain/api/users/update/$id',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -80,7 +80,7 @@ Future<UserData> updateUser(String id, dynamic data) async {
 
 Future<TokenData> saveDeviceTokenFirebase(dynamic data) async {
   try {
-    final response = await http.post('http://localhost:3002/api/users/device',
+    final response = await http.post('$ApiDomain/api/users/device',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',

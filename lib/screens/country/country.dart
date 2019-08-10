@@ -11,6 +11,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:trotter_flutter/globals.dart';
+
 
 Future<CountryData> fetchCountry(String id, String userId) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -27,7 +29,7 @@ Future<CountryData> fetchCountry(String id, String userId) async {
     try {
       print('no-cached');
       final response = await http.get(
-          'http://localhost:3002/api/explore/countries/$id?user_id=$userId',
+          '$ApiDomain/api/explore/countries/$id?user_id=$userId',
           headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON

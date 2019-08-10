@@ -13,6 +13,8 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
+import 'package:trotter_flutter/globals.dart';
+
 
 Future<PoiData> fetchPoi(String id,
     [bool googlePlace, String locationId]) async {
@@ -30,7 +32,7 @@ Future<PoiData> fetchPoi(String id,
     try {
       print('no-cached');
       final response = await http.get(
-          'http://localhost:3002/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId',
+          '$ApiDomain/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId',
           headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON

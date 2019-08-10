@@ -23,6 +23,7 @@ import 'add-destination-modal.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:share/share.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
+import 'package:trotter_flutter/globals.dart';
 
 
 
@@ -269,7 +270,7 @@ Future<TripData> fetchTrip(String id, [TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 
   try {
-    final response = await http.get('http://localhost:3002/api/trips/get/$id', headers:{'Authorization':'security'});
+    final response = await http.get('$ApiDomain/api/trips/get/$id', headers:{'Authorization':'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('trip_$id', response.body);

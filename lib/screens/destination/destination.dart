@@ -15,6 +15,8 @@ import 'package:trotter_flutter/widgets/itineraries/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:trotter_flutter/globals.dart';
+
 
 Future<DestinationData> fetchDestination(
     String id, String destinationType) async {
@@ -34,7 +36,7 @@ Future<DestinationData> fetchDestination(
       print('no-cached');
       print(id);
       final response = await http.get(
-          'http://localhost:3002/api/explore/destinations/$id?type=$destinationType',
+          '$ApiDomain/api/explore/destinations/$id?type=$destinationType',
           headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON

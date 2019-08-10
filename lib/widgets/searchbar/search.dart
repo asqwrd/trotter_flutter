@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:trotter_flutter/globals.dart';
 
 Future<SearchData> fetchSearch(
   String query,
@@ -17,18 +18,17 @@ Future<SearchData> fetchSearch(
   var response;
   try {
     if (query.isEmpty && !searchPoi) {
-      response = await http.get('http://localhost:3002/api/search/recent',
+      response = await http.get('$ApiDomain/api/search/recent',
           headers: {'Authorization': 'security'});
     } else if (query.isEmpty && searchPoi) {
-      response = await http.get(
-          'http://localhost:3002/api/search/recent?poi=true',
+      response = await http.get('$ApiDomain/api/search/recent?poi=true',
           headers: {'Authorization': 'security'});
     } else if (query.isNotEmpty && (lat != null && lng != null) && searchPoi) {
       response = await http.get(
-          'http://localhost:3002/api/search/google/$query?lat=$lat&lng=$lng',
+          '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng',
           headers: {'Authorization': 'security'});
     } else {
-      response = await http.get('http://localhost:3002/api/search/find/$query',
+      response = await http.get('$ApiDomain/api/search/find/$query',
           headers: {'Authorization': 'security'});
     }
 

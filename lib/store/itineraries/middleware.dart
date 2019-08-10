@@ -6,13 +6,15 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/globals.dart';
+
 
 Future<CreateItineraryData> postCreateItinerary(
     TrotterStore store, dynamic data,
     [int index, bool undo = false]) async {
   try {
     final response = await http.post(
-        'http://localhost:3002/api/itineraries/create',
+        '$ApiDomain/api/itineraries/create',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -39,7 +41,7 @@ Future<CreateItineraryData> postCreateItinerary(
 Future<ItineraryData> fetchItinerary(String id, [TrotterStore store]) async {
   try {
     final response = await http.get(
-        'http://localhost:3002/api/itineraries/get/$id',
+        '$ApiDomain/api/itineraries/get/$id',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -71,7 +73,7 @@ Future<StartLocationData> updateStartLocation(String id, dynamic data,
     [TrotterStore store]) async {
   try {
     final response = await http.put(
-        'http://localhost:3002/api/itineraries/update/$id/startLocation',
+        '$ApiDomain/api/itineraries/update/$id/startLocation',
         body: json.encode(data),
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
@@ -95,7 +97,7 @@ Future<ItineraryData> fetchSelectedItinerary(
     TrotterStore store, String id) async {
   try {
     final response = await http.get(
-        'http://localhost:3002/api/itineraries/get/$id',
+        '$ApiDomain/api/itineraries/get/$id',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -126,7 +128,7 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get(
-        'http://localhost:3002/api/itineraries/get/$id',
+        '$ApiDomain/api/itineraries/get/$id',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -188,7 +190,7 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
 
   try {
     final response = await http.get(
-        'http://localhost:3002/api/itineraries/get/$itineraryId/day/$dayId?latlng=$location',
+        '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId?latlng=$location',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -220,7 +222,7 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
     [bool optimize]) async {
   try {
     final response = await http.post(
-        'http://localhost:3002/api/itineraries/add/$itineraryId/day/$dayId?optimize=$optimize',
+        '$ApiDomain/api/itineraries/add/$itineraryId/day/$dayId?optimize=$optimize',
         body: json.encode(data),
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
@@ -263,7 +265,7 @@ Future<DeleteItemData> deleteFromDay(
     String itineraryId, String dayId, String itineraryItemId) async {
   try {
     final response = await http.delete(
-        'http://localhost:3002/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId',
+        '$ApiDomain/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -280,7 +282,7 @@ Future<DeleteItemData> deleteFromDay(
 
 Future<ItinerariesData> fetchItineraries(String filter) async {
   final response = await http.get(
-      'http://localhost:3002/api/itineraries/all?$filter',
+      '$ApiDomain/api/itineraries/all?$filter',
       headers: {'Authorization': 'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON

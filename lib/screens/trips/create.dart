@@ -221,7 +221,7 @@ class CreateTripState extends State<CreateTrip> {
         "country_name": this.param["country_name"],
         "start_date": null,
         "end_date": null,
-        "image":this.param['image']
+        "image":this.param['image_hd']
       };
       this._destinations.add(destination);
       //this._destinationImages.add(this.param['image']);

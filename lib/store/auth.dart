@@ -8,7 +8,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/globals.dart';
 
-
 Future<UserLoginData> saveUserToFirebase(dynamic data) async {
   try {
     final response = await http.post('$ApiDomain/api/users/login',
@@ -130,7 +129,8 @@ Future<TrotterUser> googleLogin() async {
       idToken: googleAuth.idToken,
     );
     final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-    user = await _auth.signInWithCredential(credential);
+    var auth = await _auth.signInWithCredential(credential);
+    user = auth.user;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 

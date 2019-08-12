@@ -345,6 +345,7 @@ class CreateTripState extends State<CreateTrip> {
                     "country_name": suggestion["country_name"],
                     "start_date": this._destinations[index]['start_date'] != null ? this._destinations[index]['start_date'] : null,
                     "end_date": this._destinations[index]['end_date'] != null ? this._destinations[index]['end_date'] : null,
+                    "image": suggestion["image_hd"]
                   }]);
 
                 } else {
@@ -357,7 +358,7 @@ class CreateTripState extends State<CreateTrip> {
                     "country_name": suggestion["country_name"],
                     "start_date":  null,
                     "end_date": null,
-                    "image": suggestion["image"]
+                    "image": suggestion["image_hd"]
                   });
                 }
                 //this._destinationImages.insert(index, suggestion["image"]);

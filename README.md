@@ -26,4 +26,12 @@ Once you have flutter and all the needed tools set up follow these steps.
       - Subsitute {DEVICE_NAME} with the name you got in `adb devices`
       - Substitute {PORT} with the port you use to run the backend server ie 3002
       - This command allows your phone see the backend server running locally so you can make calls to the api.
+
+**Build release**
+1. `flutter build appbundle --release`
+2. Sign the build
+     - Navigate to `/build/app/outputs/bundle/release`
+     - Manually sign using keystore `jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../android/key.jks app.aab key`
+3. Upload signed build to Play console
+
     

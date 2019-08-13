@@ -13,7 +13,6 @@ import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/globals.dart';
 
-
 Future<CountryData> fetchCountry(String id, String userId) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('country_$id') ?? null;
@@ -178,7 +177,7 @@ class CountryState extends State<Country> {
           });
         },
         borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
         maxHeight: _panelHeightOpen,
         panel: FutureBuilder(
             future: data,

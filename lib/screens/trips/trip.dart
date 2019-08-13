@@ -959,7 +959,7 @@ class TripState extends State<Trip> {
           });
         },
         borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
         maxHeight: _panelHeightOpen,
         panel: Center(
             child: Scaffold(

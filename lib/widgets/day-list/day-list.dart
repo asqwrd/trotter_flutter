@@ -13,20 +13,24 @@ class DayList extends StatelessWidget {
   final ScrollController controller;
   final ScrollPhysics physics;
   final dynamic startLocation;
+  final String ownerId;
   @required
   final String header;
+  final String subHeader;
 
   //passing props in react style
   DayList(
       {this.onPressed,
       this.onLongPressed,
       this.items,
+      this.ownerId,
       this.callback,
       this.color,
       this.controller,
       this.physics,
       this.height,
       this.header,
+      this.subHeader,
       this.startLocation});
 
   @override
@@ -120,10 +124,19 @@ class DayList extends StatelessWidget {
               return Container(
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(top: 10, bottom: 40),
-                child: Text(
-                  '${this.header}',
-                  style: TextStyle(fontSize: 30),
-                ),
+                child: Column(children: <Widget>[
+                  Text(
+                    '${this.header}',
+                    style: TextStyle(fontSize: 30),
+                  ),
+                  this.subHeader != null
+                      ? Text(
+                          '${this.subHeader}',
+                          style: TextStyle(
+                              fontSize: 25, fontWeight: FontWeight.w300),
+                        )
+                      : Container()
+                ]),
               );
             }
             var color = itineraryItems[index]['color'].isEmpty == false
@@ -305,35 +318,73 @@ class DayList extends StatelessWidget {
                                                                     .circular(
                                                                         15))),
                                                 child: item['image'] != null
-                                                    ? TransitionToImage(
-                                                        image:
-                                                            AdvancedNetworkImage(
-                                                          item['image'],
-                                                          useDiskCache: true,
-                                                          cacheRule: CacheRule(
-                                                              maxAge:
-                                                                  const Duration(
-                                                                      days: 7)),
-                                                        ),
-                                                        loadingWidgetBuilder:
-                                                            (BuildContext
-                                                                        context,
-                                                                    double
-                                                                        progress,
-                                                                    test) =>
-                                                                Center(
-                                                                    child:
-                                                                        RefreshProgressIndicator(
-                                                          backgroundColor:
-                                                              Colors.white,
-                                                        )),
-                                                        fit: BoxFit.cover,
-                                                        alignment:
-                                                            Alignment.center,
-                                                        placeholder: const Icon(
-                                                            Icons.refresh),
-                                                        enableRefresh: true,
-                                                      )
+                                                    ? Stack(
+                                                        fit: StackFit.expand,
+                                                        children: <Widget>[
+                                                            TransitionToImage(
+                                                              image:
+                                                                  AdvancedNetworkImage(
+                                                                item['image'],
+                                                                useDiskCache:
+                                                                    true,
+                                                                cacheRule: CacheRule(
+                                                                    maxAge: const Duration(
+                                                                        days:
+                                                                            7)),
+                                                              ),
+                                                              loadingWidgetBuilder: (BuildContext
+                                                                          context,
+                                                                      double
+                                                                          progress,
+                                                                      test) =>
+                                                                  Center(
+                                                                      child:
+                                                                          RefreshProgressIndicator(
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                              )),
+                                                              fit: BoxFit.cover,
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              placeholder:
+                                                                  const Icon(Icons
+                                                                      .refresh),
+                                                              enableRefresh:
+                                                                  true,
+                                                            ),
+                                                            Positioned(
+                                                              width: 40,
+                                                              height: 40,
+                                                              bottom: 10,
+                                                              right: 10,
+                                                              child: Container(
+                                                                  decoration: BoxDecoration(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              100),
+                                                                      border: Border.all(
+                                                                          width:
+                                                                              2,
+                                                                          color: Colors
+                                                                              .white)),
+                                                                  child:
+                                                                      CircleAvatar(
+                                                                          backgroundImage:
+                                                                              AdvancedNetworkImage(
+                                                                    item['added_by_full']
+                                                                        [
+                                                                        'photoUrl'],
+                                                                    useDiskCache:
+                                                                        true,
+                                                                    cacheRule: CacheRule(
+                                                                        maxAge: const Duration(
+                                                                            days:
+                                                                                7)),
+                                                                  ))),
+                                                            )
+                                                          ])
                                                     : Container(
                                                         decoration:
                                                             BoxDecoration(

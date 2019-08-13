@@ -15,7 +15,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:trotter_flutter/globals.dart';
 
-
 Future<PoiData> fetchPoi(String id,
     [bool googlePlace, String locationId]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -169,7 +168,7 @@ class PoiState extends State<Poi> {
           });
         },
         borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
         maxHeight: _panelHeightOpen,
         panel: Center(
             child: FutureBuilder(

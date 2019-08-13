@@ -15,6 +15,7 @@ import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:trotter_flutter/widgets/itineraries/index.dart';
+import 'package:intl/intl.dart';
 
 class DayEdit extends StatefulWidget {
   final String dayId;
@@ -53,8 +54,10 @@ class DayEditState extends State<DayEdit> {
   bool errorUi = false;
   bool loading = true;
   String image;
+  String ownerId;
   String itineraryName;
   dynamic currentPosition;
+  int startDate;
 
   Future<DayData> data;
 
@@ -74,6 +77,8 @@ class DayEditState extends State<DayEdit> {
         setState(() {
           this.color = Color(hexStringToHexInt(data.color));
           this.itineraryName = data.itinerary['name'];
+          this.ownerId = data.itinerary['owner_id'];
+          this.startDate = data.itinerary['start_date'] * 1000;
           this.destinationName = data.destination['name'];
           this.location = data.destination['location'];
           this.destination = data.destination;
@@ -129,7 +134,7 @@ class DayEditState extends State<DayEdit> {
           });
         },
         borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
         maxHeight: _panelHeightOpen,
         panel: Center(
             child: Scaffold(
@@ -154,13 +159,23 @@ class DayEditState extends State<DayEdit> {
                                   setState(() {
                                     this.color =
                                         Color(hexStringToHexInt(data.color));
+                                    this.itineraryName = data.itinerary['name'];
+                                    this.ownerId = data.itinerary['owner_id'];
+                                    this.startDate =
+                                        data.itinerary['start_date'] * 1000;
                                     this.destinationName =
                                         data.destination['name'];
+                                    this.location =
+                                        data.destination['location'];
                                     this.destination = data.destination;
                                     this.destinationId =
                                         data.destination['id'].toString();
                                     this.itineraryItems =
                                         data.day['itinerary_items'].sublist(1);
+                                    this.startLocation =
+                                        data.itinerary['start_location'];
+                                    this.currentPosition = data.currentPosition;
+                                    this.image = data.destination['image'];
                                   });
                                 }
                               });
@@ -263,7 +278,9 @@ class DayEditState extends State<DayEdit> {
                             "poi": suggestion,
                             "title": "",
                             "description": "",
-                            "time": {"value": "", "unit": ""}
+                            "time": {"value": "", "unit": ""},
+                            "poi_id": suggestion['id'],
+                            "added_by": store.currentUser.uid
                           };
 
                           setState(() {
@@ -301,10 +318,14 @@ class DayEditState extends State<DayEdit> {
     var day = snapshot.data.day;
     //var itinerary = snapshot.data.itinerary;
     var color = Color(hexStringToHexInt(snapshot.data.color));
-
+    final formatter = DateFormat.yMMMMd("en_US");
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
         header: '${ordinalNumber(day['day'] + 1)} day',
+        subHeader: formatter.format(
+            DateTime.fromMillisecondsSinceEpoch(this.startDate)
+                .add(Duration(days: day['day']))),
+        ownerId: this.ownerId,
         controller: _sc,
         physics: disableScroll
             ? NeverScrollableScrollPhysics()
@@ -315,8 +336,11 @@ class DayEditState extends State<DayEdit> {
             ? this.currentPosition
             : this.startLocation,
         onLongPressed: (data) {
-          // print(data);
-          bottomSheetModal(context, day['day'] + 1, data);
+          print(this.ownerId);
+          final store = Provider.of<TrotterStore>(ctxt);
+          if (this.ownerId == store.currentUser.uid ||
+              store.currentUser.uid == data['added_by'])
+            bottomSheetModal(context, day['day'] + 1, data);
         },
         onPressed: (data) {
           onPush({

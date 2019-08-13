@@ -17,7 +17,6 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/globals.dart';
 
-
 Future<DestinationData> fetchDestination(
     String id, String destinationType) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -223,7 +222,7 @@ class DestinationState extends State<Destination>
               });
             },
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
             maxHeight: _panelHeightOpen,
             panel: Center(
                 child: FutureBuilder(

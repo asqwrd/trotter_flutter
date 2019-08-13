@@ -16,7 +16,6 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/globals.dart';
 
-
 Future<ParkData> fetchPark(String id) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('park_$id') ?? null;
@@ -160,7 +159,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                 });
               },
               borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+                  topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               maxHeight: _panelHeightOpen,
               panel: Center(
                   child: FutureBuilder(

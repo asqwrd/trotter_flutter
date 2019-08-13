@@ -233,7 +233,7 @@ class CreateTripState extends State<CreateTrip> {
           });
         },
         borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
         maxHeight: _panelHeightOpen,
         panel: Center(
             child: new Scaffold(
@@ -359,6 +359,7 @@ class CreateTripState extends State<CreateTrip> {
                             this._destinations[index]['end_date'] != null
                                 ? this._destinations[index]['end_date']
                                 : null,
+                        "image": suggestion["image_hd"]
                       }
                     ]);
                   } else {
@@ -371,7 +372,7 @@ class CreateTripState extends State<CreateTrip> {
                       "country_name": suggestion["country_name"],
                       "start_date": null,
                       "end_date": null,
-                      "image": suggestion["image"]
+                      "image": suggestion["image_hd"]
                     });
                   }
                   //this._destinationImages.insert(index, suggestion["image"]);

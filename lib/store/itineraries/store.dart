@@ -56,8 +56,12 @@ class ItineraryStore extends Store {
       _selectedItinerary = SelectItineraryData(
           loading: loading != null ? loading : _selectedItinerary.loading,
           updating: _selectedItinerary.updating,
-          selectedItineraryId: selectedItineraryId,
-          selectedItinerary: selectedItinerary,
+          selectedItineraryId: selectedItineraryId == null
+              ? _selectedItinerary.selectedItineraryId
+              : selectedItineraryId,
+          selectedItinerary: selectedItinerary == null
+              ? _selectedItinerary.selectedItinerary
+              : selectedItinerary,
           destinationId: destinationId);
     });
   }

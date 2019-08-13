@@ -8,13 +8,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/globals.dart';
 
-
 Future<CreateItineraryData> postCreateItinerary(
     TrotterStore store, dynamic data,
     [int index, bool undo = false]) async {
   try {
-    final response = await http.post(
-        '$ApiDomain/api/itineraries/create',
+    final response = await http.post('$ApiDomain/api/itineraries/create',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -40,8 +38,7 @@ Future<CreateItineraryData> postCreateItinerary(
 
 Future<ItineraryData> fetchItinerary(String id, [TrotterStore store]) async {
   try {
-    final response = await http.get(
-        '$ApiDomain/api/itineraries/get/$id',
+    final response = await http.get('$ApiDomain/api/itineraries/get/$id',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -96,8 +93,7 @@ Future<StartLocationData> updateStartLocation(String id, dynamic data,
 Future<ItineraryData> fetchSelectedItinerary(
     TrotterStore store, String id) async {
   try {
-    final response = await http.get(
-        '$ApiDomain/api/itineraries/get/$id',
+    final response = await http.get('$ApiDomain/api/itineraries/get/$id',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -127,8 +123,7 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
     [TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
-    final response = await http.get(
-        '$ApiDomain/api/itineraries/get/$id',
+    final response = await http.get('$ApiDomain/api/itineraries/get/$id',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -139,7 +134,7 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
         results.destination,
         results.color,
       );
-      store?.itineraryStore?.setItineraryError(null);
+      store?.itineraryStore?.setItineraryBuilderError(null);
       store?.setOffline(false);
       store?.itineraryStore?.setItineraryBuilderLoading(false);
       return results;
@@ -233,13 +228,15 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
         itineraryItems = itineraryItems.sublist(1);
         res.day['itinerary_items'] = itineraryItems;
       }
-      if (store.itineraryStore.selectedItinerary.selectedItineraryId ==
-          itineraryId) {
+      if (store.itineraryStore.selectedItinerary != null &&
+          store.itineraryStore.selectedItinerary.selectedItineraryId ==
+              itineraryId) {
         store.itineraryStore.updateSelectedItinerary(
             dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
       }
-      if (store.itineraryStore.itineraryBuilder.itinerary['id'] ==
-          itineraryId) {
+      if (store.itineraryStore.itineraryBuilder.itinerary != null &&
+          store.itineraryStore.itineraryBuilder.itinerary['id'] ==
+              itineraryId) {
         store.itineraryStore.updateItineraryBuilder(
             dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
       }
@@ -281,8 +278,7 @@ Future<DeleteItemData> deleteFromDay(
 }
 
 Future<ItinerariesData> fetchItineraries(String filter) async {
-  final response = await http.get(
-      '$ApiDomain/api/itineraries/all?$filter',
+  final response = await http.get('$ApiDomain/api/itineraries/all?$filter',
       headers: {'Authorization': 'security'});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON

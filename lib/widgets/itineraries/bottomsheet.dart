@@ -229,6 +229,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
                   destination: destination,
                   onPressed: (data) async {
                     store.itineraryStore.setSelectItineraryLoading(true);
+
                     Navigator.pop(context);
                     var result = await showDayBottomSheet(
                         store,
@@ -276,7 +277,7 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
     Scaffold.of(context).showSnackBar(SnackBar(
       content: Text(
           toIndex != null
-              ? '${poi['name']} moved to day $toIndex'
+              ? '${poi['name']} added to day $toIndex'
               : '${poi['name']} added to ${item['name']}',
           style: TextStyle(fontSize: 18)),
       duration: Duration(seconds: 2),

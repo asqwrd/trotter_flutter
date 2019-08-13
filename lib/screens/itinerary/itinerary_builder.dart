@@ -40,7 +40,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   Color color = Colors.transparent;
   String itineraryName;
   Future<ItineraryData> data;
-  int startDate;
+  int startDate = 0;
 
   @override
   void initState() {
@@ -74,7 +74,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         setState(() {
           this.errorUi = true;
         });
-      } else if (res.error == null) {
+      } else {
         setState(() {
           this.errorUi = false;
           this.image = res.destination['image'];
@@ -222,26 +222,26 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
-    if (store.itineraryStore.itineraryBuilder.itinerary == null ||
-        store.itineraryStore.itineraryBuilder.loading ||
-        store.itineraryStore.itineraryBuilder.itinerary['id'] !=
-            this.itineraryId) {
-      return _buildLoadingBody(ctxt);
-    }
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    if (store.itineraryStore.itineraryBuilder.error != null) {
+    if (this.errorUi == true) {
       return ListView(shrinkWrap: true, children: <Widget>[
         Container(
             height: _panelHeightOpen - 80,
             width: MediaQuery.of(context).size.width,
             child: ErrorContainer(
-              onRetry: () async {
+              onRetry: () {
                 store.itineraryStore.setItineraryBuilderLoading(true);
-                await fetchItineraryBuilder(this.itineraryId, store);
+                data = fetchItineraryBuilder(this.itineraryId, store);
                 store.itineraryStore.setItineraryBuilderLoading(false);
               },
             ))
       ]);
+    }
+    if (store.itineraryStore.itineraryBuilder.itinerary == null ||
+        store.itineraryStore.itineraryBuilder.loading ||
+        store.itineraryStore.itineraryBuilder.itinerary['id'] !=
+            this.itineraryId) {
+      return _buildLoadingBody(ctxt);
     }
 
     var itinerary = store.itineraryStore.itineraryBuilder.itinerary;

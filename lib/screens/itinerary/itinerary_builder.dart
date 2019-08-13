@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/provider.dart';
+import 'package:intl/intl.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -39,6 +40,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   Color color = Colors.transparent;
   String itineraryName;
   Future<ItineraryData> data;
+  int startDate;
 
   @override
   void initState() {
@@ -78,6 +80,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           this.image = res.destination['image'];
           this.destination = res.destination;
           this.itineraryName = res.itinerary['name'];
+          this.startDate = res.itinerary['start_date'] * 1000;
           this.color = Color(hexStringToHexInt(res.color));
           this.hotels = res.hotels;
           store.itineraryStore.setItineraryBuilder(
@@ -296,6 +299,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         }
         var itineraryItems = dayBuilder[dayIndex]['itinerary_items'];
         var dayId = dayBuilder[dayIndex]['id'];
+        final formatter = DateFormat.yMMMMd("en_US");
 
         return InkWell(
             onTap: () => onPush({
@@ -313,6 +317,16 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                       'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.w300),
+                    ))),
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                        child: Text(
+                      formatter.format(DateTime.fromMillisecondsSinceEpoch(
+                              this.startDate)
+                          .add(Duration(days: dayBuilder[dayIndex]['day']))),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
                     ))),
                 Align(
                     alignment: Alignment.topLeft,

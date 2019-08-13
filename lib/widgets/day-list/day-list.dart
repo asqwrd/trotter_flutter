@@ -354,36 +354,27 @@ class DayList extends StatelessWidget {
                                                               enableRefresh:
                                                                   true,
                                                             ),
-                                                            Positioned(
-                                                              width: 40,
-                                                              height: 40,
-                                                              bottom: 10,
-                                                              right: 10,
-                                                              child: Container(
-                                                                  decoration: BoxDecoration(
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              100),
-                                                                      border: Border.all(
-                                                                          width:
-                                                                              2,
-                                                                          color: Colors
-                                                                              .white)),
-                                                                  child:
-                                                                      CircleAvatar(
-                                                                          backgroundImage:
-                                                                              AdvancedNetworkImage(
-                                                                    item['added_by_full']
-                                                                        [
-                                                                        'photoUrl'],
-                                                                    useDiskCache:
-                                                                        true,
-                                                                    cacheRule: CacheRule(
-                                                                        maxAge: const Duration(
-                                                                            days:
-                                                                                7)),
-                                                                  ))),
-                                                            )
+                                                            item['added_by_full'] !=
+                                                                    null
+                                                                ? Positioned(
+                                                                    width: 40,
+                                                                    height: 40,
+                                                                    bottom: 10,
+                                                                    right: 10,
+                                                                    child: Container(
+                                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(100), border: Border.all(width: 2, color: Colors.white)),
+                                                                        child: CircleAvatar(
+                                                                            backgroundImage: AdvancedNetworkImage(
+                                                                          item['added_by_full']
+                                                                              [
+                                                                              'photoUrl'],
+                                                                          useDiskCache:
+                                                                              true,
+                                                                          cacheRule:
+                                                                              CacheRule(maxAge: const Duration(days: 7)),
+                                                                        ))),
+                                                                  )
+                                                                : Container()
                                                           ])
                                                     : Container(
                                                         decoration:

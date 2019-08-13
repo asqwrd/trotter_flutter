@@ -17,7 +17,7 @@ Future addToItinerary(BuildContext context, List items, int index, Color color,
   if (selectedItineraryId != null &&
       selectedItineraryDestination == destination['id']) {
     var result = await showDayBottomSheet(store, context, selectedItineraryId,
-        poi, destination['id'], color, destination);
+        poi, destination['id'], color, destination, store.currentUser.uid);
     if (result != null && result['change'] != null) {
       store.itineraryStore.setSelectedItinerary(null, destination['id'], true);
     }
@@ -214,7 +214,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
             store.itineraryStore.setSelectItineraryLoading(true);
             Navigator.pop(context);
             var result = await showDayBottomSheet(store, context, item['id'],
-                poi, destinationId, color, destination);
+                poi, destinationId, color, destination, store.currentUser.uid);
             if (result != null && result['change'] != null) {
               store.itineraryStore
                   .setSelectedItinerary(null, destinationId, null);
@@ -228,8 +228,15 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
                   onPressed: (data) async {
                     store.itineraryStore.setSelectItineraryLoading(true);
                     Navigator.pop(context);
-                    var result = await showDayBottomSheet(store, context,
-                        item['id'], poi, destinationId, color, destination);
+                    var result = await showDayBottomSheet(
+                        store,
+                        context,
+                        item['id'],
+                        poi,
+                        destinationId,
+                        color,
+                        destination,
+                        store.currentUser.uid);
                     if (result != null && result['change'] != null) {
                       store.itineraryStore
                           .setSelectedItinerary(null, destinationId, null);
@@ -250,7 +257,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
 }
 
 responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
-    String dayId, String destinationId,
+    String dayId, String destinationId, String added_by,
     [int toIndex]) async {
   final store = Provider.of<TrotterStore>(context);
   var data = {
@@ -258,8 +265,8 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
     "title": "",
     "description": "",
     "time": {"value": "", "unit": ""},
-    "poi_id": item['id'],
-    "added_by": item['added_by']
+    "poi_id": poi['id'],
+    "added_by": added_by
   };
   var response =
       await addToDay(store, item['id'], dayId, destinationId, data, true);
@@ -283,6 +290,7 @@ showDayBottomSheet(
     String destinationId,
     Color color,
     dynamic destination,
+    String addedBy,
     {force: false,
     isSelecting: false,
     String movingFromId}) {
@@ -307,6 +315,7 @@ showDayBottomSheet(
               }
               var item =
                   store.itineraryStore.selectedItinerary.selectedItinerary;
+
               if (item == null) {
                 return Container(
                     height: 300,
@@ -386,12 +395,14 @@ showDayBottomSheet(
                                     store.setBottomSheetLoading(true);
 
                                     await responseFromDayBottomSheet(
-                                        listContext,
-                                        item,
-                                        poi,
-                                        days[dayIndex]['id'],
-                                        destinationId,
-                                        days[dayIndex]['day'] + 1);
+                                      listContext,
+                                      item,
+                                      poi,
+                                      days[dayIndex]['id'],
+                                      destinationId,
+                                      addedBy,
+                                      days[dayIndex]['day'] + 1,
+                                    );
 
                                     Navigator.pop(
                                         context, {'selected': days[dayIndex]});

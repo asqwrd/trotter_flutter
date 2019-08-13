@@ -88,7 +88,6 @@ class DayEditState extends State<DayEdit> {
           this.currentPosition = data.currentPosition;
           this.image = data.destination['image'];
           this.loading = false;
-          print(this.destinationName);
         });
       } else {
         setState(() {
@@ -336,7 +335,6 @@ class DayEditState extends State<DayEdit> {
             ? this.currentPosition
             : this.startLocation,
         onLongPressed: (data) {
-          print(this.ownerId);
           final store = Provider.of<TrotterStore>(ctxt);
           if (this.ownerId == store.currentUser.uid ||
               store.currentUser.uid == data['added_by'])
@@ -365,7 +363,6 @@ class DayEditState extends State<DayEdit> {
     var undoData = data;
     var id = data['id'];
     final store = Provider.of<TrotterStore>(ctxt);
-
     return showModalBottomSheet(
         context: ctxt,
         builder: (BuildContext context) {
@@ -385,6 +382,7 @@ class DayEditState extends State<DayEdit> {
                           this.destinationId,
                           this.color,
                           this.destination,
+                          data['added_by'],
                           force: true,
                           isSelecting: false,
                           movingFromId: this.dayId);

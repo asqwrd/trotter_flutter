@@ -257,7 +257,9 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
     "poi": poi,
     "title": "",
     "description": "",
-    "time": {"value": "", "unit": ""}
+    "time": {"value": "", "unit": ""},
+    "poi_id": item['id'],
+    "added_by": item['added_by']
   };
   var response =
       await addToDay(store, item['id'], dayId, destinationId, data, true);

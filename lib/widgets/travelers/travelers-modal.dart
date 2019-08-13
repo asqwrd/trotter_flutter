@@ -138,11 +138,13 @@ class TravelersModalState extends State<TravelersModal> {
   }
 
   _deleteChip(String uid) {
-    setState(() {
-      var index = this.selectedUsersUid.indexOf(uid);
-      this.selectedUsersUid.removeAt(index);
-      this.selectedUsers.removeAt(index);
-    });
+    if (this.selectedUsers.length > 1) {
+      setState(() {
+        var index = this.selectedUsersUid.indexOf(uid);
+        this.selectedUsersUid.removeAt(index);
+        this.selectedUsers.removeAt(index);
+      });
+    }
   }
 
 // function for rendering view after data is loaded
@@ -166,6 +168,8 @@ class TravelersModalState extends State<TravelersModal> {
                 child: Container(
                     margin: EdgeInsets.only(right: 20),
                     child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
                       child: Text(
                         'Save',
                         style: TextStyle(

@@ -177,13 +177,18 @@ class PoiState extends State<Poi> {
                   if (snapshot.hasData && snapshot.data.error == null) {
                     return _buildLoadedBody(context, snapshot);
                   } else if (snapshot.hasData && snapshot.data.error != null) {
-                    return ErrorContainer(
-                      onRetry: () {
-                        setState(() {
-                          data = fetchPoi(this.poiId);
-                        });
-                      },
-                    );
+                    return ListView(shrinkWrap: true, children: <Widget>[
+                      Container(
+                          height: _panelHeightOpen - 80,
+                          width: MediaQuery.of(context).size.width,
+                          child: ErrorContainer(
+                            onRetry: () {
+                              setState(() {
+                                data = fetchPoi(this.poiId);
+                              });
+                            },
+                          ))
+                    ]);
                   }
                   return _buildLoadingBody(context);
                 })),

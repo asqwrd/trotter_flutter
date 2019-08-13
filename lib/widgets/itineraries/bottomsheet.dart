@@ -19,7 +19,8 @@ Future addToItinerary(BuildContext context, List items, int index, Color color,
     var result = await showDayBottomSheet(store, context, selectedItineraryId,
         poi, destination['id'], color, destination, store.currentUser.uid);
     if (result != null && result['change'] != null) {
-      store.itineraryStore.setSelectedItinerary(null, destination['id'], true);
+      store.itineraryStore
+          .setSelectedItinerary(null, destination['id'], null, true);
     }
   } else {
     showItineraryBottomSheet(
@@ -30,7 +31,7 @@ Future addToItinerary(BuildContext context, List items, int index, Color color,
 void showItineraryBottomSheet(TrotterStore store, context, String destinationId,
     dynamic poi, Color color, dynamic destination) {
   var data = fetchItineraries(
-      "destination=$destinationId&owner_id=${store.currentUser.uid}");
+      "destination=$destinationId&user_id=${store.currentUser.uid}");
   showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
@@ -225,6 +226,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
             children: <Widget>[
               MiniItineraryList(
                   items: itineraryItems,
+                  destination: destination,
                   onPressed: (data) async {
                     store.itineraryStore.setSelectItineraryLoading(true);
                     Navigator.pop(context);
@@ -257,7 +259,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
 }
 
 responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
-    String dayId, String destinationId, String added_by,
+    String dayId, String destinationId, String addedBy,
     [int toIndex]) async {
   final store = Provider.of<TrotterStore>(context);
   var data = {
@@ -266,7 +268,7 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
     "description": "",
     "time": {"value": "", "unit": ""},
     "poi_id": poi['id'],
-    "added_by": added_by
+    "added_by": addedBy
   };
   var response =
       await addToDay(store, item['id'], dayId, destinationId, data, true);

@@ -121,29 +121,36 @@ class DayState extends State<Day> {
                         return _buildLoadedBody(context, snapshot);
                       } else if (snapshot.hasData &&
                           snapshot.data.error != null) {
-                        return ErrorContainer(
-                          color: Color.fromRGBO(106, 154, 168, 1),
-                          onRetry: () {
-                            setState(() {
-                              data = fetchDay(this.itineraryId, this.dayId);
-                              data.then((data) {
-                                if (data.error == null) {
+                        return ListView(shrinkWrap: true, children: <Widget>[
+                          Container(
+                              height: _panelHeightOpen - 80,
+                              width: MediaQuery.of(context).size.width,
+                              child: ErrorContainer(
+                                color: Color.fromRGBO(106, 154, 168, 1),
+                                onRetry: () {
                                   setState(() {
-                                    this.color =
-                                        Color(hexStringToHexInt(data.color));
-                                    this.destinationName =
-                                        data.destination['name'];
-                                    this.destination = data.destination;
-                                    this.destinationId =
-                                        data.destination['id'].toString();
-                                    this.itineraryItems =
-                                        data.day['itinerary_items'].sublist(1);
+                                    data =
+                                        fetchDay(this.itineraryId, this.dayId);
+                                    data.then((data) {
+                                      if (data.error == null) {
+                                        setState(() {
+                                          this.color = Color(
+                                              hexStringToHexInt(data.color));
+                                          this.destinationName =
+                                              data.destination['name'];
+                                          this.destination = data.destination;
+                                          this.destinationId =
+                                              data.destination['id'].toString();
+                                          this.itineraryItems = data
+                                              .day['itinerary_items']
+                                              .sublist(1);
+                                        });
+                                      }
+                                    });
                                   });
-                                }
-                              });
-                            });
-                          },
-                        );
+                                },
+                              ))
+                        ]);
                       }
                       return _buildLoadingBody(context);
                     }))),

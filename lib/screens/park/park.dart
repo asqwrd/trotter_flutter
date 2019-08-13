@@ -166,13 +166,18 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                       future: data,
                       builder: (context, snapshot) {
                         if (snapshot.hasData && snapshot.data.error != null) {
-                          return ErrorContainer(
-                            onRetry: () {
-                              setState(() {
-                                data = fetchPark(this.parkId);
-                              });
-                            },
-                          );
+                          return ListView(shrinkWrap: true, children: <Widget>[
+                            Container(
+                                height: _panelHeightOpen - 80,
+                                width: MediaQuery.of(context).size.width,
+                                child: ErrorContainer(
+                                  onRetry: () {
+                                    setState(() {
+                                      data = fetchPark(this.parkId);
+                                    });
+                                  },
+                                ))
+                          ]);
                         }
                         return _buildLoadedBody(context, snapshot);
                       })),

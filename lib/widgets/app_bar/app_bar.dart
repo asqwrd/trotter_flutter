@@ -9,7 +9,7 @@ class TrotterAppBar extends StatelessWidget {
       @required this.color,
       this.back,
       this.showSearch,
-      this.actions = const <Widget>[],
+      this.actions,
       this.title,
       this.id,
       this.location})
@@ -26,7 +26,12 @@ class TrotterAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
+    var actions = this.actions;
+    if (this.actions == null) {
+      actions = [];
+    }
+    return Container(
+        child: AppBar(
       elevation: 0,
       backgroundColor: Colors.transparent,
       centerTitle: true,
@@ -86,7 +91,7 @@ class TrotterAppBar extends StatelessWidget {
                 ))
             : Container()
       ],
-    );
+    ));
   }
 }
 

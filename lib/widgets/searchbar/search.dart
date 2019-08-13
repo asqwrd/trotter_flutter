@@ -116,6 +116,7 @@ class SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     return new Scaffold(
         resizeToAvoidBottomPadding: false,
         body: FutureBuilder(
@@ -123,15 +124,20 @@ class SearchState extends State<Search> {
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
-                  return ErrorContainer(
-                    color: Color.fromRGBO(106, 154, 168, 1),
-                    onRetry: () {
-                      setState(() {
-                        data = fetchSearch('', this.location['lat'],
-                            this.location['lng'], selectId);
-                      });
-                    },
-                  );
+                  return ListView(shrinkWrap: true, children: <Widget>[
+                    Container(
+                        height: _panelHeightOpen - 80,
+                        width: MediaQuery.of(context).size.width,
+                        child: ErrorContainer(
+                          color: Color.fromRGBO(106, 154, 168, 1),
+                          onRetry: () {
+                            setState(() {
+                              data = fetchSearch('', this.location['lat'],
+                                  this.location['lng'], selectId);
+                            });
+                          },
+                        ))
+                  ]);
                 case ConnectionState.active:
                 case ConnectionState.waiting:
                   return _buildLoadedBody(context, snapshot, true, '');
@@ -195,7 +201,7 @@ class SearchState extends State<Search> {
             });
           }));
     }
-
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
@@ -407,22 +413,27 @@ class SearchState extends State<Search> {
                                 )));
                       },
                     )
-                  : ErrorContainer(
-                      color: Color.fromRGBO(106, 154, 168, 1),
-                      onRetry: () {
-                        setState(() {
-                          data = fetchSearch(
-                              '',
-                              this.location != null
-                                  ? this.location['lat']
-                                  : null,
-                              this.location != null
-                                  ? this.location['lng']
-                                  : null,
-                              selectId);
-                        });
-                      },
-                    ),
+                  : ListView(shrinkWrap: true, children: <Widget>[
+                      Container(
+                          height: _panelHeightOpen - 80,
+                          width: MediaQuery.of(context).size.width,
+                          child: ErrorContainer(
+                            color: Color.fromRGBO(106, 154, 168, 1),
+                            onRetry: () {
+                              setState(() {
+                                data = fetchSearch(
+                                    '',
+                                    this.location != null
+                                        ? this.location['lat']
+                                        : null,
+                                    this.location != null
+                                        ? this.location['lng']
+                                        : null,
+                                    selectId);
+                              });
+                            },
+                          ))
+                    ]),
     );
   }
 

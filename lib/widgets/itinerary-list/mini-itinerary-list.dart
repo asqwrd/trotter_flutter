@@ -9,10 +9,12 @@ class MiniItineraryList extends StatelessWidget {
   final String name;
   final List<dynamic> items;
   final Function(String) callback;
+  final dynamic destination;
 
   //passing props in react style
   MiniItineraryList({
     this.name,
+    this.destination,
     this.onPressed,
     this.onLongPressed,
     this.items,

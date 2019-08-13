@@ -242,15 +242,20 @@ class HomeState extends State<Home> {
                 future: data,
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data.error != null) {
-                    return ErrorContainer(
-                      color: color,
-                      onRetry: () {
-                        setState(() {
-                          data = fetchHome();
-                          dataItineraries = fetchHomeItineraries();
-                        });
-                      },
-                    );
+                    return ListView(shrinkWrap: true, children: <Widget>[
+                      Container(
+                          height: _panelHeightOpen - 80,
+                          width: MediaQuery.of(context).size.width,
+                          child: ErrorContainer(
+                            color: color,
+                            onRetry: () {
+                              setState(() {
+                                data = fetchHome();
+                                dataItineraries = fetchHomeItineraries();
+                              });
+                            },
+                          ))
+                    ]);
                   }
                   return _buildLoadedBody(context, snapshot);
                 })),
@@ -480,7 +485,7 @@ class HomeState extends State<Home> {
                         if (currentUser == null) {
                           loginBottomSheet(context, data, color);
                         } else {
-                          bottomSheetModal(context, data['item']);
+                          bottomSheetModal(context, data['poi']);
                         }
                       },
                       header: "Explore the island life"),

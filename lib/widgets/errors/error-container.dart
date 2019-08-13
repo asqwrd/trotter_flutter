@@ -18,7 +18,7 @@ class ErrorContainer extends StatelessWidget {
           elevation: 0,
           brightness: Brightness.light,
         ),
-        body: Stack(children: <Widget>[
+        body: Stack(fit: StackFit.expand, children: <Widget>[
           Center(
               child: Container(
                   color: Colors.transparent,

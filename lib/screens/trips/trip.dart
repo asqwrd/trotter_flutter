@@ -971,14 +971,18 @@ class TripState extends State<Trip> {
                if(snapshot.hasData && snapshot.data.error == null){
                 return _buildLoadedBody(context,snapshot, store);
               } else if(snapshot.hasData && snapshot.data.error != null){
-                return ErrorContainer(
+                return ListView(shrinkWrap: true, children: <Widget>[
+                      Container(
+                          height: _panelHeightOpen - 80,
+                          width: MediaQuery.of(context).size.width,
+                          child: ErrorContainer(
                   color: Color.fromRGBO(106,154,168,1),
                   onRetry: () {
                     setState(() {
                       data =  fetchTrip(this.tripId, store); 
                     });
                   },
-                );
+                ))]);
               }
               return _buildLoadingBody(context);
             }
@@ -1122,49 +1126,10 @@ class TripState extends State<Trip> {
     this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
     var fields = [
-      {"label": "${this.travelers.length} ${this.travelers.length != 1 ? 'people': 'person'} traveling", "icon":Container(width: MediaQuery.of(context).size.width/2, height:50, 
+      {"level":"travelers-modal","label": "${this.travelers.length} ${this.travelers.length != 1 ? 'people': 'person'} traveling", "icon":Container(width: MediaQuery.of(context).size.width/2, height:50, 
       child:InkWell(
         onTap: () async {
-          var dialogData = await showGeneralDialog(
-                context: ctxt,
-                pageBuilder: (BuildContext buildContext,
-                    Animation<double> animation,
-                    Animation<double> secondaryAnimation) {
-                  return TravelersModal(
-                    currentUserId: store.currentUser.uid,
-                      ownerId: this.trip['owner_id'],
-                      tripId: this.tripId, travelers: this.travelers);
-                },
-                transitionBuilder: (BuildContext context,
-                    Animation<double> animation,
-                    Animation<double> secondaryAnimation,
-                    Widget child) {
-                  return new FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-                barrierDismissible: true,
-                barrierLabel:
-                    MaterialLocalizations.of(context).modalBarrierDismissLabel,
-                barrierColor: Colors.black.withOpacity(0.5),
-                transitionDuration: const Duration(milliseconds: 300),
-              );
-              
-              if (dialogData != null) {
-                final travelers = dialogData['travelers'];
-                var response = await putUpdateTrip(tripId, {"group": travelers});
-                  if(response.success == true){
-                    setState(() {
-                      this.trip['group'] = travelers;
-                      this.trip['travelers'] = response.travelers;
-                      this.travelers = response.travelers;
-                      store.tripStore.updateTrip(this.trip); 
-                      data = fetchTrip(this.tripId);
-
-                    });
-                  }
-              }
+          await openTravelersModal(ctxt, store);
         }, 
         child:buildTravelers(this.travelers)))},
       {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor), "level":"travelinfo"},
@@ -1250,6 +1215,8 @@ class TripState extends State<Trip> {
                   onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
                 } else if(fields[index]['level'] == 'travelinfo'){
                   onPush({'tripId':this.tripId, 'currentUserId': store.currentUser.uid,"level": "travelinfo","ownerId": this.trip['owner_id']});
+                }else if(fields[index]['level'] == 'travelers-modal'){
+                  await openTravelersModal(ctxt, store);
                 }
               },
               trailing: fields[index]['icon'],
@@ -1266,6 +1233,49 @@ class TripState extends State<Trip> {
         )
       ]
     ));
+  }
+
+  Future openTravelersModal(BuildContext ctxt, TrotterStore store) async {
+    var dialogData = await showGeneralDialog(
+          context: ctxt,
+          pageBuilder: (BuildContext buildContext,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation) {
+            return TravelersModal(
+              currentUserId: store.currentUser.uid,
+                ownerId: this.trip['owner_id'],
+                tripId: this.tripId, travelers: this.travelers);
+          },
+          transitionBuilder: (BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child) {
+            return new FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          barrierDismissible: true,
+          barrierLabel:
+              MaterialLocalizations.of(context).modalBarrierDismissLabel,
+          barrierColor: Colors.black.withOpacity(0.5),
+          transitionDuration: const Duration(milliseconds: 300),
+        );
+        
+        if (dialogData != null) {
+          final travelers = dialogData['travelers'];
+          var response = await putUpdateTrip(tripId, {"group": travelers});
+            if(response.success == true){
+              setState(() {
+                this.trip['group'] = travelers;
+                this.trip['travelers'] = response.travelers;
+                this.travelers = response.travelers;
+                store.tripStore.updateTrip(this.trip); 
+                data = fetchTrip(this.tripId);
+    
+              });
+            }
+        }
   }
 
   showDestinationsModal(BuildContext context, dynamic destinations, Color color) {

@@ -183,13 +183,18 @@ class CountryState extends State<Country> {
             future: data,
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data.error != null) {
-                return ErrorContainer(
-                  onRetry: () {
-                    setState(() {
-                      data = fetchCountry(this.countryId, this.userId);
-                    });
-                  },
-                );
+                return ListView(shrinkWrap: true, children: <Widget>[
+                  Container(
+                      height: _panelHeightOpen - 80,
+                      width: MediaQuery.of(context).size.width,
+                      child: ErrorContainer(
+                        onRetry: () {
+                          setState(() {
+                            data = fetchCountry(this.countryId, this.userId);
+                          });
+                        },
+                      ))
+                ]);
               }
               return _buildLoadedBody(context, snapshot);
             }),

@@ -228,14 +228,20 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
             this.itineraryId) {
       return _buildLoadingBody(ctxt);
     }
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     if (store.itineraryStore.itineraryBuilder.error != null) {
-      return ErrorContainer(
-        onRetry: () async {
-          store.itineraryStore.setItineraryBuilderLoading(true);
-          await fetchItineraryBuilder(this.itineraryId, store);
-          store.itineraryStore.setItineraryBuilderLoading(false);
-        },
-      );
+      return ListView(shrinkWrap: true, children: <Widget>[
+        Container(
+            height: _panelHeightOpen - 80,
+            width: MediaQuery.of(context).size.width,
+            child: ErrorContainer(
+              onRetry: () async {
+                store.itineraryStore.setItineraryBuilderLoading(true);
+                await fetchItineraryBuilder(this.itineraryId, store);
+                store.itineraryStore.setItineraryBuilderLoading(false);
+              },
+            ))
+      ]);
     }
 
     var itinerary = store.itineraryStore.itineraryBuilder.itinerary;

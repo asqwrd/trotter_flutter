@@ -550,9 +550,7 @@ class TripsState extends State<Trips> {
                                     alignment: Alignment.center,
                                     placeholder: const Icon(Icons.refresh),
                                     enableRefresh: true,
-                                  )
-
-                                  ),
+                                  )),
                               Positioned.fill(
                                   top: 0,
                                   left: 0,
@@ -622,7 +620,7 @@ class TripsState extends State<Trips> {
                                     GestureDetector(
                                       onTap: () {
                                         Share.share(
-                                            'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}');
+                                            'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application');
                                       },
                                       child: Container(
                                           padding: EdgeInsets.all(5),

@@ -913,7 +913,7 @@ class TripState extends State<Trip> {
             }        
           ),
           ListTile(leading: Icon(Icons.share), title: Text('Invite travelers'), onTap: (){
-            Share.share('Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application&afl=https://ajibade.me?trip%3D${this.tripId}');
+            Share.share('Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application');
             Navigator.pop(context);
           },)
         ]

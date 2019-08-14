@@ -279,7 +279,7 @@ class PoiState extends State<Poi> {
                 padding: EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
                 child: AutoSizeText(descriptionShort,
                     style: TextStyle(
-                        fontSize: 18.0, fontWeight: FontWeight.w300))),
+                        fontSize: 13.0, fontWeight: FontWeight.w300))),
             Container(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 margin: EdgeInsets.only(bottom: 30),
@@ -389,14 +389,14 @@ class PoiState extends State<Poi> {
                 margin: EdgeInsets.only(right: 10.0),
                 child: AutoSizeText(
                   '${properties[index]['name']}:',
-                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500),
+                  style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w500),
                 )),
             Flexible(
                 child: AutoSizeText(
               properties[index]['value'],
               //maxLines: 2,
               //overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+              style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w300),
             )),
           ],
         ));

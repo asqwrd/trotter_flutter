@@ -148,51 +148,60 @@ class DayEditState extends State<DayEdit> {
                         return _buildLoadedBody(context, snapshot);
                       } else if (snapshot.hasData &&
                           snapshot.data.error != null) {
-                        return ListView(shrinkWrap: true, children: <Widget>[
-                          Container(
-                              height: _panelHeightOpen - 80,
-                              width: MediaQuery.of(context).size.width,
-                              child: ErrorContainer(
-                                color: Color.fromRGBO(106, 154, 168, 1),
-                                onRetry: () {
-                                  setState(() {
-                                    data =
-                                        fetchDay(this.itineraryId, this.dayId);
-                                    data.then((data) {
-                                      if (data.error == null) {
-                                        setState(() {
-                                          this.color = Color(
-                                              hexStringToHexInt(data.color));
-                                          this.itineraryName =
-                                              data.itinerary['name'];
-                                          this.ownerId =
-                                              data.itinerary['owner_id'];
-                                          this.startDate =
-                                              data.itinerary['start_date'] *
-                                                  1000;
-                                          this.destinationName =
-                                              data.destination['name'];
-                                          this.location =
-                                              data.destination['location'];
-                                          this.destination = data.destination;
-                                          this.destinationId =
-                                              data.destination['id'].toString();
-                                          this.itineraryItems = data
-                                              .day['itinerary_items']
-                                              .sublist(1);
-                                          this.startLocation =
-                                              data.itinerary['start_location'];
-                                          this.currentPosition =
-                                              data.currentPosition;
-                                          this.image =
-                                              data.destination['image'];
+                        return ListView(
+                            controller: _sc,
+                            physics: disableScroll
+                                ? NeverScrollableScrollPhysics()
+                                : ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            children: <Widget>[
+                              Container(
+                                  height: _panelHeightOpen - 80,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: ErrorContainer(
+                                    color: Color.fromRGBO(106, 154, 168, 1),
+                                    onRetry: () {
+                                      setState(() {
+                                        data = fetchDay(
+                                            this.itineraryId, this.dayId);
+                                        data.then((data) {
+                                          if (data.error == null) {
+                                            setState(() {
+                                              this.color = Color(
+                                                  hexStringToHexInt(
+                                                      data.color));
+                                              this.itineraryName =
+                                                  data.itinerary['name'];
+                                              this.ownerId =
+                                                  data.itinerary['owner_id'];
+                                              this.startDate =
+                                                  data.itinerary['start_date'] *
+                                                      1000;
+                                              this.destinationName =
+                                                  data.destination['name'];
+                                              this.location =
+                                                  data.destination['location'];
+                                              this.destination =
+                                                  data.destination;
+                                              this.destinationId = data
+                                                  .destination['id']
+                                                  .toString();
+                                              this.itineraryItems = data
+                                                  .day['itinerary_items']
+                                                  .sublist(1);
+                                              this.startLocation = data
+                                                  .itinerary['start_location'];
+                                              this.currentPosition =
+                                                  data.currentPosition;
+                                              this.image =
+                                                  data.destination['image'];
+                                            });
+                                          }
                                         });
-                                      }
-                                    });
-                                  });
-                                },
-                              ))
-                        ]);
+                                      });
+                                    },
+                                  ))
+                            ]);
                       }
                       return _buildLoadingBody(context);
                     }))),

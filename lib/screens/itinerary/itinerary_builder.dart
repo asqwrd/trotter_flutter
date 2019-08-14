@@ -224,18 +224,24 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     if (this.errorUi == true) {
-      return ListView(shrinkWrap: true, children: <Widget>[
-        Container(
-            height: _panelHeightOpen - 80,
-            width: MediaQuery.of(context).size.width,
-            child: ErrorContainer(
-              onRetry: () {
-                store.itineraryStore.setItineraryBuilderLoading(true);
-                data = fetchItineraryBuilder(this.itineraryId, store);
-                store.itineraryStore.setItineraryBuilderLoading(false);
-              },
-            ))
-      ]);
+      return ListView(
+          controller: _sc,
+          physics: disableScroll
+              ? NeverScrollableScrollPhysics()
+              : ClampingScrollPhysics(),
+          shrinkWrap: true,
+          children: <Widget>[
+            Container(
+                height: _panelHeightOpen - 80,
+                width: MediaQuery.of(context).size.width,
+                child: ErrorContainer(
+                  onRetry: () {
+                    store.itineraryStore.setItineraryBuilderLoading(true);
+                    data = fetchItineraryBuilder(this.itineraryId, store);
+                    store.itineraryStore.setItineraryBuilderLoading(false);
+                  },
+                ))
+          ]);
     }
     if (store.itineraryStore.itineraryBuilder.itinerary == null ||
         store.itineraryStore.itineraryBuilder.loading ||

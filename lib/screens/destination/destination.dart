@@ -235,19 +235,26 @@ class DestinationState extends State<Destination>
                         return _buildLoadedBody(context, snapshot);
                       } else if (snapshot.hasData &&
                           snapshot.data.error != null) {
-                        return ListView(shrinkWrap: true, children: <Widget>[
-                          Container(
-                              height: _panelHeightOpen - 80,
-                              width: MediaQuery.of(context).size.width,
-                              child: ErrorContainer(
-                                onRetry: () {
-                                  setState(() {
-                                    data = fetchDestination(this.destinationId,
-                                        this.destinationType);
-                                  });
-                                },
-                              ))
-                        ]);
+                        return ListView(
+                            controller: _sc,
+                            physics: disableScroll
+                                ? NeverScrollableScrollPhysics()
+                                : ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            children: <Widget>[
+                              Container(
+                                  height: _panelHeightOpen - 80,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: ErrorContainer(
+                                    onRetry: () {
+                                      setState(() {
+                                        data = fetchDestination(
+                                            this.destinationId,
+                                            this.destinationType);
+                                      });
+                                    },
+                                  ))
+                            ]);
                       }
                       return Container();
                     })),

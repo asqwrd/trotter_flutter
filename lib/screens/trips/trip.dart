@@ -971,8 +971,14 @@ class TripState extends State<Trip> {
                if(snapshot.hasData && snapshot.data.error == null){
                 return _buildLoadedBody(context,snapshot, store);
               } else if(snapshot.hasData && snapshot.data.error != null){
-                return ListView(shrinkWrap: true, children: <Widget>[
-                      Container(
+                return ListView(
+                  controller: _sc,
+                  physics: disableScroll
+                      ? NeverScrollableScrollPhysics()
+                      : ClampingScrollPhysics(), 
+                      shrinkWrap: true, 
+                      children: <Widget>[
+                        Container(
                           height: _panelHeightOpen - 80,
                           width: MediaQuery.of(context).size.width,
                           child: ErrorContainer(

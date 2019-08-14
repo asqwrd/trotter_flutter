@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:shimmer/shimmer.dart';
@@ -90,7 +91,7 @@ _buildLoadedList(
                                       image: AssetImage('images/day-empty.jpg'),
                                       fit: BoxFit.contain),
                                   borderRadius: BorderRadius.circular(130))),
-                          Text(
+                          AutoSizeText(
                             'No itineraries created yet?',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -99,7 +100,7 @@ _buildLoadedList(
                                 fontWeight: FontWeight.w300),
                           ),
                           SizedBox(height: 10),
-                          Text(
+                          AutoSizeText(
                             'Create a trip to start planning your next adventure!',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -113,7 +114,7 @@ _buildLoadedList(
                                 vertical: 20, horizontal: 20),
                             shape: RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(50.0)),
-                            child: Text(
+                            child: AutoSizeText(
                               'Start planning',
                               style: TextStyle(
                                   color: Colors.white,
@@ -134,7 +135,7 @@ _buildLoadedList(
                       Container(
                           padding: EdgeInsets.only(left: 20, bottom: 20),
                           margin: EdgeInsets.only(bottom: 20),
-                          child: Text(
+                          child: AutoSizeText(
                             'Choose an itinerary',
                             style: TextStyle(
                                 fontSize: 30, fontWeight: FontWeight.w300),
@@ -249,7 +250,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
               Container(
                   width: 200,
                   margin: EdgeInsets.only(top: 10),
-                  child: Text(
+                  child: AutoSizeText(
                     item['name'],
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
@@ -275,7 +276,7 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
       await addToDay(store, item['id'], dayId, destinationId, data, true);
   if (response.success == true) {
     Scaffold.of(context).showSnackBar(SnackBar(
-      content: Text(
+      content: AutoSizeText(
           toIndex != null
               ? '${poi['name']} added to day $toIndex'
               : '${poi['name']} added to ${item['name']}',
@@ -346,7 +347,7 @@ showDayBottomSheet(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Text(
+                                    AutoSizeText(
                                       'Choose a day',
                                       style: TextStyle(
                                           fontSize: 30,
@@ -367,7 +368,7 @@ showDayBottomSheet(
                                                   color,
                                                   destination);
                                             },
-                                            child: Text(
+                                            child: AutoSizeText(
                                               'Change',
                                               style: TextStyle(
                                                   color: color,
@@ -413,13 +414,13 @@ showDayBottomSheet(
                                   },
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 20),
-                                  title: Text(
+                                  title: AutoSizeText(
                                     'Day ${days[dayIndex]['day'] + 1}',
                                     style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w500),
                                   ),
-                                  subtitle: Text(
+                                  subtitle: AutoSizeText(
                                     '${days[dayIndex]['itinerary_items'].length} ${days[dayIndex]['itinerary_items'].length == 1 ? "place" : "places"} to see',
                                     style: TextStyle(
                                         fontSize: 20,

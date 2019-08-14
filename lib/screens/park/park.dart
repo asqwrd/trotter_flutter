@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -285,7 +286,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                   Container(
                       padding: EdgeInsets.only(
                           top: 20, left: 20, right: 20, bottom: 20),
-                      child: Text(
+                      child: AutoSizeText(
                         descriptionShort,
                         style: TextStyle(
                             fontSize: 18.0, fontWeight: FontWeight.w300),
@@ -367,7 +368,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                         children: <Widget>[
                           Container(
                               width: MediaQuery.of(context).size.width - 210,
-                              child: Text(
+                              child: AutoSizeText(
                                 items[index]['name'],
                                 maxLines: 2,
                                 overflow: TextOverflow.fade,
@@ -378,7 +379,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                           Container(
                               margin: EdgeInsets.only(top: 5),
                               width: MediaQuery.of(context).size.width - 210,
-                              child: Text(
+                              child: AutoSizeText(
                                 items[index]['description_short'],
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 3,
@@ -409,7 +410,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
       Container(
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: Text(
+        child: AutoSizeText(
           ' Loading...',
           style: TextStyle(fontSize: 30),
         ),

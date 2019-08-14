@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
@@ -320,14 +321,14 @@ class HomeState extends State<Home> {
           return new Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
             new ListTile(
                 leading: new Icon(Icons.trip_origin),
-                title: new Text('Create Trip'),
+                title: new AutoSizeText('Create Trip'),
                 onTap: () {
                   Navigator.pop(context);
                   onPush({'level': 'createtrip', 'param': data});
                 }),
             new ListTile(
                 leading: new Icon(Icons.add_circle),
-                title: new Text('Add to Trip'),
+                title: new AutoSizeText('Add to Trip'),
                 onTap: () {
                   Navigator.pop(context);
                   showTripsBottomSheet(context, data);
@@ -341,16 +342,16 @@ class HomeState extends State<Home> {
     var widgets = <Widget>[
       Padding(
           padding: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
-          child: Text(
+          child: AutoSizeText(
             'Get inspired by itineraries!',
             style: TextStyle(
-                fontSize: 25, color: color, fontWeight: FontWeight.w500),
+                fontSize: 20, color: color, fontWeight: FontWeight.w500),
           )),
       Padding(
           padding: EdgeInsets.only(bottom: 10, top: 0, left: 20, right: 20),
-          child: Text(
+          child: AutoSizeText(
             'Trotter is for people who love to travel and those who need help planning. Itineraries are helpful in organizing your trips.',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
           ))
     ];
     for (var itinerary in itineraries) {
@@ -452,9 +453,9 @@ class HomeState extends State<Home> {
               Container(
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(top: 10, bottom: 20),
-                child: Text(
+                child: AutoSizeText(
                   'Explore',
-                  style: TextStyle(fontSize: 30),
+                  style: TextStyle(fontSize: 25),
                 ),
               ),
               snapshot.connectionState == ConnectionState.waiting
@@ -511,7 +512,7 @@ class HomeState extends State<Home> {
                             children: <Widget>[
                               Container(
                                   margin: EdgeInsets.only(bottom: 20),
-                                  child: Text(
+                                  child: AutoSizeText(
                                     'Failed to get itineraries.',
                                     style: TextStyle(
                                         fontSize: 24,

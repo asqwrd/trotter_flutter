@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -89,7 +90,7 @@ class TravelersModalState extends State<TravelersModal> {
             useDiskCache: true,
             cacheRule: CacheRule(maxAge: const Duration(days: 7)),
           )),
-          label: Text("${traveler['displayName']}"),
+          label: AutoSizeText("${traveler['displayName']}"),
           deleteIcon: this.ownerId == this.currentUserId ||
                   this.currentUserId == traveler['uid']
               ? Icon(Icons.close)
@@ -121,7 +122,7 @@ class TravelersModalState extends State<TravelersModal> {
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
-                  return Text('Press button to start.');
+                  return AutoSizeText('Press button to start.');
                 case ConnectionState.active:
                 case ConnectionState.waiting:
                   return _buildLoadedBody(context, snapshot, true, '');
@@ -130,7 +131,7 @@ class TravelersModalState extends State<TravelersModal> {
                     return _buildLoadedBody(
                         context, snapshot, false, this.tripId);
                   } else if (snapshot.hasError) {
-                    return Text('No Connection');
+                    return AutoSizeText('No Connection');
                   }
               }
               return _buildLoadedBody(context, snapshot, true, '');
@@ -158,10 +159,10 @@ class TravelersModalState extends State<TravelersModal> {
           backgroundColor: Colors.white,
           brightness: Brightness.light,
           // centerTitle: true,
-          title: Text(
+          title: AutoSizeText(
             'Select travelers',
             style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.w300, fontSize: 24),
+                color: Colors.black, fontWeight: FontWeight.w300, fontSize: 19),
           ),
           actions: <Widget>[
             Center(
@@ -170,10 +171,10 @@ class TravelersModalState extends State<TravelersModal> {
                     child: FlatButton(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30)),
-                      child: Text(
+                      child: AutoSizeText(
                         'Save',
                         style: TextStyle(
-                            fontWeight: FontWeight.w500, fontSize: 18),
+                            fontWeight: FontWeight.w500, fontSize: 13),
                       ),
                       textColor: Colors.lightBlue,
                       padding: EdgeInsets.all(0),
@@ -219,7 +220,8 @@ class TravelersModalState extends State<TravelersModal> {
                                   backgroundImage: NetworkImage(
                                 results[index]['photoUrl'],
                               )),
-                              label: Text("${results[index]['displayName']}"),
+                              label: AutoSizeText(
+                                  "${results[index]['displayName']}"),
                               deleteIcon: Icon(Icons.close),
                               onDeleted: () {
                                 this._deleteChip(results[index]['uid']);
@@ -230,8 +232,8 @@ class TravelersModalState extends State<TravelersModal> {
                     contentPadding:
                         EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                     leading: Container(
-                      width: 50.0,
-                      height: 50.0,
+                      width: 40.0,
+                      height: 40.0,
                       child: ClipPath(
                           clipper: ShapeBorderClipper(
                               shape: RoundedRectangleBorder(
@@ -255,10 +257,10 @@ class TravelersModalState extends State<TravelersModal> {
                             enableRefresh: true,
                           )),
                     ),
-                    title: Text(
+                    title: AutoSizeText(
                       results[index]['displayName'],
                       style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                   );
                 },

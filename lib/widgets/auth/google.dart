@@ -1,4 +1,5 @@
 // containers/auth_button/auth_button_container.dart
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/store/middleware.dart';
@@ -55,7 +56,7 @@ class GoogleAuthButton extends StatelessWidget {
         // Contianer has many options you can pass it,
         // Most widgets do *not* allow you to explicitly set
         // width and height
-        width: 180.0,
+        width: 150.0,
         height: 50.0,
 
         alignment: Alignment.center,
@@ -71,15 +72,15 @@ class GoogleAuthButton extends StatelessWidget {
               // This constructor expects an image URL -- I found this one on Google
               child: Image.asset(
                 'images/google-logo.png',
-                width: 30.0,
+                width: 25.0,
                 fit: BoxFit.contain,
               ),
             ),
-            new Text(
+            new AutoSizeText(
               buttonText,
               textAlign: TextAlign.center,
               style: new TextStyle(
-                fontSize: 16.0,
+                fontSize: 11.0,
               ),
             ),
           ],

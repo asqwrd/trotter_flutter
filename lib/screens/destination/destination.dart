@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:loadmore/loadmore.dart';
@@ -398,11 +399,11 @@ class DestinationState extends State<Destination>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Text('Info on ${destination['country_name']}',
-                    style: TextStyle(fontSize: 24, color: color)),
+                AutoSizeText('Info on ${destination['country_name']}',
+                    style: TextStyle(fontSize: 19, color: color)),
                 Icon(
                   Icons.chevron_right,
-                  size: 24,
+                  size: 19,
                   color: color,
                 )
               ],
@@ -410,9 +411,9 @@ class DestinationState extends State<Destination>
       ),
       Container(
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Text(
+          child: AutoSizeText(
             description,
-            style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w300),
+            style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w300),
           ))
     ];
     for (var section in sections) {
@@ -549,8 +550,8 @@ class DestinationState extends State<Destination>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Container(
-                                width: 120,
-                                height: 90,
+                                width: 100,
+                                height: 70,
                                 margin: EdgeInsets.only(right: 20),
                                 child: ClipPath(
                                     clipper: ShapeBorderClipper(
@@ -599,24 +600,24 @@ class DestinationState extends State<Destination>
                                   Container(
                                       width: MediaQuery.of(context).size.width -
                                           210,
-                                      child: Text(
+                                      child: AutoSizeText(
                                         items[index]['name'],
                                         maxLines: 2,
                                         overflow: TextOverflow.fade,
                                         style: TextStyle(
-                                            fontSize: 20.0,
+                                            fontSize: 15.0,
                                             fontWeight: FontWeight.w500),
                                       )),
                                   Container(
                                       margin: EdgeInsets.only(top: 5),
                                       width: MediaQuery.of(context).size.width -
                                           210,
-                                      child: Text(
+                                      child: AutoSizeText(
                                         items[index]['description_short'],
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 3,
                                         style: TextStyle(
-                                            fontSize: 18.0,
+                                            fontSize: 13.0,
                                             fontWeight: FontWeight.w300),
                                       ))
                                 ],
@@ -629,9 +630,9 @@ class DestinationState extends State<Destination>
   }
 
   _renderTab(String label) {
-    return Text(label,
+    return AutoSizeText(label,
         style: TextStyle(
-          fontSize: 20,
+          fontSize: 15,
           fontWeight: FontWeight.w300,
         ));
   }
@@ -664,17 +665,17 @@ class DestinationState extends State<Destination>
     var children2 = <Widget>[
       TabBarLoading(),
       Container(
-          height: 175.0,
+          height: 155.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),
       Container(
-          height: 175.0,
+          height: 155.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),
       Container(
-          height: 175.0,
+          height: 155.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),

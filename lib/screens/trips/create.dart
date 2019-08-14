@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'dart:core';
@@ -68,7 +69,10 @@ class CreateTripState extends State<CreateTrip> {
               contentPadding: EdgeInsets.symmetric(vertical: 20.0),
               prefixIcon: Padding(
                   padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                  child: Icon(Icons.label)),
+                  child: Icon(
+                    Icons.label,
+                    size: 15,
+                  )),
               filled: true,
               errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(5.0)),
@@ -85,6 +89,7 @@ class CreateTripState extends State<CreateTrip> {
                   borderSide:
                       BorderSide(width: 0.0, color: Colors.transparent)),
               hintText: 'Name your trip',
+              hintStyle: TextStyle(fontSize: 13),
             ),
             controller: nameController,
             validator: (value) {
@@ -102,10 +107,10 @@ class CreateTripState extends State<CreateTrip> {
               child: FlatButton(
                 padding: EdgeInsets.all(20),
                 child: Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                  Icon(Icons.add, size: 25),
-                  Text(' Add destination',
+                  Icon(Icons.add, size: 20),
+                  AutoSizeText(' Add destination',
                       style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w300))
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w300))
                 ]),
                 onPressed: () {
                   setState(() {
@@ -160,8 +165,8 @@ class CreateTripState extends State<CreateTrip> {
                     if (response.success == true) {
                       //store.tripStore.createTrip(response.trip);
                       Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text('Trip created!',
-                              style: TextStyle(fontSize: 18)),
+                          content: AutoSizeText('Trip created!',
+                              style: TextStyle(fontSize: 15)),
                           duration: Duration(seconds: 2)));
                       onPush({
                         "id": response.trip['id'].toString(),
@@ -172,15 +177,15 @@ class CreateTripState extends State<CreateTrip> {
                   } else {
                     Scaffold.of(context).showSnackBar(SnackBar(
                       backgroundColor: Colors.red,
-                      content: Text('Trip failed to get created!',
-                          style: TextStyle(fontSize: 18)),
+                      content: AutoSizeText('Trip failed to get created!',
+                          style: TextStyle(fontSize: 15)),
                       duration: Duration(seconds: 2),
                     ));
                   }
                 },
-                child: Text('Create trip',
+                child: AutoSizeText('Create trip',
                     style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         fontWeight: FontWeight.w300,
                         color: Colors.white)),
               )))
@@ -295,7 +300,7 @@ class CreateTripState extends State<CreateTrip> {
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                       prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                          child: Icon(Icons.label)),
+                          child: Icon(Icons.label, size: 15)),
                       //fillColor: Colors.blueGrey.withOpacity(0.5),
                       filled: true,
                       errorBorder: OutlineInputBorder(
@@ -319,6 +324,7 @@ class CreateTripState extends State<CreateTrip> {
                           borderSide: BorderSide(
                               width: 0.0, color: Colors.transparent)),
                       hintText: 'Destination',
+                      hintStyle: TextStyle(fontSize: 13),
                     ),
                     controller: _destinationTextController,
                     validator: (value) {
@@ -392,11 +398,12 @@ class CreateTripState extends State<CreateTrip> {
                     editable: false,
                     firstDate: DateTime.now(),
                     decoration: InputDecoration(
-                      hintText: 'Arrival date',
+                      hintText: 'Arrival',
+                      hintStyle: TextStyle(fontSize: 13),
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                       prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                          child: Icon(Icons.calendar_today, size: 18)),
+                          child: Icon(Icons.calendar_today, size: 15)),
                       //fillColor: Colors.blueGrey.withOpacity(0.5),
                       filled: true,
                       errorBorder: OutlineInputBorder(
@@ -448,11 +455,12 @@ class CreateTripState extends State<CreateTrip> {
                     editable: false,
                     firstDate: DateTime.now(),
                     decoration: InputDecoration(
-                      hintText: 'Departure date',
+                      hintText: 'Departure',
+                      hintStyle: TextStyle(fontSize: 13),
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                       prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                          child: Icon(Icons.calendar_today, size: 18)),
+                          child: Icon(Icons.calendar_today, size: 15)),
                       //fillColor: Colors.blueGrey.withOpacity(0.5),
                       filled: true,
                       errorBorder: OutlineInputBorder(
@@ -504,7 +512,7 @@ class CreateTripState extends State<CreateTrip> {
 
   _buildDivider() {
     return Container(
-        margin: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+        margin: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
         child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)));
   }
 
@@ -540,9 +548,9 @@ class CreateTripState extends State<CreateTrip> {
                     return Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.only(top: 10, bottom: 40),
-                      child: Text(
+                      child: AutoSizeText(
                         'Where to?',
-                        style: TextStyle(fontSize: 30),
+                        style: TextStyle(fontSize: 25),
                       ),
                     );
                   }

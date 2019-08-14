@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
@@ -50,6 +51,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
       },
       onResume: (Map<String, dynamic> message) async {
         print("onResume: $message");
+        fetchNotifications(store);
       },
     );
     _firebaseMessaging.requestNotificationPermissions(
@@ -141,7 +143,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
           children: <Widget>[
             Padding(
                 padding: EdgeInsets.only(top: 20, bottom: 40),
-                child: Text(
+                child: AutoSizeText(
                   'Please sign up to view the trip',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
                 )),

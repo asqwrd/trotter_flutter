@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -247,7 +248,7 @@ class DayEditState extends State<DayEdit> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         destinationName != null
-                            ? Text('$destinationName',
+                            ? AutoSizeText('$destinationName',
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 30,
@@ -393,7 +394,7 @@ class DayEditState extends State<DayEdit> {
               children: <Widget>[
                 new ListTile(
                     leading: new Icon(EvilIcons.external_link),
-                    title: new Text('Move to another day'),
+                    title: new AutoSizeText('Move to another day'),
                     onTap: () async {
                       var result = await showDayBottomSheet(
                           store,
@@ -426,7 +427,8 @@ class DayEditState extends State<DayEdit> {
                         } else {
                           setState(() {
                             Scaffold.of(this.context).showSnackBar(SnackBar(
-                              content: Text('Unable to delete from itinerary',
+                              content: AutoSizeText(
+                                  'Unable to delete from itinerary',
                                   style: TextStyle(fontSize: 18)),
                               duration: Duration(seconds: 2),
                             ));
@@ -439,7 +441,7 @@ class DayEditState extends State<DayEdit> {
                     leading: new Icon(
                       EvilIcons.trash,
                     ),
-                    title: new Text('Delete from itnerary'),
+                    title: new AutoSizeText('Delete from itnerary'),
                     onTap: () async {
                       this.loading = true;
                       var response =
@@ -454,7 +456,7 @@ class DayEditState extends State<DayEdit> {
                           this.loading = false;
                         });
                         Scaffold.of(ctxt).showSnackBar(SnackBar(
-                          content: Text('$name was removed.',
+                          content: AutoSizeText('$name was removed.',
                               style: TextStyle(fontSize: 18)),
                           duration: Duration(seconds: 2),
                           action: SnackBarAction(
@@ -484,7 +486,7 @@ class DayEditState extends State<DayEdit> {
                                   this.loading = false;
                                   Scaffold.of(ctxt).removeCurrentSnackBar();
                                   Scaffold.of(ctxt).showSnackBar(SnackBar(
-                                    content: Text('Undo successful!',
+                                    content: AutoSizeText('Undo successful!',
                                         style: TextStyle(fontSize: 18)),
                                     duration: Duration(seconds: 2),
                                   ));
@@ -492,7 +494,8 @@ class DayEditState extends State<DayEdit> {
                               } else {
                                 Scaffold.of(ctxt).removeCurrentSnackBar();
                                 Scaffold.of(ctxt).showSnackBar(SnackBar(
-                                    content: Text('Sorry the undo failed!',
+                                    content: AutoSizeText(
+                                        'Sorry the undo failed!',
                                         style: TextStyle(fontSize: 18)),
                                     duration: Duration(seconds: 2)));
                               }
@@ -502,7 +505,8 @@ class DayEditState extends State<DayEdit> {
                       } else {
                         setState(() {
                           Scaffold.of(this.context).showSnackBar(SnackBar(
-                            content: Text('Unable to delete from itinerary',
+                            content: AutoSizeText(
+                                'Unable to delete from itinerary',
                                 style: TextStyle(fontSize: 18)),
                             duration: Duration(seconds: 2),
                           ));

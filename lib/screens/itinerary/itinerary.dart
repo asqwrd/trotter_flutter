@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -236,9 +237,9 @@ class ItineraryState extends State<Itinerary> {
           return Container(
             alignment: Alignment.center,
             padding: EdgeInsets.only(top: 10, bottom: 40),
-            child: Text(
+            child: AutoSizeText(
               '$destinationName, $destinationCountryName',
-              style: TextStyle(fontSize: 30),
+              style: TextStyle(fontSize: 25),
             ),
           );
         }
@@ -262,19 +263,19 @@ class ItineraryState extends State<Itinerary> {
                 Align(
                     alignment: Alignment.topLeft,
                     child: Container(
-                        child: Text(
+                        child: AutoSizeText(
                       'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
                       style:
-                          TextStyle(fontSize: 30, fontWeight: FontWeight.w400),
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.w400),
                     ))),
                 Align(
                     alignment: Alignment.topLeft,
                     child: Container(
                         margin: EdgeInsets.only(bottom: 20),
-                        child: Text(
+                        child: AutoSizeText(
                           '${itineraryItems.length} ${itineraryItems.length == 1 ? "place" : "places"} to see',
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w300),
+                              fontSize: 13, fontWeight: FontWeight.w300),
                         )))
               ]),
               itineraryItems.length > 0
@@ -312,9 +313,9 @@ class ItineraryState extends State<Itinerary> {
       Container(
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: Text(
+        child: AutoSizeText(
           'Getting itinerary...',
-          style: TextStyle(fontSize: 30),
+          style: TextStyle(fontSize: 25),
         ),
       ),
       Center(heightFactor: 12, child: RefreshProgressIndicator()),

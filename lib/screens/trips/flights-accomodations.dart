@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
@@ -155,7 +156,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
           child: new TrotterAppBar(
               onPush: onPush,
               color: color,
-              title: 'Flights & accommodation',
+              title: 'Travel details',
               back: true)),
     ]);
   }
@@ -170,7 +171,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
         FlightsAccomodationsList(
             destination: destination,
             onDeletePressed: (data) async {
-              print(data);
               final detailId = data['id'];
               final destinationId = data['destinationId'];
               setState(() {
@@ -178,7 +178,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
               });
               final response = await deleteFlightsAndAccomodations(
                   this.tripId, destinationId, detailId);
-              print(response);
               if (response.success == true) {
                 var res = await fetchFlightsAccomodations(
                     this.tripId, this.currentUserId);
@@ -187,8 +186,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                   this.flightsAccomodations = res.flightsAccomodations;
                 });
                 Scaffold.of(this.context).showSnackBar(SnackBar(
-                  content:
-                      Text('Delete successful', style: TextStyle(fontSize: 18)),
+                  content: AutoSizeText('Delete successful',
+                      style: TextStyle(fontSize: 13)),
                   duration: Duration(seconds: 2),
                 ));
               } else {
@@ -196,8 +195,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                   this.loading = false;
                 });
                 Scaffold.of(this.context).showSnackBar(SnackBar(
-                  content:
-                      Text('Unable to delete', style: TextStyle(fontSize: 18)),
+                  content: AutoSizeText('Unable to delete',
+                      style: TextStyle(fontSize: 13)),
                   duration: Duration(seconds: 2),
                 ));
               }
@@ -281,9 +280,9 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   }
 
   _renderTab(String label) {
-    return Text(label,
+    return AutoSizeText(label,
         style: TextStyle(
-          fontSize: 20,
+          fontSize: 15,
           fontWeight: FontWeight.w300,
         ));
   }

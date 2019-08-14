@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:loadmore/loadmore.dart';
@@ -218,7 +219,7 @@ Widget buildTravelers(List<dynamic> travelers) {
                     alignment: Alignment.center,
                     width: 35.0,
                     height: 35,
-                    child: Text(
+                    child: AutoSizeText(
                       moreText,
                       style: TextStyle(color: Colors.white),
                     ))))));
@@ -272,11 +273,11 @@ class TrotterLoadMoreDelegate extends LoadMoreDelegate {
       {LoadMoreTextBuilder builder = DefaultLoadMoreTextBuilder.chinese}) {
     if (status == LoadMoreStatus.fail) {
       return Container(
-        child: Text('failed to load'),
+        child: AutoSizeText('failed to load'),
       );
     }
     if (status == LoadMoreStatus.idle) {
-      return Text('');
+      return AutoSizeText('');
     }
     if (status == LoadMoreStatus.loading) {
       return Container(
@@ -294,7 +295,7 @@ class TrotterLoadMoreDelegate extends LoadMoreDelegate {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(''),
+              child: AutoSizeText(''),
             ),
           ],
         ),
@@ -309,8 +310,8 @@ class TrotterLoadMoreDelegate extends LoadMoreDelegate {
                 mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Container(
-                      width: 50,
-                      height: 50,
+                      width: 30,
+                      height: 30,
                       foregroundDecoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
@@ -329,11 +330,11 @@ class TrotterLoadMoreDelegate extends LoadMoreDelegate {
                                   AssetImage('images/notification-empty.jpg'),
                               fit: BoxFit.contain),
                           borderRadius: BorderRadius.circular(130))),
-                  Text(
+                  AutoSizeText(
                     'All caught up!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 15,
                         color: color,
                         fontWeight: FontWeight.w300),
                   ),
@@ -341,6 +342,6 @@ class TrotterLoadMoreDelegate extends LoadMoreDelegate {
               )));
     }
 
-    return Text('');
+    return AutoSizeText('');
   }
 }

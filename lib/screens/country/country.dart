@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -331,20 +332,20 @@ class CountryState extends State<Country> {
             Container(
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: 10, bottom: 20),
-              child: Text(
+              child: AutoSizeText(
                 'Tips & Requirements',
-                style: TextStyle(fontSize: 30),
+                style: TextStyle(fontSize: 25),
               ),
             ),
             Padding(
-                padding: EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
-                child: Text(descriptionShort,
+                padding: EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0),
+                child: AutoSizeText(descriptionShort,
                     style: TextStyle(
-                        fontSize: 18.0, fontWeight: FontWeight.w300))),
+                        fontSize: 13.0, fontWeight: FontWeight.w300))),
             _showVisa
                 ? Container(
                     margin:
-                        EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
+                        EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0),
                     decoration: BoxDecoration(
                       //color: this.color.withOpacity(.3),
                       borderRadius: BorderRadius.circular(15.0),
@@ -354,12 +355,12 @@ class CountryState extends State<Country> {
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(
+                              AutoSizeText(
                                 'VISA SNAPSHOT',
                                 style: TextStyle(
                                   //color: fontContrast(this.color),
                                   fontWeight: FontWeight.w300,
-                                  fontSize: 18.0,
+                                  fontSize: 13.0,
                                 ),
                                 textAlign: TextAlign.left,
                               ),
@@ -405,17 +406,17 @@ class CountryState extends State<Country> {
                   children: <Widget>[
                     Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Text(
+                        child: AutoSizeText(
                           'Health and Safety',
                           style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 18.0),
+                              fontWeight: FontWeight.w600, fontSize: 13.0),
                         )),
                     Container(
                         margin: EdgeInsets.only(top: 20.0, bottom: 20.0),
                         padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Text(safety['advice'],
+                        child: AutoSizeText(safety['advice'],
                             style: TextStyle(
-                                fontSize: 20.0,
+                                fontSize: 15.0,
                                 fontWeight: FontWeight.w300,
                                 color: _getAdviceColor(
                                     safety['rating'].toDouble())))),
@@ -434,15 +435,15 @@ class CountryState extends State<Country> {
                   children: <Widget>[
                     Padding(
                         padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Text(
+                        child: AutoSizeText(
                           'Emergency numbers',
                           style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 20.0),
+                              fontWeight: FontWeight.w600, fontSize: 15.0),
                         )),
                     Container(
                         padding: EdgeInsets.all(20.0),
                         margin: EdgeInsets.only(
-                            left: 20.0, right: 20.0, top: 20.0, bottom: 40.0),
+                            left: 20.0, right: 20.0, top: 0.0, bottom: 20.0),
                         decoration: BoxDecoration(
                           //color: this.color.withOpacity(.3),
                           borderRadius: BorderRadius.circular(15.0),
@@ -478,12 +479,12 @@ class CountryState extends State<Country> {
                                   left: 20.0,
                                   right: 20.0,
                                   top: 40.0,
-                                  bottom: 20.0),
-                              child: Text(
+                                  bottom: 0.0),
+                              child: AutoSizeText(
                                 'Sockets & Plugs',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 20.0),
+                                    fontSize: 15.0),
                               )),
                           Container(
                               padding: EdgeInsets.all(20.0),
@@ -508,12 +509,12 @@ class CountryState extends State<Country> {
                                         left: 20.0,
                                         right: 20.0,
                                         top: 40.0,
-                                        bottom: 20.0),
-                                    child: Text(
+                                        bottom: 0.0),
+                                    child: AutoSizeText(
                                       'Currency rates',
                                       style: TextStyle(
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 20.0),
+                                          fontSize: 15.0),
                                     )),
                                 Container(
                                     padding: EdgeInsets.all(20.0),
@@ -551,28 +552,29 @@ class CountryState extends State<Country> {
       children: <Widget>[
         ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 0),
-            title: Text('Currency in ${currency['converted_unit']['name']}',
+            title: AutoSizeText(
+                'Currency in ${currency['converted_unit']['name']}',
                 style: TextStyle(
                     //color: fontContrast(this.color),
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     fontWeight: FontWeight.w400)),
-            trailing: Text(currency['converted_unit']['currencyName'],
+            trailing: AutoSizeText(currency['converted_unit']['currencyName'],
                 style: TextStyle(
                     //color: fontContrast(this.color),
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     fontWeight: FontWeight.w300))),
         ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 0),
-            title: Text('1 ${currency['unit']['currencyName']}',
+            title: AutoSizeText('1 ${currency['unit']['currencyName']}',
                 style: TextStyle(
                     // color: fontContrast(this.color),
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     fontWeight: FontWeight.w400)),
-            trailing: Text(
+            trailing: AutoSizeText(
                 '${currency['converted_unit']['currencySymbol']}${currency['converted_currency']}',
                 style: TextStyle(
                     //color: fontContrast(this.color),
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     fontWeight: FontWeight.w300))),
       ],
     );
@@ -583,10 +585,10 @@ class CountryState extends State<Country> {
       Container(
           margin: EdgeInsets.only(top: 10.0, bottom: 40.0),
           width: double.infinity,
-          child: Text(
+          child: AutoSizeText(
             '$name uses a frequency of ${plugsData[0]['frequency']} and voltage of ${plugsData[0]['voltage']} in sockets.  Below are the types of plugs you need when traveling to $name.',
             style: TextStyle(
-              fontSize: 20.0,
+              fontSize: 15.0,
               //color: fontContrast(this.color),
               fontWeight: FontWeight.w400,
             ),
@@ -594,7 +596,7 @@ class CountryState extends State<Country> {
     ];
     for (var plug in plugsData) {
       plugs.add(Padding(
-          padding: EdgeInsets.only(bottom: 20, right: 20.0),
+          padding: EdgeInsets.only(bottom: 0, right: 20.0),
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
@@ -604,7 +606,8 @@ class CountryState extends State<Country> {
                   height: 100.0,
                   //color: fontContrast(this.color)),
                 ),
-                Text('Type ${plug['type']}', style: TextStyle(fontSize: 20.0))
+                AutoSizeText('Type ${plug['type']}',
+                    style: TextStyle(fontSize: 15.0))
               ])));
     }
     return plugs;
@@ -617,15 +620,15 @@ class CountryState extends State<Country> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(label,
+            AutoSizeText(label,
                 style: TextStyle(
                     //color: fontContrast(this.color),
                     fontWeight: FontWeight.w500,
-                    fontSize: 20.0)),
-            Text(numbers,
+                    fontSize: 15.0)),
+            AutoSizeText(numbers,
                 style: TextStyle(
                     //color: fontContrast(this.color),
-                    fontSize: 20.0,
+                    fontSize: 15.0,
                     fontWeight: FontWeight.w300))
           ],
         ));
@@ -638,18 +641,18 @@ class CountryState extends State<Country> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(label,
+              AutoSizeText(label,
                   style: TextStyle(
                       //color: fontContrast(this.color),
                       fontWeight: FontWeight.w700,
-                      fontSize: 18.0)),
+                      fontSize: 13.0)),
               Padding(
                   padding: EdgeInsets.symmetric(vertical: 5.0),
-                  child: Text(
+                  child: AutoSizeText(
                     obj[key].join(' ').trim(),
                     style: TextStyle(
                         //color: fontContrast(this.color),
-                        fontSize: 18.0,
+                        fontSize: 13.0,
                         fontWeight: FontWeight.w300),
                   ))
             ]));
@@ -662,19 +665,19 @@ class CountryState extends State<Country> {
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(label,
+              AutoSizeText(label,
                   style: TextStyle(
                     //color: fontContrast(this.color),
                     fontWeight: FontWeight.w600,
-                    fontSize: 18.0,
+                    fontSize: 13.0,
                   )),
               Padding(
                   padding: EdgeInsets.symmetric(vertical: 5.0),
-                  child: Text(
+                  child: AutoSizeText(
                     '$value $objValue'.trim(),
                     style: TextStyle(
                         //color: fontContrast(this.color),
-                        fontSize: 20.0,
+                        fontSize: 15.0,
                         fontWeight: FontWeight.w300),
                   ))
             ]));
@@ -694,9 +697,9 @@ class CountryState extends State<Country> {
       Container(
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: Text(
+        child: AutoSizeText(
           'Loading...',
-          style: TextStyle(fontSize: 30),
+          style: TextStyle(fontSize: 25),
         ),
       ),
       Center(heightFactor: 12, child: RefreshProgressIndicator()),

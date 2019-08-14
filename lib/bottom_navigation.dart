@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -121,7 +122,7 @@ class BottomNavigation extends StatelessWidget {
             toAnimate: false,
             showBadge: store.notifications != null &&
                 store.notifications.notifications.length > 0,
-            badgeContent: Text(
+            badgeContent: AutoSizeText(
               '${store.notifications.notifications.length}',
               style: TextStyle(color: Colors.white),
             ),
@@ -130,7 +131,7 @@ class BottomNavigation extends StatelessWidget {
             toAnimate: false,
             showBadge: store.notifications != null &&
                 store.notifications.notifications.length > 0,
-            badgeContent: Text(
+            badgeContent: AutoSizeText(
               '${store.notifications.notifications.length}',
               style: TextStyle(color: Colors.white),
             ),
@@ -138,10 +139,10 @@ class BottomNavigation extends StatelessWidget {
         backgroundColor: _colorTabMatching(item: tabItem),
         title: Container(
             margin: EdgeInsets.only(right: 30),
-            child: Text(
+            child: AutoSizeText(
               text,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 10,
               ),
             )),
       );
@@ -152,7 +153,7 @@ class BottomNavigation extends StatelessWidget {
       backgroundColor: _colorTabMatching(item: tabItem),
       title: Container(
           margin: EdgeInsets.only(right: 30),
-          child: Text(
+          child: AutoSizeText(
             text,
             style: TextStyle(
               fontSize: 15,
@@ -181,13 +182,13 @@ class BottomNavigation extends StatelessWidget {
                 child: ClipPath(
                     clipper: CornerRadiusClipper(100),
                     child: Image.network(store.currentUser.photoUrl,
-                        width: 30.0, height: 30.0, fit: BoxFit.contain)))
+                        width: 25.0, height: 25.0, fit: BoxFit.contain)))
             : SvgPicture.asset(
                 TabHelper.icon(item),
                 color:
                     currentTab == item ? TabHelper.color(item) : Colors.black,
-                width: 30,
-                height: 30,
+                width: 25,
+                height: 25,
                 fit: BoxFit.contain,
                 alignment: Alignment.centerLeft,
               ));

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'dart:core';
 import 'package:intl/intl.dart';
@@ -39,7 +40,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
     return Column(children: <Widget>[
       Padding(
           padding: EdgeInsets.only(bottom: 20),
-          child: Text('Add destination',
+          child: AutoSizeText('Add destination',
               style: TextStyle(fontSize: 23, fontWeight: FontWeight.w300))),
       Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
@@ -227,7 +228,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
                 borderRadius: new BorderRadius.circular(5.0)),
             child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                child: Text('Add destination',
+                child: AutoSizeText('Add destination',
                     style: TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.w300,
@@ -244,7 +245,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
           child: FlatButton(
             child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                child: Text('Close',
+                child: AutoSizeText('Close',
                     style:
                         TextStyle(fontSize: 23, fontWeight: FontWeight.w300))),
             onPressed: () {

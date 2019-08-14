@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 
@@ -12,14 +13,14 @@ loginBottomSheet(BuildContext context, dynamic data, Color color) {
               children: <Widget>[
                 Image.asset('images/trips-login.png',
                     width: 170, height: 170, fit: BoxFit.contain),
-                Text(
+                AutoSizeText(
                   'Want to create a trip?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 35, color: color, fontWeight: FontWeight.w300),
                 ),
                 SizedBox(height: 10),
-                Text(
+                AutoSizeText(
                   'Sign up and start planning right away.',
                   textAlign: TextAlign.center,
                   style: TextStyle(

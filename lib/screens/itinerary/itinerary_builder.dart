@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -196,13 +197,14 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                               this.itineraryId, latlng, store);
                           if (response.success == true) {
                             Scaffold.of(context).showSnackBar(SnackBar(
-                              content: Text('Updated start location',
+                              content: AutoSizeText('Updated start location',
                                   style: TextStyle(fontSize: 18)),
                               duration: Duration(seconds: 2),
                             ));
                           } else {
                             Scaffold.of(context).showSnackBar(SnackBar(
-                              content: Text('Failed to update start location',
+                              content: AutoSizeText(
+                                  'Failed to update start location',
                                   style: TextStyle(fontSize: 18)),
                               duration: Duration(seconds: 2),
                             ));
@@ -303,7 +305,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           return Container(
             alignment: Alignment.center,
             padding: EdgeInsets.only(top: 10, bottom: 40),
-            child: Text(
+            child: AutoSizeText(
               '$destinationName, $destinationCountryName',
               style: TextStyle(fontSize: 30),
             ),
@@ -325,7 +327,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                 Align(
                     alignment: Alignment.topLeft,
                     child: Container(
-                        child: Text(
+                        child: AutoSizeText(
                       'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
                       style:
                           TextStyle(fontSize: 24, fontWeight: FontWeight.w300),
@@ -333,7 +335,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                 Align(
                     alignment: Alignment.topLeft,
                     child: Container(
-                        child: Text(
+                        child: AutoSizeText(
                       formatter.format(DateTime.fromMillisecondsSinceEpoch(
                               this.startDate)
                           .add(Duration(days: dayBuilder[dayIndex]['day']))),
@@ -344,7 +346,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                     alignment: Alignment.topLeft,
                     child: Container(
                         margin: EdgeInsets.only(bottom: 20),
-                        child: Text(
+                        child: AutoSizeText(
                           '${itineraryItems.length} ${itineraryItems.length == 1 ? "place" : "places"} to see',
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.w300),
@@ -391,7 +393,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           padding: EdgeInsets.symmetric(
                               vertical: 15, horizontal: 20),
                           clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: Text('Start planning',
+                          child: AutoSizeText('Start planning',
                               style: TextStyle(
                                   color: color,
                                   fontWeight: FontWeight.w400,
@@ -418,7 +420,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       Container(
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: Text(
+        child: AutoSizeText(
           'Getting itinerary...',
           style: TextStyle(fontSize: 30),
         ),

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'dart:core';
@@ -27,8 +28,8 @@ class ErrorContainer extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Container(
-                          width: 270,
-                          height: 270,
+                          width: MediaQuery.of(context).size.width / 3,
+                          height: MediaQuery.of(context).size.width / 3,
                           foregroundDecoration: BoxDecoration(
                               gradient: RadialGradient(
                                 colors: [
@@ -46,20 +47,20 @@ class ErrorContainer extends StatelessWidget {
                                   image: AssetImage('images/error-icon.jpg'),
                                   fit: BoxFit.contain),
                               borderRadius: BorderRadius.circular(130))),
-                      Text(
+                      AutoSizeText(
                         'Uh Oh! our connection failed.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 35,
+                            fontSize: 25,
                             color: color,
                             fontWeight: FontWeight.w300),
                       ),
                       SizedBox(height: 10),
-                      Text(
+                      AutoSizeText(
                         'Press retry to reconnect.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                            fontSize: 25,
+                            fontSize: 20,
                             color: color,
                             fontWeight: FontWeight.w300),
                       ),
@@ -67,7 +68,7 @@ class ErrorContainer extends StatelessWidget {
                           margin: EdgeInsets.only(top: 40),
                           child: RetryButton(
                               color: color,
-                              width: 120,
+                              width: MediaQuery.of(context).size.width / 4,
                               height: 50,
                               onPressed: () {
                                 this.onRetry();

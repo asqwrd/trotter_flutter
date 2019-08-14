@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -35,10 +36,11 @@ class FlightsAccomodationsList extends StatelessWidget {
     final details = item['details'];
     final destination = item['destination'];
     if (details.length == 0) {
-      return renderEmpty(destination);
+      return renderEmpty(context, destination);
     }
     return Container(
-        height: this.height ?? this.height,
+        height: MediaQuery.of(context).size.height - 130,
+        width: MediaQuery.of(context).size.width,
         padding: EdgeInsets.symmetric(horizontal: 10),
         margin: EdgeInsets.only(top: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
@@ -66,8 +68,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                               });
                             },
                           ),
-                          title: Text('${details[index]['source']}',
-                              style: TextStyle(fontSize: 24)),
+                          title: AutoSizeText('${details[index]['source']}',
+                              style: TextStyle(fontSize: 19)),
                           subtitle: Container(
                             margin: EdgeInsets.only(top: 20, left: 10),
                             width: 250,
@@ -98,7 +100,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                             width: 25,
                                             height: 25),
                                       ),
-                                      Text('Edit travelers',
+                                      AutoSizeText('Edit travelers',
                                           style: TextStyle(
                                               fontSize: 18,
                                               color: Colors.blueAccent))
@@ -128,11 +130,11 @@ class FlightsAccomodationsList extends StatelessWidget {
   renderSegment(
       BuildContext context, dynamic segment, index, dynamic travelers) {
     TextStyle style = TextStyle(
-        fontSize: 40, color: Colors.black, fontWeight: FontWeight.w400);
+        fontSize: 35, color: Colors.black, fontWeight: FontWeight.w400);
     TextStyle topstyle = TextStyle(
-        fontSize: 30, color: Colors.black, fontWeight: FontWeight.w200);
+        fontSize: 25, color: Colors.black, fontWeight: FontWeight.w200);
     TextStyle substyle = TextStyle(
-        fontSize: 20, color: Colors.black, fontWeight: FontWeight.w300);
+        fontSize: 15, color: Colors.black, fontWeight: FontWeight.w300);
 
     switch (segment['type']) {
       case 'Air':
@@ -179,25 +181,25 @@ class FlightsAccomodationsList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
-                            Text(
+                            AutoSizeText(
                               segment['origin_name'],
                               style: topstyle,
                             ),
-                            Text(
+                            AutoSizeText(
                               segment['origin_city_name'],
                               style: style,
                             ),
-                            Text(
+                            AutoSizeText(
                               segment['origin_country'],
                               style: topstyle,
                             ),
-                            Text(
+                            AutoSizeText(
                               DateFormat("MMMM d, y hh:mm a").format(
                                   DateTime.parse(
                                       segment['departure_datetime'])),
                               style: substyle,
                             ),
-                            Text(
+                            AutoSizeText(
                               'Confirmation #: ${segment['confirmation_no']}',
                               style: substyle,
                             ),
@@ -208,7 +210,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: <Widget>[
-                                      Text(
+                                      AutoSizeText(
                                           '${segment['number_of_pax']} ${segment['number_of_pax'] > 1 ? 'people' : 'person'} traveling'),
                                       Container(
                                           width: 50,
@@ -226,7 +228,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  Text(
+                                  AutoSizeText(
                                       "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
                                       style: TextStyle(
                                           fontSize: 18,
@@ -237,9 +239,9 @@ class FlightsAccomodationsList extends StatelessWidget {
                                       margin:
                                           EdgeInsets.only(left: 5, right: 3),
                                       color: Colors.black.withOpacity(0.3)),
-                                  Text("$timeInAir in air",
+                                  AutoSizeText("$timeInAir in air",
                                       style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.w300)),
                                 ],
                               ),
@@ -259,17 +261,17 @@ class FlightsAccomodationsList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            Text(
+                            AutoSizeText(
                               segment['destination_name'],
                               style: topstyle,
                             ),
-                            Text(segment['destination_city_name'],
+                            AutoSizeText(segment['destination_city_name'],
                                 style: style),
-                            Text(
+                            AutoSizeText(
                               segment['destination_country'],
                               style: topstyle,
                             ),
-                            Text(
+                            AutoSizeText(
                               DateFormat("MMMM d, y hh:mm a").format(
                                   DateTime.parse(segment['arrival_datetime'])),
                               style: substyle,
@@ -299,7 +301,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                     Container(
-                        child: Text(segment['hotel_name'], style: topstyle)),
+                        child: AutoSizeText(segment['hotel_name'],
+                            style: topstyle)),
                     Container(
                         height: 200,
                         width: MediaQuery.of(context).size.width,
@@ -341,7 +344,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: <Widget>[
-                                  Text(hotelInfo[index]['label'],
+                                  AutoSizeText(hotelInfo[index]['label'],
                                       style: substyle),
                                   buildTravelers(travelers)
                                 ],
@@ -357,9 +360,9 @@ class FlightsAccomodationsList extends StatelessWidget {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: <Widget>[
-                                      Text(hotelInfo[index]['label'],
+                                      AutoSizeText(hotelInfo[index]['label'],
                                           style: substyle),
-                                      Text(hotelInfo[index]['value'],
+                                      AutoSizeText(hotelInfo[index]['value'],
                                           style: substyle)
                                     ],
                                   ));
@@ -371,9 +374,9 @@ class FlightsAccomodationsList extends StatelessWidget {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: <Widget>[
-                                    Text(hotelInfo[index]['label'],
+                                    AutoSizeText(hotelInfo[index]['label'],
                                         style: substyle),
-                                    Text(
+                                    AutoSizeText(
                                         DateFormat("MMMM d, y").format(
                                             DateTime.parse(
                                                 hotelInfo[index]['value'])),
@@ -404,7 +407,7 @@ class FlightsAccomodationsList extends StatelessWidget {
     return null;
   }
 
-  renderEmpty(dynamic destination) {
+  renderEmpty(BuildContext context, dynamic destination) {
     return Stack(children: <Widget>[
       Center(
           child: Container(
@@ -414,8 +417,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Container(
-                      width: 270,
-                      height: 270,
+                      width: MediaQuery.of(context).size.width / 2,
+                      height: MediaQuery.of(context).size.width / 2,
                       foregroundDecoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
@@ -433,20 +436,20 @@ class FlightsAccomodationsList extends StatelessWidget {
                               image: AssetImage('images/email-icon.jpg'),
                               fit: BoxFit.contain),
                           borderRadius: BorderRadius.circular(130))),
-                  Text(
+                  AutoSizeText(
                     'Your missing details for ${destination["destination_name"]}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 35,
+                        fontSize: 25,
                         color: Colors.blueGrey,
                         fontWeight: FontWeight.w300),
                   ),
                   SizedBox(height: 10),
-                  Text(
+                  AutoSizeText(
                     'Forward your travel confirmation emails to trips@ajibade.me',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 15,
                         color: Colors.blueGrey,
                         fontWeight: FontWeight.w300),
                   ),

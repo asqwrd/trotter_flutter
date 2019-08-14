@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -57,7 +58,7 @@ _buildLoadedList(BuildContext context, TrotterStore store,
                                           AssetImage('images/trips-empty.jpg'),
                                       fit: BoxFit.contain),
                                   borderRadius: BorderRadius.circular(130))),
-                          Text(
+                          AutoSizeText(
                             'No trips planned yet?',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -66,7 +67,7 @@ _buildLoadedList(BuildContext context, TrotterStore store,
                                 fontWeight: FontWeight.w300),
                           ),
                           SizedBox(height: 10),
-                          Text(
+                          AutoSizeText(
                             'Create a trip to start planning your next adventure!',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -80,7 +81,7 @@ _buildLoadedList(BuildContext context, TrotterStore store,
                                 vertical: 20, horizontal: 20),
                             shape: RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(50.0)),
-                            child: Text(
+                            child: AutoSizeText(
                               'Start planning',
                               style: TextStyle(
                                   color: Colors.white,
@@ -171,7 +172,7 @@ Widget _buildBody(BuildContext context, dynamic item,
           if (response.exists == false) {
             store.tripStore.updateTripDestinations(item['id'], data);
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text('${destination['name']} added to ${item['name']}',
+              content: AutoSizeText('${destination['name']} added to ${item['name']}',
                   style: TextStyle(fontSize: 18)),
               duration: Duration(seconds: 2),
               action: SnackBarAction(
@@ -186,7 +187,7 @@ Widget _buildBody(BuildContext context, dynamic item,
             ));
           } else {
             Scaffold.of(context).showSnackBar(SnackBar(
-                content: Text(
+                content: AutoSizeText(
                     '${destination['name']} was already added to ${item['name']}',
                     style: TextStyle(fontSize: 18)),
                 duration: Duration(seconds: 2)));
@@ -199,7 +200,7 @@ Widget _buildBody(BuildContext context, dynamic item,
           };
           final List<Widget> destinations = item['destinations']
               .map<Widget>((destination) => new ListTile(
-                  title: new Text(
+                  title: new AutoSizeText(
                       '${destination['destination_name']}, ${destination["country_name"]}'),
                   onTap: () async {
                     var response = await postAddFlightsAndAccomodations(
@@ -208,7 +209,7 @@ Widget _buildBody(BuildContext context, dynamic item,
                     if (response.success == true) {
                       await markNotificationRead(notificationId, store);
                       Scaffold.of(context).showSnackBar(SnackBar(
-                          content: Text('Details successfully added to trip',
+                          content: AutoSizeText('Details successfully added to trip',
                               style: TextStyle(fontSize: 18)),
                           duration: Duration(seconds: 2)));
                     }
@@ -221,7 +222,7 @@ Widget _buildBody(BuildContext context, dynamic item,
                 return new Column(mainAxisSize: MainAxisSize.min, children: [
                   Padding(
                       padding: EdgeInsets.only(top: 20.0),
-                      child: Text("Which destination is this for?",
+                      child: AutoSizeText("Which destination is this for?",
                           style: TextStyle(
                               fontSize: 24, fontWeight: FontWeight.w300))),
                   ...destinations
@@ -272,7 +273,7 @@ Widget _buildBody(BuildContext context, dynamic item,
             Container(
                 padding: EdgeInsets.symmetric(vertical: 10.0),
                 width: 150.0,
-                child: Text(
+                child: AutoSizeText(
                   item['name'],
                   textAlign: TextAlign.left,
                   overflow: TextOverflow.ellipsis,

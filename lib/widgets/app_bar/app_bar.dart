@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
@@ -54,13 +55,13 @@ class TrotterAppBar extends StatelessWidget {
               child: SvgPicture.asset("images/trotter-logo.svg",
                   width: 24.0, height: 24.0, fit: BoxFit.contain)),
       title: title != null
-          ? Text(
+          ? AutoSizeText(
               title,
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 30),
+              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 24),
             )
-          : Text(
+          : AutoSizeText(
               'Trotter',
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 30),
+              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 24),
             ),
       actions: <Widget>[
         ...actions,

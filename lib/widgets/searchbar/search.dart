@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -169,7 +170,7 @@ class SearchState extends State<Search> {
     var chips = [
       ChoiceChip(
           selected: this.id != null && this.id.isNotEmpty ? !selectId : true,
-          label: Text("Anywhere"),
+          label: AutoSizeText("Anywhere"),
           onSelected: (bool value) {
             setState(() {
               if (this.id != null && this.id.isNotEmpty) {
@@ -188,7 +189,7 @@ class SearchState extends State<Search> {
     if (this.location != null) {
       chips.add(ChoiceChip(
           selected: selectId,
-          label: Text(this.destinationName),
+          label: AutoSizeText(this.destinationName),
           onSelected: (bool value) {
             setState(() {
               if (this.id != null) selectId = !selectId;
@@ -218,7 +219,7 @@ class SearchState extends State<Search> {
         ),
         actions: <Widget>[
           FlatButton(
-            child: Text('Clear'),
+            child: AutoSizeText('Clear'),
             onPressed: () {
               setState(() {
                 txt.text = '';
@@ -298,7 +299,7 @@ class SearchState extends State<Search> {
                             child: ListTile(
                                 contentPadding: EdgeInsets.symmetric(
                                     vertical: 10, horizontal: 20),
-                                title: Text(
+                                title: AutoSizeText(
                                   results[index]['country_id'] ==
                                           'United_States'
                                       ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
@@ -358,29 +359,29 @@ class SearchState extends State<Search> {
                                                     fit: BoxFit.cover),
                                               ))),
                                   ),
-                                  title: Text(
+                                  title: AutoSizeText(
                                     results[index]['name'],
                                     style: TextStyle(
-                                        fontSize: 18,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w600),
                                   ),
                                   subtitle: results[index]
                                               ['description_short'] !=
                                           null
-                                      ? Text(
+                                      ? AutoSizeText(
                                           results[index]['description_short'],
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                              fontSize: 18,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w300),
                                         )
-                                      : Text(
+                                      : AutoSizeText(
                                           results[index]['description'],
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
-                                              fontSize: 18,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w300),
                                         ),
                                 )));
@@ -408,7 +409,7 @@ class SearchState extends State<Search> {
                             child: ListTile(
                                 contentPadding: EdgeInsets.symmetric(
                                     vertical: 10, horizontal: 20),
-                                title: Text(
+                                title: AutoSizeText(
                                   recentSearch[index]['value'],
                                 )));
                       },

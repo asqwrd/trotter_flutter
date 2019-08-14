@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
@@ -94,7 +95,7 @@ class ProfileState extends State<Profile> {
           : Container(),
       store.currentUser != null
           ? ListTile(
-              title: Text('Notifications'),
+              title: AutoSizeText('Notifications'),
               trailing: Switch(
                 value: store.currentUser.notificationOn,
                 onChanged: (value) {
@@ -123,8 +124,8 @@ class ProfileState extends State<Profile> {
                     child: store.currentUser == null
                         ? SvgPicture.asset(
                             "images/avatar-icon.svg",
-                            width: 100.0,
-                            height: 100.0,
+                            width: 80.0,
+                            height: 80.0,
                             fit: BoxFit.contain,
                             color: color,
                           )
@@ -138,19 +139,19 @@ class ProfileState extends State<Profile> {
                             child: ClipPath(
                                 clipper: CornerRadiusClipper(300),
                                 child: Image.network(store.currentUser.photoUrl,
-                                    width: 100.0,
-                                    height: 100.0,
+                                    width: 80.0,
+                                    height: 80.0,
                                     fit: BoxFit.contain)))),
                 store.currentUser == null
-                    ? Text('Profile',
+                    ? AutoSizeText('Profile',
                         style: TextStyle(
                             color: Colors.black,
-                            fontSize: 40,
+                            fontSize: 25,
                             fontWeight: FontWeight.w300))
-                    : Text(store.currentUser.displayName,
+                    : AutoSizeText(store.currentUser.displayName,
                         style: TextStyle(
                             color: Colors.black,
-                            fontSize: 40,
+                            fontSize: 25,
                             fontWeight: FontWeight.w300))
               ]),
           Container(
@@ -196,7 +197,7 @@ class ProfileState extends State<Profile> {
                             store.profileLoading = false;
                           });
                           Scaffold.of(context).showSnackBar(SnackBar(
-                            content: Text('Profile updated',
+                            content: AutoSizeText('Profile updated',
                                 style: TextStyle(fontSize: 18)),
                             duration: Duration(seconds: 2),
                           ));
@@ -207,14 +208,14 @@ class ProfileState extends State<Profile> {
                         borderRadius: BorderRadius.circular(100)),
                     color: color,
                     child: Container(
-                      width: 130,
-                      height: 50,
+                      width: 100,
+                      height: 40,
                       alignment: Alignment.center,
-                      child: Text(
+                      child: AutoSizeText(
                         'Save',
                         textAlign: TextAlign.center,
                         style: new TextStyle(
-                            fontSize: 20.0,
+                            fontSize: 15.0,
                             fontWeight: FontWeight.w300,
                             color: fontContrast(color)),
                       ),

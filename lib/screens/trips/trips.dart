@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -222,9 +223,9 @@ class TripsState extends State<Trips> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.only(top: 10, bottom: 20),
-                      child: Text(
+                      child: AutoSizeText(
                         'Get Started',
-                        style: TextStyle(fontSize: 30),
+                        style: TextStyle(fontSize: 25),
                       ),
                     )
                   ],
@@ -239,8 +240,8 @@ class TripsState extends State<Trips> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Container(
-                            width: 270,
-                            height: 270,
+                            width: MediaQuery.of(context).size.width / 2,
+                            height: MediaQuery.of(context).size.width / 2,
                             foregroundDecoration: BoxDecoration(
                                 gradient: RadialGradient(
                                   colors: [
@@ -258,25 +259,25 @@ class TripsState extends State<Trips> {
                                     image: AssetImage('images/trips-login.jpg'),
                                     fit: BoxFit.contain),
                                 borderRadius: BorderRadius.circular(130))),
-                        Text(
+                        AutoSizeText(
                           'Want to create a trip?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 35,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Sign up and start planning right away.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 25,
                               color: color,
                               fontWeight: FontWeight.w300),
                         ),
+                        SizedBox(height: 10),
+                        AutoSizeText(
+                          'Sign up and start planning right away.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ),
                         Container(
-                            margin: EdgeInsets.only(top: 40),
+                            margin: EdgeInsets.only(top: 35),
                             child: GoogleAuthButtonContainer())
                       ],
                     ))),
@@ -305,9 +306,9 @@ class TripsState extends State<Trips> {
         Container(
           alignment: Alignment.center,
           padding: EdgeInsets.only(top: 10, bottom: 20),
-          child: Text(
+          child: AutoSizeText(
             'Getting trips...',
-            style: TextStyle(fontSize: 30),
+            style: TextStyle(fontSize: 25),
           ),
         ),
         Center(child: RefreshProgressIndicator())
@@ -336,9 +337,9 @@ class TripsState extends State<Trips> {
                     Container(
                       alignment: Alignment.center,
                       padding: EdgeInsets.only(top: 10, bottom: 20),
-                      child: Text(
+                      child: AutoSizeText(
                         'Get started',
-                        style: TextStyle(fontSize: 30),
+                        style: TextStyle(fontSize: 25),
                       ),
                     )
                   ],
@@ -353,8 +354,8 @@ class TripsState extends State<Trips> {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         Container(
-                            width: 270,
-                            height: 270,
+                            width: MediaQuery.of(context).size.width / 2,
+                            height: MediaQuery.of(context).size.width / 2,
                             foregroundDecoration: BoxDecoration(
                                 gradient: RadialGradient(
                                   colors: [
@@ -372,21 +373,21 @@ class TripsState extends State<Trips> {
                                     image: AssetImage('images/trips-empty.jpg'),
                                     fit: BoxFit.contain),
                                 borderRadius: BorderRadius.circular(130))),
-                        Text(
+                        AutoSizeText(
                           'No trips planned yet?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 35,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          'Create a trip to start planning your next adventure!',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 25,
                               color: color,
+                              fontWeight: FontWeight.w300),
+                        ),
+                        SizedBox(height: 10),
+                        AutoSizeText(
+                          'Create a trip to start planning your next adventure!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.black,
                               fontWeight: FontWeight.w200),
                         )
                       ],
@@ -424,9 +425,9 @@ class TripsState extends State<Trips> {
                 return Container(
                   alignment: Alignment.center,
                   padding: EdgeInsets.only(top: 10, bottom: 20),
-                  child: Text(
+                  child: AutoSizeText(
                     'Your adventures',
-                    style: TextStyle(fontSize: 30),
+                    style: TextStyle(fontSize: 25),
                   ),
                 );
               }
@@ -459,9 +460,9 @@ class TripsState extends State<Trips> {
                 if (response.success == true) {
                   this.context = context;
                   Scaffold.of(context).showSnackBar(SnackBar(
-                    content: Text(
+                    content: AutoSizeText(
                         '${tripBuilder[index]['name']}\'s was deleted.',
-                        style: TextStyle(fontSize: 18)),
+                        style: TextStyle(fontSize: 13)),
                     duration: Duration(seconds: 2),
                     action: SnackBarAction(
                       label: 'Undo',
@@ -490,15 +491,15 @@ class TripsState extends State<Trips> {
                         if (response.success == true) {
                           Scaffold.of(this.context).removeCurrentSnackBar();
                           Scaffold.of(this.context).showSnackBar(SnackBar(
-                            content: Text('Undo successful!',
-                                style: TextStyle(fontSize: 18)),
+                            content: AutoSizeText('Undo successful!',
+                                style: TextStyle(fontSize: 13)),
                             duration: Duration(seconds: 2),
                           ));
                         } else {
                           Scaffold.of(this.context).removeCurrentSnackBar();
                           Scaffold.of(this.context).showSnackBar(SnackBar(
-                              content: Text('Sorry the undo failed!',
-                                  style: TextStyle(fontSize: 18)),
+                              content: AutoSizeText('Sorry the undo failed!',
+                                  style: TextStyle(fontSize: 13)),
                               duration: Duration(seconds: 2)));
                         }
                       },
@@ -506,9 +507,9 @@ class TripsState extends State<Trips> {
                   ));
                 } else {
                   Scaffold.of(context).showSnackBar(SnackBar(
-                      content: Text(
+                      content: AutoSizeText(
                           '${tripBuilder[index]['name']} failed to be deleted.',
-                          style: TextStyle(fontSize: 18)),
+                          style: TextStyle(fontSize: 13)),
                       duration: Duration(seconds: 2)));
                 }
               };
@@ -525,7 +526,7 @@ class TripsState extends State<Trips> {
                     clipBehavior: Clip.antiAliasWithSaveLayer,
                     child: Column(children: <Widget>[
                       Container(
-                          height: 250.0,
+                          height: 230.0,
                           width: double.infinity,
                           color: Colors.transparent,
                           child: Stack(
@@ -584,13 +585,13 @@ class TripsState extends State<Trips> {
                                             bottom: 10,
                                             left: 20,
                                           ),
-                                          child: Text(
+                                          child: AutoSizeText(
                                             tripBuilder[index]['name'],
                                             overflow: TextOverflow.fade,
                                             textAlign: TextAlign.left,
                                             style: TextStyle(
                                                 color: fontContrast(color),
-                                                fontSize: 25.0,
+                                                fontSize: 20.0,
                                                 fontWeight: FontWeight.w400),
                                           )),
                                     ]),
@@ -684,24 +685,24 @@ class TripsState extends State<Trips> {
 
       widgets.add(Padding(
         padding: EdgeInsets.only(top: 0, bottom: 5),
-        child: Text('${destination['destination_name']}',
+        child: AutoSizeText('${destination['destination_name']}',
             textAlign: TextAlign.left,
             style: TextStyle(
               fontWeight: FontWeight.w400,
               color: fontContrast(color),
-              fontSize: 20,
+              fontSize: 15,
             )),
       ));
     }
     if (destinations.length > length) {
       widgets.add(Padding(
         padding: EdgeInsets.only(top: 0, bottom: 10),
-        child: Text('+${destinations.length - length} more',
+        child: AutoSizeText('+${destinations.length - length} more',
             textAlign: TextAlign.left,
             style: TextStyle(
               fontWeight: FontWeight.w400,
               color: fontContrast(color),
-              fontSize: 20,
+              fontSize: 15,
             )),
       ));
     }

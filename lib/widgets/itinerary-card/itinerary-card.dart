@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -43,8 +44,8 @@ class ItineraryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                  width: 90,
-                  height: 90,
+                  width: 70,
+                  height: 70,
                   child: Stack(
                     children: <Widget>[
                       Positioned(
@@ -95,20 +96,20 @@ class ItineraryCard extends StatelessWidget {
               Container(
                   padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
                   width: MediaQuery.of(ctxt).size.width - 130,
-                  height: 90,
+                  height: 70,
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
                         Container(
-                            child: Text(
+                            child: AutoSizeText(
                           item['name'],
                           textAlign: TextAlign.left,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                           style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 15,
                               fontWeight: FontWeight.w400,
                               color: this.color),
                         )),
@@ -117,30 +118,30 @@ class ItineraryCard extends StatelessWidget {
                             child: Row(children: <Widget>[
                               Icon(
                                 Icons.place,
-                                size: 15,
+                                size: 10,
                                 color: Colors.black.withOpacity(.3),
                               ),
-                              Text(
+                              AutoSizeText(
                                 '${item['destination_name']}, ${item['destination_country_name']}',
                                 textAlign: TextAlign.left,
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: TextStyle(
-                                    fontSize: 15,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.w300,
                                     color: Colors.black.withOpacity(.5)),
                               )
                             ])),
                         Container(
-                            height: 40,
+                            height: 30,
                             alignment: Alignment.bottomLeft,
-                            child: Text(
+                            child: AutoSizeText(
                               '${item['days'].length} day itinerary',
                               textAlign: TextAlign.left,
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w300),
+                                  fontSize: 15, fontWeight: FontWeight.w300),
                             )),
                       ]))
             ]));

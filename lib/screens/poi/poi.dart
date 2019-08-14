@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -266,14 +267,14 @@ class PoiState extends State<Poi> {
             Container(
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: 10, bottom: 20),
-              child: Text(
+              child: AutoSizeText(
                 '${this.poiName} info',
                 style: TextStyle(fontSize: 30),
               ),
             ),
             Padding(
                 padding: EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
-                child: Text(descriptionShort,
+                child: AutoSizeText(descriptionShort,
                     style: TextStyle(
                         fontSize: 18.0, fontWeight: FontWeight.w300))),
             Container(
@@ -383,12 +384,12 @@ class PoiState extends State<Poi> {
           children: <Widget>[
             Container(
                 margin: EdgeInsets.only(right: 10.0),
-                child: Text(
+                child: AutoSizeText(
                   '${properties[index]['name']}:',
                   style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w500),
                 )),
             Flexible(
-                child: Text(
+                child: AutoSizeText(
               properties[index]['value'],
               //maxLines: 2,
               //overflow: TextOverflow.ellipsis,
@@ -412,7 +413,7 @@ class PoiState extends State<Poi> {
       Container(
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: Text(
+        child: AutoSizeText(
           ' Loading...',
           style: TextStyle(fontSize: 30),
         ),

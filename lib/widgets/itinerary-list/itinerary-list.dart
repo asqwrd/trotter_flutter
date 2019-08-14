@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -129,17 +130,17 @@ class ItineraryList extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Text(ReCase(title).titleCase,
+                        AutoSizeText(ReCase(title).titleCase,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.w400)),
-                        Text(
+                                fontSize: 15, fontWeight: FontWeight.w400)),
+                        AutoSizeText(
                             time['unit'].toString().isEmpty == false
                                 ? 'Estimated time ${new HtmlUnescape().convert('&bull;')} ${time['value']} ${time['unit']}'
                                 : 'Estimated time ${new HtmlUnescape().convert('&bull;')} 1 hour',
                             textAlign: TextAlign.left,
                             style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w300)),
+                                fontSize: 11, fontWeight: FontWeight.w300)),
                       ]))
             ]));
   }

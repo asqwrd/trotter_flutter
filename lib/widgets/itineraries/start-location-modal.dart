@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/utils.dart';
 
@@ -52,7 +53,7 @@ class StartLocationModalState extends State<StartLocationModal> {
           brightness: Brightness.light,
           elevation: 0,
           // centerTitle: true,
-          title: Text(
+          title: AutoSizeText(
             'Select starting point',
             style: TextStyle(
                 color: Colors.black, fontWeight: FontWeight.w300, fontSize: 24),
@@ -85,8 +86,8 @@ class StartLocationModalState extends State<StartLocationModal> {
                 });
               },
               contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-              subtitle: Text(options[index]['hotel']['type']),
-              title: Text(
+              subtitle: AutoSizeText(options[index]['hotel']['type']),
+              title: AutoSizeText(
                 options[index]['hotel']['hotel_name'],
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),

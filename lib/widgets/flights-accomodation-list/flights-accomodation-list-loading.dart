@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:shimmer/shimmer.dart';
@@ -51,7 +52,7 @@ class FlightsAccomodationsListLoading extends StatelessWidget {
               return Container(
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(top: 10, bottom: 40),
-                child: Text(
+                child: AutoSizeText(
                   'Loading day...',
                   style: TextStyle(fontSize: 30),
                 ),

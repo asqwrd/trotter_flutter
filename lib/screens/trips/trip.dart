@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -40,10 +41,10 @@ showDateModal(BuildContext context, dynamic destination, Color color,String trip
           children: <Widget>[
             Padding(
               padding: EdgeInsets.only(top: 40, bottom: 20),
-              child: Text(
+              child: AutoSizeText(
                 'Arrival and Departure',
                 style: TextStyle(
-                  fontSize: 25,
+                  fontSize: 20,
                   fontWeight: FontWeight.w300
                 ),
               )
@@ -216,10 +217,10 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
             shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 15),
-              child: Text(
+              child: AutoSizeText(
                 'Change date',
                 style: TextStyle(
-                  fontSize: 23,
+                  fontSize: 18,
                   fontWeight: FontWeight.w300,
                   color: Colors.white
                 )
@@ -248,10 +249,10 @@ _buildDatesModal(BuildContext context, dynamic destination, Color color,tripId){
           child: FlatButton(
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 15),
-              child:Text(
+              child:AutoSizeText(
                 'Close',
                 style: TextStyle(
-                  fontSize: 23,
+                  fontSize: 18,
                   fontWeight: FontWeight.w300
                 )
               )
@@ -381,10 +382,10 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
           children: <Widget>[
             Padding(
               padding: EdgeInsets.only(top:20, bottom: 30),
-              child:Text(
+              child:AutoSizeText(
               'Update trip name',
               style: TextStyle(
-                fontSize: 23,
+                fontSize: 18,
                 fontWeight: FontWeight.w300
               )
             )),
@@ -445,10 +446,10 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                 shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(5.0)),
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 15),
-                  child: Text(
+                  child: AutoSizeText(
                     'Update',
                     style: TextStyle(
-                      fontSize: 23,
+                      fontSize: 18,
                       fontWeight: FontWeight.w300,
                       color: Colors.white
                     )
@@ -480,10 +481,10 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
               child: FlatButton(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 15),
-                  child:Text(
+                  child:AutoSizeText(
                     'Close',
                     style: TextStyle(
-                      fontSize: 23,
+                      fontSize: 18,
                       fontWeight: FontWeight.w300
                     )
                   )
@@ -505,13 +506,13 @@ class AddButtonModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
-      child: Text("Button moved to separate widget"),
+      child: AutoSizeText("Button moved to separate widget"),
       onPressed: () {
         Scaffold.of(context).showSnackBar(SnackBar(
-            content: Text(
+            content: AutoSizeText(
               'Button moved to separate widget',
               style: TextStyle(
-                fontSize: 18
+                fontSize: 13
               )),
             duration: Duration(seconds: 2),
           )
@@ -576,10 +577,10 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                 this.destinations.add(data);
                 store.tripStore.updateTripDestinations(this.tripId, data); 
                 Scaffold.of(builderContext).showSnackBar(SnackBar(
-                  content: Text(
+                  content: AutoSizeText(
                         '${data['destination_name']}\'s has been added',
                           style: TextStyle(
-                            fontSize: 18
+                            fontSize: 13
                           )
                         ),
                         duration: Duration(seconds: 2)
@@ -589,10 +590,10 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
               });
             } else if(response.exists == true){
               setState(() {
-                Scaffold.of(builderContext).showSnackBar(SnackBar(content: Text(
+                Scaffold.of(builderContext).showSnackBar(SnackBar(content: AutoSizeText(
                       '${data['destination_name']}\'s already exist for this trip.',
                        style: TextStyle(
-                          fontSize: 18
+                          fontSize: 13
                         )
                       ),
                       duration: Duration(seconds: 2)
@@ -609,10 +610,10 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
       appBar: AppBar(
         backgroundColor: Colors.white,
         brightness: Brightness.light,
-        title: Text(
+        title: AutoSizeText(
           'Destinations',
           style: TextStyle(
-            fontSize: 20,
+            fontSize: 15,
             color: Colors.black,
             fontWeight: FontWeight.w300
           ),
@@ -640,7 +641,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
           var departure = destinations[index]['end_date'];
           var name = destinations[index]['destination_name'];
           return ListTile(
-            subtitle: Text(
+            subtitle: AutoSizeText(
               arrival == 0 || departure == 0 ? 'No dates given' : '$startDate - $endDate',
             ),
             trailing: IconButton(
@@ -653,7 +654,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                         new ListTile(
                           contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                           leading: new Icon(Icons.calendar_today, size:22),
-                          title: new Text(
+                          title: new AutoSizeText(
                             'Change arrival and departure dates',
                           ),
                           onTap: () async{
@@ -665,7 +666,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                 endDate = new DateFormat.yMMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(update['departure']*1000));
                                 Scaffold
                                 .of(listContext)
-                                .showSnackBar(SnackBar(content: Text(
+                                .showSnackBar(SnackBar(content: AutoSizeText(
                                     '${destinations[index]['destination_name']}\'s dates updated',
                                       style: TextStyle(
                                         fontSize: 18
@@ -683,7 +684,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                         new ListTile(
                           contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                           leading: new Icon(Icons.delete, size:22),
-                          title: new Text(
+                          title: new AutoSizeText(
                             'Delete $name',
                           ),
                           onTap: () async {
@@ -697,10 +698,10 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                 .of(listContext)
                                 .showSnackBar(
                                   SnackBar(
-                                    content: Text(
+                                    content: AutoSizeText(
                                       '$name\'s was deleted.',
                                       style: TextStyle(
-                                        fontSize: 18
+                                        fontSize: 15
                                       )
                                     ),
                                     duration: Duration(seconds: 2),
@@ -724,10 +725,10 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                             } else {
                               Scaffold
                               .of(listContext)
-                              .showSnackBar(SnackBar(content: Text(
+                              .showSnackBar(SnackBar(content: AutoSizeText(
                                   'Unable to delete $name',
                                     style: TextStyle(
-                                      fontSize: 18
+                                      fontSize: 15
                                     )
                                   ),
                                   duration: Duration(seconds: 2)
@@ -743,10 +744,10 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
               },
               icon:Icon(Icons.more_vert)
             ),
-            title: Text(
+            title: AutoSizeText(
               destinations[index]['destination_name'],
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 20,
                 fontWeight: FontWeight.w300
               ),
             ),
@@ -859,7 +860,7 @@ class TripState extends State<Trip> {
         children: <Widget>[
           new ListTile(
             leading: new Icon(Icons.card_travel),
-            title: new Text('Edit trip name'),
+            title: new AutoSizeText('Edit trip name'),
             onTap: () async {
               Navigator.pop(buildercontext);
               var data = await showGeneralDialog(
@@ -891,10 +892,10 @@ class TripState extends State<Trip> {
               if(data['oldName'] != null){
                  var oldName = data['oldName'];
                 Scaffold.of(topcontext).showSnackBar(SnackBar(
-                    content: Text(
+                    content: AutoSizeText(
                       '$oldName has been changed to ${this.trip['name']}',
                       style: TextStyle(
-                        fontSize: 18
+                        fontSize: 13
                       )
                     ),
                     duration: Duration(seconds: 2),
@@ -906,13 +907,13 @@ class TripState extends State<Trip> {
           ),
           new ListTile(
             leading: new Icon(Icons.pin_drop),
-            title: new Text('Edit destinations'),
+            title: new AutoSizeText('Edit destinations'),
             onTap: () { 
               Navigator.pop(context);
               showDestinationsModal(context,this.destinations, this.color);
             }        
           ),
-          ListTile(leading: Icon(Icons.share), title: Text('Invite travelers'), onTap: (){
+          ListTile(leading: Icon(Icons.share), title: AutoSizeText('Invite travelers'), onTap: (){
             Share.share('Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application');
             Navigator.pop(context);
           },)
@@ -1039,17 +1040,17 @@ class TripState extends State<Trip> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children:<Widget>[
                   
-                                  Text('${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name']}',
+                                  AutoSizeText('${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name']}',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 30,
+                                      fontSize: 25,
                                       fontWeight: FontWeight.w300
                                     )
                                   ),
-                                  Text('$startDate - $endDate',
+                                  AutoSizeText('$startDate - $endDate',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w300
                                     )
                                   )
@@ -1138,7 +1139,7 @@ class TripState extends State<Trip> {
           await openTravelersModal(ctxt, store);
         }, 
         child:buildTravelers(this.travelers)))},
-      {"label":"Flights and accommodation", "icon": Icon(Icons.flight, color: iconColor), "level":"travelinfo"},
+      {"label":"Travel details", "icon": Icon(Icons.flight, color: iconColor), "level":"travelinfo"},
     ];
  
     for (var group in result2.asIterable()) {
@@ -1175,9 +1176,9 @@ class TripState extends State<Trip> {
             Container(
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: 10, bottom: 20),
-              child: Text(
+              child: AutoSizeText(
                 'Get Organized',
-                style: TextStyle(fontSize: 30),
+                style: TextStyle(fontSize: 25),
               ),
             ),
         ListView.separated(
@@ -1226,10 +1227,10 @@ class TripState extends State<Trip> {
                 }
               },
               trailing: fields[index]['icon'],
-              title: Text(
+              title: AutoSizeText(
                 fields[index]['label'],
                 style: TextStyle(
-                  fontSize: 25,
+                  fontSize: 20,
                   fontWeight: FontWeight.w300
                 ),
               ),
@@ -1327,9 +1328,9 @@ class TripState extends State<Trip> {
             Container(
               alignment: Alignment.center,
               padding: EdgeInsets.only(top: 10, bottom: 20),
-              child: Text(
+              child: AutoSizeText(
                 'Get Organized',
-                style: TextStyle(fontSize: 30),
+                style: TextStyle(fontSize: 25),
               ),
             ),
             ListView.separated(

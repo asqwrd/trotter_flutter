@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 typedef String2VoidFunc = void Function(String);
@@ -69,7 +70,7 @@ class VaccineList extends StatelessWidget {
           Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.0),
               child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: 180, minWidth: 280),
+                  constraints: BoxConstraints(minHeight: 160, minWidth: 260),
                   child: Container(
                       // A fixed-height child.
                       padding: EdgeInsets.symmetric(
@@ -85,13 +86,13 @@ class VaccineList extends StatelessWidget {
                         children: <Widget>[
                           Image.asset(icon,
                               //color: fontContrast(this.color),
-                              width: 45.0,
-                              height: 45.0,
+                              width: 40.0,
+                              height: 40.0,
                               fit: BoxFit.contain),
-                          Text(label,
+                          AutoSizeText(label,
                               style: TextStyle(
                                   //color: fontContrast(this.color),
-                                  fontSize: 18.0,
+                                  fontSize: 13.0,
                                   fontWeight: FontWeight.w600)),
                           Padding(
                               padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
@@ -107,11 +108,11 @@ class VaccineList extends StatelessWidget {
   buildBodyList(List<dynamic> vaccines) {
     var vaccineWidgets = List<Widget>();
     for (var vaccine in vaccines) {
-      vaccineWidgets.add(Text(
+      vaccineWidgets.add(AutoSizeText(
           '${vaccine['type'][0]}${vaccine['type'].toLowerCase().replaceAll(new RegExp(r'_'), ' ').substring(1)}',
           style: TextStyle(
               //color: fontContrast(this.color),
-              fontSize: 18.0,
+              fontSize: 13.0,
               fontWeight: FontWeight.w300)));
     }
 

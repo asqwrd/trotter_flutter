@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -87,8 +88,8 @@ class NotificationsState extends State<Notifications> {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Container(
-                      width: 270,
-                      height: 270,
+                      width: MediaQuery.of(context).size.width / 2,
+                      height: MediaQuery.of(context).size.width / 2,
                       foregroundDecoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
@@ -107,20 +108,20 @@ class NotificationsState extends State<Notifications> {
                                   AssetImage('images/notification-empty.jpg'),
                               fit: BoxFit.contain),
                           borderRadius: BorderRadius.circular(130))),
-                  Text(
+                  AutoSizeText(
                     'All caught up!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 35,
+                        fontSize: 30,
                         color: color,
                         fontWeight: FontWeight.w300),
                   ),
                   SizedBox(height: 10),
-                  Text(
+                  AutoSizeText(
                     'Check back later',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         color: color,
                         fontWeight: FontWeight.w300),
                   ),
@@ -139,8 +140,8 @@ class NotificationsState extends State<Notifications> {
               final id = notifications[index]['id'];
               return ListTile(
                 leading: icon(type),
-                title: Text(data['subject']),
-                subtitle: Text(timeago
+                title: AutoSizeText(data['subject']),
+                subtitle: AutoSizeText(timeago
                     .format(DateTime.fromMillisecondsSinceEpoch(createdAt))),
                 trailing: IconButton(
                   icon: Icon(Icons.more_horiz),
@@ -162,7 +163,7 @@ class NotificationsState extends State<Notifications> {
           return new Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
             new ListTile(
                 leading: new Icon(EvilIcons.check),
-                title: new Text('Mark as read'),
+                title: new AutoSizeText('Mark as read'),
                 onTap: () async {
                   print(notificationId);
                   await markNotificationRead(notificationId, store);
@@ -171,7 +172,7 @@ class NotificationsState extends State<Notifications> {
             type == 'email'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.plus),
-                    title: new Text('Add to Trip'),
+                    title: new AutoSizeText('Add to Trip'),
                     onTap: () async {
                       Navigator.pop(context);
                       showTripsBottomSheet(context, null, data, notificationId);

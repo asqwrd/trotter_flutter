@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -23,7 +24,7 @@ class TopList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.symmetric(vertical: 20.0),
+        margin: EdgeInsets.symmetric(vertical: 0.0),
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -31,10 +32,10 @@ class TopList extends StatelessWidget {
               Container(
                   margin:
                       EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10.0),
-                  child: Text(
+                  child: AutoSizeText(
                     this.header,
                     style:
-                        TextStyle(fontSize: 24.0, fontWeight: FontWeight.w300),
+                        TextStyle(fontSize: 19.0, fontWeight: FontWeight.w300),
                   )),
               Container(
                   width: MediaQuery.of(context).size.width,
@@ -100,19 +101,19 @@ class TopList extends StatelessWidget {
                                     image: AssetImage('images/placeholder.jpg'),
                                     fit: BoxFit.cover),
                               ))),
-                    width: 140.0,
-                    height: 178.0,
+                    width: 110.0,
+                    height: 158.0,
                   ),
                   Container(
                       padding: EdgeInsets.symmetric(vertical: 10.0),
-                      width: 150.0,
-                      child: Text(
+                      width: 100.0,
+                      child: AutoSizeText(
                         item['name'],
                         textAlign: TextAlign.left,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 2,
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w300),
+                            fontSize: 13, fontWeight: FontWeight.w300),
                       ))
                 ])));
   }

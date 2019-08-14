@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
@@ -67,20 +68,20 @@ class DayList extends StatelessWidget {
                               image: AssetImage('images/day-empty.jpg'),
                               fit: BoxFit.contain),
                           borderRadius: BorderRadius.circular(130))),
-                  Text(
+                  AutoSizeText(
                     'Lets find some things to do',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 35,
+                        fontSize: 30,
                         color: color,
                         fontWeight: FontWeight.w300),
                   ),
                   SizedBox(height: 10),
-                  Text(
+                  AutoSizeText(
                     'Tap the drop point icon at the top to search',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         color: color,
                         fontWeight: FontWeight.w300),
                   ),
@@ -125,12 +126,12 @@ class DayList extends StatelessWidget {
                 alignment: Alignment.center,
                 padding: EdgeInsets.only(top: 10, bottom: 40),
                 child: Column(children: <Widget>[
-                  Text(
+                  AutoSizeText(
                     '${this.header}',
-                    style: TextStyle(fontSize: 30),
+                    style: TextStyle(fontSize: 25),
                   ),
                   this.subHeader != null
-                      ? Text(
+                      ? AutoSizeText(
                           '${this.subHeader}',
                           style: TextStyle(
                               fontSize: 25, fontWeight: FontWeight.w300),
@@ -164,11 +165,13 @@ class DayList extends StatelessWidget {
                 onTap: () {
                   this.onPressed(poi);
                 },
-                child: Padding(
+                child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    //height: double.infinity,
                     padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: IntrinsicHeight(
-                        child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
                         Container(
                           padding: EdgeInsets.all(10),
@@ -179,7 +182,7 @@ class DayList extends StatelessWidget {
                           child: Align(
                               alignment: Alignment.topCenter,
                               child: Icon(Icons.access_time,
-                                  color: fontContrast(color), size: 25)),
+                                  color: fontContrast(color), size: 20)),
                         ),
                         Flexible(
                             child: Container(
@@ -193,12 +196,12 @@ class DayList extends StatelessWidget {
                                           //padding: EdgeInsets.all(10),
                                           margin: EdgeInsets.only(
                                               top: 10, bottom: 20),
-                                          child: Text(
+                                          child: AutoSizeText(
                                             '${travelTime['distance']['text']} away from $from \nTravel time is $time',
                                             textAlign: TextAlign.left,
                                             style: TextStyle(
                                                 color: color,
-                                                fontSize: 16,
+                                                fontSize: 11,
                                                 fontWeight: FontWeight.w600,
                                                 height: 1.1),
                                           ))),
@@ -217,25 +220,26 @@ class DayList extends StatelessWidget {
                                                     : Row(
                                                         //crossAxisAlignment: CrossAxisAlignment.center,
                                                         children: <Widget>[
-                                                            Text(poi['name'],
+                                                            AutoSizeText(
+                                                                poi['name'],
                                                                 style:
                                                                     TextStyle(
                                                                   color: Colors
                                                                       .black,
-                                                                  fontSize: 22,
+                                                                  fontSize: 17,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w500,
                                                                 )),
                                                             justAdded == true
-                                                                ? Text(
+                                                                ? AutoSizeText(
                                                                     ' - just added',
                                                                     style:
                                                                         TextStyle(
                                                                       color:
                                                                           color,
                                                                       fontSize:
-                                                                          22,
+                                                                          17,
                                                                       fontWeight:
                                                                           FontWeight
                                                                               .w400,
@@ -254,14 +258,14 @@ class DayList extends StatelessWidget {
                                                             margin:
                                                                 EdgeInsets.only(
                                                                     top: 5),
-                                                            child: Text(
+                                                            child: AutoSizeText(
                                                                 tagsToString(poi[
                                                                     'tags']),
                                                                 style:
                                                                     TextStyle(
                                                                   color: Colors
                                                                       .black,
-                                                                  fontSize: 18,
+                                                                  fontSize: 13,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w300,
@@ -281,11 +285,11 @@ class DayList extends StatelessWidget {
                                                             top: 10,
                                                             left: 0,
                                                             right: 0,
-                                                            bottom: 20),
-                                                        child: Text(
+                                                            bottom: 0),
+                                                        child: AutoSizeText(
                                                           item['description'],
                                                           style: TextStyle(
-                                                              fontSize: 18,
+                                                              fontSize: 13,
                                                               fontWeight:
                                                                   FontWeight
                                                                       .w300,
@@ -299,12 +303,12 @@ class DayList extends StatelessWidget {
                                       ? Card(
                                           //opacity: 1,
                                           elevation: 1,
-                                          margin: EdgeInsets.only(top: 30),
+                                          margin: EdgeInsets.only(top: 15),
                                           shape: RoundedRectangleBorder(
                                               borderRadius:
                                                   BorderRadius.circular(15)),
                                           child: Container(
-                                            height: 230,
+                                            height: 200,
                                             width: MediaQuery.of(context)
                                                     .size
                                                     .width -
@@ -388,7 +392,7 @@ class DayList extends StatelessWidget {
                                       : Container()
                                 ])))
                       ],
-                    ))));
+                    )));
           },
         ));
   }

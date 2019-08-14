@@ -39,8 +39,7 @@ class FlightsAccomodationsList extends StatelessWidget {
       return renderEmpty(context, destination);
     }
     return Container(
-        height: MediaQuery.of(context).size.height - 130,
-        width: MediaQuery.of(context).size.width,
+        height: this.height ?? this.height,
         padding: EdgeInsets.symmetric(horizontal: 10),
         margin: EdgeInsets.only(top: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
@@ -60,7 +59,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                       child: ListTile(
                           trailing: IconButton(
                             icon: Icon(EvilIcons.trash),
-                            iconSize: 32,
+                            iconSize: 27,
                             onPressed: () {
                               this.onDeletePressed({
                                 "id": details[index]['id'],
@@ -69,7 +68,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                             },
                           ),
                           title: AutoSizeText('${details[index]['source']}',
-                              style: TextStyle(fontSize: 19)),
+                              style: TextStyle(fontSize: 17)),
                           subtitle: Container(
                             margin: EdgeInsets.only(top: 20, left: 10),
                             width: 250,
@@ -97,12 +96,12 @@ class FlightsAccomodationsList extends StatelessWidget {
                                         child: SvgPicture.asset(
                                             'images/edit-icon.svg',
                                             color: Colors.blueAccent,
-                                            width: 25,
-                                            height: 25),
+                                            width: 20,
+                                            height: 20),
                                       ),
                                       AutoSizeText('Edit travelers',
                                           style: TextStyle(
-                                              fontSize: 18,
+                                              fontSize: 13,
                                               color: Colors.blueAccent))
                                     ])),
                           ))),
@@ -117,7 +116,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                         itemBuilder:
                             (BuildContext segmentContext, int segIndex) {
                           final segment = segments[segIndex];
-                          return IntrinsicHeight(
+                          return Container(
                               child: renderSegment(segmentContext, segment,
                                   segIndex, travelers));
                         },
@@ -130,11 +129,11 @@ class FlightsAccomodationsList extends StatelessWidget {
   renderSegment(
       BuildContext context, dynamic segment, index, dynamic travelers) {
     TextStyle style = TextStyle(
-        fontSize: 35, color: Colors.black, fontWeight: FontWeight.w400);
+        fontSize: 25, color: Colors.black, fontWeight: FontWeight.w400);
     TextStyle topstyle = TextStyle(
-        fontSize: 25, color: Colors.black, fontWeight: FontWeight.w200);
+        fontSize: 20, color: Colors.black, fontWeight: FontWeight.w200);
     TextStyle substyle = TextStyle(
-        fontSize: 15, color: Colors.black, fontWeight: FontWeight.w300);
+        fontSize: 13, color: Colors.black, fontWeight: FontWeight.w300);
 
     switch (segment['type']) {
       case 'Air':
@@ -213,7 +212,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                       AutoSizeText(
                                           '${segment['number_of_pax']} ${segment['number_of_pax'] > 1 ? 'people' : 'person'} traveling'),
                                       Container(
-                                          width: 50,
+                                          width: 30,
                                           height: 1,
                                           margin: EdgeInsets.only(
                                               left: 5, right: 3),
@@ -231,7 +230,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                   AutoSizeText(
                                       "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
                                       style: TextStyle(
-                                          fontSize: 18,
+                                          fontSize: 13,
                                           fontWeight: FontWeight.w400)),
                                   Container(
                                       width: 30,

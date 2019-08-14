@@ -49,8 +49,8 @@ class DayList extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Container(
-                      width: 270,
-                      height: 270,
+                      width: MediaQuery.of(context).size.width / 2,
+                      height: MediaQuery.of(context).size.width / 2,
                       foregroundDecoration: BoxDecoration(
                           gradient: RadialGradient(
                             colors: [
@@ -72,7 +72,7 @@ class DayList extends StatelessWidget {
                     'Lets find some things to do',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 30,
+                        fontSize: 25,
                         color: color,
                         fontWeight: FontWeight.w300),
                   ),
@@ -81,7 +81,7 @@ class DayList extends StatelessWidget {
                     'Tap the drop point icon at the top to search',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 15,
                         color: color,
                         fontWeight: FontWeight.w300),
                   ),

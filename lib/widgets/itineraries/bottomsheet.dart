@@ -72,8 +72,8 @@ _buildLoadedList(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           Container(
-                              width: 200,
-                              height: 200,
+                              width: 150,
+                              height: 150,
                               foregroundDecoration: BoxDecoration(
                                   gradient: RadialGradient(
                                     colors: [
@@ -95,7 +95,7 @@ _buildLoadedList(
                             'No itineraries created yet?',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                fontSize: 35,
+                                fontSize: 25,
                                 color: Colors.blueGrey,
                                 fontWeight: FontWeight.w300),
                           ),
@@ -104,21 +104,21 @@ _buildLoadedList(
                             'Create a trip to start planning your next adventure!',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                                fontSize: 25,
+                                fontSize: 15,
                                 color: Colors.blueGrey,
                                 fontWeight: FontWeight.w200),
                           ),
                           SizedBox(height: 30),
                           FlatButton(
                             padding: EdgeInsets.symmetric(
-                                vertical: 20, horizontal: 20),
+                                vertical: 10, horizontal: 15),
                             shape: RoundedRectangleBorder(
                                 borderRadius: new BorderRadius.circular(50.0)),
                             child: AutoSizeText(
                               'Start planning',
                               style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 20,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w200),
                             ),
                             color: Colors.blueGrey,
@@ -138,7 +138,7 @@ _buildLoadedList(
                           child: AutoSizeText(
                             'Choose an itinerary',
                             style: TextStyle(
-                                fontSize: 30, fontWeight: FontWeight.w300),
+                                fontSize: 25, fontWeight: FontWeight.w300),
                           )),
                       Stack(children: <Widget>[
                         SingleChildScrollView(
@@ -254,7 +254,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
                     item['name'],
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
                   ))
             ],
           )));
@@ -340,8 +340,8 @@ showDayBottomSheet(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Container(
-                              padding: EdgeInsets.only(
-                                  top: 30, bottom: 20, left: 20),
+                              padding:
+                                  EdgeInsets.only(top: 10, bottom: 5, left: 20),
                               child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisAlignment:
@@ -350,7 +350,7 @@ showDayBottomSheet(
                                     AutoSizeText(
                                       'Choose a day',
                                       style: TextStyle(
-                                          fontSize: 30,
+                                          fontSize: 20,
                                           fontWeight: FontWeight.w300),
                                     ),
                                     store.itineraryStore.selectedItinerary
@@ -372,7 +372,7 @@ showDayBottomSheet(
                                               'Change',
                                               style: TextStyle(
                                                   color: color,
-                                                  fontSize: 20,
+                                                  fontSize: 15,
                                                   fontWeight: FontWeight.w300),
                                             ),
                                           )
@@ -413,17 +413,17 @@ showDayBottomSheet(
                                     store.setBottomSheetLoading(false);
                                   },
                                   contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 20),
+                                      horizontal: 20, vertical: 5),
                                   title: AutoSizeText(
                                     'Day ${days[dayIndex]['day'] + 1}',
                                     style: TextStyle(
-                                        fontSize: 22,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w500),
                                   ),
                                   subtitle: AutoSizeText(
                                     '${days[dayIndex]['itinerary_items'].length} ${days[dayIndex]['itinerary_items'].length == 1 ? "place" : "places"} to see',
                                     style: TextStyle(
-                                        fontSize: 20,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w300),
                                   ));
                             },

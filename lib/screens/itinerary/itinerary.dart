@@ -266,7 +266,7 @@ class ItineraryState extends State<Itinerary> {
                         child: AutoSizeText(
                       'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
                       style:
-                          TextStyle(fontSize: 22, fontWeight: FontWeight.w400),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
                     ))),
                 Align(
                     alignment: Alignment.topLeft,

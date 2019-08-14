@@ -198,14 +198,14 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           if (response.success == true) {
                             Scaffold.of(context).showSnackBar(SnackBar(
                               content: AutoSizeText('Updated start location',
-                                  style: TextStyle(fontSize: 18)),
+                                  style: TextStyle(fontSize: 13)),
                               duration: Duration(seconds: 2),
                             ));
                           } else {
                             Scaffold.of(context).showSnackBar(SnackBar(
                               content: AutoSizeText(
                                   'Failed to update start location',
-                                  style: TextStyle(fontSize: 18)),
+                                  style: TextStyle(fontSize: 13)),
                               duration: Duration(seconds: 2),
                             ));
                           }
@@ -307,7 +307,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
             padding: EdgeInsets.only(top: 10, bottom: 40),
             child: AutoSizeText(
               '$destinationName, $destinationCountryName',
-              style: TextStyle(fontSize: 30),
+              style: TextStyle(fontSize: 25),
             ),
           );
         }
@@ -330,7 +330,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                         child: AutoSizeText(
                       'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
                       style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.w300),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
                     ))),
                 Align(
                     alignment: Alignment.topLeft,
@@ -340,7 +340,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                               this.startDate)
                           .add(Duration(days: dayBuilder[dayIndex]['day']))),
                       style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
                     ))),
                 Align(
                     alignment: Alignment.topLeft,
@@ -349,7 +349,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                         child: AutoSizeText(
                           '${itineraryItems.length} ${itineraryItems.length == 1 ? "place" : "places"} to see',
                           style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w300),
+                              fontSize: 15, fontWeight: FontWeight.w300),
                         )))
               ]),
               itineraryItems.length > 0
@@ -397,7 +397,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                               style: TextStyle(
                                   color: color,
                                   fontWeight: FontWeight.w400,
-                                  fontSize: 20)),
+                                  fontSize: 15)),
                         )
                       ],
                     ))
@@ -422,7 +422,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         padding: EdgeInsets.only(top: 10, bottom: 20),
         child: AutoSizeText(
           'Getting itinerary...',
-          style: TextStyle(fontSize: 30),
+          style: TextStyle(fontSize: 25),
         ),
       ),
       Center(heightFactor: 12, child: RefreshProgressIndicator()),

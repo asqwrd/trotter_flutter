@@ -266,10 +266,13 @@ class PoiState extends State<Poi> {
             )),
             Container(
               alignment: Alignment.center,
-              padding: EdgeInsets.only(top: 10, bottom: 20),
+              padding:
+                  EdgeInsets.only(top: 10, bottom: 20, left: 20, right: 20),
               child: AutoSizeText(
                 '${this.poiName} info',
-                style: TextStyle(fontSize: 30),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(fontSize: 25),
               ),
             ),
             Padding(
@@ -415,7 +418,7 @@ class PoiState extends State<Poi> {
         padding: EdgeInsets.only(top: 10, bottom: 20),
         child: AutoSizeText(
           ' Loading...',
-          style: TextStyle(fontSize: 30),
+          style: TextStyle(fontSize: 25),
         ),
       ),
       Center(heightFactor: 12, child: RefreshProgressIndicator()),

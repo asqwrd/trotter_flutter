@@ -289,7 +289,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                       child: AutoSizeText(
                         descriptionShort,
                         style: TextStyle(
-                            fontSize: 18.0, fontWeight: FontWeight.w300),
+                            fontSize: 13.0, fontWeight: FontWeight.w300),
                       )),
                   Container(child: _buildListView('poi', color, destination))
                 ])));
@@ -373,7 +373,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                                 maxLines: 2,
                                 overflow: TextOverflow.fade,
                                 style: TextStyle(
-                                    fontSize: 20.0,
+                                    fontSize: 15.0,
                                     fontWeight: FontWeight.w500),
                               )),
                           Container(
@@ -384,7 +384,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 3,
                                 style: TextStyle(
-                                    fontSize: 18.0,
+                                    fontSize: 13.0,
                                     fontWeight: FontWeight.w300),
                               ))
                         ],
@@ -412,7 +412,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
         padding: EdgeInsets.only(top: 10, bottom: 20),
         child: AutoSizeText(
           ' Loading...',
-          style: TextStyle(fontSize: 30),
+          style: TextStyle(fontSize: 25),
         ),
       ),
       Center(heightFactor: 12, child: RefreshProgressIndicator()),

@@ -72,35 +72,41 @@ class TopList extends StatelessWidget {
                   Container(
                     // A fixed-height child.
                     margin: EdgeInsets.only(right: 20),
-                    child: ClipPath(
-                        clipper: ShapeBorderClipper(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8))),
-                        child: item['image'] != null
-                            ? TransitionToImage(
-                                image: AdvancedNetworkImage(
-                                  item['image'],
-                                  useDiskCache: true,
-                                  cacheRule: CacheRule(
-                                      maxAge: const Duration(days: 7)),
-                                ),
-                                loadingWidgetBuilder: (BuildContext context,
-                                        double progress, test) =>
-                                    Center(
-                                        child: CircularProgressIndicator(
-                                  backgroundColor: Colors.white,
-                                )),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
-                                placeholder: const Icon(Icons.refresh),
-                                enableRefresh: true,
-                              )
-                            : Container(
-                                decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: AssetImage('images/placeholder.jpg'),
-                                    fit: BoxFit.cover),
-                              ))),
+                    child: Card(
+                        //opacity: 1,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        child: ClipPath(
+                            clipper: ShapeBorderClipper(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8))),
+                            child: item['image'] != null
+                                ? TransitionToImage(
+                                    image: AdvancedNetworkImage(
+                                      item['image'],
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    ),
+                                    loadingWidgetBuilder: (BuildContext context,
+                                            double progress, test) =>
+                                        Center(
+                                            child: CircularProgressIndicator(
+                                      backgroundColor: Colors.white,
+                                    )),
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
+                                    placeholder: const Icon(Icons.refresh),
+                                    enableRefresh: true,
+                                  )
+                                : Container(
+                                    decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                        image: AssetImage(
+                                            'images/placeholder.jpg'),
+                                        fit: BoxFit.cover),
+                                  )))),
                     width: 110.0,
                     height: 158.0,
                   ),

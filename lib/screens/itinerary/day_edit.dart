@@ -146,6 +146,10 @@ class DayEditState extends State<DayEdit> {
                         return _buildLoadingBody(context);
                       }
                       if (snapshot.hasData && snapshot.data.error == null) {
+                        if (this.itineraryItems.length == 0 &&
+                            _pc.isPanelClosed() == true) {
+                          _pc.open();
+                        }
                         return _buildLoadedBody(context, snapshot);
                       } else if (snapshot.hasData &&
                           snapshot.data.error != null) {

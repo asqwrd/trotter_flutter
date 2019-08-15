@@ -295,12 +295,14 @@ class DayEditState extends State<DayEdit> {
                                         : this.startLocation,
                                     id: this.destinationId)));
                         if (suggestion != null) {
+                          var poi = suggestion;
+                          poi['image'] = suggestion['image_hd'];
                           var data = {
-                            "poi": suggestion,
+                            "poi": poi,
                             "title": "",
                             "description": "",
                             "time": {"value": "", "unit": ""},
-                            "poi_id": suggestion['id'],
+                            "poi_id": poi['id'],
                             "added_by": store.currentUser.uid
                           };
 

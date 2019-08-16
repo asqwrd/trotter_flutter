@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:trotter_flutter/globals.dart';
 
-
 class NotificationsData {
   final List<dynamic> notifications;
   final bool success;

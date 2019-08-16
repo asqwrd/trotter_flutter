@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -64,14 +65,42 @@ class NotificationsState extends State<Notifications> {
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30), topRight: Radius.circular(30)),
         maxHeight: _panelHeightOpen,
-        panel: Center(child: _buildContent(context, store)),
+        panel: Center(
+            child: Stack(children: <Widget>[
+          _buildContent(context, store),
+          store.notificationsLoading == true
+              ? Center(child: RefreshProgressIndicator())
+              : Container()
+        ])),
         body: Container(color: color),
       )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: 'Notifications')),
+            onPush: onPush,
+            color: color,
+            title: 'Notifications',
+            actions: <Widget>[
+              Container(
+                  width: 58,
+                  height: 58,
+                  margin: EdgeInsets.symmetric(horizontal: 0),
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () async {
+                      store.setNotificationsLoading(true);
+                      fetchNotifications(store);
+                    },
+                    child: SvgPicture.asset("images/refresh_icon.svg",
+                        width: 24.0,
+                        height: 24.0,
+                        color: Colors.white,
+                        fit: BoxFit.contain),
+                  ))
+            ],
+          )),
     ]);
 
     //return _buildContent(context, store);

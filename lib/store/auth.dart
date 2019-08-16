@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +9,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/globals.dart';
+import 'package:device_info/device_info.dart';
 
 Future<UserLoginData> saveUserToFirebase(dynamic data) async {
   try {
@@ -74,6 +77,17 @@ Future<UserData> updateUser(String id, dynamic data) async {
     print(error);
     print("User not updated");
     return UserData(success: false);
+  }
+}
+
+Future<String> _getId() async {
+  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  if (Platform.isIOS) {
+    IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+    return iosDeviceInfo.identifierForVendor; // unique ID on iOS
+  } else {
+    AndroidDeviceInfo androidDeviceInfo = await deviceInfo.androidInfo;
+    return androidDeviceInfo.androidId; // unique ID on Android
   }
 }
 
@@ -145,7 +159,9 @@ Future<TrotterUser> googleLogin() async {
     await saveUserToFirebase(data);
     final trotterUser = await getUser(user.uid);
     final token = await _firebaseMessaging.getToken();
-    final dataToken = {"token": token, "uid": user.uid};
+    final deviceId = await _getId();
+    print(deviceId);
+    final dataToken = {"deviceId": deviceId, "token": token, "uid": user.uid};
     await saveDeviceTokenFirebase(dataToken);
 
     print("Push Messaging token: $dataToken");

@@ -171,11 +171,10 @@ class HomeState extends State<Home> {
     this.onPush,
   });
 
-  Future<Null> _refreshData() async {
-    await new Future.delayed(new Duration(seconds: 2));
+  Future<Null> _refreshData() {
+    //await new Future.delayed(new Duration(seconds: 2));
 
     setState(() {
-      loading = true;
       data = fetchHome(true);
       this.itineraries = [];
       dataItineraries = fetchHomeItineraries();
@@ -257,6 +256,8 @@ class HomeState extends State<Home> {
                                 color: color,
                                 onRetry: () {
                                   setState(() {
+                                    this.loading = true;
+                                    this.errorUi = false;
                                     data = fetchHome();
                                     dataItineraries = fetchHomeItineraries();
                                   });
@@ -300,7 +301,11 @@ class HomeState extends State<Home> {
                   child: FlatButton(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(100)),
-                    onPressed: () {
+                    onPressed: () async {
+                      setState(() {
+                        loading = true;
+                        errorUi = false;
+                      });
                       this._refreshData();
                     },
                     child: SvgPicture.asset("images/refresh_icon.svg",

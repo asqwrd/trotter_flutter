@@ -41,17 +41,21 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
-        if (message['notification'] != null) {
-          print(store.notifications.notifications);
+        if (message['notification']['title'] != null) {
           fetchNotifications(store);
         }
       },
       onLaunch: (Map<String, dynamic> message) async {
         print("onLaunch: $message");
+        await fetchNotifications(store);
+        if (message['notification']['title'] != null)
+          _selectTab(this.appContext, TabItem.notifications);
       },
       onResume: (Map<String, dynamic> message) async {
         print("onResume: $message");
-        fetchNotifications(store);
+        await fetchNotifications(store);
+        if (message['notification']['title'] != null)
+          _selectTab(this.appContext, TabItem.notifications);
       },
     );
     _firebaseMessaging.requestNotificationPermissions(

@@ -1,3 +1,5 @@
+import 'package:event_bus/event_bus.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -13,6 +15,13 @@ class TrotterStore extends Store {
   TrotterUser get currentUser => _currentUser;
 
   TripsStore tripStore = TripsStore();
+  final FocusNode explore = FocusNode();
+  final FocusNode trips = FocusNode();
+  final FocusNode profile = FocusNode();
+  final FocusNode notification = FocusNode();
+  EventBus eventBus = EventBus();
+
+  BuildContext appContext;
 
   ItineraryStore itineraryStore = ItineraryStore();
   bool bottomSheetLoading = false;
@@ -24,6 +33,10 @@ class TrotterStore extends Store {
   get notifications => _notifications;
 
   bool offline = false;
+
+  setAppContext(BuildContext context) {
+    appContext = context;
+  }
 
   updateUserNotification(bool value) {
     setState(() {

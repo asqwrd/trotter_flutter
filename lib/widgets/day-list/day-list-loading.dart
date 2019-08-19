@@ -26,7 +26,7 @@ class DayListLoading extends StatelessWidget {
   Widget buildTimeLine(BuildContext context) {
     return Container(
         margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-        decoration: BoxDecoration(color: Colors.white),
+        decoration: BoxDecoration(color: Colors.transparent),
         child: ListView.separated(
           physics: NeverScrollableScrollPhysics(),
           separatorBuilder: (BuildContext serperatorContext, int index) =>

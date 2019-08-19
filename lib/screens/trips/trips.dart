@@ -4,6 +4,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -14,6 +15,8 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:share/share.dart';
+
+import '../../bottom_navigation.dart';
 
 enum CardActions { delete }
 
@@ -287,6 +290,20 @@ class TripsState extends State<Trips> {
           ]));
     } else if (currentUser != null && store.tripStore.trips == null) {
       fetchTrips(store).then((res) {
+        store.eventBus.on<FocusChangeEvent>().listen((event) {
+          // All events are of type UserLoggedInEvent (or subtypes of it).
+          if (event.tab == TabItem.trips) {
+            // add mark notification as read if it makes it to the page
+            final data = event.data;
+            print("trips");
+            onPush({
+              "itineraryId": data["itineraryId"],
+              "dayId": data["dayId"],
+              "startLocation": data['startLocation'],
+              "level": data['level']
+            });
+          }
+        });
         setState(() {
           this.loggedIn = true;
         });

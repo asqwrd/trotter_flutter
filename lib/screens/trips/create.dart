@@ -329,7 +329,6 @@ class CreateTripState extends State<CreateTrip> {
                     controller: _destinationTextController,
                     validator: (value) {
                       if (value.isEmpty) {
-                        print('here');
                         return 'Please select a destination';
                       }
                       return null;

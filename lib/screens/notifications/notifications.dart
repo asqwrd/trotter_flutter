@@ -10,6 +10,8 @@ import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../../bottom_navigation.dart';
+
 class Notifications extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
   Notifications({Key key, this.onPush}) : super(key: key);
@@ -48,6 +50,12 @@ class NotificationsState extends State<Notifications> {
     store = Provider.of<TrotterStore>(context);
     if (store.currentUser != null && data == null) {
       data = fetchNotifications(store);
+      store.eventBus.on<FocusChangeEvent>().listen((event) {
+        // All events are of type UserLoggedInEvent (or subtypes of it).
+        if (event.tab == TabItem.notifications) {
+          onPush({'level': 'createtrip'});
+        }
+      });
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[

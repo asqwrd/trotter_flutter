@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -22,14 +24,15 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
   Map<TabItem, GlobalKey<NavigatorState>> navigatorKeys = {
     TabItem.explore: GlobalKey<NavigatorState>(),
     TabItem.trips: GlobalKey<NavigatorState>(),
+    TabItem.notifications: GlobalKey<NavigatorState>(),
     TabItem.profile: GlobalKey<NavigatorState>(),
   };
   BuildContext appContext;
 
-  static final FocusNode _focusA = FocusNode();
-  static final FocusNode _focusB = FocusNode();
-  static final FocusNode _focusC = FocusNode();
-  static final FocusNode _focusD = FocusNode();
+  // static final FocusNode _focusA = FocusNode();
+  // static final FocusNode _focusB = FocusNode();
+  // static final FocusNode _focusC = FocusNode();
+  // static final FocusNode _focusD = FocusNode();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TrotterStore store;
@@ -41,21 +44,38 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
-        if (message['notification']['title'] != null) {
-          fetchNotifications(store);
-        }
+        await fetchNotifications(store);
+        print(Navigator.of(context).focusScopeNode);
       },
       onLaunch: (Map<String, dynamic> message) async {
         print("onLaunch: $message");
         await fetchNotifications(store);
-        if (message['notification']['title'] != null)
+        if (message['data']['focus'] == "notifications") {
           _selectTab(this.appContext, TabItem.notifications);
+        } else if (message['data']['focus'] == 'trips') {
+          _selectTab(this.appContext, TabItem.trips);
+          var data =
+              json.decode(message['data']["notificationData"].toString());
+
+          var results = FocusChangeEvent.fromJson(data);
+          results.tab = TabItem.trips;
+          store.eventBus.fire(results);
+        }
       },
       onResume: (Map<String, dynamic> message) async {
-        print("onResume: $message");
+        // print("onResume: $message");
         await fetchNotifications(store);
-        if (message['notification']['title'] != null)
+        if (message['data']['focus'] == "notifications") {
           _selectTab(this.appContext, TabItem.notifications);
+        } else if (message['data']['focus'] == 'trips') {
+          _selectTab(this.appContext, TabItem.trips);
+          var data =
+              json.decode(message['data']["notificationData"].toString());
+
+          var results = FocusChangeEvent.fromJson(data);
+          results.tab = TabItem.trips;
+          store.eventBus.fire(results);
+        }
       },
     );
     _firebaseMessaging.requestNotificationPermissions(
@@ -72,17 +92,24 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
       store.checkLoginStatus();
+      store.eventBus.on<dynamic>().listen((event) {
+        // All events are of type UserLoggedInEvent (or subtypes of it).
+        print(event);
+        _selectTab(context, event.tab);
+      });
     }
   }
 
   void _selectTab(BuildContext context, TabItem tabItem) {
     setState(() {
       if (tabItem == TabItem.explore)
-        FocusScope.of(context).requestFocus(_focusA);
+        FocusScope.of(context).requestFocus(store.explore);
       else if (tabItem == TabItem.trips)
-        FocusScope.of(context).requestFocus(_focusB);
+        FocusScope.of(context).requestFocus(store.trips);
       else if (tabItem == TabItem.profile)
-        FocusScope.of(context).requestFocus(_focusC);
+        FocusScope.of(context).requestFocus(store.notification);
+      else if (tabItem == TabItem.notifications)
+        FocusScope.of(context).requestFocus(store.profile);
 
       currentTab = tabItem;
     });
@@ -128,10 +155,10 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    _focusA.dispose();
-    _focusB.dispose();
-    _focusC.dispose();
-    _focusD.dispose();
+    store.explore.dispose();
+    store.trips.dispose();
+    store.profile.dispose();
+    store.notification.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -182,6 +209,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     // }
     setState(() {
       this.appContext = context;
+      store.setAppContext(context);
     });
 
     return WillPopScope(
@@ -192,16 +220,16 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
         backgroundColor: Colors.white,
         body: Stack(children: <Widget>[
           Focus(
-              focusNode: _focusA,
+              focusNode: store.explore,
               child: _buildOffstageNavigator(TabItem.explore)),
           Focus(
-              focusNode: _focusB,
+              focusNode: store.trips,
               child: _buildOffstageNavigator(TabItem.trips)),
           Focus(
-              focusNode: _focusD,
+              focusNode: store.notification,
               child: _buildOffstageNavigator(TabItem.notifications)),
           Focus(
-              focusNode: _focusC,
+              focusNode: store.profile,
               child: _buildOffstageNavigator(TabItem.profile)),
         ]),
         bottomNavigationBar: BottomNavigation(

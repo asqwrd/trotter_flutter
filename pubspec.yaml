@@ -58,6 +58,8 @@ dependencies:
   geolocator: ^5.1.1+1
   flutter_launcher_icons: "^0.7.0"
   device_info: ^0.4.0+2
+  event_bus: ^1.1.0
+  strings: ^0.1.0
 
 dev_dependencies:
   flutter_test:

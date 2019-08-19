@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:trotter_flutter/globals.dart';
 
+import '../bottom_navigation.dart';
+
 class NotificationsData {
   final List<dynamic> notifications;
   final bool success;
@@ -95,5 +97,17 @@ Future<NotificationsData> markNotificationRead(String notificationId,
     store?.setNotificationsError(true);
     store?.setNotificationsLoading(false);
     return NotificationsData(success: false);
+  }
+}
+
+class FocusChangeEvent {
+  dynamic data;
+  TabItem tab;
+
+  FocusChangeEvent({this.data, this.tab});
+
+  factory FocusChangeEvent.fromJson(Map<dynamic, dynamic> json) {
+    print("here");
+    return FocusChangeEvent(data: json, tab: null);
   }
 }

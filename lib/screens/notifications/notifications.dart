@@ -50,12 +50,12 @@ class NotificationsState extends State<Notifications> {
     store = Provider.of<TrotterStore>(context);
     if (store.currentUser != null && data == null) {
       data = fetchNotifications(store);
-      store.eventBus.on<FocusChangeEvent>().listen((event) {
-        // All events are of type UserLoggedInEvent (or subtypes of it).
-        if (event.tab == TabItem.notifications) {
-          onPush({'level': 'createtrip'});
-        }
-      });
+      // store.eventBus.on<FocusChangeEvent>().listen((event) {
+      //   // All events are of type UserLoggedInEvent (or subtypes of it).
+      //   if (event.tab == TabItem.notifications) {
+      //     onPush({'level': 'createtrip'});
+      //   }
+      // });
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[

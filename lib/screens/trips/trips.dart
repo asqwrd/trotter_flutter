@@ -53,6 +53,7 @@ class TripsState extends State<Trips> {
   bool loggedIn = false;
   BuildContext context;
   final ValueChanged<dynamic> onPush;
+  bool isSub = false;
 
   Future<TripsData> data;
   ScrollController _sc = new ScrollController();
@@ -68,6 +69,7 @@ class TripsState extends State<Trips> {
         }
       });
     });
+
     super.initState();
   }
 
@@ -87,6 +89,20 @@ class TripsState extends State<Trips> {
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
     final store = Provider.of<TrotterStore>(context);
+    if (isSub == false) {
+      store.eventBus.on<FocusChangeEvent>().listen((event) async {
+        // All events are of type UserLoggedInEvent (or subtypes of it).
+        if (event.tab == TabItem.trips) {
+          // add mark notification as read if it makes it to the page
+          final eventdata = event.data;
+          fetchTrips(store);
+          onPush(eventdata);
+        }
+      });
+      setState(() {
+        isSub = true;
+      });
+    }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
@@ -288,22 +304,8 @@ class TripsState extends State<Trips> {
                 ? Center(child: RefreshProgressIndicator())
                 : Container()
           ]));
-    } else if (currentUser != null && store.tripStore.trips == null) {
+    } else if (currentUser != null && trips == null) {
       fetchTrips(store).then((res) {
-        store.eventBus.on<FocusChangeEvent>().listen((event) {
-          // All events are of type UserLoggedInEvent (or subtypes of it).
-          if (event.tab == TabItem.trips) {
-            // add mark notification as read if it makes it to the page
-            final data = event.data;
-            print("trips");
-            onPush({
-              "itineraryId": data["itineraryId"],
-              "dayId": data["dayId"],
-              "startLocation": data['startLocation'],
-              "level": data['level']
-            });
-          }
-        });
         setState(() {
           this.loggedIn = true;
         });

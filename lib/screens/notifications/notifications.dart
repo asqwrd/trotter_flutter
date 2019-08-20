@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -176,7 +180,7 @@ class NotificationsState extends State<Notifications> {
               final type = notifications[index]['type'];
               final id = notifications[index]['id'];
               return ListTile(
-                leading: icon(type),
+                leading: icon(type, data['user']),
                 title: AutoSizeText(data['subject']),
                 subtitle: AutoSizeText(timeago
                     .format(DateTime.fromMillisecondsSinceEpoch(createdAt))),
@@ -214,15 +218,36 @@ class NotificationsState extends State<Notifications> {
                       Navigator.pop(context);
                       showTripsBottomSheet(context, null, data, notificationId);
                     })
-                : null,
+                : Container(),
+            type == 'user'
+                ? new ListTile(
+                    leading: new Icon(EvilIcons.plus),
+                    title: new AutoSizeText('View trip'),
+                    onTap: () async {
+                      var results = FocusChangeEvent(
+                          tab: TabItem.trips, data: data['navigationData']);
+                      store.eventBus.fire(results);
+                    })
+                : Container(),
           ]);
         });
   }
 
-  static Icon icon(String type) {
+  static icon(String type, [dynamic user]) {
     switch (type) {
       case 'email':
         return Icon(EvilIcons.envelope);
+      case 'user':
+        return Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(width: 2, color: Colors.blueGrey)),
+            child: CircleAvatar(
+                backgroundImage: AdvancedNetworkImage(
+              user['photoUrl'],
+              useDiskCache: true,
+              cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+            )));
     }
 
     return null;

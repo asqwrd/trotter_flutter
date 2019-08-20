@@ -49,17 +49,6 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
       onLaunch: (Map<String, dynamic> message) async {
         print("onLaunch: $message");
         await fetchNotifications(store);
-        // if (message['data']['focus'] == "notifications") {
-        //   _selectTab(this.appContext, TabItem.notifications);
-        // } else if (message['data']['focus'] == 'trips') {
-        //   _selectTab(this.appContext, TabItem.trips);
-        //   var data =
-        //       json.decode(message['data']["notificationData"].toString());
-
-        //   var results = FocusChangeEvent.fromJson(data);
-        //   results.tab = TabItem.trips;
-        //   store.eventBus.fire(results);
-        // }
       },
       onResume: (Map<String, dynamic> message) async {
         // print("onResume: $message");
@@ -67,7 +56,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
         if (message['data']['focus'] == "notifications") {
           _selectTab(this.appContext, TabItem.notifications);
         } else if (message['data']['focus'] == 'trips') {
-          _selectTab(this.appContext, TabItem.trips);
+          //_selectTab(this.appContext, TabItem.trips);
           var data =
               json.decode(message['data']["notificationData"].toString());
 
@@ -91,7 +80,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
       store.checkLoginStatus();
-      store.eventBus.on<dynamic>().listen((event) {
+      store.eventBus.on<FocusChangeEvent>().listen((event) {
         // All events are of type UserLoggedInEvent (or subtypes of it).
         _selectTab(context, event.tab);
       });

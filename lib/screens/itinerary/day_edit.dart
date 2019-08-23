@@ -418,8 +418,8 @@ class DayEditState extends State<DayEdit> {
                         setState(() {
                           this.loading = true;
                         });
-                        var response = await deleteFromDay(
-                            this.itineraryId, this.dayId, id);
+                        var response = await deleteFromDay(this.itineraryId,
+                            this.dayId, id, store.currentUser.uid);
                         if (response.success == true) {
                           setState(() {
                             this
@@ -450,8 +450,8 @@ class DayEditState extends State<DayEdit> {
                     title: new AutoSizeText('Delete from itnerary'),
                     onTap: () async {
                       this.loading = true;
-                      var response =
-                          await deleteFromDay(this.itineraryId, this.dayId, id);
+                      var response = await deleteFromDay(this.itineraryId,
+                          this.dayId, id, store.currentUser.uid);
                       if (response.success == true) {
                         setState(() {
                           this

@@ -154,7 +154,7 @@ class SearchModalState extends State<SearchModal> {
     var chips = [
       ChoiceChip(
           selected: this.location != null ? !selectId : true,
-          label: AutoSizeText("Anywhere"),
+          label: AutoSizeText("Destinations"),
           onSelected: (bool value) {
             setState(() {
               if (this.id.isNotEmpty) {
@@ -195,7 +195,7 @@ class SearchModalState extends State<SearchModal> {
       chips.add(ChoiceChip(
           selected: nearId,
           label: Container(
-              width: 150,
+              constraints: BoxConstraints(maxWidth: 150),
               child: AutoSizeText(
                 'near ${this.near['name']}',
                 overflow: TextOverflow.ellipsis,

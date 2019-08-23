@@ -17,7 +17,7 @@ class App extends StatefulWidget {
   State<StatefulWidget> createState() => AppStateWidget();
 }
 
-class AppStateWidget extends State<App> with WidgetsBindingObserver {
+class AppStateWidget extends State<App> {
   bool focusTrips = false;
   bool logIn = false;
   TabItem currentTab = TabItem.explore;
@@ -40,7 +40,7 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    this.initDynamicLinks();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
@@ -125,19 +125,34 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     if (response.success == true && response.exists == false) {
       await fetchTrips(store);
       _selectTab(this.appContext, TabItem.trips);
+    } else if (response.success == true && response.exists == true) {
+      await fetchTrips(store);
+      _selectTab(this.appContext, TabItem.trips);
     }
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      FirebaseDynamicLinks.instance.retrieveDynamicLink().then((data) {
-        final tripId = data?.link?.queryParameters != null
-            ? data?.link?.queryParameters['trip']
-            : null;
-        checkDynamicLink(store, tripId);
-      });
+  void initDynamicLinks() async {
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri deepLink = data?.link;
+
+    if (deepLink != null) {
+      final tripId = data?.link?.queryParameters != null
+          ? data?.link?.queryParameters['trip']
+          : null;
+      checkDynamicLink(store, tripId);
     }
+
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData data) async {
+      final tripId = data?.link?.queryParameters != null
+          ? data?.link?.queryParameters['trip']
+          : null;
+      checkDynamicLink(store, tripId);
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
   }
 
   @override
@@ -146,7 +161,6 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
     store.trips.dispose();
     store.profile.dispose();
     store.notification.dispose();
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -190,10 +204,6 @@ class AppStateWidget extends State<App> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // print('Focus ${this.focusTrips}');
-    // if (this.focusTrips == true) {
-    //   _selectTab(context, TabItem.trips);
-    // }
     setState(() {
       this.appContext = context;
       store.setAppContext(context);

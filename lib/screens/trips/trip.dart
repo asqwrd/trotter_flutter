@@ -693,7 +693,9 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                               Navigator.pop(modalcontext);
                               setState(() {
                                 var undoDestination = this.destinations[index];
+                                store.tripStore.removeTripDestinations(this.tripId, this.destinations[index]);
                                 this.destinations.removeAt(index);
+                                
                                 Scaffold
                                 .of(listContext)
                                 .showSnackBar(
@@ -908,9 +910,13 @@ class TripState extends State<Trip> {
           new ListTile(
             leading: new Icon(Icons.pin_drop),
             title: new AutoSizeText('Edit destinations'),
-            onTap: () { 
+            onTap: () async { 
               Navigator.pop(context);
-              showDestinationsModal(context,this.destinations, this.color);
+              await showDestinationsModal(context,this.destinations, this.color);
+              setState(() {
+               this.destinations = this.destinations; 
+              });
+
             }        
           ),
           ListTile(leading: Icon(Icons.share), title: AutoSizeText('Invite travelers'), onTap: (){
@@ -1128,7 +1134,7 @@ class TripState extends State<Trip> {
     this.destinations = snapshot.data.destinations;
     this.travelers = snapshot.data.travelers;
     this.trip['destinations'] = this.destinations;
-    var destTable = new Collection<dynamic>(destinations);
+    var destTable = new Collection<dynamic>(this.destinations);
     var result2 = destTable.groupBy<dynamic>((destination) => destination['country_id']);
     this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
@@ -1221,7 +1227,7 @@ class TripState extends State<Trip> {
                 } else if(destination != null && !destination['itinerary_id'].isEmpty){
                   onPush({'id': destination['itinerary_id'].toString(), 'level': fields[index]['level'].toString()});
                 } else if(fields[index]['level'] == 'travelinfo'){
-                  onPush({'tripId':this.tripId, 'currentUserId': store.currentUser.uid,"level": "travelinfo","ownerId": this.trip['owner_id']});
+                  onPush({'tripId':this.tripId, 'currentUserId': store.currentUser.uid,"level": "travelinfo"});
                 }else if(fields[index]['level'] == 'travelers-modal'){
                   await openTravelersModal(ctxt, store);
                 }
@@ -1270,17 +1276,24 @@ class TripState extends State<Trip> {
         );
         
         if (dialogData != null) {
-          final travelers = dialogData['travelers'];
+          final List<String> travelers = dialogData['travelers'];
+          
           var response = await putUpdateTrip(tripId, {"group": travelers});
             if(response.success == true){
-              setState(() {
-                this.trip['group'] = travelers;
-                this.trip['travelers'] = response.travelers;
-                this.travelers = response.travelers;
-                store.tripStore.updateTrip(this.trip); 
-                data = fetchTrip(this.tripId);
-    
-              });
+              if(!travelers.contains(store.currentUser.uid)){
+                await fetchTrips(store);
+                Navigator.pop(context);
+              } else{
+                setState(() {
+                  this.trip['group'] = travelers;
+                  this.trip['travelers'] = response.travelers;
+                  this.travelers = response.travelers;
+                  store.tripStore.updateTrip(this.trip); 
+                  data = fetchTrip(this.tripId);
+      
+                });
+              }
+            
             }
         }
   }

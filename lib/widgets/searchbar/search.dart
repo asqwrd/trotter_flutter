@@ -205,7 +205,7 @@ class SearchState extends State<Search> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: AppBar(
+      /*appBar: AppBar(
         backgroundColor: Colors.white,
         brightness: Brightness.light,
         leading: IconButton(
@@ -278,142 +278,155 @@ class SearchState extends State<Search> {
                         child: Wrap(spacing: 10.0, children: chips))
                   ]),
             )),
-      ),
+      ),*/
       body: isLoading
-          ? _buildLoadingBody()
+          ? Column(children: <Widget>[
+              renderTopBar(timer, chips),
+              Flexible(child: _buildLoadingBody())
+            ])
           : results != null
-              ? ListView.builder(
-                  itemCount: results.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return selectId == false
-                        ? InkWell(
-                            onTap: () {
-                              print(results[index]['google_place']);
-                              onPush({
-                                'id': results[index]['id'].toString(),
-                                'level': results[index]['level'].toString(),
-                                'from': 'search',
-                                'google_place': results[index]['google_place']
-                              });
-                            },
-                            child: ListTile(
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 20),
-                                title: AutoSizeText(
-                                  results[index]['country_id'] ==
-                                          'United_States'
-                                      ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
-                                      : '${results[index]['name']}, ${results[index]['country_name']}',
-                                )))
-                        : InkWell(
-                            onTap: () {
-                              onPush({
-                                'id': results[index]['id'].toString(),
-                                'level': results[index]['level'].toString(),
-                                'from': 'search',
-                                'google_place': results[index]['google_place']
-                              });
-                            },
-                            child: Container(
-                                margin: EdgeInsets.symmetric(vertical: 0),
-                                child: ListTile(
+              ? Column(children: <Widget>[
+                  renderTopBar(timer, chips),
+                  Flexible(
+                      child: ListView.builder(
+                    itemCount: results.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return selectId == false
+                          ? InkWell(
+                              onTap: () {
+                                print(results[index]['google_place']);
+                                onPush({
+                                  'id': results[index]['id'].toString(),
+                                  'level': results[index]['level'].toString(),
+                                  'from': 'search',
+                                  'google_place': results[index]['google_place']
+                                });
+                              },
+                              child: ListTile(
                                   contentPadding: EdgeInsets.symmetric(
-                                      vertical: 20, horizontal: 20),
-                                  leading: Container(
-                                    width: 80.0,
-                                    height: 80.0,
-                                    child: ClipPath(
-                                        clipper: ShapeBorderClipper(
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8))),
-                                        child: results[index]['image'] != null
-                                            ? TransitionToImage(
-                                                image: AdvancedNetworkImage(
-                                                  results[index]['image'],
-                                                  useDiskCache: true,
-                                                  cacheRule: CacheRule(
-                                                      maxAge: const Duration(
-                                                          days: 7)),
-                                                ),
-                                                loadingWidgetBuilder: (BuildContext
-                                                            context,
-                                                        double progress,
-                                                        test) =>
-                                                    Center(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                  backgroundColor: Colors.white,
-                                                )),
-                                                fit: BoxFit.cover,
-                                                alignment: Alignment.center,
-                                                placeholder:
-                                                    const Icon(Icons.refresh),
-                                                enableRefresh: true,
-                                              )
-                                            : Container(
-                                                decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                    image: AssetImage(
-                                                        'images/placeholder.jpg'),
-                                                    fit: BoxFit.cover),
-                                              ))),
-                                  ),
+                                      vertical: 10, horizontal: 20),
                                   title: AutoSizeText(
-                                    results[index]['name'],
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  subtitle: results[index]
-                                              ['description_short'] !=
-                                          null
-                                      ? AutoSizeText(
-                                          results[index]['description_short'],
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w300),
-                                        )
-                                      : AutoSizeText(
-                                          results[index]['description'],
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w300),
-                                        ),
-                                )));
-                  },
-                )
+                                    results[index]['country_id'] ==
+                                            'United_States'
+                                        ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
+                                        : '${results[index]['name']}, ${results[index]['country_name']}',
+                                  )))
+                          : InkWell(
+                              onTap: () {
+                                onPush({
+                                  'id': results[index]['id'].toString(),
+                                  'level': results[index]['level'].toString(),
+                                  'from': 'search',
+                                  'google_place': results[index]['google_place']
+                                });
+                              },
+                              child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 0),
+                                  child: ListTile(
+                                    contentPadding: EdgeInsets.symmetric(
+                                        vertical: 20, horizontal: 20),
+                                    leading: Container(
+                                      width: 80.0,
+                                      height: 80.0,
+                                      child: ClipPath(
+                                          clipper: ShapeBorderClipper(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8))),
+                                          child: results[index]['image'] != null
+                                              ? TransitionToImage(
+                                                  image: AdvancedNetworkImage(
+                                                    results[index]['image'],
+                                                    useDiskCache: true,
+                                                    cacheRule: CacheRule(
+                                                        maxAge: const Duration(
+                                                            days: 7)),
+                                                  ),
+                                                  loadingWidgetBuilder:
+                                                      (BuildContext context,
+                                                              double progress,
+                                                              test) =>
+                                                          Center(
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                  )),
+                                                  fit: BoxFit.cover,
+                                                  alignment: Alignment.center,
+                                                  placeholder:
+                                                      const Icon(Icons.refresh),
+                                                  enableRefresh: true,
+                                                )
+                                              : Container(
+                                                  decoration: BoxDecoration(
+                                                  image: DecorationImage(
+                                                      image: AssetImage(
+                                                          'images/placeholder.jpg'),
+                                                      fit: BoxFit.cover),
+                                                ))),
+                                    ),
+                                    title: AutoSizeText(
+                                      results[index]['name'],
+                                      style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    subtitle: results[index]
+                                                ['description_short'] !=
+                                            null
+                                        ? AutoSizeText(
+                                            results[index]['description_short'],
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w300),
+                                          )
+                                        : AutoSizeText(
+                                            results[index]['description'],
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w300),
+                                          ),
+                                  )));
+                    },
+                  ))
+                ])
               : error == null
-                  ? ListView.builder(
-                      itemCount: recentSearch.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return InkWell(
-                            onTap: () {
-                              setState(() {
-                                txt.text = recentSearch[index]['value'];
-                                data = fetchSearch(
+                  ? Column(children: <Widget>[
+                      renderTopBar(timer, chips),
+                      Flexible(
+                          child: ListView.builder(
+                        itemCount: recentSearch.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  txt.text = recentSearch[index]['value'];
+                                  data = fetchSearch(
+                                      recentSearch[index]['value'],
+                                      this.location != null
+                                          ? this.location['lat']
+                                          : null,
+                                      this.location != null
+                                          ? this.location['lng']
+                                          : null,
+                                      selectId);
+                                });
+                              },
+                              child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 20),
+                                  title: AutoSizeText(
                                     recentSearch[index]['value'],
-                                    this.location != null
-                                        ? this.location['lat']
-                                        : null,
-                                    this.location != null
-                                        ? this.location['lng']
-                                        : null,
-                                    selectId);
-                              });
-                            },
-                            child: ListTile(
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 20),
-                                title: AutoSizeText(
-                                  recentSearch[index]['value'],
-                                )));
-                      },
-                    )
+                                  )));
+                        },
+                      ))
+                    ])
                   : ListView(shrinkWrap: true, children: <Widget>[
                       Container(
                           height: _panelHeightOpen - 80,
@@ -435,6 +448,79 @@ class SearchState extends State<Search> {
                             },
                           ))
                     ]),
+    );
+  }
+
+  Container renderTopBar(timer, List<ChoiceChip> chips) {
+    return Container(
+      padding: EdgeInsets.only(top: 20),
+      decoration: BoxDecoration(
+          border: Border(
+              bottom:
+                  BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  IconButton(
+                    padding: EdgeInsets.all(0),
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    iconSize: 30,
+                    color: Colors.black,
+                  ),
+                  FlatButton(
+                    child: AutoSizeText('Clear'),
+                    onPressed: () {
+                      setState(() {
+                        txt.text = '';
+                        data = fetchSearch(
+                            '',
+                            this.location != null ? this.location['lat'] : null,
+                            this.location != null ? this.location['lng'] : null,
+                            selectId);
+                      });
+                    },
+                  )
+                ]),
+            TextField(
+              enabled: true,
+              controller: txt,
+              cursorColor: Colors.black,
+              textInputAction: TextInputAction.search,
+              enableInteractiveSelection: true,
+              decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                  hintText: selectId
+                      ? 'Search for places in ${this.destinationName}...'
+                      : 'Search for destinations to travel to...'),
+              onChanged: (value) {
+                if (timer != null) {
+                  timer.cancel();
+                  timer = null;
+                }
+                timer = new Timer(const Duration(milliseconds: 500), () {
+                  print('Print $value');
+                  setState(() {
+                    data = fetchSearch(
+                        value,
+                        this.location != null ? this.location['lat'] : null,
+                        this.location != null ? this.location['lng'] : null,
+                        selectId);
+                  });
+                });
+              },
+            ),
+            Container(
+                margin: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Wrap(spacing: 10.0, children: chips))
+          ]),
     );
   }
 

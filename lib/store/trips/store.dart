@@ -38,6 +38,16 @@ class TripsStore extends Store {
     });
   }
 
+  removeTripDestinations(String tripId, dynamic destination) {
+    var tripIndex = _trips.indexWhere((trip) => trip['id'] == tripId);
+    var trips = []..addAll(_trips);
+    trips[tripIndex]['destinations']
+        .removeWhere((dest) => dest['id'] == destination['id']);
+    setState(() {
+      _trips = trips;
+    });
+  }
+
   undoTripDelete(dynamic trip, int index) {
     var trips = []..addAll(_trips);
     trips.insert(index, trip);

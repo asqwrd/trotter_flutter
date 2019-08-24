@@ -13,27 +13,20 @@ import 'package:trotter_flutter/store/store.dart';
 
 class FlightsAccomodations extends StatefulWidget {
   final String tripId;
-  final String ownerId;
   final String currentUserId;
   final ValueChanged<dynamic> onPush;
   FlightsAccomodations(
-      {Key key,
-      @required this.tripId,
-      this.ownerId,
-      this.currentUserId,
-      this.onPush})
+      {Key key, @required this.tripId, this.currentUserId, this.onPush})
       : super(key: key);
   @override
   FlightsAccomodationsState createState() => new FlightsAccomodationsState(
       tripId: this.tripId,
-      ownerId: this.ownerId,
       currentUserId: this.currentUserId,
       onPush: this.onPush);
 }
 
 class FlightsAccomodationsState extends State<FlightsAccomodations> {
   final String tripId;
-  final String ownerId;
   final String currentUserId;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.blueGrey;
@@ -75,8 +68,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     super.dispose();
   }
 
-  FlightsAccomodationsState(
-      {this.tripId, this.ownerId, this.currentUserId, this.onPush});
+  FlightsAccomodationsState({this.tripId, this.currentUserId, this.onPush});
 
   @override
   Widget build(BuildContext context) {
@@ -202,13 +194,14 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
               }
             },
             onAddPressed: (data) async {
+              final ownerId = data['ownerId'];
               var dialogData = await showGeneralDialog(
                 context: ctxt,
                 pageBuilder: (BuildContext buildContext,
                     Animation<double> animation,
                     Animation<double> secondaryAnimation) {
                   return TravelersModal(
-                      ownerId: this.ownerId,
+                      ownerId: ownerId,
                       currentUserId: this.currentUserId,
                       tripId: this.tripId,
                       travelers: data['travelers']);
@@ -236,7 +229,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                     this.tripId,
                     destinationId,
                     detailId,
-                    {"travelers": travelers});
+                    {"travelers": travelers},
+                    this.currentUserId);
                 if (response.error == null) {
                   setState(() {
                     this.loading = true;

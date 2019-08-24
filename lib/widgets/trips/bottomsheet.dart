@@ -172,7 +172,8 @@ Widget _buildBody(BuildContext context, dynamic item,
           if (response.exists == false) {
             store.tripStore.updateTripDestinations(item['id'], data);
             Scaffold.of(context).showSnackBar(SnackBar(
-              content: AutoSizeText('${destination['name']} added to ${item['name']}',
+              content: AutoSizeText(
+                  '${destination['name']} added to ${item['name']}',
                   style: TextStyle(fontSize: 18)),
               duration: Duration(seconds: 2),
               action: SnackBarAction(
@@ -197,6 +198,7 @@ Widget _buildBody(BuildContext context, dynamic item,
             "source": notification['source'],
             "segments": notification['segments'],
             "travelers": [store.currentUser.uid],
+            "ownerId": store.currentUser.uid
           };
           final List<Widget> destinations = item['destinations']
               .map<Widget>((destination) => new ListTile(
@@ -209,7 +211,8 @@ Widget _buildBody(BuildContext context, dynamic item,
                     if (response.success == true) {
                       await markNotificationRead(notificationId, store);
                       Scaffold.of(context).showSnackBar(SnackBar(
-                          content: AutoSizeText('Details successfully added to trip',
+                          content: AutoSizeText(
+                              'Details successfully added to trip',
                               style: TextStyle(fontSize: 18)),
                           duration: Duration(seconds: 2)));
                     }

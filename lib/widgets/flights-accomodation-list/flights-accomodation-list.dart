@@ -79,6 +79,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                     "destinationId": destination['id'],
                                     "travelers": travelers,
                                     "index": index,
+                                    "ownerId": details[index]['ownerId']
                                   });
                                 },
                                 child: Row(

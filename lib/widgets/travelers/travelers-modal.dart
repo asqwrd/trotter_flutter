@@ -91,8 +91,10 @@ class TravelersModalState extends State<TravelersModal> {
             cacheRule: CacheRule(maxAge: const Duration(days: 7)),
           )),
           label: AutoSizeText("${traveler['displayName']}"),
-          deleteIcon: this.ownerId == this.currentUserId ||
-                  this.currentUserId == traveler['uid']
+          deleteIcon: (this.ownerId == this.currentUserId &&
+                      this.currentUserId != traveler['uid']) ||
+                  (this.currentUserId == traveler['uid'] &&
+                      this.currentUserId != this.ownerId)
               ? Icon(Icons.close)
               : Container(),
           onDeleted: () {

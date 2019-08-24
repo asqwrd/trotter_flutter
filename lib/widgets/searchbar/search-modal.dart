@@ -215,206 +215,221 @@ class SearchModalState extends State<SearchModal> {
 
     return Scaffold(
       resizeToAvoidBottomPadding: false,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        brightness: Brightness.light,
-        leading: IconButton(
-          padding: EdgeInsets.all(0),
-          icon: Icon(Icons.close),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          iconSize: 30,
-          color: Colors.black,
-        ),
-        actions: <Widget>[
-          FlatButton(
-            child: AutoSizeText('Clear'),
-            onPressed: () {
-              setState(() {
-                txt.text = '';
-                data = fetchSearchModal(
-                    '',
-                    this.location != null ? this.location['lat'] : null,
-                    this.location != null ? this.location['lng'] : null,
-                    selectId);
-              });
-            },
-          )
-        ],
-        bottom: PreferredSize(
-            preferredSize: Size.fromHeight(80),
-            child: Container(
-              child: Column(
+      body: isLoading
+          ? Column(children: <Widget>[
+              renderTopBar(timer, chips),
+              Flexible(child: _buildLoadingBody())
+            ])
+          : results != null
+              ? Column(children: <Widget>[
+                  renderTopBar(timer, chips),
+                  Flexible(
+                      child: ListView.builder(
+                    //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                    itemCount: results.length,
+                    //shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      return selectId == false
+                          ? InkWell(
+                              onTap: () {
+                                //onSelect({'selected':results[index]});
+                                Navigator.pop(context, results[index]);
+                              },
+                              child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 20),
+                                  title: AutoSizeText(
+                                    results[index]['country_id'] ==
+                                            'United_States'
+                                        ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
+                                        : '${results[index]['name']}, ${results[index]['country_name']}',
+                                  )))
+                          : InkWell(
+                              onTap: () {
+                                //onSelect({'selected':results[index]});
+                                Navigator.pop(context, results[index]);
+                              },
+                              child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child: ListTile(
+                                    leading: Container(
+                                      width: 80.0,
+                                      height: 80.0,
+                                      child: ClipPath(
+                                          clipper: ShapeBorderClipper(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          8))),
+                                          child: results[index]['image'] != null
+                                              ? TransitionToImage(
+                                                  image: AdvancedNetworkImage(
+                                                    results[index]['image'],
+                                                    useDiskCache: true,
+                                                    cacheRule: CacheRule(
+                                                        maxAge: const Duration(
+                                                            days: 7)),
+                                                  ),
+                                                  loadingWidgetBuilder:
+                                                      (BuildContext context,
+                                                              double progress,
+                                                              test) =>
+                                                          Center(
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                  )),
+                                                  fit: BoxFit.cover,
+                                                  alignment: Alignment.center,
+                                                  placeholder:
+                                                      const Icon(Icons.refresh),
+                                                  enableRefresh: true,
+                                                )
+                                              : Container(
+                                                  decoration: BoxDecoration(
+                                                  image: DecorationImage(
+                                                      image: AssetImage(
+                                                          'images/placeholder.jpg'),
+                                                      fit: BoxFit.cover),
+                                                ))),
+                                    ),
+                                    title: AutoSizeText(
+                                      results[index]['name'],
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    subtitle: results[index]
+                                                ['description_short'] !=
+                                            null
+                                        ? AutoSizeText(
+                                            results[index]['description_short'],
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w300),
+                                          )
+                                        : AutoSizeText(
+                                            results[index]['description'],
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w300),
+                                          ),
+                                  )));
+                    },
+                  ))
+                ])
+              : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    TextField(
-                      enabled: true,
-                      controller: txt,
-                      cursorColor: Colors.black,
-                      textInputAction: TextInputAction.search,
-                      enableInteractiveSelection: true,
-                      decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20.0, vertical: 20.0),
-                          hintText: selectId
-                              ? 'Search for places in $destinationName...'
-                              : 'Search for destinations to travel to...'),
-                      onChanged: (value) {
-                        if (timer != null) {
-                          timer.cancel();
-                          timer = null;
-                        }
-                        timer =
-                            new Timer(const Duration(milliseconds: 500), () {
-                          setState(() {
-                            data = fetchSearchModal(
-                                value,
-                                this.location != null
-                                    ? this.location['lat']
-                                    : null,
-                                this.location != null
-                                    ? this.location['lng']
-                                    : null,
-                                selectId);
-                          });
-                        });
-                      },
-                    ),
-                    Container(
-                        margin: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Wrap(spacing: 10.0, children: chips))
-                  ]),
-            )),
-      ),
-      body: isLoading
-          ? _buildLoadingBody()
-          : results != null
-              ? ListView.builder(
-                  //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                  itemCount: results.length,
-                  //shrinkWrap: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    return selectId == false
-                        ? InkWell(
-                            onTap: () {
-                              //onSelect({'selected':results[index]});
-                              Navigator.pop(context, results[index]);
-                            },
-                            child: ListTile(
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: 10, horizontal: 20),
-                                title: AutoSizeText(
-                                  results[index]['country_id'] ==
-                                          'United_States'
-                                      ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
-                                      : '${results[index]['name']}, ${results[index]['country_name']}',
-                                )))
-                        : InkWell(
-                            onTap: () {
-                              //onSelect({'selected':results[index]});
-                              Navigator.pop(context, results[index]);
-                            },
-                            child: Container(
-                                margin: EdgeInsets.symmetric(vertical: 20),
-                                child: ListTile(
-                                  leading: Container(
-                                    width: 80.0,
-                                    height: 80.0,
-                                    child: ClipPath(
-                                        clipper: ShapeBorderClipper(
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8))),
-                                        child: results[index]['image'] != null
-                                            ? TransitionToImage(
-                                                image: AdvancedNetworkImage(
-                                                  results[index]['image'],
-                                                  useDiskCache: true,
-                                                  cacheRule: CacheRule(
-                                                      maxAge: const Duration(
-                                                          days: 7)),
-                                                ),
-                                                loadingWidgetBuilder: (BuildContext
-                                                            context,
-                                                        double progress,
-                                                        test) =>
-                                                    Center(
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                  backgroundColor: Colors.white,
-                                                )),
-                                                fit: BoxFit.cover,
-                                                alignment: Alignment.center,
-                                                placeholder:
-                                                    const Icon(Icons.refresh),
-                                                enableRefresh: true,
-                                              )
-                                            : Container(
-                                                decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                    image: AssetImage(
-                                                        'images/placeholder.jpg'),
-                                                    fit: BoxFit.cover),
-                                              ))),
-                                  ),
+                      renderTopBar(timer, chips),
+                      Flexible(
+                          child: ListView.builder(
+                        //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                        itemCount: recentSearchModal.length,
+                        //shrinkWrap: true,
+                        primary: false,
+                        itemBuilder: (BuildContext context, int index) {
+                          return InkWell(
+                              onTap: () {
+                                setState(() {
+                                  txt.text = recentSearchModal[index]['value'];
+                                  data = fetchSearchModal(
+                                      recentSearchModal[index]['value'],
+                                      this.location != null
+                                          ? this.location['lat']
+                                          : null,
+                                      this.location != null
+                                          ? this.location['lng']
+                                          : null,
+                                      selectId);
+                                });
+                              },
+                              child: ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: 5, horizontal: 20),
                                   title: AutoSizeText(
-                                    results[index]['name'],
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  subtitle: results[index]
-                                              ['description_short'] !=
-                                          null
-                                      ? AutoSizeText(
-                                          results[index]['description_short'],
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w300),
-                                        )
-                                      : AutoSizeText(
-                                          results[index]['description'],
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w300),
-                                        ),
-                                )));
-                  },
-                )
-              : ListView.builder(
-                  //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                  itemCount: recentSearchModal.length,
-                  //shrinkWrap: true,
-                  itemBuilder: (BuildContext context, int index) {
-                    return InkWell(
-                        onTap: () {
-                          setState(() {
-                            txt.text = recentSearchModal[index]['value'];
-                            data = fetchSearchModal(
-                                recentSearchModal[index]['value'],
-                                this.location != null
-                                    ? this.location['lat']
-                                    : null,
-                                this.location != null
-                                    ? this.location['lng']
-                                    : null,
-                                selectId);
-                          });
+                                    recentSearchModal[index]['value'],
+                                  )));
                         },
-                        child: ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 10, horizontal: 20),
-                            title: AutoSizeText(
-                              recentSearchModal[index]['value'],
-                            )));
-                  },
-                ),
+                      ))
+                    ]),
+    );
+  }
+
+  Container renderTopBar(timer, List<ChoiceChip> chips) {
+    return Container(
+      padding: EdgeInsets.only(top: 20),
+      decoration: BoxDecoration(
+          border: Border(
+              bottom:
+                  BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  IconButton(
+                    padding: EdgeInsets.all(0),
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    iconSize: 30,
+                    color: Colors.black,
+                  ),
+                  FlatButton(
+                    child: AutoSizeText('Clear'),
+                    onPressed: () {
+                      setState(() {
+                        txt.text = '';
+                        data = fetchSearchModal(
+                            '',
+                            this.location != null ? this.location['lat'] : null,
+                            this.location != null ? this.location['lng'] : null,
+                            selectId);
+                      });
+                    },
+                  )
+                ]),
+            TextField(
+              enabled: true,
+              controller: txt,
+              cursorColor: Colors.black,
+              textInputAction: TextInputAction.search,
+              enableInteractiveSelection: true,
+              decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.only(
+                      left: 20.0, right: 20.0, bottom: 20, top: 10),
+                  hintText: selectId
+                      ? 'Search for places in $destinationName...'
+                      : 'Search for destinations to travel to...'),
+              onChanged: (value) {
+                if (timer != null) {
+                  timer.cancel();
+                  timer = null;
+                }
+                timer = new Timer(const Duration(milliseconds: 500), () {
+                  setState(() {
+                    data = fetchSearchModal(
+                        value,
+                        this.location != null ? this.location['lat'] : null,
+                        this.location != null ? this.location['lng'] : null,
+                        selectId);
+                  });
+                });
+              },
+            ),
+            Container(
+                margin: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Wrap(spacing: 10.0, children: chips))
+          ]),
     );
   }
 

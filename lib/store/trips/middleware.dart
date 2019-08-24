@@ -332,9 +332,9 @@ Future<AddFlightsAndAccomodationsData> deleteFlightsAndAccomodations(
 
 Future<FlightsAndAccomodationsTravelersData>
     putUpdateFlightsAccommodationTravelers(String tripId, String destinationId,
-        String detailId, dynamic data) async {
+        String detailId, dynamic data, String currentUserId) async {
   final response = await http.put(
-      '$ApiDomain/api/trips/update/$tripId/destination/$destinationId/details/$detailId',
+      '$ApiDomain/api/trips/update/$tripId/destination/$destinationId/details/$detailId?updatedBy=$currentUserId',
       body: json.encode(data),
       headers: {
         'Authorization': 'security',

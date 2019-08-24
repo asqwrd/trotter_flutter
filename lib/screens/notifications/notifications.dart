@@ -216,10 +216,30 @@ class NotificationsState extends State<Notifications> {
                       showTripsBottomSheet(context, null, data, notificationId);
                     })
                 : Container(),
-            type == 'user'
+            type == 'user_trip'
                 ? new ListTile(
-                    leading: new Icon(EvilIcons.plus),
-                    title: new AutoSizeText('View trip'),
+                    leading: new Icon(EvilIcons.arrow_right),
+                    title: new AutoSizeText('Go to trip'),
+                    onTap: () async {
+                      var results = FocusChangeEvent(
+                          tab: TabItem.trips, data: data['navigationData']);
+                      store.eventBus.fire(results);
+                    })
+                : Container(),
+            type == 'user_day'
+                ? new ListTile(
+                    leading: new Icon(EvilIcons.arrow_right),
+                    title: new AutoSizeText('Go to day'),
+                    onTap: () async {
+                      var results = FocusChangeEvent(
+                          tab: TabItem.trips, data: data['navigationData']);
+                      store.eventBus.fire(results);
+                    })
+                : Container(),
+            type == 'user_travel_details_add'
+                ? new ListTile(
+                    leading: new Icon(EvilIcons.arrow_right),
+                    title: new AutoSizeText('Go to travel details'),
                     onTap: () async {
                       var results = FocusChangeEvent(
                           tab: TabItem.trips, data: data['navigationData']);

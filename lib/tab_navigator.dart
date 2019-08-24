@@ -188,7 +188,6 @@ class TabNavigator extends StatelessWidget {
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
           tripId: data['tripId'],
-          ownerId: data['ownerId'],
           currentUserId: data['currentUserId'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(

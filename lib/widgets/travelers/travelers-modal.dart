@@ -157,116 +157,136 @@ class TravelersModalState extends State<TravelersModal> {
 
     return Scaffold(
         resizeToAvoidBottomPadding: false,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          brightness: Brightness.light,
-          // centerTitle: true,
-          title: AutoSizeText(
-            'Select travelers',
-            style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.w300, fontSize: 19),
-          ),
-          actions: <Widget>[
-            Center(
-                child: Container(
-                    margin: EdgeInsets.only(right: 20),
-                    child: FlatButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30)),
-                      child: AutoSizeText(
-                        'Save',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500, fontSize: 13),
-                      ),
-                      textColor: Colors.lightBlue,
-                      padding: EdgeInsets.all(0),
-                      color: Colors.lightBlue.withOpacity(.3),
-                      onPressed: () {
-                        Navigator.pop(
-                            context, {"travelers": this.selectedUsersUid});
-                      },
-                    )))
-          ],
-          leading: IconButton(
-            padding: EdgeInsets.all(0),
-            icon: Icon(Icons.close),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            iconSize: 30,
-            color: Colors.black,
-          ),
-          bottom: PreferredSize(
-              preferredSize: Size.fromHeight(50),
-              child: Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Wrap(spacing: 10.0, children: this.selectedUsers))),
-        ),
         body: isLoading
-            ? _buildLoadingBody()
-            : ListView.builder(
-                itemCount: results.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return ListTile(
-                    selected:
-                        this.selectedUsersUid.contains(results[index]['uid']),
-                    onTap: () {
-                      var exists =
-                          this.selectedUsersUid.contains(results[index]['uid']);
-                      if (exists == false) {
-                        setState(() {
-                          this.selectedUsersUid.add(results[index]['uid']);
-                          this.selectedUsers.add(Chip(
-                              avatar: CircleAvatar(
-                                  backgroundImage: NetworkImage(
+            ? Column(children: <Widget>[
+                renderTopBar(),
+                Flexible(child: _buildLoadingBody())
+              ])
+            : Column(children: <Widget>[
+                renderTopBar(),
+                Flexible(
+                    child: ListView.builder(
+                  itemCount: results.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ListTile(
+                      selected:
+                          this.selectedUsersUid.contains(results[index]['uid']),
+                      onTap: () {
+                        var exists = this
+                            .selectedUsersUid
+                            .contains(results[index]['uid']);
+                        if (exists == false) {
+                          setState(() {
+                            this.selectedUsersUid.add(results[index]['uid']);
+                            this.selectedUsers.add(Chip(
+                                avatar: CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                  results[index]['photoUrl'],
+                                )),
+                                label: AutoSizeText(
+                                    "${results[index]['displayName']}"),
+                                deleteIcon: Icon(Icons.close),
+                                onDeleted: () {
+                                  this._deleteChip(results[index]['uid']);
+                                }));
+                          });
+                        }
+                      },
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                      leading: Container(
+                        width: 40.0,
+                        height: 40.0,
+                        child: ClipPath(
+                            clipper: ShapeBorderClipper(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100))),
+                            child: TransitionToImage(
+                              image: AdvancedNetworkImage(
                                 results[index]['photoUrl'],
+                                useDiskCache: true,
+                                cacheRule:
+                                    CacheRule(maxAge: const Duration(days: 7)),
+                              ),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
+                                  Center(
+                                      child: CircularProgressIndicator(
+                                backgroundColor: Colors.white,
                               )),
-                              label: AutoSizeText(
-                                  "${results[index]['displayName']}"),
-                              deleteIcon: Icon(Icons.close),
-                              onDeleted: () {
-                                this._deleteChip(results[index]['uid']);
-                              }));
-                        });
-                      }
-                    },
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                    leading: Container(
-                      width: 40.0,
-                      height: 40.0,
-                      child: ClipPath(
-                          clipper: ShapeBorderClipper(
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100))),
-                          child: TransitionToImage(
-                            image: AdvancedNetworkImage(
-                              results[index]['photoUrl'],
-                              useDiskCache: true,
-                              cacheRule:
-                                  CacheRule(maxAge: const Duration(days: 7)),
-                            ),
-                            loadingWidgetBuilder:
-                                (BuildContext context, double progress, test) =>
-                                    Center(
-                                        child: CircularProgressIndicator(
-                              backgroundColor: Colors.white,
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: const Icon(Icons.refresh),
+                              enableRefresh: true,
                             )),
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
-                            placeholder: const Icon(Icons.refresh),
-                            enableRefresh: true,
-                          )),
+                      ),
+                      title: AutoSizeText(
+                        results[index]['displayName'],
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
+                    );
+                  },
+                ))
+              ]));
+  }
+
+  Container renderTopBar() {
+    return Container(
+        padding: EdgeInsets.only(top: 50),
+        decoration: BoxDecoration(
+            border: Border(
+                bottom:
+                    BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
+        child: Column(
+          children: <Widget>[
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(children: <Widget>[
+                    IconButton(
+                      padding: EdgeInsets.all(0),
+                      icon: Icon(Icons.close),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      iconSize: 25,
+                      color: Colors.black,
                     ),
-                    title: AutoSizeText(
-                      results[index]['displayName'],
-                      style:
-                          TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
-                  );
-                },
-              ));
+                    AutoSizeText(
+                      'Select travelers',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 19),
+                    )
+                  ]),
+                  Center(
+                      child: Container(
+                          margin: EdgeInsets.only(right: 20),
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30)),
+                            child: AutoSizeText(
+                              'Save',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 13),
+                            ),
+                            textColor: Colors.lightBlue,
+                            padding: EdgeInsets.all(0),
+                            color: Colors.lightBlue.withOpacity(.3),
+                            onPressed: () {
+                              Navigator.pop(context,
+                                  {"travelers": this.selectedUsersUid});
+                            },
+                          )))
+                ]),
+            Container(
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Wrap(spacing: 10.0, children: this.selectedUsers)),
+          ],
+        ));
   }
 
   // function for rendering while data is loading

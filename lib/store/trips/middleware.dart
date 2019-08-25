@@ -263,9 +263,11 @@ class DeleteTripError {
   }
 }
 
-Future<dynamic> postAddToTrip(String tripId, dynamic data) async {
+Future<dynamic> postAddToTrip(String tripId, dynamic data,
+    [String currentUserId]) async {
   try {
-    final response = await http.post('$ApiDomain/api/trips/add/$tripId',
+    final response = await http.post(
+        '$ApiDomain/api/trips/add/$tripId?updatedBy=$currentUserId',
         body: json.encode(data),
         headers: {
           'Authorization': 'security',
@@ -385,10 +387,11 @@ Future<UpdateTripData> putUpdateTrip(String tripId, dynamic data) async {
   }
 }
 
-Future<dynamic> deleteDestination(String tripId, String destinationId) async {
+Future<dynamic> deleteDestination(String tripId, String destinationId,
+    [String currentUserId]) async {
   try {
     final response = await http.delete(
-        '$ApiDomain/api/trips/delete/$tripId/destination/$destinationId',
+        '$ApiDomain/api/trips/delete/$tripId/destination/$destinationId?updatedBy=$currentUserId',
         headers: {
           'Authorization': 'security',
           "Content-Type": "application/json"

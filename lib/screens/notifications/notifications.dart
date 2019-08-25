@@ -34,7 +34,7 @@ class NotificationsState extends State<Notifications> {
   @override
   void initState() {
     super.initState();
-    fetchNotifications();
+    //fetchNotifications();
   }
 
   @override
@@ -236,11 +236,14 @@ class NotificationsState extends State<Notifications> {
                       store.eventBus.fire(results);
                     })
                 : Container(),
-            type == 'user_travel_details_add'
+            type == 'user_travel_details_add' ||
+                    type == 'user_travel_details_remove'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.arrow_right),
-                    title: new AutoSizeText('Go to travel details'),
+                    title: new AutoSizeText('Go to travel itinerary'),
                     onTap: () async {
+                      data['navigationData']['currentUserId'] =
+                          store.currentUser.uid;
                       var results = FocusChangeEvent(
                           tab: TabItem.trips, data: data['navigationData']);
                       store.eventBus.fire(results);
@@ -255,6 +258,10 @@ class NotificationsState extends State<Notifications> {
       case 'email':
         return Icon(EvilIcons.envelope);
       case 'user':
+      case 'user_travel_details_remove':
+      case 'user_travel_details_add':
+      case 'user_trip':
+      case 'user_day':
         return Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100),

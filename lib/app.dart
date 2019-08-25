@@ -4,12 +4,15 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
+import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:trotter_flutter/widgets/auth/google.dart';
+import 'package:trotter_flutter/widgets/notification/message-notification.dart';
 import 'store/trips/middleware.dart';
 
 class App extends StatefulWidget {
@@ -45,6 +48,21 @@ class AppStateWidget extends State<App> {
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
         await fetchNotifications(store);
+        final user = json.decode(message['data']['user'].toString());
+        final from = TrotterUser.fromJson(user);
+        final msg = message['data']['msg'];
+        final type = message['data']['type'];
+        showOverlayNotification((context) {
+          return MessageNotification(
+            from: from,
+            message: msg,
+            type: type,
+            onDismiss: () {
+              OverlaySupportEntry.of(context)
+                  .dismiss(); //use OverlaySupportEntry to dismiss overlay
+            },
+          );
+        }, duration: Duration(milliseconds: 4500));
       },
       onLaunch: (Map<String, dynamic> message) async {
         print("onLaunch: $message");

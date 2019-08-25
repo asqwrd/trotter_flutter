@@ -570,7 +570,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
             transitionDuration: const Duration(milliseconds: 300),
           );
           if(data != null){
-            var response = await postAddToTrip(this.tripId, data);
+            var response = await postAddToTrip(this.tripId, data, store.currentUser.uid);
             if(response.destination != null) {
               data['id'] = response.destination['ID'];
               setState(() {
@@ -688,7 +688,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                             'Delete $name',
                           ),
                           onTap: () async {
-                            var response = await deleteDestination(this.tripId, this.destinations[index]['id']);
+                            var response = await deleteDestination(this.tripId, this.destinations[index]['id'], store.currentUser.uid);
                             if(response.success == true){
                               Navigator.pop(modalcontext);
                               setState(() {
@@ -711,7 +711,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                       label: 'Undo',
                                       textColor: this.color,
                                       onPressed: () async {
-                                        var response = await postAddToTrip(this.tripId, undoDestination);
+                                        var response = await postAddToTrip(this.tripId, undoDestination, store.currentUser.uid);
                                         if(response.destination != null) {
                                           undoDestination['id'] = response.destination['ID'];
                                           setState(() {
@@ -860,7 +860,7 @@ class TripState extends State<Trip> {
       return new Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          new ListTile(
+         this.trip['owner_id'] == store.currentUser.uid ? ListTile(
             leading: new Icon(Icons.card_travel),
             title: new AutoSizeText('Edit trip name'),
             onTap: () async {
@@ -906,8 +906,8 @@ class TripState extends State<Trip> {
               }
               
             }   
-          ),
-          new ListTile(
+          ) : Container(),
+          this.trip['owner_id'] == store.currentUser.uid ? ListTile(
             leading: new Icon(Icons.pin_drop),
             title: new AutoSizeText('Edit destinations'),
             onTap: () async { 
@@ -918,7 +918,7 @@ class TripState extends State<Trip> {
               });
 
             }        
-          ),
+          ) : Container(),
           ListTile(leading: Icon(Icons.share), title: AutoSizeText('Invite travelers'), onTap: (){
             Share.share('Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application');
             Navigator.pop(context);
@@ -1249,31 +1249,14 @@ class TripState extends State<Trip> {
   }
 
   Future openTravelersModal(BuildContext ctxt, TrotterStore store) async {
-    var dialogData = await showGeneralDialog(
-          context: ctxt,
-          pageBuilder: (BuildContext buildContext,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation) {
-            return TravelersModal(
+    var dialogData = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                fullscreenDialog: true,
+                                builder: (context) =>  TravelersModal(
               currentUserId: store.currentUser.uid,
                 ownerId: this.trip['owner_id'],
-                tripId: this.tripId, travelers: this.travelers);
-          },
-          transitionBuilder: (BuildContext context,
-              Animation<double> animation,
-              Animation<double> secondaryAnimation,
-              Widget child) {
-            return new FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          barrierDismissible: true,
-          barrierLabel:
-              MaterialLocalizations.of(context).modalBarrierDismissLabel,
-          barrierColor: Colors.black.withOpacity(0.5),
-          transitionDuration: const Duration(milliseconds: 300),
-        );
+                tripId: this.tripId, travelers: this.travelers)));
         
         if (dialogData != null) {
           final List<String> travelers = dialogData['travelers'];

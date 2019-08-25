@@ -267,4 +267,15 @@ class TrotterUser {
       this.displayName,
       this.notificationOn,
       this.country});
+
+  factory TrotterUser.fromJson(Map<String, dynamic> json) {
+    return TrotterUser(
+        uid: json['uid'],
+        displayName: json['displayName'],
+        email: json['email'],
+        country: json['country'],
+        notificationOn: json['notifications_on'],
+        photoUrl: json['photoUrl'],
+        phoneNumber: json['phoneNumber']);
+  }
 }

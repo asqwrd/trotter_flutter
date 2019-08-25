@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -149,6 +150,32 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
               onPush: onPush,
               color: color,
               title: 'Travel details',
+              actions: <Widget>[
+                Container(
+                    width: 58,
+                    height: 58,
+                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      onPressed: () async {
+                        setState(() {
+                          this.loading = true;
+                        });
+                        final res = await fetchFlightsAccomodations(
+                            this.tripId, this.currentUserId);
+                        setState(() {
+                          this.loading = false;
+                          this.flightsAccomodations = res.flightsAccomodations;
+                        });
+                      },
+                      child: SvgPicture.asset("images/refresh_icon.svg",
+                          width: 24.0,
+                          height: 24.0,
+                          color: Colors.white,
+                          fit: BoxFit.contain),
+                    ))
+              ],
               back: true)),
     ]);
   }
@@ -195,32 +222,15 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
             },
             onAddPressed: (data) async {
               final ownerId = data['ownerId'];
-              var dialogData = await showGeneralDialog(
-                context: ctxt,
-                pageBuilder: (BuildContext buildContext,
-                    Animation<double> animation,
-                    Animation<double> secondaryAnimation) {
-                  return TravelersModal(
-                      ownerId: ownerId,
-                      currentUserId: this.currentUserId,
-                      tripId: this.tripId,
-                      travelers: data['travelers']);
-                },
-                transitionBuilder: (BuildContext context,
-                    Animation<double> animation,
-                    Animation<double> secondaryAnimation,
-                    Widget child) {
-                  return new FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-                barrierDismissible: true,
-                barrierLabel:
-                    MaterialLocalizations.of(context).modalBarrierDismissLabel,
-                barrierColor: Colors.black.withOpacity(0.5),
-                transitionDuration: const Duration(milliseconds: 300),
-              );
+              var dialogData = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      fullscreenDialog: true,
+                      builder: (context) => TravelersModal(
+                          ownerId: ownerId,
+                          currentUserId: this.currentUserId,
+                          tripId: this.tripId,
+                          travelers: data['travelers'])));
               if (dialogData != null) {
                 final detailId = data['id'];
                 final destinationId = data['destinationId'];

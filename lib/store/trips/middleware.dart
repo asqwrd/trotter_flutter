@@ -371,8 +371,10 @@ Future<dynamic> putUpdateTripDestination(
   }
 }
 
-Future<UpdateTripData> putUpdateTrip(String tripId, dynamic data) async {
-  final response = await http.put('$ApiDomain/api/trips/update/trip/$tripId',
+Future<UpdateTripData> putUpdateTrip(
+    String tripId, dynamic data, String currentUserId) async {
+  final response = await http.put(
+      '$ApiDomain/api/trips/update/trip/$tripId?updatedBy=$currentUserId',
       body: json.encode(data),
       headers: {
         'Authorization': 'security',

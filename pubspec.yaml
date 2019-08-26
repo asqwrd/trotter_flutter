@@ -91,6 +91,7 @@ flutter:
     - images/headerPreview.jpeg
     - images/trips.jpg
     - images/day-empty.jpg
+    - images/cannot-view.jpg
     - images/trips-empty.jpg
     - images/notification-empty.jpg
     - images/error-icon.jpg

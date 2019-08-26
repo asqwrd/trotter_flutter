@@ -261,6 +261,7 @@ class NotificationsState extends State<Notifications> {
       case 'user_travel_details_remove':
       case 'user_travel_details_add':
       case 'user_trip':
+      case 'user_trip_remove':
       case 'user_day':
         return Container(
             decoration: BoxDecoration(

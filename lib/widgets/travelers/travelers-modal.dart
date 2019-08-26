@@ -233,7 +233,7 @@ class TravelersModalState extends State<TravelersModal> {
 
   Container renderTopBar() {
     return Container(
-        padding: EdgeInsets.only(top: 50),
+        padding: EdgeInsets.only(top: 20),
         decoration: BoxDecoration(
             border: Border(
                 bottom:
@@ -245,7 +245,6 @@ class TravelersModalState extends State<TravelersModal> {
                 children: <Widget>[
                   Row(children: <Widget>[
                     IconButton(
-                      padding: EdgeInsets.all(0),
                       icon: Icon(Icons.close),
                       onPressed: () {
                         Navigator.pop(context);

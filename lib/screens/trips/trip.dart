@@ -13,6 +13,7 @@ import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
+import 'package:trotter_flutter/widgets/errors/cannot-view.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -458,7 +459,7 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
                 onPressed: () async {
                   print(_formKey.currentState.validate());
                   if(_formKey.currentState.validate() ){
-                    var response = await putUpdateTrip(tripId, {"name": this.controller.text});
+                    var response = await putUpdateTrip(tripId, {"name": this.controller.text}, store.currentUser.uid);
                     print(response.success);
                     if(response.success == true){
                       setState(() {
@@ -608,17 +609,18 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
         elevation: 5.0,
       )),
       appBar: AppBar(
+        elevation: 1,
         backgroundColor: Colors.white,
         brightness: Brightness.light,
         title: AutoSizeText(
           'Destinations',
-          style: TextStyle(
-            fontSize: 15,
-            color: Colors.black,
-            fontWeight: FontWeight.w300
-          ),
+          textAlign: TextAlign.left,
+          style:TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 19),
         ),
-        centerTitle: true,
+        centerTitle: false,
         leading: IconButton(
           iconSize: 25,
           color: Colors.black,
@@ -809,7 +811,7 @@ class TripState extends State<Trip> {
 
   
   Future<TripData> data;
-
+  bool canView = true;
 
    
 
@@ -824,17 +826,19 @@ class TripState extends State<Trip> {
     });
     data = fetchTrip(this.tripId);
     data.then((data){
-      setState((){
-        this.color = Color(hexStringToHexInt(data.trip['color']));
-        this.destinations = data.destinations;
-        this.travelers = data.travelers;
-        this.trip = data.trip;
-        this.trip['destinations'] = this.destinations;
-        this.tripName = data.trip['name'];
-        _nameControllerModal.text = this.tripName;
-        _nameDialog = TripNameDialogContent(tripId:this.tripId, trip:this.trip, color:this.color, travelers: this.travelers, controller: _nameControllerModal,);
-        this.destinationDialog = TripDestinationDialogContent(color: color, tripId: this.tripId, destinations:destinations);
-      });
+        setState((){
+          this.canView = data.travelers.any((traveler)=>store.currentUser.uid == traveler['uid']);
+          this.color = Color(hexStringToHexInt(data.trip['color']));
+          this.destinations = data.destinations;
+          this.travelers = data.travelers;
+          this.trip = data.trip;
+          this.trip['destinations'] = this.destinations;
+          this.tripName = data.trip['name'];
+          _nameControllerModal.text = this.tripName;
+          _nameDialog = TripNameDialogContent(tripId:this.tripId, trip:this.trip, color:this.color, travelers: this.travelers, controller: _nameControllerModal,);
+          this.destinationDialog = TripDestinationDialogContent(color: color, tripId: this.tripId, destinations:destinations);
+        });
+      
       
     });
     super.initState();
@@ -948,7 +952,7 @@ class TripState extends State<Trip> {
           child: SlidingUpPanel(
         parallaxEnabled: true,
         parallaxOffset: .5,
-        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
+        minHeight: errorUi == false && canView == true ? _panelHeightClosed : _panelHeightOpen,
         controller: _pc,
         backdropEnabled: true,
         backdropColor: color,
@@ -975,8 +979,13 @@ class TripState extends State<Trip> {
           body: FutureBuilder(
             future: data,
             builder: (context, snapshot) {
+              
                if(snapshot.hasData && snapshot.data.error == null){
+                 if(this.canView){
                 return _buildLoadedBody(context,snapshot, store);
+                 } else {
+                   return CannotView();
+                 }
               } else if(snapshot.hasData && snapshot.data.error != null){
                 return ListView(
                   controller: _sc,
@@ -993,6 +1002,20 @@ class TripState extends State<Trip> {
                   onRetry: () {
                     setState(() {
                       data =  fetchTrip(this.tripId, store); 
+                       data.then((data){
+                          setState((){
+                            this.canView = data.travelers.any((traveler)=>store.currentUser.uid == traveler['uid']);
+                            this.color = Color(hexStringToHexInt(data.trip['color']));
+                            this.destinations = data.destinations;
+                            this.travelers = data.travelers;
+                            this.trip = data.trip;
+                            this.trip['destinations'] = this.destinations;
+                            this.tripName = data.trip['name'];
+                            _nameControllerModal.text = this.tripName;
+                            _nameDialog = TripNameDialogContent(tripId:this.tripId, trip:this.trip, color:this.color, travelers: this.travelers, controller: _nameControllerModal,);
+                            this.destinationDialog = TripDestinationDialogContent(color: color, tripId: this.tripId, destinations:destinations);
+                          });
+                       });
                     });
                   },
                 ))]);
@@ -1261,7 +1284,7 @@ class TripState extends State<Trip> {
         if (dialogData != null) {
           final List<String> travelers = dialogData['travelers'];
           
-          var response = await putUpdateTrip(tripId, {"group": travelers});
+          var response = await putUpdateTrip(tripId, {"group": travelers}, store.currentUser.uid);
             if(response.success == true){
               if(!travelers.contains(store.currentUser.uid)){
                 await fetchTrips(store);

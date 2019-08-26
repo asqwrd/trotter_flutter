@@ -11,6 +11,7 @@ import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
+import 'package:trotter_flutter/widgets/errors/cannot-view.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -61,6 +62,8 @@ class DayEditState extends State<DayEdit> {
   int startDate;
 
   Future<DayData> data;
+  TrotterStore store;
+  bool canView = true;
 
   @override
   void initState() {
@@ -76,6 +79,9 @@ class DayEditState extends State<DayEdit> {
     data.then((data) {
       if (data.error == null) {
         setState(() {
+          this.canView = data.itinerary['travelers']
+              .any((traveler) => store.currentUser.uid == traveler);
+          print('canView = ${this.canView}');
           this.color = Color(hexStringToHexInt(data.color));
           this.itineraryName = data.itinerary['name'];
           this.ownerId = data.itinerary['owner_id'];
@@ -111,13 +117,18 @@ class DayEditState extends State<DayEdit> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
+    if (store == null) {
+      store = Provider.of<TrotterStore>(context);
+    }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingUpPanel(
         parallaxEnabled: true,
         parallaxOffset: .5,
-        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
+        minHeight: errorUi == false && canView == true
+            ? _panelHeightClosed
+            : _panelHeightOpen,
         controller: _pc,
         backdropEnabled: true,
         backdropColor: color,
@@ -150,7 +161,11 @@ class DayEditState extends State<DayEdit> {
                             _pc.isPanelClosed() == true) {
                           _pc.open();
                         }
-                        return _buildLoadedBody(context, snapshot);
+                        if (this.canView) {
+                          return _buildLoadedBody(context, snapshot);
+                        } else {
+                          return CannotView();
+                        }
                       } else if (snapshot.hasData &&
                           snapshot.data.error != null) {
                         return ListView(
@@ -277,64 +292,74 @@ class DayEditState extends State<DayEdit> {
               title: this.itineraryName,
               showSearch: false,
               actions: <Widget>[
-                Container(
-                    width: 70,
-                    height: 70,
-                    margin: EdgeInsets.symmetric(horizontal: 0),
-                    child: FlatButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100)),
-                      onPressed: () async {
-                        final store = Provider.of<TrotterStore>(context);
-                        var suggestion = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                fullscreenDialog: true,
-                                builder: (context) => SearchModal(
-                                    query: '',
-                                    destinationName: this.destinationName,
-                                    location: this.location,
-                                    near: this.currentPosition != null
-                                        ? this.currentPosition
-                                        : this.startLocation,
-                                    id: this.destinationId)));
-                        if (suggestion != null) {
-                          var poi = suggestion;
-                          poi['image'] = suggestion['image_hd'];
-                          var data = {
-                            "poi": poi,
-                            "title": "",
-                            "description": "",
-                            "time": {"value": "", "unit": ""},
-                            "poi_id": poi['id'],
-                            "added_by": store.currentUser.uid
-                          };
+                this.canView == true
+                    ? Container(
+                        width: 70,
+                        height: 70,
+                        margin: EdgeInsets.symmetric(horizontal: 0),
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100)),
+                          onPressed: () async {
+                            final store = Provider.of<TrotterStore>(context);
+                            var suggestion = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => SearchModal(
+                                        query: '',
+                                        destinationName: this.destinationName,
+                                        location: this.location,
+                                        near: this.currentPosition != null
+                                            ? this.currentPosition
+                                            : this.startLocation,
+                                        id: this.destinationId)));
+                            if (suggestion != null) {
+                              var poi = suggestion;
+                              poi['image'] = suggestion['image_hd'];
+                              var data = {
+                                "poi": poi,
+                                "title": "",
+                                "description": "",
+                                "time": {"value": "", "unit": ""},
+                                "poi_id": poi['id'],
+                                "added_by": store.currentUser.uid
+                              };
 
-                          setState(() {
-                            this.loading = true;
-                          });
+                              setState(() {
+                                this.loading = true;
+                              });
 
-                          var response = await addToDay(store, this.itineraryId,
-                              this.dayId, this.destinationId, data, false);
-                          setState(() {
-                            this.color =
-                                Color(hexStringToHexInt(response.color));
-                            this.destinationName = response.destination['name'];
-                            this.location = response.destination['location'];
-                            this.destinationId =
-                                response.destination['id'].toString();
-                            this.itineraryItems =
-                                response.day['itinerary_items'];
-                            this.loading = false;
-                          });
-                        }
-                      },
-                      child: SvgPicture.asset("images/add-location-bold.svg",
-                          width: 35,
-                          height: 35,
-                          color: fontContrast(color),
-                          fit: BoxFit.cover),
-                    ))
+                              var response = await addToDay(
+                                  store,
+                                  this.itineraryId,
+                                  this.dayId,
+                                  this.destinationId,
+                                  data,
+                                  false);
+                              setState(() {
+                                this.color =
+                                    Color(hexStringToHexInt(response.color));
+                                this.destinationName =
+                                    response.destination['name'];
+                                this.location =
+                                    response.destination['location'];
+                                this.destinationId =
+                                    response.destination['id'].toString();
+                                this.itineraryItems =
+                                    response.day['itinerary_items'];
+                                this.loading = false;
+                              });
+                            }
+                          },
+                          child: SvgPicture.asset(
+                              "images/add-location-bold.svg",
+                              width: 35,
+                              height: 35,
+                              color: fontContrast(color),
+                              fit: BoxFit.cover),
+                        ))
+                    : Container()
               ],
               back: true)),
     ]);

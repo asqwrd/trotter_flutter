@@ -38,25 +38,25 @@ Future<SearchModalData> fetchSearchModal(
       return SearchModalData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
-      return SearchModalData(success: false);
+      return SearchModalData(error: 'Server error');
     }
   } catch (error) {
-    return SearchModalData(success: false);
+    return SearchModalData(error: 'Server error');
   }
 }
 
 class SearchModalData {
   final List<dynamic> recentSearchModal;
   final List<dynamic> results;
-  final bool success;
+  final String error;
 
-  SearchModalData({this.results, this.recentSearchModal, this.success});
+  SearchModalData({this.results, this.recentSearchModal, this.error});
 
   factory SearchModalData.fromJson(Map<String, dynamic> json) {
     return SearchModalData(
         results: json['results'],
         recentSearchModal: json['recent_search'],
-        success: true);
+        error: null);
   }
 }
 

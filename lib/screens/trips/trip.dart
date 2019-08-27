@@ -692,7 +692,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                           onTap: () async {
                             var response = await deleteDestination(this.tripId, this.destinations[index]['id'], store.currentUser.uid);
                             if(response.success == true){
-                              Navigator.pop(modalcontext);
+                              
                               setState(() {
                                 var undoDestination = this.destinations[index];
                                 store.tripStore.removeTripDestinations(this.tripId, this.destinations[index]);
@@ -708,7 +708,7 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                         fontSize: 15
                                       )
                                     ),
-                                    duration: Duration(seconds: 2),
+                                    duration: Duration(seconds: 5),
                                     action: SnackBarAction(
                                       label: 'Undo',
                                       textColor: this.color,
@@ -735,10 +735,11 @@ class _TripDestinationDialogContentState extends State<TripDestinationDialogCont
                                       fontSize: 15
                                     )
                                   ),
-                                  duration: Duration(seconds: 2)
+                                  duration: Duration(seconds: 5)
                                 )
                               );
                             }
+                            Navigator.pop(modalcontext);
                           }        
                         ),
                       ]

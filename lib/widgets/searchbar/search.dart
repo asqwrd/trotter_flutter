@@ -396,7 +396,7 @@ class SearchState extends State<Search> {
                     },
                   ))
                 ])
-              : error == null
+              : error == null && recentSearch != null
                   ? Column(children: <Widget>[
                       renderTopBar(timer, chips),
                       Flexible(

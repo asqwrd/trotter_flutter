@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -151,6 +152,8 @@ class SearchModalState extends State<SearchModal> {
     var recentSearchModal =
         snapshot.hasData ? snapshot.data.recentSearchModal : null;
     var results = snapshot.hasData ? snapshot.data.results : null;
+    var error = snapshot.hasData ? snapshot.data.error : null;
+
     var chips = [
       ChoiceChip(
           selected: this.location != null ? !selectId : true,
@@ -323,40 +326,62 @@ class SearchModalState extends State<SearchModal> {
                     },
                   ))
                 ])
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                      renderTopBar(timer, chips),
-                      Flexible(
-                          child: ListView.builder(
-                        //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                        itemCount: recentSearchModal.length,
-                        //shrinkWrap: true,
-                        primary: false,
-                        itemBuilder: (BuildContext context, int index) {
-                          return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  txt.text = recentSearchModal[index]['value'];
-                                  data = fetchSearchModal(
-                                      recentSearchModal[index]['value'],
-                                      this.location != null
-                                          ? this.location['lat']
-                                          : null,
-                                      this.location != null
-                                          ? this.location['lng']
-                                          : null,
-                                      selectId);
-                                });
-                              },
-                              child: ListTile(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: 5, horizontal: 20),
-                                  title: AutoSizeText(
-                                    recentSearchModal[index]['value'],
-                                  )));
-                        },
-                      ))
+              : error != null && recentSearchModal != null
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                          renderTopBar(timer, chips),
+                          Flexible(
+                              child: ListView.builder(
+                            //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                            itemCount: recentSearchModal.length,
+                            //shrinkWrap: true,
+                            primary: false,
+                            itemBuilder: (BuildContext context, int index) {
+                              return InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      txt.text =
+                                          recentSearchModal[index]['value'];
+                                      data = fetchSearchModal(
+                                          recentSearchModal[index]['value'],
+                                          this.location != null
+                                              ? this.location['lat']
+                                              : null,
+                                          this.location != null
+                                              ? this.location['lng']
+                                              : null,
+                                          selectId);
+                                    });
+                                  },
+                                  child: ListTile(
+                                      contentPadding: EdgeInsets.symmetric(
+                                          vertical: 5, horizontal: 20),
+                                      title: AutoSizeText(
+                                        recentSearchModal[index]['value'],
+                                      )));
+                            },
+                          ))
+                        ])
+                  : ListView(shrinkWrap: true, children: <Widget>[
+                      Container(
+                          width: MediaQuery.of(context).size.width,
+                          child: ErrorContainer(
+                            color: Color.fromRGBO(106, 154, 168, 1),
+                            onRetry: () {
+                              setState(() {
+                                data = fetchSearchModal(
+                                    '',
+                                    this.location != null
+                                        ? this.location['lat']
+                                        : null,
+                                    this.location != null
+                                        ? this.location['lng']
+                                        : null,
+                                    selectId);
+                              });
+                            },
+                          ))
                     ]),
     );
   }

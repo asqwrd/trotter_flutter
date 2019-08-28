@@ -47,6 +47,7 @@ class TravelersModal extends StatefulWidget {
   final List<dynamic> travelers;
   final String ownerId;
   final String currentUserId;
+  final bool readOnly;
 
   TravelersModal(
       {Key key,
@@ -54,16 +55,17 @@ class TravelersModal extends StatefulWidget {
       @required this.ownerId,
       @required this.currentUserId,
       this.onAdd,
+      this.readOnly,
       this.travelers})
       : super(key: key);
   @override
   TravelersModalState createState() => new TravelersModalState(
-        tripId: this.tripId,
-        travelers: this.travelers,
-        ownerId: this.ownerId,
-        currentUserId: this.currentUserId,
-        onAdd: this.onAdd,
-      );
+      tripId: this.tripId,
+      travelers: this.travelers,
+      ownerId: this.ownerId,
+      currentUserId: this.currentUserId,
+      onAdd: this.onAdd,
+      readOnly: this.readOnly);
 }
 
 class TravelersModalState extends State<TravelersModal> {
@@ -75,6 +77,7 @@ class TravelersModalState extends State<TravelersModal> {
   GoogleMapController mapController;
   List<Widget> selectedUsers = [];
   List<String> selectedUsersUid = [];
+  bool readOnly = false;
 
   Future<TravelersModalData> data;
 
@@ -113,6 +116,7 @@ class TravelersModalState extends State<TravelersModal> {
       this.onAdd,
       this.currentUserId,
       this.ownerId,
+      this.readOnly,
       this.travelers});
 
   @override
@@ -252,38 +256,51 @@ class TravelersModalState extends State<TravelersModal> {
                       iconSize: 25,
                       color: Colors.black,
                     ),
-                    AutoSizeText(
-                      'Select travelers',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 19),
-                    )
+                    this.readOnly == false || this.readOnly == null
+                        ? AutoSizeText(
+                            'Select travelers',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w300,
+                                fontSize: 19),
+                          )
+                        : AutoSizeText(
+                            'All travelers',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w300,
+                                fontSize: 19),
+                          )
                   ]),
-                  Center(
-                      child: Container(
-                          margin: EdgeInsets.only(right: 20),
-                          child: FlatButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)),
-                            child: AutoSizeText(
-                              'Save',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w500, fontSize: 13),
-                            ),
-                            textColor: Colors.lightBlue,
-                            padding: EdgeInsets.all(0),
-                            color: Colors.lightBlue.withOpacity(.3),
-                            onPressed: () {
-                              Navigator.pop(context,
-                                  {"travelers": this.selectedUsersUid});
-                            },
-                          )))
+                  this.readOnly == false || this.readOnly == null
+                      ? Center(
+                          child: Container(
+                              margin: EdgeInsets.only(right: 20),
+                              child: FlatButton(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30)),
+                                child: AutoSizeText(
+                                  'Save',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 13),
+                                ),
+                                textColor: Colors.lightBlue,
+                                padding: EdgeInsets.all(0),
+                                color: Colors.lightBlue.withOpacity(.3),
+                                onPressed: () {
+                                  Navigator.pop(context,
+                                      {"travelers": this.selectedUsersUid});
+                                },
+                              )))
+                      : Container()
                 ]),
-            Container(
-                width: double.infinity,
-                margin: EdgeInsets.symmetric(horizontal: 20.0),
-                child: Wrap(spacing: 10.0, children: this.selectedUsers)),
+            this.readOnly == false || this.readOnly == null
+                ? Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Wrap(spacing: 10.0, children: this.selectedUsers))
+                : Container(),
           ],
         ));
   }

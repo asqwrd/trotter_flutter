@@ -389,7 +389,7 @@ Future<UpdateTripData> putUpdateTrip(
   }
 }
 
-Future<dynamic> deleteDestination(String tripId, String destinationId,
+Future<UpdateTripData> deleteDestination(String tripId, String destinationId,
     [String currentUserId]) async {
   try {
     final response = await http.delete(
@@ -403,10 +403,10 @@ Future<dynamic> deleteDestination(String tripId, String destinationId,
       return UpdateTripData.fromJson(json.decode(response.body));
     } else {
       // If that response was not OK, throw an error.
-      return {"success": false};
+      return UpdateTripData(success: false);
     }
   } catch (error) {
-    return {"success": false};
+    return UpdateTripData(success: false);
   }
 }
 

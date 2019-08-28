@@ -326,7 +326,7 @@ class SearchModalState extends State<SearchModal> {
                     },
                   ))
                 ])
-              : error != null && recentSearchModal != null
+              : error == null && recentSearchModal != null
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
@@ -366,6 +366,7 @@ class SearchModalState extends State<SearchModal> {
                   : ListView(shrinkWrap: true, children: <Widget>[
                       Container(
                           width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height - 40,
                           child: ErrorContainer(
                             color: Color.fromRGBO(106, 154, 168, 1),
                             onRetry: () {

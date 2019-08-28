@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:location/location.dart' as locationService;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
@@ -168,19 +169,23 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
 
 Future<DayData> fetchDay(String itineraryId, String dayId,
     [dynamic startLocation]) async {
-  var location = '';
+  var location = '${startLocation['lat']},${startLocation['lng']}';
   double distanceInMeters = -1;
   Position position;
-  if (startLocation != null) {
+  final isLocationEnabled = await locationService.Location().hasPermission();
+  print(isLocationEnabled);
+  print(location);
+  if (startLocation != null && isLocationEnabled) {
     position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     distanceInMeters = await Geolocator().distanceBetween(position.latitude,
         position.longitude, startLocation['lat'], startLocation['lng']);
 
-    location = '${position.latitude},${position.longitude}';
-    if (distanceInMeters > 50000) {
-      location = '${startLocation['lat']},${startLocation['lng']}';
+    if (distanceInMeters < 50000) {
+      location = '${position.latitude},${position.longitude}';
     }
+  } else {
+    location = '';
   }
 
   try {

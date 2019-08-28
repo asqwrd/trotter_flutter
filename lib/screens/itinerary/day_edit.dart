@@ -6,6 +6,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:location/location.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -67,40 +68,43 @@ class DayEditState extends State<DayEdit> {
 
   @override
   void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
+    super.initState();
+    getLocationPermission().then((res) {
+      _sc.addListener(() {
+        setState(() {
+          if (_pc.isPanelOpen()) {
+            disableScroll = _sc.offset <= 0;
+          }
+        });
+      });
+
+      data = fetchDay(this.itineraryId, this.dayId, this.startLocation);
+      data.then((data) {
+        if (data.error == null) {
+          setState(() {
+            this.canView = data.itinerary['travelers']
+                .any((traveler) => store.currentUser.uid == traveler);
+            print('canView = ${this.canView}');
+            this.color = Color(hexStringToHexInt(data.color));
+            this.itineraryName = data.itinerary['name'];
+            this.ownerId = data.itinerary['owner_id'];
+            this.startDate = data.itinerary['start_date'] * 1000;
+            this.destinationName = data.destination['name'];
+            this.location = data.destination['location'];
+            this.destination = data.destination;
+            this.destinationId = data.destination['id'].toString();
+            this.itineraryItems = data.day['itinerary_items'].sublist(1);
+            this.startLocation = data.itinerary['start_location'];
+            this.currentPosition = data.currentPosition;
+            this.image = data.destination['image'];
+            this.loading = false;
+          });
+        } else {
+          setState(() {
+            this.errorUi = true;
+          });
         }
       });
-    });
-    super.initState();
-    data = fetchDay(this.itineraryId, this.dayId, this.startLocation);
-    data.then((data) {
-      if (data.error == null) {
-        setState(() {
-          this.canView = data.itinerary['travelers']
-              .any((traveler) => store.currentUser.uid == traveler);
-          print('canView = ${this.canView}');
-          this.color = Color(hexStringToHexInt(data.color));
-          this.itineraryName = data.itinerary['name'];
-          this.ownerId = data.itinerary['owner_id'];
-          this.startDate = data.itinerary['start_date'] * 1000;
-          this.destinationName = data.destination['name'];
-          this.location = data.destination['location'];
-          this.destination = data.destination;
-          this.destinationId = data.destination['id'].toString();
-          this.itineraryItems = data.day['itinerary_items'].sublist(1);
-          this.startLocation = data.itinerary['start_location'];
-          this.currentPosition = data.currentPosition;
-          this.image = data.destination['image'];
-          this.loading = false;
-        });
-      } else {
-        setState(() {
-          this.errorUi = true;
-        });
-      }
     });
   }
 
@@ -363,6 +367,25 @@ class DayEditState extends State<DayEdit> {
               ],
               back: true)),
     ]);
+  }
+
+  Future getLocationPermission() async {
+    var location = Location();
+
+// Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      var permission = await location.hasPermission();
+      if (permission == false) {
+        await location.requestPermission();
+        return;
+      }
+    } catch (e) {
+      if (e.code == 'PERMISSION_DENIED') {
+        var error = 'Permission denied';
+        print(error);
+      }
+      return;
+    }
   }
 
 // function for rendering view after data is loaded

@@ -918,10 +918,8 @@ class TripState extends State<Trip> {
                         }
                       }).toList();
                       travelers.removeWhere((item) => item == null);
-                      print(travelers);
                       var response = await putUpdateTrip(
                           tripId, {"group": travelers}, store.currentUser.uid);
-                      print(response.success);
                       if (response.success == true) {
                         Navigator.pop(context);
                         store.setTripsLoading(true);

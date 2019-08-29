@@ -169,13 +169,13 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
 
 Future<DayData> fetchDay(String itineraryId, String dayId,
     [dynamic startLocation]) async {
-  var location = '${startLocation['lat']},${startLocation['lng']}';
+  var location = '';
   double distanceInMeters = -1;
   Position position;
   final isLocationEnabled = await locationService.Location().hasPermission();
-  print(isLocationEnabled);
-  print(location);
+
   if (startLocation != null && isLocationEnabled) {
+    location = '${startLocation['lat']},${startLocation['lng']}';
     position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     distanceInMeters = await Geolocator().distanceBetween(position.latitude,
@@ -184,8 +184,6 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
     if (distanceInMeters < 50000) {
       location = '${position.latitude},${position.longitude}';
     }
-  } else {
-    location = '';
   }
 
   try {

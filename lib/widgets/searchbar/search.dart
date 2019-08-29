@@ -289,7 +289,7 @@ class SearchState extends State<Search> {
                                                   decoration: BoxDecoration(
                                                   image: DecorationImage(
                                                       image: AssetImage(
-                                                          'images/placeholder.jpg'),
+                                                          'images/placeholder.png'),
                                                       fit: BoxFit.cover),
                                                 ))),
                                     ),

@@ -589,7 +589,7 @@ class DestinationState extends State<Destination>
                                             decoration: BoxDecoration(
                                             image: DecorationImage(
                                                 image: AssetImage(
-                                                    'images/placeholder.jpg'),
+                                                    'images/placeholder.png'),
                                                 fit: BoxFit.cover),
                                           )))),
                             Container(
@@ -665,17 +665,17 @@ class DestinationState extends State<Destination>
     var children2 = <Widget>[
       TabBarLoading(),
       Container(
-          height: 155.0,
+          height: 185.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),
       Container(
-          height: 155.0,
+          height: 185.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),
       Container(
-          height: 155.0,
+          height: 185.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),

@@ -293,10 +293,26 @@ class CountryState extends State<Country> {
     _showVisaBlankPages = _showVisa &&
         visa['passport'] != null &&
         visa['passport']['blank_pages'] != null;
-    String ambulance = arrayString(emergencyNumbers['ambulance']['all']);
-    String police = arrayString(emergencyNumbers['police']['all']);
-    String fire = arrayString(emergencyNumbers['fire']['all']);
-    String dispatch = arrayString(emergencyNumbers['dispatch']['all']);
+    String ambulance = arrayString([
+      ...emergencyNumbers['ambulance']['all'],
+      ...emergencyNumbers['ambulance']['fixed'],
+      ...emergencyNumbers['ambulance']['gsm']
+    ]);
+    String police = arrayString([
+      ...emergencyNumbers['police']['all'],
+      ...emergencyNumbers['police']['fixed'],
+      ...emergencyNumbers['police']['gsm']
+    ]);
+    String fire = arrayString([
+      ...emergencyNumbers['fire']['all'],
+      ...emergencyNumbers['fire']['fixed'],
+      ...emergencyNumbers['fire']['gsm']
+    ]);
+    String dispatch = arrayString([
+      ...emergencyNumbers['dispatch']['all'],
+      ...emergencyNumbers['dispatch']['fixed'],
+      ...emergencyNumbers['dispatch']['gsm']
+    ]);
     String europeanEmergencyNumber =
         arrayString(emergencyNumbers['european_emergency_number']);
 

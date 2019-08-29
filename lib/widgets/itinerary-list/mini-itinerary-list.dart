@@ -58,7 +58,7 @@ class MiniItineraryList extends StatelessWidget {
   Widget buildBody(BuildContext context, dynamic item, int index, int count) {
     var image = item != null && item['image'].isEmpty == false
         ? item['image']
-        : 'images/placeholder.jpg';
+        : 'images/placeholder.png';
     var usePlaceholder = item == null || item['image'].isEmpty ? true : false;
 
     if (item == null) {

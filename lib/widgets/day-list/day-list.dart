@@ -385,7 +385,7 @@ class DayList extends StatelessWidget {
                                                             BoxDecoration(
                                                         image: DecorationImage(
                                                             image: AssetImage(
-                                                                'images/placeholder.jpg'),
+                                                                'images/placeholder.png'),
                                                             fit: BoxFit.cover),
                                                       ))),
                                           ))

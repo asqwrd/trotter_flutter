@@ -224,6 +224,8 @@ class NotificationsState extends State<Notifications> {
                       var results = FocusChangeEvent(
                           tab: TabItem.trips, data: data['navigationData']);
                       store.eventBus.fire(results);
+                      await markNotificationRead(notificationId, store);
+                      Navigator.pop(context);
                     })
                 : Container(),
             type == 'user_day'
@@ -234,6 +236,8 @@ class NotificationsState extends State<Notifications> {
                       var results = FocusChangeEvent(
                           tab: TabItem.trips, data: data['navigationData']);
                       store.eventBus.fire(results);
+                      await markNotificationRead(notificationId, store);
+                      Navigator.pop(context);
                     })
                 : Container(),
             type == 'user_travel_details_add' ||
@@ -247,6 +251,8 @@ class NotificationsState extends State<Notifications> {
                       var results = FocusChangeEvent(
                           tab: TabItem.trips, data: data['navigationData']);
                       store.eventBus.fire(results);
+                      await markNotificationRead(notificationId, store);
+                      Navigator.pop(context);
                     })
                 : Container(),
           ]);

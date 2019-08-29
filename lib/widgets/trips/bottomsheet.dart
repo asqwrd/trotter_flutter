@@ -267,7 +267,7 @@ Widget _buildBody(BuildContext context, dynamic item,
                       : Container(
                           decoration: BoxDecoration(
                           image: DecorationImage(
-                              image: AssetImage('images/placeholder.jpg'),
+                              image: AssetImage('images/placeholder.png'),
                               fit: BoxFit.cover),
                         ))),
               width: 140.0,

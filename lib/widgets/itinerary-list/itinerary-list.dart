@@ -56,7 +56,7 @@ class ItineraryList extends StatelessWidget {
     var time = item['time'];
     var image = item['image'].isEmpty == false
         ? item['image']
-        : 'images/placeholder.jpg';
+        : 'images/placeholder.png';
     var title = item['title'].isEmpty
         ? item['poi'] == null || item['poi']['name'].isEmpty
             ? 'No title given'

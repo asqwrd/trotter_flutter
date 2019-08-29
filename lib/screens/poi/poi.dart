@@ -205,32 +205,40 @@ class PoiState extends State<Poi> {
               Positioned.fill(
                   top: 0,
                   child: this.image == null
-                      ? Container()
+                      ? Container(
+                          child: Image(
+                              fit: BoxFit.cover,
+                              image: AssetImage("images/placeholder.png")),
+                        )
                       : TransitionToImage(
                           image: AdvancedNetworkImage(
                             this.image,
                             useDiskCache: true,
+                            fallbackAssetImage: "images/placeholder.png",
                             cacheRule:
                                 CacheRule(maxAge: const Duration(days: 7)),
                           ),
                           loadingWidgetBuilder:
                               (BuildContext context, double progress, test) =>
                                   Center(
-                                      child: CircularProgressIndicator(
+                                      child: RefreshProgressIndicator(
                             backgroundColor: Colors.white,
                           )),
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
-                          placeholder: const Icon(Icons.refresh),
+                          placeholder: Container(
+                              child: Image(
+                                  fit: BoxFit.cover,
+                                  image: AssetImage("images/placeholder.png"))),
                           enableRefresh: true,
                         )),
-              this.image == null
-                  ? Positioned(
-                      child: Center(
-                          child: RefreshProgressIndicator(
-                      backgroundColor: Colors.white,
-                    )))
-                  : Container()
+              // this.image == null
+              //     ? Positioned(
+              //         child: Center(
+              //             child: RefreshProgressIndicator(
+              //         backgroundColor: Colors.white,
+              //       )))
+              //     : Container()
             ])),
       )),
       Positioned(
@@ -280,61 +288,65 @@ class PoiState extends State<Poi> {
                 child: AutoSizeText(descriptionShort,
                     style: TextStyle(
                         fontSize: 13.0, fontWeight: FontWeight.w300))),
-            Container(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                margin: EdgeInsets.only(bottom: 30),
-                width: MediaQuery.of(context).size.width,
-                height: 250,
-                child: ClipPath(
-                  clipper: ShapeBorderClipper(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10))),
-                  child: Swiper(
-                    itemBuilder: (BuildContext context, int index) {
-                      return Stack(fit: StackFit.expand, children: <Widget>[
-                        TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            this.images[index]['sizes']['medium']['url'],
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
+            this.images != null && this.images.length > 0
+                ? Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    margin: EdgeInsets.only(bottom: 30),
+                    width: MediaQuery.of(context).size.width,
+                    height: 250,
+                    child: ClipPath(
+                      clipper: ShapeBorderClipper(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                      child: Swiper(
+                        itemBuilder: (BuildContext context, int index) {
+                          return Stack(fit: StackFit.expand, children: <Widget>[
+                            TransitionToImage(
+                              image: AdvancedNetworkImage(
+                                this.images[index]['sizes']['medium']['url'],
+                                useDiskCache: true,
+                                cacheRule:
+                                    CacheRule(maxAge: const Duration(days: 7)),
+                              ),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
                                   Center(
                                       child: RefreshProgressIndicator(
-                            backgroundColor: Colors.white,
-                          )),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
-                        )
-                      ]);
-                    },
-                    loop: true,
-                    indicatorLayout: PageIndicatorLayout.SCALE,
-                    itemCount: this.images.length,
-                    //transformer: DeepthPageTransformer(),
-                    pagination: new SwiperPagination(
-                      builder: new SwiperCustomPagination(builder:
-                          (BuildContext context, SwiperPluginConfig config) {
-                        return new ConstrainedBox(
-                          child: new Align(
-                            alignment: Alignment.topCenter,
-                            child: new DotSwiperPaginationBuilder(
-                                    color: Colors.black.withOpacity(.4),
-                                    activeColor: color,
-                                    size: 20.0,
-                                    activeSize: 20.0)
-                                .build(context, config),
-                          ),
-                          constraints: new BoxConstraints.expand(height: 50.0),
-                        );
-                      }),
-                    ),
-                  ),
-                )),
+                                backgroundColor: Colors.white,
+                              )),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: const Icon(Icons.refresh),
+                              enableRefresh: true,
+                            )
+                          ]);
+                        },
+                        loop: true,
+                        indicatorLayout: PageIndicatorLayout.SCALE,
+                        itemCount: this.images.length,
+                        //transformer: DeepthPageTransformer(),
+                        pagination: new SwiperPagination(
+                          builder: new SwiperCustomPagination(builder:
+                              (BuildContext context,
+                                  SwiperPluginConfig config) {
+                            return new ConstrainedBox(
+                              child: new Align(
+                                alignment: Alignment.topCenter,
+                                child: new DotSwiperPaginationBuilder(
+                                        color: Colors.black.withOpacity(.4),
+                                        activeColor: color,
+                                        size: 20.0,
+                                        activeSize: 20.0)
+                                    .build(context, config),
+                              ),
+                              constraints:
+                                  new BoxConstraints.expand(height: 50.0),
+                            );
+                          }),
+                        ),
+                      ),
+                    ))
+                : Container(),
             ListView.separated(
               separatorBuilder: (BuildContext context, int index) =>
                   new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),

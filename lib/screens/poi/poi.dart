@@ -277,9 +277,10 @@ class PoiState extends State<Poi> {
               padding:
                   EdgeInsets.only(top: 10, bottom: 20, left: 20, right: 20),
               child: AutoSizeText(
-                '${this.poiName} info',
+                'About ${this.poiName}',
                 overflow: TextOverflow.ellipsis,
-                maxLines: 1,
+                maxLines: 2,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 25),
               ),
             ),

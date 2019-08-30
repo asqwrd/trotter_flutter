@@ -500,7 +500,7 @@ class HomeState extends State<Home> {
                           bottomSheetModal(context, data['poi']);
                         }
                       },
-                      header: "Explore the island life"),
+                      header: "Explore these islands"),
               FutureBuilder(
                   future: dataItineraries,
                   builder: (context, snapshot) {

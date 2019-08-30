@@ -149,7 +149,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
           child: new TrotterAppBar(
               onPush: onPush,
               color: color,
-              title: 'Travel details',
+              title: 'Travel itineraries',
               actions: <Widget>[
                 Container(
                     width: 58,
@@ -192,11 +192,13 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
             onDeletePressed: (data) async {
               final detailId = data['id'];
               final destinationId = data['destinationId'];
+              final undoData = data['undoData'];
+              var store = Provider.of<TrotterStore>(context);
               setState(() {
                 this.loading = true;
               });
               final response = await deleteFlightsAndAccomodations(
-                  this.tripId, destinationId, detailId);
+                  this.tripId, destinationId, detailId, store.currentUser.uid);
               if (response.success == true) {
                 var res = await fetchFlightsAccomodations(
                     this.tripId, this.currentUserId);
@@ -205,10 +207,35 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                   this.flightsAccomodations = res.flightsAccomodations;
                 });
                 Scaffold.of(this.context).showSnackBar(SnackBar(
-                  content: AutoSizeText('Delete successful',
-                      style: TextStyle(fontSize: 13)),
-                  duration: Duration(seconds: 2),
-                ));
+                    content: AutoSizeText('Delete successful',
+                        style: TextStyle(fontSize: 13)),
+                    duration: Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      textColor: color,
+                      onPressed: () async {
+                        setState(() {
+                          this.loading = true;
+                        });
+                        var response = await postAddFlightsAndAccomodations(
+                            this.tripId, destinationId, undoData);
+                        if (response.success == true) {
+                          var res = await fetchFlightsAccomodations(
+                              this.tripId, this.currentUserId);
+                          setState(() {
+                            this.loading = false;
+                            this.flightsAccomodations =
+                                res.flightsAccomodations;
+                          });
+                        } else {
+                          Scaffold.of(ctxt).removeCurrentSnackBar();
+                          Scaffold.of(ctxt).showSnackBar(SnackBar(
+                              content: AutoSizeText('Sorry the undo failed!',
+                                  style: TextStyle(fontSize: 18)),
+                              duration: Duration(seconds: 2)));
+                        }
+                      },
+                    )));
               } else {
                 setState(() {
                   this.loading = false;
@@ -216,7 +243,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                 Scaffold.of(this.context).showSnackBar(SnackBar(
                   content: AutoSizeText('Unable to delete',
                       style: TextStyle(fontSize: 13)),
-                  duration: Duration(seconds: 2),
+                  duration: Duration(seconds: 3),
                 ));
               }
             },

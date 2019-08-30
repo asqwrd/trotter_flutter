@@ -37,6 +37,14 @@ class MessageNotification extends StatelessWidget {
     switch (type) {
       case 'email':
         return Icon(EvilIcons.envelope);
+      case 'trotter':
+        return Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(width: 2, color: Colors.blueGrey)),
+            child: CircleAvatar(
+              backgroundImage: AssetImage('images/logo.png'),
+            ));
       case 'user':
       case 'user_travel_details_remove':
       case 'user_travel_details_add':

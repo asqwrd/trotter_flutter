@@ -49,9 +49,15 @@ class AppStateWidget extends State<App> {
         print("onMessage: $message");
         await fetchNotifications(store);
         final user = json.decode(message['data']['user'].toString());
-        final from = TrotterUser.fromJson(user);
-        final msg = message['data']['msg'];
-        final type = message['data']['type'];
+        final from = user != null
+            ? TrotterUser.fromJson(user)
+            : TrotterUser(uid: '', displayName: 'Trotter team', photoUrl: null);
+        final msg = message['data']['msg'] != null
+            ? message['data']['msg']
+            : message['notification']['title'];
+        final type = message['data']['type'] != null
+            ? message['data']['type']
+            : 'trotter';
         showOverlayNotification((context) {
           return MessageNotification(
             from: from,

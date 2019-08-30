@@ -210,7 +210,7 @@ class NotificationsState extends State<Notifications> {
             type == 'email'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.plus),
-                    title: new AutoSizeText('Add to Trip'),
+                    title: new AutoSizeText('Add to trip'),
                     onTap: () async {
                       Navigator.pop(context);
                       showTripsBottomSheet(context, null, data, notificationId);

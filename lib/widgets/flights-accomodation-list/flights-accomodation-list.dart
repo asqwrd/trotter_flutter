@@ -64,10 +64,12 @@ class FlightsAccomodationsList extends StatelessWidget {
                               this.onDeletePressed({
                                 "id": details[index]['id'],
                                 "destinationId": destination['id'],
+                                'undoData': details[index]
                               });
                             },
                           ),
-                          title: AutoSizeText('${details[index]['source']}',
+                          title: AutoSizeText(
+                              '${details[index]['source'].length > 0 ? details[index]['source'] : "Travel itinerary"}',
                               style: TextStyle(fontSize: 17)),
                           subtitle: Container(
                             margin: EdgeInsets.only(top: 20, left: 10),

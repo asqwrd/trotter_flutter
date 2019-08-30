@@ -311,10 +311,13 @@ Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
 }
 
 Future<AddFlightsAndAccomodationsData> deleteFlightsAndAccomodations(
-    String tripId, String destinationId, String detailId) async {
+    String tripId,
+    String destinationId,
+    String detailId,
+    String currentUserId) async {
   try {
     final response = await http.delete(
-        '$ApiDomain/api/trips/delete/flights_accomodations/$tripId/destination/$destinationId/detail/$detailId',
+        '$ApiDomain/api/trips/delete/flights_accomodations/$tripId/destination/$destinationId/detail/$detailId?deletedBy=$currentUserId',
         headers: {
           'Authorization': 'security',
           "Content-Type": "application/json"

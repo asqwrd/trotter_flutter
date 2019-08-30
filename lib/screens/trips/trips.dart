@@ -482,7 +482,7 @@ class TripsState extends State<Trips> {
                     content: AutoSizeText(
                         '${tripBuilder[index]['name']}\'s was deleted.',
                         style: TextStyle(fontSize: 13)),
-                    duration: Duration(seconds: 2),
+                    duration: Duration(seconds: 5),
                     action: SnackBarAction(
                       label: 'Undo',
                       textColor: color,

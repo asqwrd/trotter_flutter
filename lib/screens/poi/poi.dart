@@ -141,6 +141,9 @@ class PoiState extends State<Poi> {
                 this.errorUi = false;
                 this.images = data.poi['images'];
                 this.image = data.poi['image'];
+                if (this.image == null) {
+                  this.image = '';
+                }
                 this.poiName = data.poi['name'];
                 this.color = Color(hexStringToHexInt(data.color));
               })
@@ -206,18 +209,19 @@ class PoiState extends State<Poi> {
                   top: 0,
                   child: this.image == null
                       ? Container(
-                          child: Image(
-                              fit: BoxFit.cover,
-                              image: AssetImage("images/placeholder.png")),
-                        )
+                          child: Center(
+                              child: RefreshProgressIndicator(
+                          backgroundColor: Colors.white,
+                        )))
                       : TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            this.image,
-                            useDiskCache: true,
-                            fallbackAssetImage: "images/placeholder.png",
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
+                          image: this.image.length > 0
+                              ? AdvancedNetworkImage(
+                                  this.image,
+                                  useDiskCache: true,
+                                  cacheRule: CacheRule(
+                                      maxAge: const Duration(days: 7)),
+                                )
+                              : AssetImage("images/placeholder.png"),
                           loadingWidgetBuilder:
                               (BuildContext context, double progress, test) =>
                                   Center(

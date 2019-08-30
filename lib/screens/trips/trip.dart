@@ -1188,7 +1188,7 @@ class TripState extends State<Trip> {
                 child: buildTravelers(this.travelers)))
       },
       {
-        "label": "Travel details",
+        "label": "Travel itineraries",
         "icon": Icon(Icons.flight, color: iconColor),
         "level": "travelinfo"
       },

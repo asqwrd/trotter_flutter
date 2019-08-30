@@ -512,7 +512,7 @@ class DayEditState extends State<DayEdit> {
                         Scaffold.of(ctxt).showSnackBar(SnackBar(
                           content: AutoSizeText('$name was removed.',
                               style: TextStyle(fontSize: 18)),
-                          duration: Duration(seconds: 2),
+                          duration: Duration(seconds: 5),
                           action: SnackBarAction(
                             label: 'Undo',
                             textColor: color,

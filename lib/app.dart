@@ -31,11 +31,7 @@ class AppStateWidget extends State<App> {
     TabItem.profile: GlobalKey<NavigatorState>(),
   };
   BuildContext appContext;
-
-  // static final FocusNode _focusA = FocusNode();
-  // static final FocusNode _focusB = FocusNode();
-  // static final FocusNode _focusC = FocusNode();
-  // static final FocusNode _focusD = FocusNode();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   TrotterStore store;
@@ -126,12 +122,20 @@ class AppStateWidget extends State<App> {
     });
   }
 
-  checkDynamicLink(TrotterStore store, String tripId) async {
-    if (tripId != null && store.currentUser != null) {
+  checkDynamicLink(TrotterStore store, String tripId, int expired) async {
+    final time = DateTime.now().millisecondsSinceEpoch;
+    if (tripId != null && store.currentUser != null && time < expired) {
       await setInvite(store, tripId);
-    } else if (tripId != null && store.currentUser == null) {
+    } else if (tripId != null && store.currentUser == null && time < expired) {
       await showLoginModal(this.appContext);
       await setInvite(store, tripId);
+    } else {
+      print("here");
+      _scaffoldKey.currentState.showSnackBar(SnackBar(
+        content:
+            AutoSizeText('Invite link expired', style: TextStyle(fontSize: 13)),
+        duration: Duration(seconds: 5),
+      ));
     }
   }
 
@@ -159,20 +163,30 @@ class AppStateWidget extends State<App> {
     final PendingDynamicLinkData data =
         await FirebaseDynamicLinks.instance.getInitialLink();
     final Uri deepLink = data?.link;
-
     if (deepLink != null) {
-      final tripId = data?.link?.queryParameters != null
+      final tripId = data?.link?.queryParameters != null &&
+              data?.link?.queryParameters['trip'] != null
           ? data?.link?.queryParameters['trip']
           : null;
-      checkDynamicLink(store, tripId);
+      final expired = data?.link?.queryParameters != null &&
+              data?.link?.queryParameters['expired'] != null
+          ? int.parse(deepLink?.queryParameters['expired'])
+          : null;
+
+      checkDynamicLink(store, tripId, expired);
     }
 
     FirebaseDynamicLinks.instance.onLink(
         onSuccess: (PendingDynamicLinkData data) async {
-      final tripId = data?.link?.queryParameters != null
+      final tripId = data?.link?.queryParameters != null &&
+              data?.link?.queryParameters['trip'] != null
           ? data?.link?.queryParameters['trip']
           : null;
-      checkDynamicLink(store, tripId);
+      final expired = data?.link?.queryParameters != null &&
+              data?.link?.queryParameters['expired'] != null
+          ? int.parse(data?.link?.queryParameters['expired'])
+          : 0;
+      checkDynamicLink(store, tripId, expired);
     }, onError: (OnLinkErrorException e) async {
       print('onLinkError');
       print(e.message);
@@ -238,6 +252,7 @@ class AppStateWidget extends State<App> {
           !await navigatorKeys[currentTab].currentState.maybePop(),
       child: SizedBox.expand(
           child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: Colors.white,
         body: Stack(children: <Widget>[
           Focus(

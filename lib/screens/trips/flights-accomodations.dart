@@ -257,21 +257,21 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                             ownerId: ownerId,
                             currentUserId: this.currentUserId,
                             tripId: this.tripId,
+                            travelers: data['travelers'],
                           )));
               if (dialogData != null) {
                 final detailId = data['id'];
                 final destinationId = data['destinationId'];
-                final travelers = dialogData['travelers'];
+                setState(() {
+                  this.loading = true;
+                });
                 final response = await putUpdateFlightsAccommodationTravelers(
                     this.tripId,
                     destinationId,
                     detailId,
-                    {"travelers": travelers},
+                    dialogData,
                     this.currentUserId);
                 if (response.error == null) {
-                  setState(() {
-                    this.loading = true;
-                  });
                   var res = await fetchFlightsAccomodations(
                       this.tripId, this.currentUserId);
                   setState(() {

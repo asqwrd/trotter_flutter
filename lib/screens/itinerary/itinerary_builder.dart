@@ -199,14 +199,14 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                             Scaffold.of(context).showSnackBar(SnackBar(
                               content: AutoSizeText('Updated start location',
                                   style: TextStyle(fontSize: 13)),
-                              duration: Duration(seconds: 2),
+                              duration: Duration(seconds: 5),
                             ));
                           } else {
                             Scaffold.of(context).showSnackBar(SnackBar(
                               content: AutoSizeText(
                                   'Failed to update start location',
                                   style: TextStyle(fontSize: 13)),
-                              duration: Duration(seconds: 2),
+                              duration: Duration(seconds: 5),
                             ));
                           }
                         }

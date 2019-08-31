@@ -151,7 +151,7 @@ class TravelersSearchModalState extends State<TravelersSearchModal> {
                         title: AutoSizeText("Share"),
                         onTap: () {
                           Share.share(
-                              'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application');
+                              'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}%26expired%3D${DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch}&apn=org.trotter.application');
                         },
                       );
                     }

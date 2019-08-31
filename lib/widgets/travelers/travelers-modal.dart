@@ -47,12 +47,14 @@ class TravelersModal extends StatefulWidget {
   final ValueChanged<dynamic> onAdd;
   final String ownerId;
   final String currentUserId;
+  final List<dynamic> travelers;
 
   TravelersModal(
       {Key key,
       @required this.tripId,
       @required this.ownerId,
       @required this.currentUserId,
+      this.travelers,
       this.onAdd})
       : super(key: key);
   @override
@@ -60,6 +62,7 @@ class TravelersModal extends StatefulWidget {
       tripId: this.tripId,
       ownerId: this.ownerId,
       currentUserId: this.currentUserId,
+      travelers: this.travelers,
       onAdd: this.onAdd);
 }
 
@@ -81,19 +84,26 @@ class TravelersModalState extends State<TravelersModal> {
   @override
   void initState() {
     super.initState();
-    data = fetchTravelersModal(
-      this.tripId,
-    );
-
-    data.then((data) {
-      setState(() {
-        this.travelers = data.travelers;
+    print(this.travelers);
+    if (this.travelers == null) {
+      data = fetchTravelersModal(
+        this.tripId,
+      );
+      data.then((data) {
+        setState(() {
+          this.travelers = data.travelers;
+        });
       });
-    });
+    } else {
+      data = fetchTravelersModal(
+        this.tripId,
+      );
+    }
   }
 
   TravelersModalState({
     this.tripId,
+    this.travelers,
     this.onAdd,
     this.currentUserId,
     this.ownerId,
@@ -220,7 +230,10 @@ class TravelersModalState extends State<TravelersModal> {
                       trailing: results[index]['uid'] == this.currentUserId &&
                               this.currentUserId != this.ownerId
                           ? FlatButton(
-                              child: AutoSizeText('Leave trip'),
+                              child: AutoSizeText(
+                                'Leave',
+                                style: TextStyle(color: Colors.blueAccent),
+                              ),
                               onPressed: () {
                                 setState(() {
                                   this.deletedTravelers = [

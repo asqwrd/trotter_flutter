@@ -23,7 +23,6 @@ import 'package:queries/collections.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'add-destination-modal.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:share/share.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
 import 'package:trotter_flutter/globals.dart';
 
@@ -894,15 +893,6 @@ class TripState extends State<Trip> {
                       });
                     })
                 : Container(),
-            ListTile(
-              leading: Icon(Icons.share),
-              title: AutoSizeText('Invite travelers'),
-              onTap: () {
-                Share.share(
-                    'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application');
-                Navigator.pop(context);
-              },
-            ),
             this.trip['owner_id'] != store.currentUser.uid
                 ? ListTile(
                     leading: Icon(Icons.exit_to_app),
@@ -1140,22 +1130,25 @@ class TripState extends State<Trip> {
               back: true,
               actions: store.offline == false
                   ? <Widget>[
-                      Container(
-                          width: 58,
-                          height: 58,
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          child: FlatButton(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(100)),
-                            onPressed: () {
-                              bottomSheetModal(context, this.trip);
-                            },
-                            child: SvgPicture.asset("images/setting-icon.svg",
-                                width: 35,
-                                height: 35,
-                                //color: fontContrast(color),
-                                fit: BoxFit.cover),
-                          ))
+                      store.currentUser.uid != null
+                          ? Container(
+                              width: 58,
+                              height: 58,
+                              margin: EdgeInsets.symmetric(horizontal: 10),
+                              child: FlatButton(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100)),
+                                onPressed: () {
+                                  bottomSheetModal(context, this.trip);
+                                },
+                                child:
+                                    SvgPicture.asset("images/setting-icon.svg",
+                                        width: 35,
+                                        height: 35,
+                                        //color: fontContrast(color),
+                                        fit: BoxFit.cover),
+                              ))
+                          : Container()
                     ]
                   : null)),
     ]);
@@ -1330,39 +1323,40 @@ class TripState extends State<Trip> {
     ]);
   }
 
-  openTravelersModal(BuildContext ctxt, TrotterStore store) {
-    Navigator.push(
+  openTravelersModal(BuildContext ctxt, TrotterStore store) async {
+    final dialogData = await Navigator.push(
         context,
         MaterialPageRoute(
             fullscreenDialog: true,
             builder: (context) => TravelersModal(
-                readOnly: true,
-                currentUserId: store.currentUser.uid,
-                ownerId: this.trip['owner_id'],
-                tripId: this.tripId,
-                travelers: this.travelers)));
+                  currentUserId: store.currentUser.uid,
+                  ownerId: this.trip['owner_id'],
+                  tripId: this.tripId,
+                )));
 
-    // if (dialogData != null) {
-    //   final List<String> travelers = dialogData['travelers'];
-
-    //   var response = await putUpdateTrip(tripId, {"group": travelers}, store.currentUser.uid);
-    //     if(response.success == true){
-    //       if(!travelers.contains(store.currentUser.uid)){
-    //         await fetchTrips(store);
-    //         Navigator.pop(context);
-    //       } else{
-    //         setState(() {
-    //           this.trip['group'] = travelers;
-    //           this.trip['travelers'] = response.travelers;
-    //           this.travelers = response.travelers;
-    //           store.tripStore.updateTrip(this.trip);
-    //           data = fetchTrip(this.tripId);
-
-    //         });
-    //       }
-
-    //     }
-    // }
+    if (dialogData != null) {
+      print(dialogData);
+      setState(() {
+        this.loading = true;
+      });
+      var response =
+          await putUpdateTrip(tripId, dialogData, store.currentUser.uid);
+      if (response.success == true) {
+        if (dialogData['deleted'].contains(store.currentUser.uid)) {
+          await fetchTrips(store);
+          Navigator.pop(context);
+        } else {
+          setState(() {
+            this.trip['group'] = travelers;
+            this.trip['travelers'] = response.travelers;
+            this.travelers = response.travelers;
+            store.tripStore.updateTrip(this.trip);
+            data = fetchTrip(this.tripId);
+            this.loading = false;
+          });
+        }
+      }
+    }
   }
 
   showDestinationsModal(

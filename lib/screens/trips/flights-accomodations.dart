@@ -254,10 +254,10 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                   MaterialPageRoute(
                       fullscreenDialog: true,
                       builder: (context) => TravelersModal(
-                          ownerId: ownerId,
-                          currentUserId: this.currentUserId,
-                          tripId: this.tripId,
-                          travelers: data['travelers'])));
+                            ownerId: ownerId,
+                            currentUserId: this.currentUserId,
+                            tripId: this.tripId,
+                          )));
               if (dialogData != null) {
                 final detailId = data['id'];
                 final destinationId = data['destinationId'];

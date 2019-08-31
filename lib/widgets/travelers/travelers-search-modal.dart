@@ -2,21 +2,20 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:share/share.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/globals.dart';
-import 'package:trotter_flutter/widgets/travelers/travelers-search-modal.dart';
 
-Future<TravelersModalData> fetchTravelersModal(
-  String tripId,
+Future<TravelersModalData> fetchSearchUsers(
+  String query,
 ) async {
   try {
     var response;
 
-    response = await http.get('$ApiDomain/api/trips/$tripId/travelers',
+    response = await http.get('$ApiDomain/api/users/search?query=$query',
         headers: {'Authorization': 'security'});
 
     if (response.statusCode == 200) {
@@ -38,66 +37,56 @@ class TravelersModalData {
   TravelersModalData({this.travelers, this.success});
 
   factory TravelersModalData.fromJson(Map<String, dynamic> json) {
-    return TravelersModalData(travelers: json['travelers'], success: true);
+    return TravelersModalData(travelers: json['results'], success: true);
   }
 }
 
-class TravelersModal extends StatefulWidget {
-  final String tripId;
+class TravelersSearchModal extends StatefulWidget {
   final ValueChanged<dynamic> onAdd;
   final String ownerId;
+  final String tripId;
   final String currentUserId;
 
-  TravelersModal(
+  TravelersSearchModal(
       {Key key,
-      @required this.tripId,
       @required this.ownerId,
+      this.tripId,
       @required this.currentUserId,
-      this.onAdd})
+      this.onAdd,
+      s})
       : super(key: key);
   @override
-  TravelersModalState createState() => new TravelersModalState(
-      tripId: this.tripId,
-      ownerId: this.ownerId,
-      currentUserId: this.currentUserId,
-      onAdd: this.onAdd);
+  TravelersSearchModalState createState() => new TravelersSearchModalState(
+        ownerId: this.ownerId,
+        tripId: this.tripId,
+        currentUserId: this.currentUserId,
+        onAdd: this.onAdd,
+      );
 }
 
-class TravelersModalState extends State<TravelersModal> {
-  String tripId;
+class TravelersSearchModalState extends State<TravelersSearchModal> {
   final String ownerId;
+  final String tripId;
   final String currentUserId;
-  List<dynamic> travelers = [];
-  List<dynamic> addedTravelers = [];
-  List<String> deletedTravelers = [];
-  bool showSave = false;
   final ValueChanged<dynamic> onAdd;
-  GoogleMapController mapController;
   List<Widget> selectedUsers = [];
+  List<dynamic> travelersFull = [];
   List<String> selectedUsersUid = [];
+  var txt = new TextEditingController();
 
   Future<TravelersModalData> data;
 
   @override
   void initState() {
     super.initState();
-    data = fetchTravelersModal(
-      this.tripId,
+    txt.text = '';
+    data = fetchSearchUsers(
+      '',
     );
-
-    data.then((data) {
-      setState(() {
-        this.travelers = data.travelers;
-      });
-    });
   }
 
-  TravelersModalState({
-    this.tripId,
-    this.onAdd,
-    this.currentUserId,
-    this.ownerId,
-  });
+  TravelersSearchModalState(
+      {this.onAdd, this.currentUserId, this.ownerId, this.tripId});
 
   @override
   Widget build(BuildContext context) {
@@ -111,33 +100,43 @@ class TravelersModalState extends State<TravelersModal> {
                   return AutoSizeText('Press button to start.');
                 case ConnectionState.active:
                 case ConnectionState.waiting:
-                  return _buildLoadedBody(context, snapshot, true, '');
+                  return _buildLoadedBody(context, snapshot, true);
                 case ConnectionState.done:
                   if (snapshot.hasData) {
-                    return _buildLoadedBody(
-                        context, snapshot, false, this.tripId);
+                    return _buildLoadedBody(context, snapshot, false);
                   } else if (snapshot.hasError) {
                     return AutoSizeText('No Connection');
                   }
               }
-              return _buildLoadedBody(context, snapshot, true, '');
+              return _buildLoadedBody(context, snapshot, true);
             }));
+  }
+
+  _deleteChip(String uid) {
+    if (this.selectedUsers.length > 0) {
+      setState(() {
+        var index = this.selectedUsersUid.indexOf(uid);
+        this.selectedUsersUid.removeAt(index);
+        this.selectedUsers.removeAt(index);
+        this.travelersFull.removeAt(index);
+      });
+    }
   }
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
-      BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading, String id) {
-    var results = snapshot.hasData ? ['', ...this.travelers] : [''];
-
+      BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading) {
+    var results = snapshot.hasData ? ['', ...snapshot.data.travelers] : [''];
+    var timer;
     return Scaffold(
         resizeToAvoidBottomPadding: false,
         body: isLoading
             ? Column(children: <Widget>[
-                renderTopBar(),
+                renderTopBar(timer),
                 Flexible(child: _buildLoadingBody())
               ])
             : Column(children: <Widget>[
-                renderTopBar(),
+                renderTopBar(timer),
                 Flexible(
                     child: ListView.builder(
                   itemCount: results.length,
@@ -147,43 +146,40 @@ class TravelersModalState extends State<TravelersModal> {
                         contentPadding:
                             EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                         leading: Container(
-                          child: Icon(Icons.add),
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.black),
-                              borderRadius: BorderRadius.circular(10)),
+                          child: Icon(Icons.share),
                         ),
-                        title: AutoSizeText("Invite"),
-                        onTap: () async {
-                          final dialogData = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  fullscreenDialog: true,
-                                  builder: (context) => TravelersSearchModal(
-                                        currentUserId: this.currentUserId,
-                                        ownerId: this.ownerId,
-                                        tripId: this.tripId,
-                                      )));
-                          if (dialogData != null) {
-                            setState(() {
-                              this.travelers = [
-                                ...dialogData['travelersFull'],
-                                ...this.travelers
-                              ];
-                              this.addedTravelers = [
-                                ...this.addedTravelers,
-                                ...dialogData['travelersFull']
-                              ];
-                              this.selectedUsersUid = [
-                                ...dialogData['travelers'],
-                                ...this.selectedUsersUid
-                              ];
-                              this.showSave = true;
-                            });
-                          }
+                        title: AutoSizeText("Share"),
+                        onTap: () {
+                          Share.share(
+                              'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${this.tripId}&apn=org.trotter.application');
                         },
                       );
                     }
                     return ListTile(
+                      selected:
+                          this.selectedUsersUid.contains(results[index]['uid']),
+                      onTap: () {
+                        var exists = this
+                            .selectedUsersUid
+                            .contains(results[index]['uid']);
+                        if (exists == false) {
+                          setState(() {
+                            this.selectedUsersUid.add(results[index]['uid']);
+                            this.travelersFull.add(results[index]);
+                            this.selectedUsers.add(Chip(
+                                avatar: CircleAvatar(
+                                    backgroundImage: NetworkImage(
+                                  results[index]['photoUrl'],
+                                )),
+                                label: AutoSizeText(
+                                    "${results[index]['displayName']}"),
+                                deleteIcon: Icon(Icons.close),
+                                onDeleted: () {
+                                  this._deleteChip(results[index]['uid']);
+                                }));
+                          });
+                        }
+                      },
                       contentPadding:
                           EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                       leading: Container(
@@ -217,46 +213,16 @@ class TravelersModalState extends State<TravelersModal> {
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600),
                       ),
-                      trailing: results[index]['uid'] == this.currentUserId &&
-                              this.currentUserId != this.ownerId
-                          ? FlatButton(
-                              child: AutoSizeText('Leave trip'),
-                              onPressed: () {
-                                setState(() {
-                                  this.deletedTravelers = [
-                                    ...this.deletedTravelers,
-                                    results[index]['uid']
-                                  ];
-                                  this.travelers.removeAt(index);
-                                  this.showSave = true;
-                                });
-                              },
-                            )
-                          : this.currentUserId == this.ownerId &&
-                                  results[index]['uid'] == this.currentUserId
-                              ? AutoSizeText('Organizer')
-                              : this.currentUserId == this.ownerId
-                                  ? IconButton(
-                                      icon: Icon(Icons.close),
-                                      onPressed: () {
-                                        setState(() {
-                                          this.deletedTravelers = [
-                                            ...this.deletedTravelers,
-                                            results[index]['uid']
-                                          ];
-                                          this.travelers.removeAt(index - 1);
-                                          this.showSave = true;
-                                        });
-                                      },
-                                    )
-                                  : Container(),
+                      trailing: results[index]['uid'] == this.ownerId
+                          ? AutoSizeText('Organizer')
+                          : AutoSizeText(''),
                     );
                   },
                 ))
               ]));
   }
 
-  Container renderTopBar() {
+  Container renderTopBar(timer) {
     return Container(
         padding: EdgeInsets.only(top: 30, bottom: 10),
         decoration: BoxDecoration(
@@ -278,38 +244,62 @@ class TravelersModalState extends State<TravelersModal> {
                       color: Colors.black,
                     ),
                     AutoSizeText(
-                      'All travelers',
+                      'Search for travelers',
                       style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w300,
                           fontSize: 19),
                     )
                   ]),
-                  this.showSave == true
-                      ? Center(
-                          child: Container(
-                              margin: EdgeInsets.only(right: 20),
-                              child: FlatButton(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30)),
-                                child: AutoSizeText(
-                                  'Save',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 13),
-                                ),
-                                textColor: Colors.lightBlue,
-                                padding: EdgeInsets.all(0),
-                                color: Colors.lightBlue.withOpacity(.3),
-                                onPressed: () {
-                                  Navigator.pop(context, {
-                                    'added': this.addedTravelers,
-                                    "deleted": this.deletedTravelers,
-                                  });
-                                },
-                              )))
-                      : Container()
+                  Center(
+                      child: Container(
+                          margin: EdgeInsets.only(right: 20),
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30)),
+                            child: AutoSizeText(
+                              'Add',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w500, fontSize: 13),
+                            ),
+                            textColor: Colors.lightBlue,
+                            padding: EdgeInsets.all(0),
+                            color: Colors.lightBlue.withOpacity(.3),
+                            onPressed: () {
+                              Navigator.pop(context, {
+                                "travelers": this.selectedUsersUid,
+                                "travelersFull": this.travelersFull
+                              });
+                            },
+                          )))
                 ]),
+            TextField(
+              enabled: true,
+              controller: txt,
+              cursorColor: Colors.black,
+              textInputAction: TextInputAction.search,
+              enableInteractiveSelection: true,
+              decoration: InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.only(
+                      left: 20.0, right: 20.0, bottom: 20, top: 10),
+                  hintText: 'Search name or email...'),
+              onChanged: (value) {
+                if (timer != null) {
+                  timer.cancel();
+                  timer = null;
+                }
+                timer = new Timer(const Duration(milliseconds: 500), () {
+                  setState(() {
+                    data = fetchSearchUsers(value);
+                  });
+                });
+              },
+            ),
+            Container(
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Wrap(spacing: 10.0, children: this.selectedUsers)),
           ],
         ));
   }

@@ -1,10 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart';
 import 'package:duration/duration.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -50,64 +52,68 @@ class FlightsAccomodationsList extends StatelessWidget {
           itemBuilder: (BuildContext listContext, int index) {
             final segments = details[index]['segments'];
             final travelers = details[index]['travelers_full'];
+            final store = Provider.of<TrotterStore>(context);
 
             return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
-                      margin: EdgeInsets.only(bottom: 20),
-                      child: ListTile(
-                          trailing: IconButton(
-                            icon: Icon(EvilIcons.trash),
-                            iconSize: 27,
-                            onPressed: () {
-                              this.onDeletePressed({
-                                "id": details[index]['id'],
-                                "destinationId": destination['id'],
-                                'undoData': details[index]
-                              });
-                            },
-                          ),
-                          title: AutoSizeText(
-                              '${details[index]['source'].length > 0 ? details[index]['source'] : "Travel itinerary"}',
-                              style: TextStyle(fontSize: 17)),
-                          subtitle: Container(
-                            margin: EdgeInsets.only(top: 20, left: 10),
-                            width: 250,
-                            child: InkWell(
-                                onTap: () {
-                                  this.onAddPressed({
+                  store.currentUser.uid == details[index]['ownerId']
+                      ? Container(
+                          margin: EdgeInsets.only(bottom: 20),
+                          child: ListTile(
+                              trailing: IconButton(
+                                icon: Icon(EvilIcons.trash),
+                                iconSize: 27,
+                                onPressed: () {
+                                  this.onDeletePressed({
                                     "id": details[index]['id'],
                                     "destinationId": destination['id'],
-                                    "travelers": travelers,
-                                    "index": index,
-                                    "ownerId": details[index]['ownerId']
+                                    'undoData': details[index]
                                   });
                                 },
-                                child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Container(
-                                        padding: EdgeInsets.all(5),
-                                        margin: EdgeInsets.only(top: 0),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(100),
-                                            color: Colors.transparent),
-                                        child: SvgPicture.asset(
-                                            'images/edit-icon.svg',
-                                            color: Colors.blueAccent,
-                                            width: 20,
-                                            height: 20),
-                                      ),
-                                      AutoSizeText('Edit travelers',
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.blueAccent))
-                                    ])),
-                          ))),
+                              ),
+                              title: AutoSizeText(
+                                  '${details[index]['source'].length > 0 ? details[index]['source'] : "Travel itinerary"}',
+                                  style: TextStyle(fontSize: 17)),
+                              subtitle: Container(
+                                margin: EdgeInsets.only(top: 20, left: 10),
+                                width: 250,
+                                child: InkWell(
+                                    onTap: () {
+                                      this.onAddPressed({
+                                        "id": details[index]['id'],
+                                        "destinationId": destination['id'],
+                                        "travelers": travelers,
+                                        "index": index,
+                                        "ownerId": details[index]['ownerId']
+                                      });
+                                    },
+                                    child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: <Widget>[
+                                          Container(
+                                            padding: EdgeInsets.all(5),
+                                            margin: EdgeInsets.only(top: 0),
+                                            decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                                color: Colors.transparent),
+                                            child: SvgPicture.asset(
+                                                'images/edit-icon.svg',
+                                                color: Colors.blueAccent,
+                                                width: 20,
+                                                height: 20),
+                                          ),
+                                          AutoSizeText('Edit travelers',
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.blueAccent))
+                                        ])),
+                              )))
+                      : Container(),
                   Container(
                       margin: EdgeInsets.symmetric(horizontal: 10),
                       child: ListView.separated(

@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -84,7 +85,6 @@ class TravelersModalState extends State<TravelersModal> {
   @override
   void initState() {
     super.initState();
-    print(this.travelers);
     if (this.travelers == null) {
       data = fetchTravelersModal(
         this.tripId,
@@ -123,11 +123,29 @@ class TravelersModalState extends State<TravelersModal> {
                 case ConnectionState.waiting:
                   return _buildLoadedBody(context, snapshot, true, '');
                 case ConnectionState.done:
-                  if (snapshot.hasData) {
+                  if (snapshot.hasData && snapshot.data.success) {
                     return _buildLoadedBody(
                         context, snapshot, false, this.tripId);
-                  } else if (snapshot.hasError) {
-                    return AutoSizeText('No Connection');
+                  } else if (snapshot.hasData &&
+                      snapshot.data.success == false) {
+                    return ErrorContainer(
+                      onRetry: () {
+                        if (this.travelers == null) {
+                          data = fetchTravelersModal(
+                            this.tripId,
+                          );
+                          data.then((data) {
+                            setState(() {
+                              this.travelers = data.travelers;
+                            });
+                          });
+                        } else {
+                          data = fetchTravelersModal(
+                            this.tripId,
+                          );
+                        }
+                      },
+                    );
                   }
               }
               return _buildLoadedBody(context, snapshot, true, '');
@@ -137,7 +155,9 @@ class TravelersModalState extends State<TravelersModal> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading, String id) {
-    var results = snapshot.hasData ? ['', ...this.travelers] : [''];
+    var results = snapshot.hasData && snapshot.data.success
+        ? ['', ...this.travelers]
+        : [''];
 
     return Scaffold(
         resizeToAvoidBottomPadding: false,

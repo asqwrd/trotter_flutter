@@ -87,6 +87,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - images/home_bg.jpeg
+    - images/comment-icon.svg
     - images/header.png
     - images/headerPreview.jpeg
     - images/trips.jpg
@@ -96,7 +97,10 @@ flutter:
     - images/trips-empty.jpg
     - images/notification-empty.jpg
     - images/error-icon.jpg
+    - images/error-icon.png
     - images/email-icon.jpg
+    - images/email-icon.png
+    - images/email-icon2.png
     - images/trips2.jpg
     - images/trips-login.png
     - images/trips-login.jpg

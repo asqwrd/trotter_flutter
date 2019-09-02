@@ -44,8 +44,8 @@ class ErrorContainer extends StatelessWidget {
                               borderRadius: BorderRadius.circular(130)),
                           decoration: BoxDecoration(
                               image: DecorationImage(
-                                  image: AssetImage('images/error-icon.jpg'),
-                                  fit: BoxFit.contain),
+                                  image: AssetImage('images/error-icon.png'),
+                                  fit: BoxFit.cover),
                               borderRadius: BorderRadius.circular(130))),
                       AutoSizeText(
                         'Uh Oh! our connection failed.',

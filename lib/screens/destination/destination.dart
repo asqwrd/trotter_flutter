@@ -173,8 +173,8 @@ class DestinationState extends State<Destination>
   @override
   Widget build(BuildContext context) {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     data.then((data) => {
           if (data.error != null)
             {
@@ -547,11 +547,11 @@ class DestinationState extends State<Destination>
                             vertical: 20.0, horizontal: 20.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: <Widget>[
                             Container(
                                 width: 100,
-                                height: 70,
+                                height: 85,
                                 margin: EdgeInsets.only(right: 20),
                                 child: ClipPath(
                                     clipper: ShapeBorderClipper(

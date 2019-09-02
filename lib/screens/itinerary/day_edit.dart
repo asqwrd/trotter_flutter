@@ -11,6 +11,7 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
+import 'package:trotter_flutter/widgets/comments/index.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/cannot-view.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -422,6 +423,19 @@ class DayEditState extends State<DayEdit> {
             'level': 'poi',
             'google_place': data['google_place']
           });
+        },
+        comments: true,
+        onCommentPressed: (itineraryItem) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  fullscreenDialog: true,
+                  builder: (context) => CommentsModal(
+                        itineraryId: this.itineraryId,
+                        dayId: this.dayId,
+                        currentUserId: store.currentUser.uid,
+                        itineraryItemId: itineraryItem['id'],
+                      )));
         },
       ),
       this.loading

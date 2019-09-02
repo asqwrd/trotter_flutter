@@ -441,8 +441,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                           borderRadius: BorderRadius.circular(130)),
                       decoration: BoxDecoration(
                           image: DecorationImage(
-                              image: AssetImage('images/email-icon.jpg'),
-                              fit: BoxFit.contain),
+                              image: AssetImage('images/email-icon2.png'),
+                              fit: BoxFit.cover),
                           borderRadius: BorderRadius.circular(130))),
                   AutoSizeText(
                     'Your missing details for ${destination["destination_name"]}',

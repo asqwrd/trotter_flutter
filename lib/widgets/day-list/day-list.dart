@@ -2,11 +2,13 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
 class DayList extends StatelessWidget {
   final String2VoidFunc onPressed;
   final Function(dynamic) onLongPressed;
+  final Function(dynamic) onCommentPressed;
   final Color color;
   final List<dynamic> items;
   final Function(String) callback;
@@ -18,11 +20,13 @@ class DayList extends StatelessWidget {
   @required
   final String header;
   final String subHeader;
+  final bool comments;
 
   //passing props in react style
   DayList(
       {this.onPressed,
       this.onLongPressed,
+      this.onCommentPressed,
       this.items,
       this.ownerId,
       this.callback,
@@ -32,6 +36,7 @@ class DayList extends StatelessWidget {
       this.height,
       this.header,
       this.subHeader,
+      this.comments,
       this.startLocation});
 
   @override
@@ -157,6 +162,11 @@ class DayList extends StatelessWidget {
             }
 
             var time = itineraryItems[index]['travel']['duration']['text'];
+            var totalComments = itineraryItems[index]['total_comments'] == 0
+                ? ''
+                : itineraryItems[index]['total_comments'] < 10
+                    ? itineraryItems[index]['total_comments']
+                    : '+9';
 
             return InkWell(
                 onLongPress: () {
@@ -173,17 +183,43 @@ class DayList extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          margin: EdgeInsets.only(bottom: 20),
-                          decoration: BoxDecoration(
-                              color: color,
-                              borderRadius: BorderRadius.circular(100)),
-                          child: Align(
-                              alignment: Alignment.topCenter,
-                              child: Icon(Icons.access_time,
-                                  color: fontContrast(color), size: 20)),
-                        ),
+                        Column(children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            margin: EdgeInsets.only(bottom: 20),
+                            decoration: BoxDecoration(
+                                color: color,
+                                borderRadius: BorderRadius.circular(100)),
+                            child: Align(
+                                alignment: Alignment.topCenter,
+                                child: Column(children: <Widget>[
+                                  Icon(Icons.access_time,
+                                      color: fontContrast(color), size: 20),
+                                ])),
+                          ),
+                          this.comments != null && this.comments == true
+                              ? InkWell(
+                                  borderRadius: BorderRadius.circular(100),
+                                  onTap: () {
+                                    this.onCommentPressed(
+                                        itineraryItems[index]);
+                                  },
+                                  child: Container(
+                                      padding: EdgeInsets.all(10),
+                                      child: Row(children: <Widget>[
+                                        AutoSizeText(
+                                          '$totalComments',
+                                          style: TextStyle(fontSize: 20),
+                                        ),
+                                        SvgPicture.asset(
+                                          "images/comment-icon.svg",
+                                          width: 25,
+                                          height: 25,
+                                          color: Colors.black,
+                                        )
+                                      ])))
+                              : Container()
+                        ]),
                         Flexible(
                             child: Container(
                                 margin: EdgeInsets.only(

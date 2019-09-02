@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:share/share.dart';
+import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -102,10 +103,19 @@ class TravelersSearchModalState extends State<TravelersSearchModal> {
                 case ConnectionState.waiting:
                   return _buildLoadedBody(context, snapshot, true);
                 case ConnectionState.done:
-                  if (snapshot.hasData) {
+                  if (snapshot.hasData && snapshot.data.success) {
                     return _buildLoadedBody(context, snapshot, false);
-                  } else if (snapshot.hasError) {
-                    return AutoSizeText('No Connection');
+                  } else if (snapshot.hasData &&
+                      snapshot.data.success == false) {
+                    return ErrorContainer(
+                      onRetry: () {
+                        setState(() {
+                          data = fetchSearchUsers(
+                            '',
+                          );
+                        });
+                      },
+                    );
                   }
               }
               return _buildLoadedBody(context, snapshot, true);
@@ -126,7 +136,9 @@ class TravelersSearchModalState extends State<TravelersSearchModal> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, AsyncSnapshot snapshot, bool isLoading) {
-    var results = snapshot.hasData ? ['', ...snapshot.data.travelers] : [''];
+    var results = snapshot.hasData && snapshot.data.success
+        ? ['', ...snapshot.data.travelers]
+        : [''];
     var timer;
     return Scaffold(
         resizeToAvoidBottomPadding: false,

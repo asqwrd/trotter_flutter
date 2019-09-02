@@ -924,9 +924,9 @@ class TripState extends State<Trip> {
 
   @override
   Widget build(BuildContext context) {
-    final double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    final double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    final double _panelHeightClosed = 100.0;
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
     }

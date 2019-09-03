@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
 class DayList extends StatelessWidget {
@@ -21,6 +22,7 @@ class DayList extends StatelessWidget {
   final String header;
   final String subHeader;
   final bool comments;
+  final List<GlobalKey> showCaseKeys;
 
   //passing props in react style
   DayList(
@@ -37,6 +39,7 @@ class DayList extends StatelessWidget {
       this.header,
       this.subHeader,
       this.comments,
+      this.showCaseKeys,
       this.startLocation});
 
   @override
@@ -198,26 +201,31 @@ class DayList extends StatelessWidget {
                                 ])),
                           ),
                           this.comments != null && this.comments == true
-                              ? InkWell(
-                                  borderRadius: BorderRadius.circular(100),
-                                  onTap: () {
-                                    this.onCommentPressed(
-                                        itineraryItems[index]);
-                                  },
-                                  child: Container(
-                                      padding: EdgeInsets.all(10),
-                                      child: Row(children: <Widget>[
-                                        AutoSizeText(
-                                          '$totalComments',
-                                          style: TextStyle(fontSize: 20),
-                                        ),
-                                        SvgPicture.asset(
-                                          "images/comment-icon.svg",
-                                          width: 25,
-                                          height: 25,
-                                          color: Colors.black,
-                                        )
-                                      ])))
+                              ? Showcase(
+                                  key: this.showCaseKeys[0],
+                                  descTextStyle: TextStyle(),
+                                  description:
+                                      'Click to write comments for itinerary items',
+                                  child: InkWell(
+                                      borderRadius: BorderRadius.circular(100),
+                                      onTap: () {
+                                        this.onCommentPressed(
+                                            itineraryItems[index]);
+                                      },
+                                      child: Container(
+                                          padding: EdgeInsets.all(10),
+                                          child: Row(children: <Widget>[
+                                            AutoSizeText(
+                                              '$totalComments',
+                                              style: TextStyle(fontSize: 20),
+                                            ),
+                                            SvgPicture.asset(
+                                              "images/comment-icon.svg",
+                                              width: 25,
+                                              height: 25,
+                                              color: Colors.black,
+                                            )
+                                          ]))))
                               : Container()
                         ]),
                         Flexible(
@@ -336,95 +344,105 @@ class DayList extends StatelessWidget {
                                             )
                                           ])),
                                   item['image'].isEmpty == false
-                                      ? Card(
-                                          //opacity: 1,
-                                          elevation: 1,
-                                          margin: EdgeInsets.only(top: 15),
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(15)),
-                                          child: Container(
-                                            height: 200,
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width -
-                                                105,
-                                            child: ClipPath(
-                                                clipper: ShapeBorderClipper(
-                                                    shape:
-                                                        RoundedRectangleBorder(
+                                      ? Showcase(
+                                          key: this.showCaseKeys[1],
+                                          descTextStyle: TextStyle(),
+                                          description:
+                                              'Click to view details about itinerary item',
+                                          child: Card(
+                                              //opacity: 1,
+                                              elevation: 1,
+                                              margin: EdgeInsets.only(top: 15),
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          15)),
+                                              child: Container(
+                                                height: 200,
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width -
+                                                    105,
+                                                child: ClipPath(
+                                                    clipper: ShapeBorderClipper(
+                                                        shape: RoundedRectangleBorder(
                                                             borderRadius:
                                                                 BorderRadius
                                                                     .circular(
                                                                         15))),
-                                                child: item['image'] != null
-                                                    ? Stack(
-                                                        fit: StackFit.expand,
-                                                        children: <Widget>[
-                                                            TransitionToImage(
-                                                              image:
-                                                                  AdvancedNetworkImage(
-                                                                item['image'],
-                                                                useDiskCache:
-                                                                    true,
-                                                                cacheRule: CacheRule(
-                                                                    maxAge: const Duration(
-                                                                        days:
-                                                                            7)),
-                                                              ),
-                                                              loadingWidgetBuilder: (BuildContext
-                                                                          context,
-                                                                      double
-                                                                          progress,
-                                                                      test) =>
-                                                                  Center(
-                                                                      child:
-                                                                          RefreshProgressIndicator(
-                                                                backgroundColor:
-                                                                    Colors
-                                                                        .white,
-                                                              )),
-                                                              fit: BoxFit.cover,
-                                                              alignment:
-                                                                  Alignment
-                                                                      .center,
-                                                              placeholder:
-                                                                  const Icon(Icons
-                                                                      .refresh),
-                                                              enableRefresh:
-                                                                  true,
-                                                            ),
-                                                            item['added_by_full'] !=
-                                                                    null
-                                                                ? Positioned(
-                                                                    width: 40,
-                                                                    height: 40,
-                                                                    bottom: 10,
-                                                                    right: 10,
-                                                                    child: Container(
-                                                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(100), border: Border.all(width: 2, color: Colors.white)),
-                                                                        child: CircleAvatar(
-                                                                            backgroundImage: AdvancedNetworkImage(
-                                                                          item['added_by_full']
-                                                                              [
-                                                                              'photoUrl'],
-                                                                          useDiskCache:
-                                                                              true,
-                                                                          cacheRule:
-                                                                              CacheRule(maxAge: const Duration(days: 7)),
-                                                                        ))),
-                                                                  )
-                                                                : Container()
-                                                          ])
-                                                    : Container(
-                                                        decoration:
-                                                            BoxDecoration(
-                                                        image: DecorationImage(
-                                                            image: AssetImage(
-                                                                'images/placeholder.png'),
-                                                            fit: BoxFit.cover),
-                                                      ))),
-                                          ))
+                                                    child: item['image'] != null
+                                                        ? Stack(
+                                                            fit:
+                                                                StackFit.expand,
+                                                            children: <Widget>[
+                                                                TransitionToImage(
+                                                                  image:
+                                                                      AdvancedNetworkImage(
+                                                                    item[
+                                                                        'image'],
+                                                                    useDiskCache:
+                                                                        true,
+                                                                    cacheRule: CacheRule(
+                                                                        maxAge: const Duration(
+                                                                            days:
+                                                                                7)),
+                                                                  ),
+                                                                  loadingWidgetBuilder: (BuildContext
+                                                                              context,
+                                                                          double
+                                                                              progress,
+                                                                          test) =>
+                                                                      Center(
+                                                                          child:
+                                                                              RefreshProgressIndicator(
+                                                                    backgroundColor:
+                                                                        Colors
+                                                                            .white,
+                                                                  )),
+                                                                  fit: BoxFit
+                                                                      .cover,
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .center,
+                                                                  placeholder:
+                                                                      const Icon(
+                                                                          Icons
+                                                                              .refresh),
+                                                                  enableRefresh:
+                                                                      true,
+                                                                ),
+                                                                item['added_by_full'] !=
+                                                                        null
+                                                                    ? Positioned(
+                                                                        width:
+                                                                            40,
+                                                                        height:
+                                                                            40,
+                                                                        bottom:
+                                                                            10,
+                                                                        right:
+                                                                            10,
+                                                                        child: Container(
+                                                                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(100), border: Border.all(width: 2, color: Colors.white)),
+                                                                            child: CircleAvatar(
+                                                                                backgroundImage: AdvancedNetworkImage(
+                                                                              item['added_by_full']['photoUrl'],
+                                                                              useDiskCache: true,
+                                                                              cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                                                                            ))),
+                                                                      )
+                                                                    : Container()
+                                                              ])
+                                                        : Container(
+                                                            decoration:
+                                                                BoxDecoration(
+                                                            image: DecorationImage(
+                                                                image: AssetImage(
+                                                                    'images/placeholder.png'),
+                                                                fit: BoxFit
+                                                                    .cover),
+                                                          ))),
+                                              )))
                                       : Container()
                                 ])))
                       ],

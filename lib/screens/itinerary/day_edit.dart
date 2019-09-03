@@ -7,6 +7,8 @@ import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:location/location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -68,6 +70,12 @@ class DayEditState extends State<DayEdit> {
   TrotterStore store;
   bool canView = true;
 
+  GlobalKey _one = GlobalKey();
+  GlobalKey _two = GlobalKey();
+  GlobalKey _three = GlobalKey();
+  GlobalKey _four = GlobalKey();
+  GlobalKey _five = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -86,7 +94,6 @@ class DayEditState extends State<DayEdit> {
           setState(() {
             this.canView = data.itinerary['travelers']
                 .any((traveler) => store.currentUser.uid == traveler);
-            print('canView = ${this.canView}');
             this.color = Color(hexStringToHexInt(data.color));
             this.itineraryName = data.itinerary['name'];
             this.ownerId = data.itinerary['owner_id'];
@@ -141,10 +148,16 @@ class DayEditState extends State<DayEdit> {
         backdropColor: color,
         backdropTapClosesPanel: false,
         backdropOpacity: .8,
-        onPanelOpened: () {
+        onPanelOpened: () async {
           setState(() {
             disableScroll = false;
           });
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          final String cacheData = prefs.getString('dayEditShowcase') ?? null;
+          if (cacheData == null) {
+            ShowCaseWidget.startShowCase(context, [_one, _two, _three]);
+            await prefs.setString('dayEditShowcase', "true");
+          }
         },
         onPanelClosed: () {
           setState(() {
@@ -304,68 +317,74 @@ class DayEditState extends State<DayEdit> {
                         width: 70,
                         height: 70,
                         margin: EdgeInsets.symmetric(horizontal: 0),
-                        child: FlatButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100)),
-                          onPressed: () async {
-                            final store = Provider.of<TrotterStore>(context);
-                            var suggestion = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) => SearchModal(
-                                        query: '',
-                                        destinationName: this.destinationName,
-                                        location: this.location,
-                                        near: this.currentPosition != null
-                                            ? this.currentPosition
-                                            : this.startLocation,
-                                        id: this.destinationId)));
-                            if (suggestion != null) {
-                              var poi = suggestion;
-                              poi['image'] = suggestion['image_hd'];
-                              var data = {
-                                "poi": poi,
-                                "title": "",
-                                "description": "",
-                                "time": {"value": "", "unit": ""},
-                                "poi_id": poi['id'],
-                                "added_by": store.currentUser.uid
-                              };
+                        child: Showcase(
+                            key: _one,
+                            description:
+                                'Click here to search for places to add',
+                            child: FlatButton(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100)),
+                              onPressed: () async {
+                                final store =
+                                    Provider.of<TrotterStore>(context);
+                                var suggestion = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        fullscreenDialog: true,
+                                        builder: (context) => SearchModal(
+                                            query: '',
+                                            destinationName:
+                                                this.destinationName,
+                                            location: this.location,
+                                            near: this.currentPosition != null
+                                                ? this.currentPosition
+                                                : this.startLocation,
+                                            id: this.destinationId)));
+                                if (suggestion != null) {
+                                  var poi = suggestion;
+                                  poi['image'] = suggestion['image_hd'];
+                                  var data = {
+                                    "poi": poi,
+                                    "title": "",
+                                    "description": "",
+                                    "time": {"value": "", "unit": ""},
+                                    "poi_id": poi['id'],
+                                    "added_by": store.currentUser.uid
+                                  };
 
-                              setState(() {
-                                this.loading = true;
-                              });
+                                  setState(() {
+                                    this.loading = true;
+                                  });
 
-                              var response = await addToDay(
-                                  store,
-                                  this.itineraryId,
-                                  this.dayId,
-                                  this.destinationId,
-                                  data,
-                                  false);
-                              setState(() {
-                                this.color =
-                                    Color(hexStringToHexInt(response.color));
-                                this.destinationName =
-                                    response.destination['name'];
-                                this.location =
-                                    response.destination['location'];
-                                this.destinationId =
-                                    response.destination['id'].toString();
-                                this.itineraryItems =
-                                    response.day['itinerary_items'];
-                                this.loading = false;
-                              });
-                            }
-                          },
-                          child: SvgPicture.asset(
-                              "images/add-location-bold.svg",
-                              width: 35,
-                              height: 35,
-                              color: fontContrast(color),
-                              fit: BoxFit.cover),
-                        ))
+                                  var response = await addToDay(
+                                      store,
+                                      this.itineraryId,
+                                      this.dayId,
+                                      this.destinationId,
+                                      data,
+                                      false);
+                                  setState(() {
+                                    this.color = Color(
+                                        hexStringToHexInt(response.color));
+                                    this.destinationName =
+                                        response.destination['name'];
+                                    this.location =
+                                        response.destination['location'];
+                                    this.destinationId =
+                                        response.destination['id'].toString();
+                                    this.itineraryItems =
+                                        response.day['itinerary_items'];
+                                    this.loading = false;
+                                  });
+                                }
+                              },
+                              child: SvgPicture.asset(
+                                  "images/add-location-bold.svg",
+                                  width: 35,
+                                  height: 35,
+                                  color: fontContrast(color),
+                                  fit: BoxFit.cover),
+                            )))
                     : Container()
               ],
               back: true)),
@@ -427,6 +446,7 @@ class DayEditState extends State<DayEdit> {
           });
         },
         comments: true,
+        showCaseKeys: [_two, _three],
         onCommentPressed: (itineraryItem) async {
           final totalComments = await Navigator.push(
               context,

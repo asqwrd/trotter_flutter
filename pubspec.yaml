@@ -20,6 +20,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
   auto_size_text: ^2.1.0
+  showcaseview: ^0.1.2
   duration: ^2.0.8
   firebase_dynamic_links: ^0.5.0
   flutter_store: ^1.0.0+4

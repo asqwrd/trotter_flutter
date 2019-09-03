@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:showcaseview/showcaseview.dart';
 
 Future<HomeData> fetchHome([bool refresh]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -58,7 +59,6 @@ Future<HomeData> fetchHome([bool refresh]) async {
 }
 
 Future<HomeItinerariesData> fetchHomeItineraries() async {
-  print(ApiDomain);
   try {
     final response = await http.get(
         '$ApiDomain/api/itineraries/all?public=true',
@@ -147,6 +147,8 @@ class HomeState extends State<Home> {
   List<dynamic> itineraries = [];
   int totalPublic = 0;
   final Color color = Color.fromRGBO(216, 167, 177, 1);
+  GlobalKey _one = GlobalKey();
+
   @override
   void initState() {
     _sc.addListener(() {
@@ -188,6 +190,7 @@ class HomeState extends State<Home> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
+
     dataItineraries.then((data) => {
           if (data.error == null)
             {
@@ -224,10 +227,16 @@ class HomeState extends State<Home> {
         backdropColor: color,
         backdropTapClosesPanel: false,
         backdropOpacity: .8,
-        onPanelOpened: () {
+        onPanelOpened: () async {
           setState(() {
             disableScroll = false;
           });
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          final String cacheData = prefs.getString('homeShowcase') ?? null;
+          if (cacheData == null) {
+            ShowCaseWidget.startShowCase(context, [_one]);
+            await prefs.setString('homeShowcase', "true");
+          }
         },
         onPanelClosed: () {
           setState(() {
@@ -468,20 +477,24 @@ class HomeState extends State<Home> {
                       width: double.infinity,
                       margin: EdgeInsets.only(bottom: 30.0),
                       child: TopListLoading())
-                  : TopList(
-                      items: popularCities,
-                      onPressed: (data) {
-                        onPush({'id': data['id'], 'level': data['level']});
-                      },
-                      onLongPressed: (data) {
-                        var currentUser = store.currentUser;
-                        if (currentUser == null) {
-                          loginBottomSheet(context, data, color);
-                        } else {
-                          bottomSheetModal(context, data['poi']);
-                        }
-                      },
-                      header: "Trending cities"),
+                  : Showcase(
+                      key: _one,
+                      description:
+                          'Tap a thumbnail go to view more info. Press and hold on the thumbnail to bring up menu items for creating trips.',
+                      child: TopList(
+                          items: popularCities,
+                          onPressed: (data) {
+                            onPush({'id': data['id'], 'level': data['level']});
+                          },
+                          onLongPressed: (data) {
+                            var currentUser = store.currentUser;
+                            if (currentUser == null) {
+                              loginBottomSheet(context, data, color);
+                            } else {
+                              bottomSheetModal(context, data['poi']);
+                            }
+                          },
+                          header: "Trending cities")),
               snapshot.connectionState == ConnectionState.waiting
                   ? Container(
                       width: double.infinity,

@@ -6,6 +6,8 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -42,6 +44,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   String itineraryName;
   Future<ItineraryData> data;
   int startDate = 0;
+  GlobalKey _one = GlobalKey();
 
   @override
   void initState() {
@@ -69,6 +72,15 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String cacheData =
+          prefs.getString('itineraryBuilderShowcase') ?? null;
+      if (cacheData == null) {
+        ShowCaseWidget.startShowCase(context, [_one]);
+        await prefs.setString('itineraryBuilderShowcase', "true");
+      }
+    });
     final store = Provider.of<TrotterStore>(context);
     data.then((res) {
       if (res.error != null) {
@@ -177,46 +189,52 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                     width: 50,
                     height: 50,
                     margin: EdgeInsets.symmetric(horizontal: 0),
-                    child: FlatButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100)),
-                      onPressed: () async {
-                        final store = Provider.of<TrotterStore>(context);
+                    child: Showcase(
+                        key: _one,
+                        descTextStyle: TextStyle(),
+                        description:
+                            'Click here to open a modal to select start location',
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100)),
+                          onPressed: () async {
+                            final store = Provider.of<TrotterStore>(context);
 
-                        var latlng = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                fullscreenDialog: true,
-                                builder: (context) => StartLocationModal(
-                                      hotels: this.hotels,
-                                      destination: this.destination,
-                                    )));
-                        print(latlng);
-                        if (latlng != null) {
-                          final response = await updateStartLocation(
-                              this.itineraryId, latlng, store);
-                          if (response.success == true) {
-                            Scaffold.of(context).showSnackBar(SnackBar(
-                              content: AutoSizeText('Updated start location',
-                                  style: TextStyle(fontSize: 13)),
-                              duration: Duration(seconds: 5),
-                            ));
-                          } else {
-                            Scaffold.of(context).showSnackBar(SnackBar(
-                              content: AutoSizeText(
-                                  'Failed to update start location',
-                                  style: TextStyle(fontSize: 13)),
-                              duration: Duration(seconds: 5),
-                            ));
-                          }
-                        }
-                      },
-                      child: SvgPicture.asset("images/place-icon.svg",
-                          width: 25.0,
-                          height: 25.0,
-                          //color: fontContrast(color),
-                          fit: BoxFit.cover),
-                    )),
+                            var latlng = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => StartLocationModal(
+                                          hotels: this.hotels,
+                                          destination: this.destination,
+                                        )));
+
+                            if (latlng != null) {
+                              final response = await updateStartLocation(
+                                  this.itineraryId, latlng, store);
+                              if (response.success == true) {
+                                Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: AutoSizeText(
+                                      'Updated start location',
+                                      style: TextStyle(fontSize: 13)),
+                                  duration: Duration(seconds: 5),
+                                ));
+                              } else {
+                                Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: AutoSizeText(
+                                      'Failed to update start location',
+                                      style: TextStyle(fontSize: 13)),
+                                  duration: Duration(seconds: 5),
+                                ));
+                              }
+                            }
+                          },
+                          child: SvgPicture.asset("images/place-icon.svg",
+                              width: 25.0,
+                              height: 25.0,
+                              //color: fontContrast(color),
+                              fit: BoxFit.cover),
+                        ))),
               ],
               back: true)),
     ]);

@@ -5,6 +5,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
@@ -257,16 +258,20 @@ class AppStateWidget extends State<App> {
         body: Stack(children: <Widget>[
           Focus(
               focusNode: store.explore,
-              child: _buildOffstageNavigator(TabItem.explore)),
+              child: ShowCaseWidget(
+                  child: _buildOffstageNavigator(TabItem.explore))),
           Focus(
               focusNode: store.trips,
-              child: _buildOffstageNavigator(TabItem.trips)),
+              child: ShowCaseWidget(
+                  child: _buildOffstageNavigator(TabItem.trips))),
           Focus(
               focusNode: store.notification,
-              child: _buildOffstageNavigator(TabItem.notifications)),
+              child: ShowCaseWidget(
+                  child: _buildOffstageNavigator(TabItem.notifications))),
           Focus(
               focusNode: store.profile,
-              child: _buildOffstageNavigator(TabItem.profile)),
+              child: ShowCaseWidget(
+                  child: _buildOffstageNavigator(TabItem.profile))),
         ]),
         bottomNavigationBar: BottomNavigation(
             currentTab: currentTab,

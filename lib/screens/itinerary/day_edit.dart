@@ -73,8 +73,6 @@ class DayEditState extends State<DayEdit> {
   GlobalKey _one = GlobalKey();
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
-  GlobalKey _four = GlobalKey();
-  GlobalKey _five = GlobalKey();
 
   @override
   void initState() {

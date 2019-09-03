@@ -166,7 +166,7 @@ class DayList extends StatelessWidget {
                 ? ''
                 : itineraryItems[index]['total_comments'] < 10
                     ? itineraryItems[index]['total_comments']
-                    : '+9';
+                    : '9+';
 
             return InkWell(
                 onLongPress: () {

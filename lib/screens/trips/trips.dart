@@ -13,6 +13,7 @@ import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:trotter_flutter/widgets/comments/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:share/share.dart';
 
@@ -95,8 +96,29 @@ class TripsState extends State<Trips> {
         if (event.tab == TabItem.trips) {
           // add mark notification as read if it makes it to the page
           final eventdata = event.data;
-          fetchTrips(store);
-          onPush(eventdata);
+          if (eventdata['level'] == 'comments') {
+            await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (context) => CommentsModal(
+                        itineraryId: eventdata['itineraryId'],
+                        dayId: eventdata['dayId'],
+                        tripId: eventdata['tripId'],
+                        currentUserId: store.currentUser.uid,
+                        itineraryItemId: eventdata['itineraryItemId'],
+                        title:
+                            '${eventdata['itineraryName']} - ${eventdata['itineraryItemName']}')));
+            onPush({
+              "itineraryId": eventdata['itineraryId'],
+              "dayId": eventdata['dayId'],
+              "startLocation": eventdata['startLocation'],
+              'level': 'itinerary/day/edit'
+            });
+          } else {
+            fetchTrips(store);
+            onPush(eventdata);
+          }
         }
       });
       setState(() {

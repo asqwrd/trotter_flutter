@@ -59,6 +59,7 @@ class DayEditState extends State<DayEdit> {
   bool loading = true;
   String image;
   String ownerId;
+  String tripId;
   String itineraryName;
   dynamic currentPosition;
   int startDate;
@@ -89,6 +90,7 @@ class DayEditState extends State<DayEdit> {
             this.color = Color(hexStringToHexInt(data.color));
             this.itineraryName = data.itinerary['name'];
             this.ownerId = data.itinerary['owner_id'];
+            this.tripId = data.itinerary['trip_id'];
             this.startDate = data.itinerary['start_date'] * 1000;
             this.destinationName = data.destination['name'];
             this.location = data.destination['location'];
@@ -425,17 +427,22 @@ class DayEditState extends State<DayEdit> {
           });
         },
         comments: true,
-        onCommentPressed: (itineraryItem) {
-          Navigator.push(
+        onCommentPressed: (itineraryItem) async {
+          final totalComments = await Navigator.push(
               context,
               MaterialPageRoute(
                   fullscreenDialog: true,
                   builder: (context) => CommentsModal(
-                        itineraryId: this.itineraryId,
-                        dayId: this.dayId,
-                        currentUserId: store.currentUser.uid,
-                        itineraryItemId: itineraryItem['id'],
-                      )));
+                      itineraryId: this.itineraryId,
+                      dayId: this.dayId,
+                      tripId: this.tripId,
+                      currentUserId: store.currentUser.uid,
+                      itineraryItemId: itineraryItem['id'],
+                      title:
+                          '${this.itineraryName} - ${itineraryItem['poi']['name']}')));
+          setState(() {
+            itineraryItem['total_comments'] = totalComments['total_comments'];
+          });
         },
       ),
       this.loading

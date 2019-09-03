@@ -228,6 +228,18 @@ class NotificationsState extends State<Notifications> {
                       Navigator.pop(context);
                     })
                 : Container(),
+            type == 'user_comment'
+                ? new ListTile(
+                    leading: new Icon(EvilIcons.arrow_right),
+                    title: new AutoSizeText('Go to comments'),
+                    onTap: () async {
+                      var results = FocusChangeEvent(
+                          tab: TabItem.trips, data: data['navigationData']);
+                      store.eventBus.fire(results);
+                      await markNotificationRead(notificationId, store);
+                      Navigator.pop(context);
+                    })
+                : Container(),
             type == 'user_day'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.arrow_right),
@@ -269,6 +281,7 @@ class NotificationsState extends State<Notifications> {
       case 'user_trip':
       case 'user_trip_remove':
       case 'user_day':
+      case 'user_comment':
         return Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100),

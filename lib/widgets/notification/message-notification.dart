@@ -51,6 +51,7 @@ class MessageNotification extends StatelessWidget {
       case 'user_trip':
       case 'user_trip_remove':
       case 'user_day':
+      case 'user_comment':
         return Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100),

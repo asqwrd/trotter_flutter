@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:loadmore/loadmore.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
@@ -14,14 +16,13 @@ import 'package:trotter_flutter/globals.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 Future<CommentsData> fetchCommentsModal(
-    String dayId, String itineraryId, String itineraryItemId) async {
+    String dayId, String itineraryId, String itineraryItemId,
+    [String last]) async {
   try {
     var response;
-    print(
-        '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/comments');
 
     response = await http.get(
-        '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/comments',
+        '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/comments?last=$last',
         headers: {'Authorization': 'security'});
 
     if (response.statusCode == 200) {
@@ -36,34 +37,79 @@ Future<CommentsData> fetchCommentsModal(
   }
 }
 
+Future<CommentData> postCommentsModal(String dayId, String itineraryId,
+    String itineraryItemId, String tripId, dynamic data) async {
+  try {
+    var response;
+    response = await http.post(
+        '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/comments/add?tripId=$tripId',
+        headers: {'Authorization': 'security'},
+        body: json.encode(data));
+
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return CommentData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      return CommentData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    return CommentData(success: false);
+  }
+}
+
 class CommentsData {
   final List<dynamic> comments;
+  final int total;
   final bool success;
 
-  CommentsData({this.comments, this.success});
+  CommentsData({this.comments, this.total, this.success});
 
   factory CommentsData.fromJson(Map<String, dynamic> json) {
-    return CommentsData(comments: json['comments'], success: true);
+    return CommentsData(
+        comments: json['comments'],
+        total: json['total_comments']['total'],
+        success: true);
+  }
+}
+
+class CommentData {
+  final dynamic comment;
+  final dynamic total;
+  final bool success;
+
+  CommentData({this.comment, this.total, this.success});
+
+  factory CommentData.fromJson(Map<String, dynamic> json) {
+    return CommentData(
+        comment: json['comment'], total: json['total'], success: true);
   }
 }
 
 class CommentsModal extends StatefulWidget {
   final String dayId;
   final String itineraryId;
+  final String tripId;
   final String itineraryItemId;
   final String currentUserId;
+  final String title;
 
   CommentsModal({
     Key key,
     @required this.itineraryId,
     @required this.itineraryItemId,
     @required this.dayId,
+    @required this.tripId,
+    @required this.title,
     @required this.currentUserId,
   }) : super(key: key);
   @override
   CommentsModalState createState() => new CommentsModalState(
         dayId: this.dayId,
         itineraryId: this.itineraryId,
+        tripId: this.tripId,
+        title: this.title,
         itineraryItemId: this.itineraryItemId,
         currentUserId: this.currentUserId,
       );
@@ -73,20 +119,25 @@ class CommentsModalState extends State<CommentsModal> {
   final String itineraryId;
   final String itineraryItemId;
   final String dayId;
-  final int totalComments;
+  final String tripId;
+  final String title;
   final String currentUserId;
   List<dynamic> comments = [];
+  int total = 0;
   dynamic data;
   var txt = new TextEditingController();
+  var _sc = new ScrollController();
 
   @override
   void initState() {
     super.initState();
     setState(() {
       data = fetchCommentsModal(
-          this.dayId, this.itineraryId, this.itineraryItemId);
+          this.dayId, this.itineraryId, this.itineraryItemId, '');
       data.then((res) {
+        print(res.total);
         this.comments = res.comments;
+        this.total = res.total;
       });
     });
   }
@@ -95,48 +146,54 @@ class CommentsModalState extends State<CommentsModal> {
     this.itineraryId,
     this.itineraryItemId,
     this.dayId,
-    this.totalComments,
+    this.tripId,
+    this.title,
     this.currentUserId,
   });
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-        resizeToAvoidBottomPadding: false,
-        body: FutureBuilder(
-            future: data,
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.none:
-                  return AutoSizeText('Press button to start.');
-                case ConnectionState.active:
-                case ConnectionState.waiting:
-                  return _buildLoadedBody(context, snapshot, true);
-                case ConnectionState.done:
-                  if (snapshot.hasData && snapshot.data.success) {
-                    return _buildLoadedBody(context, snapshot, false);
-                  } else if (snapshot.hasData &&
-                      snapshot.data.success == false) {
-                    return ErrorContainer(
-                      onRetry: () {
-                        if (this.comments == null) {
-                          data = fetchCommentsModal(this.dayId,
-                              this.itineraryId, this.itineraryItemId);
-                          data.then((data) {
-                            setState(() {
-                              this.comments = data.comments;
-                            });
-                          });
-                        } else {
-                          data = fetchCommentsModal(this.dayId,
-                              this.itineraryId, this.itineraryItemId);
-                        }
-                      },
-                    );
+    return WillPopScope(
+        onWillPop: () {
+          Navigator.pop(context, {"total_comments": this.comments.length});
+          return;
+        },
+        child: Scaffold(
+            resizeToAvoidBottomPadding: false,
+            body: FutureBuilder(
+                future: data,
+                builder: (context, snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.none:
+                      return AutoSizeText('Press button to start.');
+                    case ConnectionState.active:
+                    case ConnectionState.waiting:
+                      return _buildLoadedBody(context, snapshot, true);
+                    case ConnectionState.done:
+                      if (snapshot.hasData && snapshot.data.success) {
+                        return _buildLoadedBody(context, snapshot, false);
+                      } else if (snapshot.hasData &&
+                          snapshot.data.success == false) {
+                        return ErrorContainer(
+                          onRetry: () {
+                            if (this.comments == null) {
+                              data = fetchCommentsModal(this.dayId,
+                                  this.itineraryId, this.itineraryItemId);
+                              data.then((data) {
+                                setState(() {
+                                  this.comments = data.comments;
+                                });
+                              });
+                            } else {
+                              data = fetchCommentsModal(this.dayId,
+                                  this.itineraryId, this.itineraryItemId);
+                            }
+                          },
+                        );
+                      }
                   }
-              }
-              return _buildLoadedBody(context, snapshot, true);
-            }));
+                  return _buildLoadedBody(context, snapshot, true);
+                })));
   }
 
 // function for rendering view after data is loaded
@@ -154,24 +211,47 @@ class CommentsModalState extends State<CommentsModal> {
             : Column(children: <Widget>[
                 renderTopBar(),
                 Flexible(
-                    child: ListView.builder(
-                  itemCount: results.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final user = TrotterUser.fromJson(results[index]['user']);
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: AdvancedNetworkImage(user.photoUrl,
-                            useDiskCache: true,
-                            cacheRule: CacheRule(maxAge: Duration(days: 1))),
-                      ),
-                      title: AutoSizeText(user.displayName),
-                      subtitle: AutoSizeText(results[index]['msg']),
-                      trailing: AutoSizeText(timeago.format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              results[index]['created_at']))),
-                    );
-                  },
-                )),
+                    child: Stack(fit: StackFit.expand, children: <Widget>[
+                  LoadMore(
+                      delegate: TrotterLoadMoreDelegate(Colors.blueAccent),
+                      isFinish: this.comments.length >= this.total,
+                      onLoadMore: () async {
+                        if (this.comments.length > 0) {
+                          var last = this
+                              .comments[this.comments.length - 1]['created_at']
+                              .toString();
+                          print(last);
+                          var res = await fetchCommentsModal(this.dayId,
+                              this.itineraryId, this.itineraryItemId, last);
+                          setState(() {
+                            this.comments = this.comments..addAll(res.comments);
+                          });
+                        }
+                        return true;
+                      },
+                      child: ListView.builder(
+                        controller: _sc,
+                        itemCount: results.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final user =
+                              TrotterUser.fromJson(results[index]['user']);
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: AdvancedNetworkImage(
+                                  user.photoUrl,
+                                  useDiskCache: true,
+                                  cacheRule:
+                                      CacheRule(maxAge: Duration(days: 1))),
+                            ),
+                            title: AutoSizeText(user.displayName),
+                            subtitle: AutoSizeText(results[index]['msg']),
+                            trailing: AutoSizeText(timeago.format(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    results[index]['created_at']))),
+                          );
+                        },
+                      ))
+                ])),
                 Container(
                   decoration: BoxDecoration(
                       border: Border(
@@ -193,16 +273,34 @@ class CommentsModalState extends State<CommentsModal> {
                     )),
                     trailing: IconButton(
                       icon: Icon(SimpleLineIcons.paper_plane),
-                      onPressed: () {
+                      onPressed: () async {
                         final store = Provider.of<TrotterStore>(ctxt);
-                        setState(() {
-                          this.comments.add({
-                            "msg": txt.text,
-                            "created_at": DateTime.now().millisecondsSinceEpoch,
-                            "user": store.currentUser
+                        final data = {
+                          "msg": txt.text,
+                          "created_at": DateTime.now().millisecondsSinceEpoch,
+                          "user": {
+                            "uid": store.currentUser.uid,
+                            "photoUrl": store.currentUser.photoUrl,
+                            "email": store.currentUser.email,
+                            "phoneNumber": store.currentUser.phoneNumber,
+                            "displayName": store.currentUser.displayName
+                          }
+                        };
+                        final response = await postCommentsModal(
+                            this.dayId,
+                            this.itineraryId,
+                            this.itineraryItemId,
+                            this.tripId,
+                            data);
+                        if (response.success == true) {
+                          setState(() {
+                            this.comments.add(response.comment);
+                            txt.clear();
+                            _sc.animateTo(MediaQuery.of(context).size.height,
+                                duration: Duration(milliseconds: 1000),
+                                curve: Curves.ease);
                           });
-                          txt.clear();
-                        });
+                        }
                       },
                     ),
                   ),
@@ -226,13 +324,15 @@ class CommentsModalState extends State<CommentsModal> {
                     IconButton(
                       icon: Icon(Icons.close),
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(
+                            context, {"total_comments": this.comments.length});
                       },
                       iconSize: 25,
                       color: Colors.black,
                     ),
                     AutoSizeText(
-                      'Comments',
+                      this.title,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w300,

@@ -20,7 +20,6 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:queries/collections.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'add-destination-modal.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';

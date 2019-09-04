@@ -4,12 +4,12 @@ import 'package:flutter_store/flutter_store.dart';
 import 'dart:core';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
+import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
 
 class CreateTrip extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
@@ -34,6 +34,7 @@ class CreateTripState extends State<CreateTrip> {
   var destinationsCount = 0;
   List<Widget> fields;
   final nameController = TextEditingController();
+  final datesController = TextEditingController();
   bool loading;
   ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
@@ -45,6 +46,7 @@ class CreateTripState extends State<CreateTrip> {
   void dispose() {
     // Clean up the controller when the Widget is removed from the Widget tree
     nameController.dispose();
+    datesController.dispose();
     _sc.dispose();
     super.dispose();
   }
@@ -383,27 +385,52 @@ class CreateTripState extends State<CreateTrip> {
                   //this._destinationImages.insert(index, suggestion["image"]);
                 }
               })),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Flexible(
-              child: Container(
-                  margin: EdgeInsets.only(
-                      left: 20.0, right: 10, top: 20.0, bottom: 0),
-                  child: DateTimePickerFormField(
-                    format: dateFormat,
-                    inputType: InputType.date,
-                    editable: false,
-                    firstDate: DateTime.now(),
+      InkWell(
+          onTap: () async {
+            final List<DateTime> picked = await DateRagePicker.showDatePicker(
+                context: context,
+                initialFirstDate: new DateTime.now(),
+                initialLastDate:
+                    (new DateTime.now()).add(new Duration(days: 7)),
+                firstDate: new DateTime(DateTime.now().year,
+                    DateTime.now().month, DateTime.now().day, 0, 0, 0, 0),
+                lastDate: new DateTime(2021));
+            if (picked != null && picked.length == 2) {
+              print(picked);
+
+              setState(() {
+                datesController.text =
+                    '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
+                if (this._destinations.length > 0 && picked != null) {
+                  var startDate = picked[0].millisecondsSinceEpoch / 1000;
+                  this._destinations[index]['start_date'] = startDate.toInt();
+                  var endDate = picked[1].millisecondsSinceEpoch / 1000;
+                  this._destinations[index]['end_date'] = endDate.toInt();
+                } else if (picked != null) {
+                  var startDate = picked[0].millisecondsSinceEpoch / 1000;
+                  var endDate = picked[1].millisecondsSinceEpoch / 1000;
+                  this._destinations.insert(index, {
+                    "start_date": startDate.toInt(),
+                    "end_date": endDate.toInt(),
+                  });
+                }
+              });
+            }
+          },
+          child: Container(
+              margin: EdgeInsets.only(left: 20, right: 20, top: 20),
+              child: IgnorePointer(
+                  ignoring: true,
+                  child: TextFormField(
+                    maxLengthEnforced: true,
                     decoration: InputDecoration(
-                      hintText: 'Arrival',
-                      hintStyle: TextStyle(fontSize: 13),
                       contentPadding: EdgeInsets.symmetric(vertical: 20.0),
                       prefixIcon: Padding(
                           padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                          child: Icon(Icons.calendar_today, size: 15)),
-                      //fillColor: Colors.blueGrey.withOpacity(0.5),
+                          child: Icon(
+                            Icons.calendar_today,
+                            size: 15,
+                          )),
                       filled: true,
                       errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
@@ -421,90 +448,17 @@ class CreateTripState extends State<CreateTrip> {
                           borderRadius: BorderRadius.all(Radius.circular(5.0)),
                           borderSide: BorderSide(
                               width: 0.0, color: Colors.transparent)),
-                    ),
-                    onChanged: (dt) {
-                      setState(() {
-                        if (this._destinations.length > 0 && dt != null) {
-                          var startDate = dt.millisecondsSinceEpoch / 1000;
-                          this._destinations[index]['start_date'] =
-                              startDate.toInt();
-                          //print(this._destinations[index]['name']);
-                        } else if (dt != null) {
-                          var startDate = dt.millisecondsSinceEpoch / 1000;
-                          this._destinations.insert(index, {
-                            "start_date": startDate.toInt(),
-                          });
-                        }
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select an arrival date';
-                      }
-                      return null;
-                    },
-                  ))),
-          Flexible(
-              child: Container(
-                  margin: EdgeInsets.only(
-                      left: 10.0, right: 20, top: 20.0, bottom: 0),
-                  child: DateTimePickerFormField(
-                    format: dateFormat,
-                    inputType: InputType.date,
-                    editable: false,
-                    firstDate: DateTime.now(),
-                    decoration: InputDecoration(
-                      hintText: 'Departure',
+                      hintText: 'When are you traveling',
                       hintStyle: TextStyle(fontSize: 13),
-                      contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                      prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                          child: Icon(Icons.calendar_today, size: 15)),
-                      //fillColor: Colors.blueGrey.withOpacity(0.5),
-                      filled: true,
-                      errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide:
-                              BorderSide(width: 1.0, color: Colors.red)),
-                      focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide:
-                              BorderSide(width: 1.0, color: Colors.red)),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide: BorderSide(
-                              width: 0.0, color: Colors.transparent)),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide: BorderSide(
-                              width: 0.0, color: Colors.transparent)),
                     ),
-                    onChanged: (dt) {
-                      setState(() {
-                        if (this._destinations.length > 0 && dt != null) {
-                          var endDate = dt.millisecondsSinceEpoch / 1000;
-                          this._destinations[index]['end_date'] =
-                              endDate.toInt();
-                        } else if (dt != null) {
-                          var endDate = dt.millisecondsSinceEpoch / 1000;
-                          this._destinations.insert(index, {
-                            "end_date": endDate.toInt(),
-                          });
-                        }
-                      });
-                    },
+                    controller: datesController,
                     validator: (value) {
-                      if (value == null) {
-                        return 'Please select a departure date';
-                      } else if (this._destinations[index]['end_date'] <
-                          this._destinations[index]['start_date']) {
-                        return "Please choose a later departure date";
+                      if (value.isEmpty) {
+                        return 'Please select travel dates.';
                       }
                       return null;
                     },
-                  ))),
-        ],
-      ),
+                  )))),
       _buildDivider()
     ]);
   }

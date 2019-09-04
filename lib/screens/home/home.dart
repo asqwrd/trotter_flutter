@@ -477,10 +477,26 @@ class HomeState extends State<Home> {
                       width: double.infinity,
                       margin: EdgeInsets.only(bottom: 30.0),
                       child: TopListLoading())
-                  : Showcase(
+                  : Showcase.withWidget(
+                      width: 200,
+                      height: 50,
+                      container: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          TopList().buildThumbnailItem(0, popularCities[0]),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                              width: 200,
+                              child: Text(
+                                'Tap to view destination page.\n Press and hold to show menu',
+                                style: TextStyle(color: Colors.white),
+                                maxLines: 2,
+                              ))
+                        ],
+                      ),
                       key: _one,
-                      description:
-                          'Tap a thumbnail go to view more info. Press and hold on the thumbnail to bring up menu items for creating trips.',
                       child: TopList(
                           items: popularCities,
                           onPressed: (data) {

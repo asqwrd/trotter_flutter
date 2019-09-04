@@ -189,11 +189,25 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                     width: 50,
                     height: 50,
                     margin: EdgeInsets.symmetric(horizontal: 0),
-                    child: Showcase(
+                    child: Showcase.withWidget(
+                        width: 250,
+                        height: 50,
+                        container: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Container(
+                                width: 250,
+                                child: Text(
+                                  'Tap to open location modal.\nSelect a starting location to use for each day',
+                                  style: TextStyle(color: Colors.white),
+                                  maxLines: 3,
+                                ))
+                          ],
+                        ),
                         key: _one,
-                        descTextStyle: TextStyle(),
-                        description:
-                            'Click here to open a modal to select start location',
                         child: FlatButton(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(100)),

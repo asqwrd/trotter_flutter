@@ -60,67 +60,69 @@ class TopList extends StatelessWidget {
         onLongPress: () {
           this.onLongPressed({'poi': item, "index": index});
         },
-        child: Container(
-            //height:210.0,
-            margin: index == 0
-                ? EdgeInsets.only(left: 20.0)
-                : EdgeInsets.only(left: 0.0),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    // A fixed-height child.
-                    margin: EdgeInsets.only(right: 20),
-                    child: Card(
-                        //opacity: 1,
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        child: ClipPath(
-                            clipper: ShapeBorderClipper(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8))),
-                            child: item['image'] != null
-                                ? TransitionToImage(
-                                    image: AdvancedNetworkImage(
-                                      item['image'],
-                                      useDiskCache: true,
-                                      cacheRule: CacheRule(
-                                          maxAge: const Duration(days: 7)),
-                                    ),
-                                    loadingWidgetBuilder: (BuildContext context,
-                                            double progress, test) =>
-                                        Center(
-                                            child: CircularProgressIndicator(
-                                      backgroundColor: Colors.white,
-                                    )),
-                                    fit: BoxFit.cover,
-                                    alignment: Alignment.center,
-                                    placeholder: const Icon(Icons.refresh),
-                                    enableRefresh: true,
-                                  )
-                                : Container(
-                                    decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        image: AssetImage(
-                                            'images/placeholder.png'),
-                                        fit: BoxFit.cover),
-                                  )))),
-                    width: 110.0,
-                    height: 158.0,
-                  ),
-                  Container(
-                      padding: EdgeInsets.symmetric(vertical: 10.0),
-                      width: 100.0,
-                      child: AutoSizeText(
-                        item['name'],
-                        textAlign: TextAlign.left,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w300),
-                      ))
-                ])));
+        child: buildThumbnailItem(index, item));
+  }
+
+  Container buildThumbnailItem(int index, item) {
+    return Container(
+        //height:210.0,
+        margin: index == 0
+            ? EdgeInsets.only(left: 20.0)
+            : EdgeInsets.only(left: 0.0),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                // A fixed-height child.
+                margin: EdgeInsets.only(right: 20),
+                child: Card(
+                    //opacity: 1,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    child: ClipPath(
+                        clipper: ShapeBorderClipper(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8))),
+                        child: item['image'] != null
+                            ? TransitionToImage(
+                                image: AdvancedNetworkImage(
+                                  item['image'],
+                                  useDiskCache: true,
+                                  cacheRule: CacheRule(
+                                      maxAge: const Duration(days: 7)),
+                                ),
+                                loadingWidgetBuilder: (BuildContext context,
+                                        double progress, test) =>
+                                    Center(
+                                        child: CircularProgressIndicator(
+                                  backgroundColor: Colors.white,
+                                )),
+                                fit: BoxFit.cover,
+                                alignment: Alignment.center,
+                                placeholder: const Icon(Icons.refresh),
+                                enableRefresh: true,
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage('images/placeholder.png'),
+                                    fit: BoxFit.cover),
+                              )))),
+                width: 110.0,
+                height: 158.0,
+              ),
+              Container(
+                  padding: EdgeInsets.symmetric(vertical: 10.0),
+                  width: 100.0,
+                  child: AutoSizeText(
+                    item['name'],
+                    textAlign: TextAlign.left,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
+                  ))
+            ]));
   }
 }

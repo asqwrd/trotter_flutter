@@ -149,7 +149,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
           child: new TrotterAppBar(
               onPush: onPush,
               color: color,
-              title: 'Travel itineraries',
+              title: 'Transport & lodging',
               actions: <Widget>[
                 Container(
                     width: 58,

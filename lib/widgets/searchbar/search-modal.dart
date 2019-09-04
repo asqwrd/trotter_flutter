@@ -2,6 +2,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:loadmore/loadmore.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
@@ -45,16 +47,43 @@ Future<SearchModalData> fetchSearchModal(
   }
 }
 
+Future<SearchModalData> fetchSearchModalNext(
+  String query,
+  double lat,
+  double lng,
+  String nextPageToken,
+) async {
+  try {
+    var response;
+    response = await http.get(
+        '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&nextPageToken=$nextPageToken',
+        headers: {'Authorization': 'security'});
+
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return SearchModalData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      return SearchModalData(error: 'Server error');
+    }
+  } catch (error) {
+    return SearchModalData(error: 'Server error');
+  }
+}
+
 class SearchModalData {
   final List<dynamic> recentSearchModal;
   final List<dynamic> results;
   final String error;
+  final String nextPageToken;
 
-  SearchModalData({this.results, this.recentSearchModal, this.error});
+  SearchModalData(
+      {this.results, this.recentSearchModal, this.error, this.nextPageToken});
 
   factory SearchModalData.fromJson(Map<String, dynamic> json) {
     return SearchModalData(
         results: json['results'],
+        nextPageToken: json['nextPageToken'],
         recentSearchModal: json['recent_search'],
         error: null);
   }
@@ -96,6 +125,8 @@ class SearchModalState extends State<SearchModal> {
   bool nearId = false;
   final ValueChanged<dynamic> onSelect;
   GoogleMapController mapController;
+  String nextPageToken;
+  List<dynamic> results;
 
   Future<SearchModalData> data;
   var txt = new TextEditingController();
@@ -111,6 +142,12 @@ class SearchModalState extends State<SearchModal> {
         this.location != null ? this.location['lat'] : null,
         this.location != null ? this.location['lng'] : null,
         selectId);
+    data.then((res) {
+      setState(() {
+        this.nextPageToken = res.nextPageToken;
+        this.results = res.results;
+      });
+    });
   }
 
   SearchModalState(
@@ -151,11 +188,12 @@ class SearchModalState extends State<SearchModal> {
     var timer;
     var recentSearchModal =
         snapshot.hasData ? snapshot.data.recentSearchModal : null;
-    var results = snapshot.hasData ? snapshot.data.results : null;
-    var error = snapshot.hasData ? snapshot.data.error : null;
+    //var results = snapshot.hasData ? snapshot.data.results : null;
 
-    var chips = [
-      ChoiceChip(
+    var error = snapshot.hasData ? snapshot.data.error : null;
+    List<ChoiceChip> chips = [];
+    if (this.near == null) {
+      chips.add(ChoiceChip(
           selected: this.location != null ? !selectId : true,
           label: AutoSizeText("Destinations"),
           onSelected: (bool value) {
@@ -169,10 +207,16 @@ class SearchModalState extends State<SearchModal> {
                     this.location != null ? this.location['lat'] : null,
                     this.location != null ? this.location['lng'] : null,
                     selectId);
+                data.then((res) {
+                  setState(() {
+                    this.nextPageToken = res.nextPageToken;
+                    this.results = res.results;
+                  });
+                });
               }
             });
-          })
-    ];
+          }));
+    }
 
     if (this.destinationName != null) {
       chips.add(ChoiceChip(
@@ -190,6 +234,12 @@ class SearchModalState extends State<SearchModal> {
                   this.location != null ? this.location['lat'] : null,
                   this.location != null ? this.location['lng'] : null,
                   selectId);
+              data.then((res) {
+                setState(() {
+                  this.nextPageToken = res.nextPageToken;
+                  this.results = res.results;
+                });
+              });
             });
           }));
     }
@@ -212,6 +262,12 @@ class SearchModalState extends State<SearchModal> {
               txt.text = '';
               data = fetchSearchModal('', this.near['location']['lat'],
                   this.near['location']['lng'], nearId || selectId);
+              data.then((res) {
+                setState(() {
+                  this.nextPageToken = res.nextPageToken;
+                  this.results = res.results;
+                });
+              });
             });
           }));
     }
@@ -227,104 +283,32 @@ class SearchModalState extends State<SearchModal> {
               ? Column(children: <Widget>[
                   renderTopBar(timer, chips),
                   Flexible(
-                      child: ListView.builder(
-                    //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                    itemCount: results.length,
-                    //shrinkWrap: true,
-                    itemBuilder: (BuildContext context, int index) {
-                      return selectId == false
-                          ? InkWell(
-                              onTap: () {
-                                //onSelect({'selected':results[index]});
-                                Navigator.pop(context, results[index]);
+                      child: this.location != null
+                          ? LoadMore(
+                              delegate:
+                                  TrotterLoadMoreDelegate(Colors.blueAccent),
+                              isFinish: this.nextPageToken == null ||
+                                  this.nextPageToken.isEmpty,
+                              onLoadMore: () async {
+                                if (this.results != null) {
+                                  var location = this.nearId
+                                      ? this.near['location']
+                                      : this.location;
+                                  var res = await fetchSearchModalNext(
+                                      txt.text,
+                                      location['lat'],
+                                      location['lng'],
+                                      this.nextPageToken);
+                                  setState(() {
+                                    this.results = this.results
+                                      ..addAll(res.results);
+                                    this.nextPageToken = res.nextPageToken;
+                                  });
+                                }
+                                return true;
                               },
-                              child: ListTile(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 20),
-                                  title: AutoSizeText(
-                                    results[index]['country_id'] ==
-                                            'United_States'
-                                        ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
-                                        : '${results[index]['name']}, ${results[index]['country_name']}',
-                                  )))
-                          : InkWell(
-                              onTap: () {
-                                //onSelect({'selected':results[index]});
-                                Navigator.pop(context, results[index]);
-                              },
-                              child: Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  child: ListTile(
-                                    leading: Container(
-                                      width: 80.0,
-                                      height: 80.0,
-                                      child: ClipPath(
-                                          clipper: ShapeBorderClipper(
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          8))),
-                                          child: results[index]['image'] != null
-                                              ? TransitionToImage(
-                                                  image: AdvancedNetworkImage(
-                                                    results[index]['image'],
-                                                    useDiskCache: true,
-                                                    cacheRule: CacheRule(
-                                                        maxAge: const Duration(
-                                                            days: 7)),
-                                                  ),
-                                                  loadingWidgetBuilder:
-                                                      (BuildContext context,
-                                                              double progress,
-                                                              test) =>
-                                                          Center(
-                                                              child:
-                                                                  CircularProgressIndicator(
-                                                    backgroundColor:
-                                                        Colors.white,
-                                                  )),
-                                                  fit: BoxFit.cover,
-                                                  alignment: Alignment.center,
-                                                  placeholder:
-                                                      const Icon(Icons.refresh),
-                                                  enableRefresh: true,
-                                                )
-                                              : Container(
-                                                  decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                      image: AssetImage(
-                                                          'images/placeholder.png'),
-                                                      fit: BoxFit.cover),
-                                                ))),
-                                    ),
-                                    title: AutoSizeText(
-                                      results[index]['name'],
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600),
-                                    ),
-                                    subtitle: results[index]
-                                                ['description_short'] !=
-                                            null
-                                        ? AutoSizeText(
-                                            results[index]['description_short'],
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w300),
-                                          )
-                                        : AutoSizeText(
-                                            results[index]['description'],
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w300),
-                                          ),
-                                  )));
-                    },
-                  ))
+                              child: renderResults(results))
+                          : renderResults(results))
                 ])
               : error == null && recentSearchModal != null
                   ? Column(
@@ -352,6 +336,13 @@ class SearchModalState extends State<SearchModal> {
                                               ? this.location['lng']
                                               : null,
                                           selectId);
+                                      data.then((res) {
+                                        setState(() {
+                                          this.nextPageToken =
+                                              res.nextPageToken;
+                                          this.results = res.results;
+                                        });
+                                      });
                                     });
                                   },
                                   child: ListTile(
@@ -380,10 +371,103 @@ class SearchModalState extends State<SearchModal> {
                                         ? this.location['lng']
                                         : null,
                                     selectId);
+                                data.then((res) {
+                                  setState(() {
+                                    this.nextPageToken = res.nextPageToken;
+                                    this.results = res.results;
+                                  });
+                                });
                               });
                             },
                           ))
                     ]),
+    );
+  }
+
+  ListView renderResults(results) {
+    return ListView.builder(
+      //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+      itemCount: results.length,
+      //shrinkWrap: true,
+      itemBuilder: (BuildContext context, int index) {
+        return selectId == false
+            ? InkWell(
+                onTap: () {
+                  //onSelect({'selected':results[index]});
+                  Navigator.pop(context, results[index]);
+                },
+                child: ListTile(
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    title: AutoSizeText(
+                      results[index]['country_id'] == 'United_States'
+                          ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
+                          : '${results[index]['name']}, ${results[index]['country_name']}',
+                    )))
+            : InkWell(
+                onTap: () {
+                  //onSelect({'selected':results[index]});
+                  Navigator.pop(context, results[index]);
+                },
+                child: Container(
+                    margin: EdgeInsets.symmetric(vertical: 20),
+                    child: ListTile(
+                      leading: Container(
+                        width: 80.0,
+                        height: 80.0,
+                        child: ClipPath(
+                            clipper: ShapeBorderClipper(
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8))),
+                            child: results[index]['image'] != null
+                                ? TransitionToImage(
+                                    image: AdvancedNetworkImage(
+                                      results[index]['image'],
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    ),
+                                    loadingWidgetBuilder: (BuildContext context,
+                                            double progress, test) =>
+                                        Center(
+                                            child: CircularProgressIndicator(
+                                      backgroundColor: Colors.white,
+                                    )),
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
+                                    placeholder: const Icon(Icons.refresh),
+                                    enableRefresh: true,
+                                  )
+                                : Container(
+                                    decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                        image: AssetImage(
+                                            'images/placeholder.png'),
+                                        fit: BoxFit.cover),
+                                  ))),
+                      ),
+                      title: AutoSizeText(
+                        results[index]['name'],
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: results[index]['description_short'] != null
+                          ? AutoSizeText(
+                              results[index]['description_short'],
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w300),
+                            )
+                          : AutoSizeText(
+                              results[index]['description'],
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w300),
+                            ),
+                    )));
+      },
     );
   }
 
@@ -420,6 +504,12 @@ class SearchModalState extends State<SearchModal> {
                             this.location != null ? this.location['lng'] : null,
                             selectId);
                       });
+                      data.then((res) {
+                        setState(() {
+                          this.nextPageToken = res.nextPageToken;
+                          this.results = res.results;
+                        });
+                      });
                     },
                   )
                 ]),
@@ -448,6 +538,12 @@ class SearchModalState extends State<SearchModal> {
                         this.location != null ? this.location['lat'] : null,
                         this.location != null ? this.location['lng'] : null,
                         selectId);
+                    data.then((res) {
+                      setState(() {
+                        this.nextPageToken = res.nextPageToken;
+                        this.results = res.results;
+                      });
+                    });
                   });
                 });
               },

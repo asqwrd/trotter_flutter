@@ -25,6 +25,7 @@ import 'add-destination-modal.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
 import 'package:trotter_flutter/globals.dart';
+import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
 
 showDateModal(
     BuildContext context, dynamic destination, Color color, String tripId) {
@@ -69,121 +70,83 @@ _buildDatesModal(
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var arrival = destination['start_date'];
   var departure = destination['end_date'];
+  final datesController = TextEditingController();
+  datesController.text =
+      '${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['start_date'] * 1000))} to ${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['end_date'] * 1000))}';
+
   return Form(
       key: _formKey,
       child: Column(children: <Widget>[
-        Container(
-            margin:
-                EdgeInsets.only(left: 20.0, right: 20, top: 20.0, bottom: 0),
-            child: DateTimePickerFormField(
-              format: dateFormat,
-              inputType: InputType.date,
-              editable: false,
-              initialValue: destination['start_date'] > 0
-                  ? DateTime.fromMillisecondsSinceEpoch(
-                      destination['start_date'] * 1000)
-                  : null,
-              //firstDate: destination['start_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000) : DateTime.now(),
-              initialDate: destination['start_date'] > 0
-                  ? DateTime.fromMillisecondsSinceEpoch(
-                      destination['start_date'] * 1000)
-                  : DateTime.now(),
-              decoration: InputDecoration(
-                hintText: 'Arrival date',
-                contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                prefixIcon: Padding(
-                    padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                    child: Icon(
-                      Icons.calendar_today,
-                      size: 18,
-                    )),
-                //fillColor: Colors.blueGrey.withOpacity(0.5),
-                filled: true,
-                errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide: BorderSide(width: 1.0, color: Colors.red)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide: BorderSide(width: 1.0, color: Colors.red)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide:
-                        BorderSide(width: 0.0, color: Colors.transparent)),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide:
-                        BorderSide(width: 0.0, color: Colors.transparent)),
-              ),
-              onChanged: (dt) {
-                if (dt != null) {
-                  var startDate = dt.millisecondsSinceEpoch / 1000;
+        InkWell(
+            onTap: () async {
+              final List<DateTime> picked = await DateRagePicker.showDatePicker(
+                  context: context,
+                  initialFirstDate: DateTime.fromMillisecondsSinceEpoch(
+                      destination['start_date'] * 1000),
+                  initialLastDate: DateTime.fromMillisecondsSinceEpoch(
+                      destination['end_date'] * 1000),
+                  firstDate: new DateTime(DateTime.now().year,
+                      DateTime.now().month, DateTime.now().day, 0, 0, 0, 0),
+                  lastDate: new DateTime(2021));
+              if (picked != null && picked.length == 2) {
+                print(picked);
+
+                datesController.text =
+                    '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
+                if (picked != null) {
+                  var startDate = picked[0].millisecondsSinceEpoch / 1000;
                   arrival = startDate.toInt();
-                }
-              },
-              validator: (value) {
-                if (value == null) {
-                  return 'Please select an arrival date';
-                }
-                return null;
-              },
-            )),
-        Container(
-            margin:
-                EdgeInsets.only(left: 20.0, right: 20, top: 20.0, bottom: 0),
-            child: DateTimePickerFormField(
-              format: dateFormat,
-              inputType: InputType.date,
-              editable: false,
-              initialValue: destination['end_date'] > 0
-                  ? DateTime.fromMillisecondsSinceEpoch(
-                      destination['end_date'] * 1000)
-                  : null,
-              //firstDate: destination['end_date'] > 0 ? DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000) : DateTime.now(),
-              initialDate: destination['end_date'] > 0
-                  ? DateTime.fromMillisecondsSinceEpoch(
-                      destination['end_date'] * 1000)
-                  : DateTime.now(),
-              decoration: InputDecoration(
-                hintText: 'Departure date',
-                contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                prefixIcon: Padding(
-                    padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                    child: Icon(
-                      Icons.calendar_today,
-                      size: 18,
-                    )),
-                //fillColor: Colors.blueGrey.withOpacity(0.5),
-                filled: true,
-                errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide: BorderSide(width: 1.0, color: Colors.red)),
-                focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide: BorderSide(width: 1.0, color: Colors.red)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide:
-                        BorderSide(width: 0.0, color: Colors.transparent)),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    borderSide:
-                        BorderSide(width: 0.0, color: Colors.transparent)),
-              ),
-              onChanged: (dt) {
-                if (dt != null) {
-                  var endDate = dt.millisecondsSinceEpoch / 1000;
+                  var endDate = picked[1].millisecondsSinceEpoch / 1000;
                   departure = endDate.toInt();
                 }
-              },
-              validator: (value) {
-                if (value == null) {
-                  return 'Please select a departure date';
-                } else if (departure < arrival) {
-                  return "Please choose a later departure date";
-                }
-                return null;
-              },
-            )),
+              }
+            },
+            child: Container(
+                margin: EdgeInsets.only(left: 20, right: 20, top: 20),
+                child: IgnorePointer(
+                    ignoring: true,
+                    child: TextFormField(
+                      maxLengthEnforced: true,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                        prefixIcon: Padding(
+                            padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                            child: Icon(
+                              Icons.calendar_today,
+                              size: 15,
+                            )),
+                        filled: true,
+                        errorBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(width: 1.0, color: Colors.red)),
+                        focusedErrorBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
+                            borderSide:
+                                BorderSide(width: 1.0, color: Colors.red)),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
+                            borderSide: BorderSide(
+                                width: 0.0, color: Colors.transparent)),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
+                            borderSide: BorderSide(
+                                width: 0.0, color: Colors.transparent)),
+                        hintText: 'When are you traveling',
+                        hintStyle: TextStyle(fontSize: 13),
+                      ),
+                      controller: datesController,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Please select travel dates.';
+                        }
+                        return null;
+                      },
+                    )))),
         Container(
             width: double.infinity,
             margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),
@@ -1181,7 +1144,7 @@ class TripState extends State<Trip> {
                 child: buildTravelers(this.travelers)))
       },
       {
-        "label": "Travel itineraries",
+        "label": "Transport & lodging",
         "icon": Icon(Icons.flight, color: iconColor),
         "level": "travelinfo"
       },

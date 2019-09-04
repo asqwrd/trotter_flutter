@@ -7,7 +7,7 @@ description: A travel guide app.
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 15.0.0+15
+version: 16.0.0+16
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -21,6 +21,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   auto_size_text: ^2.1.0
   showcaseview: ^0.1.2
+  date_range_picker: ^1.0.6
   duration: ^2.0.8
   firebase_dynamic_links: ^0.5.0
   flutter_store: ^1.0.0+4

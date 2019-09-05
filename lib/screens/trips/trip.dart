@@ -864,14 +864,14 @@ class TripState extends State<Trip> {
                       setState(() {
                         this.loading = true;
                       });
-                      final travelers = this.travelers.map((curr) {
-                        if (curr['uid'] != store.currentUser.uid) {
-                          return curr['uid'];
-                        }
-                      }).toList();
-                      travelers.removeWhere((item) => item == null);
+
                       var response = await putUpdateTrip(
-                          tripId, {"group": travelers}, store.currentUser.uid);
+                          tripId,
+                          {
+                            "added": [],
+                            "deleted": [store.currentUser.uid]
+                          },
+                          store.currentUser.uid);
                       if (response.success == true) {
                         Navigator.pop(context);
                         store.setTripsLoading(true);
@@ -1098,7 +1098,7 @@ class TripState extends State<Trip> {
               back: true,
               actions: store.offline == false
                   ? <Widget>[
-                      store.currentUser.uid != null
+                      store.currentUser != null
                           ? Container(
                               width: 58,
                               height: 58,
@@ -1116,7 +1116,7 @@ class TripState extends State<Trip> {
                                         //color: fontContrast(color),
                                         fit: BoxFit.cover),
                               ))
-                          : Container()
+                          : Container(width: 20, height: 20)
                     ]
                   : null)),
     ]);
@@ -1134,6 +1134,9 @@ class TripState extends State<Trip> {
         destTable.groupBy<dynamic>((destination) => destination['country_id']);
     this.color = Color(hexStringToHexInt(snapshot.data.trip['color']));
     var iconColor = Color.fromRGBO(0, 0, 0, 0.5);
+    if (store.currentUser == null) {
+      Navigator.pop(context);
+    }
     var fields = [
       {
         "level": "travelers-modal",

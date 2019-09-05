@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
+import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
 
 class AddDestinationModal extends StatefulWidget {
   AddDestinationModal({Key key, this.color, @required this.tripId})
@@ -36,6 +36,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
 
   _buildDestField(BuildContext context, color, formKey) {
     var dateFormat = DateFormat("EEE, MMM d, yyyy");
+    final datesController = TextEditingController();
 
     return Column(children: <Widget>[
       Padding(
@@ -123,103 +124,82 @@ class _AddDestinationModal extends State<AddDestinationModal> {
               })),
       Container(
           margin: EdgeInsets.only(left: 20.0, right: 20, top: 20.0, bottom: 0),
-          child: DateTimePickerFormField(
-            format: dateFormat,
-            inputType: InputType.date,
-            editable: false,
-            firstDate: init.subtract(Duration(hours: 1)),
-            decoration: InputDecoration(
-              hintText: 'Arrival date',
-              contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-              prefixIcon: Padding(
-                  padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                  child: Icon(
-                    Icons.calendar_today,
-                    size: 18,
-                  )),
-              //fillColor: Colors.blueGrey.withOpacity(0.5),
-              filled: true,
-              errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(width: 1.0, color: Colors.red)),
-              focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(width: 1.0, color: Colors.red)),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide:
-                      BorderSide(width: 0.0, color: Colors.transparent)),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide:
-                      BorderSide(width: 0.0, color: Colors.transparent)),
-            ),
-            onChanged: (dt) {
-              if (dt != null) {
-                //setState(() {
-                var startDate = dt.millisecondsSinceEpoch / 1000;
-                this.destination['start_date'] = startDate.toInt();
-                //});
-              }
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'Please select an arrival date';
-              }
-              return null;
-            },
-          )),
-      Container(
-          margin: EdgeInsets.only(left: 20.0, right: 20, top: 20.0, bottom: 0),
-          child: DateTimePickerFormField(
-            format: dateFormat,
-            inputType: InputType.date,
-            editable: false,
-            firstDate: init.subtract(Duration(hours: 1)),
-            decoration: InputDecoration(
-              hintText: 'Departure date',
-              contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-              prefixIcon: Padding(
-                  padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                  child: Icon(
-                    Icons.calendar_today,
-                    size: 18,
-                  )),
-              //fillColor: Colors.blueGrey.withOpacity(0.5),
-              filled: true,
-              errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(width: 1.0, color: Colors.red)),
-              focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide: BorderSide(width: 1.0, color: Colors.red)),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide:
-                      BorderSide(width: 0.0, color: Colors.transparent)),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                  borderSide:
-                      BorderSide(width: 0.0, color: Colors.transparent)),
-            ),
-            onChanged: (dt) {
-              if (dt != null) {
-                //setState(() {
-                var endDate = dt.millisecondsSinceEpoch / 1000;
-                this.destination['end_date'] = endDate.toInt();
-                //});
-              }
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'Please select a departure date';
-              } else if (this.destination['end_date'] <
-                  this.destination['start_date']) {
-                return "Please choose a later departure date";
-              }
-              return null;
-            },
-          )),
+          child: InkWell(
+              onTap: () async {
+                final List<DateTime> picked =
+                    await DateRagePicker.showDatePicker(
+                        context: context,
+                        initialFirstDate: new DateTime.now(),
+                        initialLastDate:
+                            (new DateTime.now()).add(new Duration(days: 7)),
+                        firstDate: new DateTime(
+                            DateTime.now().year,
+                            DateTime.now().month,
+                            DateTime.now().day,
+                            0,
+                            0,
+                            0,
+                            0),
+                        lastDate: new DateTime(2021));
+                if (picked != null && picked.length == 2) {
+                  print(picked);
+
+                  datesController.text =
+                      '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
+                  if (picked != null) {
+                    var startDate = picked[0].millisecondsSinceEpoch / 1000;
+                    this.destination['start_date'] = startDate.toInt();
+                    var endDate = picked[1].millisecondsSinceEpoch / 1000;
+                    this.destination['end_date'] = endDate.toInt();
+                  }
+                }
+              },
+              child: Container(
+                  margin: EdgeInsets.only(left: 0, right: 0, top: 20),
+                  child: IgnorePointer(
+                      ignoring: true,
+                      child: TextFormField(
+                        maxLengthEnforced: true,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                          prefixIcon: Padding(
+                              padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                              child: Icon(
+                                Icons.calendar_today,
+                                size: 15,
+                              )),
+                          filled: true,
+                          errorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide:
+                                  BorderSide(width: 1.0, color: Colors.red)),
+                          focusedErrorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide:
+                                  BorderSide(width: 1.0, color: Colors.red)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide: BorderSide(
+                                  width: 0.0, color: Colors.transparent)),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide: BorderSide(
+                                  width: 0.0, color: Colors.transparent)),
+                          hintText: 'When are you traveling',
+                          hintStyle: TextStyle(fontSize: 13),
+                        ),
+                        controller: datesController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please select travel dates.';
+                          }
+                          return null;
+                        },
+                      ))))),
       Container(
           width: double.infinity,
           margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),

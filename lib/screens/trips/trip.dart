@@ -39,7 +39,7 @@ showDateModal(
           Padding(
               padding: EdgeInsets.only(top: 40, bottom: 20),
               child: AutoSizeText(
-                'Arrival and Departure',
+                'Travel dates',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
               )),
           Padding(
@@ -155,7 +155,7 @@ _buildDatesModal(
                   borderRadius: new BorderRadius.circular(5.0)),
               child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 15),
-                  child: AutoSizeText('Change date',
+                  child: AutoSizeText('Change dates',
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w300,
@@ -483,12 +483,11 @@ class _TripDestinationDialogContentState
                       var response = await postAddToTrip(
                           this.tripId, data, store.currentUser.uid);
                       if (response.destination != null) {
-                        data['id'] = response.destination['ID'];
                         setState(() {
                           this.loading = false;
-                          this.destinations.add(data);
-                          store.tripStore
-                              .updateTripDestinations(this.tripId, data);
+                          this.destinations.add(response.destination);
+                          store.tripStore.updateTripDestinations(
+                              this.tripId, response.destination);
                           Scaffold.of(builderContext).showSnackBar(SnackBar(
                               content: AutoSizeText(
                                   '${data['destination_name']}\'s has been added',
@@ -569,7 +568,7 @@ class _TripDestinationDialogContentState
                                       leading: new Icon(Icons.calendar_today,
                                           size: 22),
                                       title: new AutoSizeText(
-                                        'Change arrival and departure dates',
+                                        'Change travel dates',
                                       ),
                                       onTap: () async {
                                         Navigator.pop(context);

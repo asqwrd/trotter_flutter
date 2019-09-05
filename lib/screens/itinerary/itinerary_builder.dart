@@ -190,6 +190,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                     height: 50,
                     margin: EdgeInsets.symmetric(horizontal: 0),
                     child: Showcase.withWidget(
+                        shapeBorder: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100)),
                         width: 250,
                         height: 50,
                         container: Column(

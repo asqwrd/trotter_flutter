@@ -345,7 +345,8 @@ class CreateTripState extends State<CreateTrip> {
                 );
                 if (suggestion != null) {
                   _destinationTextController.text = suggestion['country_id'] ==
-                          'United_States'
+                              'United_States' &&
+                          suggestion['type'] != 'region'
                       ? '${suggestion['name']}, ${suggestion['parent_name']}'
                       : '${suggestion['name']}, ${suggestion['country_name']}';
 
@@ -355,6 +356,7 @@ class CreateTripState extends State<CreateTrip> {
                         "location": suggestion['location'],
                         "destination_id": suggestion['id'],
                         "destination_name": suggestion['name'],
+                        "parent_name": suggestion['parent_name'],
                         "level": suggestion['level'],
                         "country_id": suggestion['country_id'],
                         "country_name": suggestion["country_name"],
@@ -374,6 +376,7 @@ class CreateTripState extends State<CreateTrip> {
                       "location": suggestion['location'],
                       "destination_id": suggestion['id'],
                       "destination_name": suggestion['name'],
+                      "parent_name": suggestion['parent_name'],
                       "level": suggestion['level'],
                       "country_id": suggestion['country_id'],
                       "country_name": suggestion["country_name"],

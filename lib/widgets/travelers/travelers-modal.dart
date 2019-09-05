@@ -282,7 +282,7 @@ class TravelersModalState extends State<TravelersModal> {
                                         });
                                       },
                                     )
-                                  : Container(),
+                                  : Container(width: 20, height: 20),
                     );
                   },
                 ))

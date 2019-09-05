@@ -286,7 +286,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     return Container(
         height: _panelHeightOpen,
         width: MediaQuery.of(ctxt).size.width,
-        child: Stack(children: <Widget>[
+        child: Stack(fit: StackFit.expand, children: <Widget>[
           DefaultTabController(
               length: this.flightsAccomodations.length,
               child: Column(

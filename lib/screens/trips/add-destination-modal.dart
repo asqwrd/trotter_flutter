@@ -102,6 +102,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
                   this.destination = {
                     "location": suggestion['location'],
                     "destination_id": suggestion['id'],
+                    "parent_name": suggestion['parent_name'],
                     "destination_name": suggestion['name'],
                     "level": suggestion['level'],
                     "country_id": suggestion['country_id'],

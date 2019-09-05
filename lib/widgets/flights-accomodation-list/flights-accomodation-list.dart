@@ -73,7 +73,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                         });
                                       },
                                     )
-                                  : Container(),
+                                  : Container(width: 20, height: 20),
                           title: AutoSizeText(
                               '${details[index]['source'].length > 0 ? details[index]['source'] : "Travel itinerary"}',
                               style: TextStyle(fontSize: 17)),

@@ -478,21 +478,23 @@ class HomeState extends State<Home> {
                       margin: EdgeInsets.only(bottom: 30.0),
                       child: TopListLoading())
                   : Showcase.withWidget(
-                      width: 200,
+                      width: 250,
                       height: 50,
-                      container: Column(
+                      container: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          TopList().buildThumbnailItem(0, popularCities[0]),
+                          TopList().buildThumbnailItem(
+                              0, popularCities[0], Colors.white),
                           SizedBox(
                             height: 10,
                           ),
                           Container(
-                              width: 200,
+                              width: 250,
+                              margin: EdgeInsets.only(top: 35),
                               child: Text(
-                                'Tap to view destination page.\n Press and hold to show menu',
+                                'Tap to navigate to destination page.\n Press and hold to show a menu for adding to a trip or creating a trip',
                                 style: TextStyle(color: Colors.white),
-                                maxLines: 2,
+                                maxLines: 3,
                               ))
                         ],
                       ),

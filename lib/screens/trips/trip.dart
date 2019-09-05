@@ -1026,19 +1026,25 @@ class TripState extends State<Trip> {
                             Positioned(
                                 left: 0,
                                 top: (MediaQuery.of(context).size.height / 2) -
-                                    110,
+                                    160,
                                 width: MediaQuery.of(context).size.width,
                                 child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
-                                      AutoSizeText(
-                                          '${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name']}',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.w300)),
+                                      Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          child: AutoSizeText(
+                                              '${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name'] == 'United States' ? this.destinations[index]['parent_name'] + ', ' : ''}${this.destinations[index]['country_name']}',
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 23,
+                                                  fontWeight:
+                                                      FontWeight.w300))),
                                       AutoSizeText('$startDate - $endDate',
                                           style: TextStyle(
                                               color: Colors.white,

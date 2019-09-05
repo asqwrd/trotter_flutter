@@ -60,10 +60,10 @@ class TopList extends StatelessWidget {
         onLongPress: () {
           this.onLongPressed({'poi': item, "index": index});
         },
-        child: buildThumbnailItem(index, item));
+        child: buildThumbnailItem(index, item, Colors.black));
   }
 
-  Container buildThumbnailItem(int index, item) {
+  Container buildThumbnailItem(int index, item, Color fontColor) {
     return Container(
         //height:210.0,
         margin: index == 0
@@ -121,7 +121,10 @@ class TopList extends StatelessWidget {
                     textAlign: TextAlign.left,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w300,
+                        color: fontColor),
                   ))
             ]));
   }

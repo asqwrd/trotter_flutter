@@ -315,10 +315,27 @@ class DayEditState extends State<DayEdit> {
                         width: 70,
                         height: 70,
                         margin: EdgeInsets.symmetric(horizontal: 0),
-                        child: Showcase(
+                        child: Showcase.withWidget(
+                            shapeBorder: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100)),
+                            width: 250,
+                            height: 50,
+                            container: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                Container(
+                                    width: 250,
+                                    child: Text(
+                                      'Click here to search for places to add',
+                                      style: TextStyle(color: Colors.white),
+                                      maxLines: 3,
+                                    ))
+                              ],
+                            ),
                             key: _one,
-                            description:
-                                'Click here to search for places to add',
                             child: FlatButton(
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(100)),

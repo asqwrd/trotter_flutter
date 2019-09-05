@@ -400,7 +400,8 @@ class SearchModalState extends State<SearchModal> {
                     contentPadding:
                         EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     title: AutoSizeText(
-                      results[index]['country_id'] == 'United_States'
+                      results[index]['country_id'] == 'United_States' &&
+                              results[index]['type'] != 'region'
                           ? '${results[index]['name']}, ${results[index]['parent_name']}, ${results[index]['country_name']}'
                           : '${results[index]['name']}, ${results[index]['country_name']}',
                     )))

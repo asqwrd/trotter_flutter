@@ -42,7 +42,7 @@ class TabNavigator extends StatelessWidget {
   final TabItem tabItem;
   //final ValueChanged<dynamic> onSwitchTab;
 
-  push(BuildContext context, Map<String, dynamic> data) {
+  Future<dynamic> push(BuildContext context, Map<String, dynamic> data) {
     var routeBuilders = _routeBuilders(context, data: data);
     var goTo = TabNavigatorRoutes.root;
     switch (data['level']) {

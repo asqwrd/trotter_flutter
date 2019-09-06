@@ -34,7 +34,9 @@ class CreateTripState extends State<CreateTrip> {
   var destinationsCount = 0;
   List<Widget> fields;
   final nameController = TextEditingController();
-  final datesController = TextEditingController();
+  final List<TextEditingController> datesControllers = [
+    TextEditingController()
+  ];
   bool loading;
   ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
@@ -46,7 +48,9 @@ class CreateTripState extends State<CreateTrip> {
   void dispose() {
     // Clean up the controller when the Widget is removed from the Widget tree
     nameController.dispose();
-    datesController.dispose();
+    datesControllers.forEach((controller) {
+      controller.dispose();
+    });
     _sc.dispose();
     super.dispose();
   }
@@ -65,7 +69,7 @@ class CreateTripState extends State<CreateTrip> {
       Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
           child: TextFormField(
-            maxLength: 30,
+            maxLength: 20,
             maxLengthEnforced: true,
             decoration: InputDecoration(
               contentPadding: EdgeInsets.symmetric(vertical: 20.0),
@@ -117,7 +121,8 @@ class CreateTripState extends State<CreateTrip> {
                 onPressed: () {
                   setState(() {
                     this.destinationsCount = this.destinationsCount + 1;
-                    this.fields.insert(this.destinationsCount - 1,
+                    datesControllers.add(TextEditingController());
+                    this.fields.insert(this.destinationsCount,
                         _buildDestField(this.destinationsCount - 1));
                   });
                 },
@@ -278,7 +283,11 @@ class CreateTripState extends State<CreateTrip> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: 'Create a trip')),
+            onPush: onPush,
+            color: color,
+            title: 'Create a trip',
+            back: true,
+          )),
     ]);
   }
 
@@ -402,7 +411,7 @@ class CreateTripState extends State<CreateTrip> {
               print(picked);
 
               setState(() {
-                datesController.text =
+                datesControllers[index].text =
                     '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
                 if (this._destinations.length > 0 && picked != null) {
                   var startDate = picked[0].millisecondsSinceEpoch / 1000;
@@ -454,7 +463,7 @@ class CreateTripState extends State<CreateTrip> {
                       hintText: 'When are you traveling',
                       hintStyle: TextStyle(fontSize: 13),
                     ),
-                    controller: datesController,
+                    controller: datesControllers[index],
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'Please select travel dates.';

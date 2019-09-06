@@ -716,7 +716,7 @@ class TripData {
 }
 
 class Trip extends StatefulWidget {
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   final String tripId;
   Trip({Key key, this.onPush, @required this.tripId}) : super(key: key);
   @override
@@ -725,7 +725,7 @@ class Trip extends StatefulWidget {
 }
 
 class TripState extends State<Trip> {
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   final String tripId;
   Color color = Colors.blueGrey;
   bool loading = false;
@@ -1266,11 +1266,27 @@ class TripState extends State<Trip> {
                               'level': fields[index]['level'].toString()
                             });
                           } else if (fields[index]['level'] == 'travelinfo') {
-                            onPush({
+                            var res = await onPush({
                               'tripId': this.tripId,
                               'currentUserId': store.currentUser.uid,
                               "level": "travelinfo"
                             });
+                            print(res);
+                            if (res["refresh"] == true) {
+                              setState(() {
+                                this.loading = true;
+                                data = fetchTrip(this.tripId, store);
+                                data.then((response) {
+                                  setState(() {
+                                    this.canView = response.travelers.any(
+                                        (traveler) =>
+                                            store.currentUser.uid ==
+                                            traveler['uid']);
+                                    this.loading = false;
+                                  });
+                                });
+                              });
+                            }
                           } else if (fields[index]['level'] ==
                               'travelers-modal') {
                             await openTravelersModal(ctxt, store);

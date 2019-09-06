@@ -42,6 +42,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   String image;
   String itineraryName;
   List<dynamic> flightsAccomodations;
+  bool refreshParent = false;
 
   Future<FlightsAndAccomodationsData> data;
 
@@ -75,109 +76,118 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   Widget build(BuildContext context) {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     var store = Provider.of<TrotterStore>(context);
-    return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: .8,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: Scaffold(
-                backgroundColor: Colors.transparent,
-                body: FutureBuilder(
-                    future: data,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: RefreshProgressIndicator());
-                      }
-                      if (snapshot.hasData && snapshot.data.error == null) {
-                        return _buildLoadedBody(context, snapshot);
-                      } else if (snapshot.hasData &&
-                          snapshot.data.error != null) {
-                        return ListView(
-                            controller: _sc,
-                            physics: disableScroll
-                                ? NeverScrollableScrollPhysics()
-                                : ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            children: <Widget>[
-                              Container(
-                                  height: _panelHeightOpen - 80,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: ErrorContainer(
-                                    color: Color.fromRGBO(106, 154, 168, 1),
-                                    onRetry: () {
-                                      setState(() {
-                                        data = fetchFlightsAccomodations(
-                                            this.tripId, store.currentUser.uid);
-                                        data.then((data) {
-                                          if (data.error == null) {
-                                            setState(() {
-                                              this.flightsAccomodations =
-                                                  data.flightsAccomodations;
+    return WillPopScope(
+        onWillPop: () {
+          Navigator.pop(context, {"refresh": this.refreshParent});
+          return;
+        },
+        child: Stack(alignment: Alignment.topCenter, children: <Widget>[
+          Positioned(
+              child: SlidingUpPanel(
+            parallaxEnabled: true,
+            parallaxOffset: .5,
+            minHeight: _panelHeightOpen,
+            controller: _pc,
+            backdropEnabled: true,
+            backdropColor: color,
+            backdropTapClosesPanel: false,
+            backdropOpacity: .8,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+            maxHeight: _panelHeightOpen,
+            panel: Center(
+                child: Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: FutureBuilder(
+                        future: data,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(child: RefreshProgressIndicator());
+                          }
+                          if (snapshot.hasData && snapshot.data.error == null) {
+                            return _buildLoadedBody(context, snapshot);
+                          } else if (snapshot.hasData &&
+                              snapshot.data.error != null) {
+                            return ListView(
+                                controller: _sc,
+                                physics: disableScroll
+                                    ? NeverScrollableScrollPhysics()
+                                    : ClampingScrollPhysics(),
+                                shrinkWrap: true,
+                                children: <Widget>[
+                                  Container(
+                                      height: _panelHeightOpen - 80,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: ErrorContainer(
+                                        color: Color.fromRGBO(106, 154, 168, 1),
+                                        onRetry: () {
+                                          setState(() {
+                                            data = fetchFlightsAccomodations(
+                                                this.tripId,
+                                                store.currentUser.uid);
+                                            data.then((data) {
+                                              if (data.error == null) {
+                                                setState(() {
+                                                  this.flightsAccomodations =
+                                                      data.flightsAccomodations;
+                                                });
+                                              }
                                             });
-                                          }
-                                        });
-                                      });
-                                    },
-                                  ))
-                            ]);
-                      }
-                      return Center(child: RefreshProgressIndicator());
-                    }))),
-        body: Container(
-            height: _panelHeightOpen,
-            child: Stack(children: <Widget>[
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(color: this.color.withOpacity(.8)),
-              )
-            ])),
-      )),
-      Positioned(
-          top: 0,
-          width: MediaQuery.of(context).size.width,
-          child: new TrotterAppBar(
-              onPush: onPush,
-              color: color,
-              title: 'Transport & lodging',
-              actions: <Widget>[
-                Container(
-                    width: 58,
-                    height: 58,
-                    margin: EdgeInsets.symmetric(horizontal: 0),
-                    child: FlatButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100)),
-                      onPressed: () async {
-                        setState(() {
-                          this.loading = true;
-                        });
-                        final res = await fetchFlightsAccomodations(
-                            this.tripId, this.currentUserId);
-                        setState(() {
-                          this.loading = false;
-                          this.flightsAccomodations = res.flightsAccomodations;
-                        });
-                      },
-                      child: SvgPicture.asset("images/refresh_icon.svg",
-                          width: 24.0,
-                          height: 24.0,
-                          color: Colors.white,
-                          fit: BoxFit.contain),
-                    ))
-              ],
-              back: true)),
-    ]);
+                                          });
+                                        },
+                                      ))
+                                ]);
+                          }
+                          return Center(child: RefreshProgressIndicator());
+                        }))),
+            body: Container(
+                height: _panelHeightOpen,
+                child: Stack(children: <Widget>[
+                  Positioned.fill(
+                    top: 0,
+                    left: 0,
+                    child: Container(color: this.color.withOpacity(.8)),
+                  )
+                ])),
+          )),
+          Positioned(
+              top: 0,
+              width: MediaQuery.of(context).size.width,
+              child: new TrotterAppBar(
+                  onPush: onPush,
+                  color: color,
+                  title: 'Transport & lodging',
+                  actions: <Widget>[
+                    Container(
+                        width: 58,
+                        height: 58,
+                        margin: EdgeInsets.symmetric(horizontal: 0),
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100)),
+                          onPressed: () async {
+                            setState(() {
+                              this.loading = true;
+                            });
+                            final res = await fetchFlightsAccomodations(
+                                this.tripId, this.currentUserId);
+                            setState(() {
+                              this.loading = false;
+                              this.flightsAccomodations =
+                                  res.flightsAccomodations;
+                            });
+                          },
+                          child: SvgPicture.asset("images/refresh_icon.svg",
+                              width: 24.0,
+                              height: 24.0,
+                              color: Colors.white,
+                              fit: BoxFit.contain),
+                        ))
+                  ],
+                  back: () =>
+                      Navigator.pop(context, {"refresh": this.refreshParent}))),
+        ]));
   }
 
 // function for rendering view after data is loaded
@@ -249,6 +259,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
             },
             onAddPressed: (data) async {
               final ownerId = data['ownerId'];
+              final store = Provider.of<TrotterStore>(context);
               var dialogData = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -272,11 +283,13 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                     dialogData,
                     this.currentUserId);
                 if (response.error == null) {
+                  fetchTrips(store);
                   var res = await fetchFlightsAccomodations(
                       this.tripId, this.currentUserId);
                   setState(() {
                     this.loading = false;
                     this.flightsAccomodations = res.flightsAccomodations;
+                    this.refreshParent = true;
                   });
                 }
               }

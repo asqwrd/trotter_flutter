@@ -1,4 +1,5 @@
 import 'package:event_bus/event_bus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -140,6 +141,14 @@ class TrotterStore extends Store {
       userFirebase = await _auth.currentUser();
       final userTrotter = await getUser(userFirebase.uid);
       user = userTrotter.user;
+      final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+      final token = await _firebaseMessaging.getToken();
+      final deviceId = await getDeviceId();
+      print(deviceId);
+      final dataToken = {"deviceId": deviceId, "token": token, "uid": user.uid};
+      await saveDeviceTokenFirebase(dataToken);
+
+      print("Push Messaging token: $dataToken");
 
       print('Logged in ' + user.displayName);
 

@@ -263,6 +263,7 @@ Widget buildTravelers(List<dynamic> travelers) {
 }
 
 typedef String2VoidFunc = void Function(Map<String, dynamic>);
+typedef Future2VoidFunc = Future Function(Map<String, dynamic>);
 
 class TrotterLoadMoreDelegate extends LoadMoreDelegate {
   final Color color;

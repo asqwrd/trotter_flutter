@@ -80,7 +80,7 @@ Future<UserData> updateUser(String id, dynamic data) async {
   }
 }
 
-Future<String> _getId() async {
+Future<String> getDeviceId() async {
   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
   if (Platform.isIOS) {
     IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
@@ -159,7 +159,7 @@ Future<TrotterUser> googleLogin() async {
     await saveUserToFirebase(data);
     final trotterUser = await getUser(user.uid);
     final token = await _firebaseMessaging.getToken();
-    final deviceId = await _getId();
+    final deviceId = await getDeviceId();
     print(deviceId);
     final dataToken = {"deviceId": deviceId, "token": token, "uid": user.uid};
     await saveDeviceTokenFirebase(dataToken);

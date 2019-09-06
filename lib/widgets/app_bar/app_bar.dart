@@ -18,7 +18,7 @@ class TrotterAppBar extends StatelessWidget {
 
   final onPush;
   final Color color;
-  final bool back;
+  final dynamic back;
   final List<Widget> actions;
   final String title;
   final dynamic location;
@@ -36,7 +36,7 @@ class TrotterAppBar extends StatelessWidget {
       elevation: 0,
       backgroundColor: Colors.transparent,
       centerTitle: true,
-      leading: back == true
+      leading: back == true || back != null
           ? IconButton(
               padding: EdgeInsets.all(0),
               icon: SvgPicture.asset(
@@ -45,7 +45,11 @@ class TrotterAppBar extends StatelessWidget {
                 height: 30,
               ),
               onPressed: () {
-                Navigator.pop(context);
+                if (back is Function) {
+                  back();
+                } else {
+                  Navigator.pop(context);
+                }
               },
               iconSize: 30,
               color: Colors.white,

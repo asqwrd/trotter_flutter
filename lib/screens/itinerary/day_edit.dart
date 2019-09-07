@@ -435,7 +435,7 @@ class DayEditState extends State<DayEdit> {
       DayList(
         header: '${ordinalNumber(day['day'] + 1)} day',
         subHeader: formatter.format(
-            DateTime.fromMillisecondsSinceEpoch(this.startDate)
+            DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)
                 .add(Duration(days: day['day']))),
         ownerId: this.ownerId,
         controller: _sc,

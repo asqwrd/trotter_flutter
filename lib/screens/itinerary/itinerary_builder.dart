@@ -371,7 +371,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                     child: Container(
                         child: AutoSizeText(
                       formatter.format(DateTime.fromMillisecondsSinceEpoch(
-                              this.startDate)
+                              this.startDate,
+                              isUtc: true)
                           .add(Duration(days: dayBuilder[dayIndex]['day']))),
                       style:
                           TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
@@ -386,11 +387,14 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                               fontSize: 15, fontWeight: FontWeight.w300),
                         )))
               ]),
-              itineraryItems.length > 0
+              itineraryItems.length > 0 ||
+                      dayBuilder[dayIndex]['linked_itinerary'] != null
                   ? Container(
                       margin: EdgeInsets.only(top: 0),
                       child: ItineraryList(
                         items: itineraryItems,
+                        linkedItinerary: dayBuilder[dayIndex]
+                            ['linked_itinerary'],
                         color: color,
                         onPressed: (data) {
                           onPush({

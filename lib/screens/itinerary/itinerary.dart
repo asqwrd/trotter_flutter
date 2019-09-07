@@ -278,11 +278,14 @@ class ItineraryState extends State<Itinerary> {
                               fontSize: 13, fontWeight: FontWeight.w300),
                         )))
               ]),
-              itineraryItems.length > 0
+              itineraryItems.length > 0 ||
+                      dayBuilder[dayIndex]['linked_itinerary'] != null
                   ? Container(
                       margin: EdgeInsets.only(top: 0),
                       child: ItineraryList(
                         items: itineraryItems,
+                        linkedItinerary: dayBuilder[dayIndex]
+                            ['linked_itinerary'],
                         color: color,
                         onPressed: (data) {
                           onPush({

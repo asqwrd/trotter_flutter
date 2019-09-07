@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'dart:core';
 import 'package:intl/intl.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
 
@@ -31,6 +32,9 @@ class _AddDestinationModal extends State<AddDestinationModal> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return _buildAddModal(context, color);
   }
 

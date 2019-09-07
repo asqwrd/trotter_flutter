@@ -23,6 +23,9 @@ class ItineraryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Container(
         margin: EdgeInsets.symmetric(vertical: 20.0),
         child: Container(

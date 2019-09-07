@@ -31,6 +31,9 @@ class StartLocationModalState extends State<StartLocationModal> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return _buildLoadedBody(context);
   }
 

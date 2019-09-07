@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'dart:core';
 
@@ -12,6 +13,9 @@ class ErrorContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(

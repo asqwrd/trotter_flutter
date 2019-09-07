@@ -84,6 +84,9 @@ class TripsState extends State<Trips> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     this.context = context;
     var color = Color.fromRGBO(234, 189, 149, 1);
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;

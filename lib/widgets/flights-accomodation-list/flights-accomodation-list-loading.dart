@@ -20,6 +20,9 @@ class FlightsAccomodationsListLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return buildTimeLine(context);
   }
 

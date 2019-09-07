@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
 typedef String2VoidFunc = void Function(String);
 
@@ -11,7 +12,9 @@ class VaccineList extends StatelessWidget {
   VaccineList({this.vaccines, this.color});
   @override
   Widget build(BuildContext context) {
-    //print(this.vaccines);
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     this.vaccines['recommended'] = [
       {'type': 'Hepatitus A'},
       {'type': 'Routine immunizations'},

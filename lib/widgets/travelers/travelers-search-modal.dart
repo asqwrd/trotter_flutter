@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:share/share.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
@@ -91,6 +92,9 @@ class TravelersSearchModalState extends State<TravelersSearchModal> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return new Scaffold(
         resizeToAvoidBottomPadding: false,
         body: FutureBuilder(

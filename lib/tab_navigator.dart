@@ -11,6 +11,7 @@ import 'package:trotter_flutter/screens/notifications/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
 import 'package:trotter_flutter/screens/profile/index.dart';
 import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
 class TabNavigatorRoutes {
@@ -180,10 +181,12 @@ class TabNavigator extends StatelessWidget {
       TabNavigatorRoutes.day_edit: (context) => DayEdit(
           itineraryId: data['itineraryId'],
           dayId: data['dayId'],
+          linkedItinerary: data['linkedItinerary'],
           startLocation: data['startLocation'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.day: (context) => Day(
           itineraryId: data['itineraryId'],
+          linkedItinerary: data['linkedItinerary'],
           dayId: data['dayId'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
@@ -231,6 +234,9 @@ class TabNavigator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     var routeBuilders = _routeBuilders(context);
 
     return Navigator(

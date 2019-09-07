@@ -90,6 +90,9 @@ class BottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return new Theme(
         data: Theme.of(context).copyWith(
           // sets the background color of the `BottomNavigationBar`

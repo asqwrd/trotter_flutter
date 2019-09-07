@@ -160,6 +160,9 @@ class SearchModalState extends State<SearchModal> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return new Scaffold(
         resizeToAvoidBottomPadding: false,
         body: FutureBuilder(
@@ -192,13 +195,13 @@ class SearchModalState extends State<SearchModal> {
 
     var error = snapshot.hasData ? snapshot.data.error : null;
     List<ChoiceChip> chips = [];
-    if (this.near == null) {
+    if (this.near == null && this.id == null) {
       chips.add(ChoiceChip(
           selected: this.location != null ? !selectId : true,
           label: AutoSizeText("Destinations"),
           onSelected: (bool value) {
             setState(() {
-              if (this.id.isNotEmpty) {
+              if (this.id != null && this.id.isNotEmpty) {
                 selectId = false;
                 nearId = false;
                 txt.text = '';
@@ -217,30 +220,33 @@ class SearchModalState extends State<SearchModal> {
             });
           }));
     }
-
-    if (this.destinationName != null) {
+    if (this.destinationName != null && this.id != null) {
       chips.add(ChoiceChip(
           selected: selectId,
           label: AutoSizeText(this.destinationName),
           onSelected: (bool value) {
-            setState(() {
-              if (this.id != null) selectId = !selectId;
-              if (selectId == false) {
-                nearId = selectId;
-              }
-              txt.text = '';
-              data = fetchSearchModal(
-                  '',
-                  this.location != null ? this.location['lat'] : null,
-                  this.location != null ? this.location['lng'] : null,
-                  selectId);
-              data.then((res) {
-                setState(() {
-                  this.nextPageToken = res.nextPageToken;
-                  this.results = res.results;
+            print(chips.length);
+            if ((chips.length == 2 && this.near == null) ||
+                (this.near != null && chips.length == 3)) {
+              setState(() {
+                if (this.id != null) selectId = !selectId;
+                if (selectId == false && this.near != null) {
+                  nearId = selectId;
+                }
+                txt.text = '';
+                data = fetchSearchModal(
+                    '',
+                    this.location != null ? this.location['lat'] : null,
+                    this.location != null ? this.location['lng'] : null,
+                    selectId);
+                data.then((res) {
+                  setState(() {
+                    this.nextPageToken = res.nextPageToken;
+                    this.results = res.results;
+                  });
                 });
               });
-            });
+            }
           }));
     }
 

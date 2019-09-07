@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
 class TrotterAppBar extends StatelessWidget {
   const TrotterAppBar(
@@ -27,6 +28,9 @@ class TrotterAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     var actions = this.actions;
     if (this.actions == null) {
       actions = [];
@@ -107,6 +111,9 @@ class TabBarLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Container(
       child: Shimmer.fromColors(
           baseColor: Color.fromRGBO(220, 220, 220, 0.8),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/flights-accomodation-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -74,6 +75,9 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     var store = Provider.of<TrotterStore>(context);
     return WillPopScope(

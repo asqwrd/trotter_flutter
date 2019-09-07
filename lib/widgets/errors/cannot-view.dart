@@ -2,6 +2,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'dart:core';
 
+import 'package:trotter_flutter/utils/index.dart';
+
 class CannotView extends StatelessWidget {
   final VoidCallback onRetry;
   final Color color;
@@ -11,6 +13,9 @@ class CannotView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(

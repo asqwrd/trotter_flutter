@@ -172,6 +172,9 @@ class DestinationState extends State<Destination>
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;

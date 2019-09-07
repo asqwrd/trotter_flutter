@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:date_range_picker/date_range_picker.dart' as DateRagePicker;
@@ -220,6 +221,9 @@ class CreateTripState extends State<CreateTrip> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) + 200;

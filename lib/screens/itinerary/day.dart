@@ -14,17 +14,27 @@ import 'package:trotter_flutter/widgets/errors/index.dart';
 class Day extends StatefulWidget {
   final String dayId;
   final String itineraryId;
+  final String linkedItinerary;
   final ValueChanged<dynamic> onPush;
-  Day({Key key, @required this.dayId, this.itineraryId, this.onPush})
+  Day(
+      {Key key,
+      @required this.dayId,
+      this.itineraryId,
+      this.linkedItinerary,
+      this.onPush})
       : super(key: key);
   @override
   DayState createState() => new DayState(
-      dayId: this.dayId, itineraryId: this.itineraryId, onPush: this.onPush);
+      dayId: this.dayId,
+      itineraryId: this.itineraryId,
+      linkedItinerary: this.linkedItinerary,
+      onPush: this.onPush);
 }
 
 class DayState extends State<Day> {
   final String dayId;
   final String itineraryId;
+  final String linkedItinerary;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.blueGrey;
   String destinationName = '';
@@ -78,10 +88,13 @@ class DayState extends State<Day> {
     super.dispose();
   }
 
-  DayState({this.dayId, this.itineraryId, this.onPush});
+  DayState({this.dayId, this.itineraryId, this.linkedItinerary, this.onPush});
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
@@ -247,11 +260,15 @@ class DayState extends State<Day> {
         color: color,
         onLongPressed: (data) {},
         onPressed: (data) {
-          onPush({
-            'id': data['id'],
-            'level': 'poi',
-            'google_place': data['google_place']
-          });
+          if (data['itinerary'] != null) {
+            onPush({'id': data['itinerary']['id'], 'level': 'itinerary'});
+          } else {
+            onPush({
+              'id': data['id'],
+              'level': 'poi',
+              'google_place': data['google_place']
+            });
+          }
         },
       ),
     ]);

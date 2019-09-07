@@ -4,6 +4,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:trotter_flutter/store/auth.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
 class MessageNotification extends StatelessWidget {
   final VoidCallback onDismiss;
@@ -17,6 +18,9 @@ class MessageNotification extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       child: ListTile(

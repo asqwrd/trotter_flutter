@@ -153,6 +153,9 @@ class SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     return new Scaffold(
         resizeToAvoidBottomPadding: false,
@@ -218,7 +221,7 @@ class SearchState extends State<Search> {
     var chips = [
       ChoiceChip(
           selected: this.id != null && this.id.isNotEmpty ? !selectId : true,
-          label: AutoSizeText("Anywhere"),
+          label: AutoSizeText("Destinations"),
           onSelected: (bool value) {
             setState(() {
               if (this.id != null && this.id.isNotEmpty) {

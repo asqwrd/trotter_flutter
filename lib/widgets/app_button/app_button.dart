@@ -16,6 +16,9 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return new RaisedButton(
         child: new AutoSizeText(buttonName,
             textDirection: TextDirection.ltr, style: buttonTextStyle),
@@ -39,6 +42,9 @@ class RetryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return RaisedButton(
       onPressed: () {
         this.onPressed();

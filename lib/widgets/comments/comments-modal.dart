@@ -153,6 +153,9 @@ class CommentsModalState extends State<CommentsModal> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return WillPopScope(
         onWillPop: () {
           Navigator.pop(context, {"total_comments": this.comments.length});

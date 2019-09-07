@@ -20,8 +20,10 @@ class DayList extends StatelessWidget {
   final String ownerId;
   @required
   final String header;
+  final int day;
   final String subHeader;
   final bool comments;
+  final dynamic linkedItinerary;
   final List<GlobalKey> showCaseKeys;
 
   //passing props in react style
@@ -30,9 +32,11 @@ class DayList extends StatelessWidget {
       this.onLongPressed,
       this.onCommentPressed,
       this.items,
+      this.day,
       this.ownerId,
       this.callback,
       this.color,
+      this.linkedItinerary,
       this.controller,
       this.physics,
       this.height,
@@ -44,6 +48,9 @@ class DayList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return buildTimeLine(context, this.items);
   }
 
@@ -99,10 +106,28 @@ class DayList extends StatelessWidget {
   }
 
   Widget buildTimeLine(BuildContext context, List<dynamic> items) {
-    if (items.length == 0) {
+    if (items.length == 0 && this.linkedItinerary == null) {
       return buildEmptyUI(context);
     }
-    var itineraryItems = ['', '', ...items];
+    var itineraryItems;
+    var linkItineraryPosition = '';
+    if (this.linkedItinerary != null &&
+        this.day >= this.linkedItinerary['start_day'] &&
+        this.day <
+            (this.linkedItinerary['number_of_days'] +
+                this.linkedItinerary['start_day'])) {
+      itineraryItems = ['', '', ...items, this.linkedItinerary];
+      linkItineraryPosition = 'bottom';
+    } else if (this.linkedItinerary != null &&
+        this.day ==
+            (this.linkedItinerary['number_of_days'] +
+                this.linkedItinerary['start_day'])) {
+      itineraryItems = ['', '', this.linkedItinerary, ...items];
+      linkItineraryPosition = 'top';
+    } else {
+      itineraryItems = ['', '', ...items];
+    }
+
     return Container(
         height: this.height ?? this.height,
         margin: EdgeInsets.only(top: 0.0, left: 0.0, right: 0.0),
@@ -147,6 +172,15 @@ class DayList extends StatelessWidget {
                       : Container()
                 ]),
               );
+            }
+            if (linkItineraryPosition == 'top' && index == 2) {
+              final destination = this.linkedItinerary['destination'];
+              return buildLinkedItinerary(context, destination, index);
+            }
+            if (linkItineraryPosition == 'bottom' &&
+                index == itineraryItems.length - 1) {
+              final destination = this.linkedItinerary['destination'];
+              return buildLinkedItinerary(context, destination, index);
             }
             var color = itineraryItems[index]['color'].isEmpty == false
                 ? Color(hexStringToHexInt(itineraryItems[index]['color']))
@@ -397,6 +431,126 @@ class DayList extends StatelessWidget {
         ));
   }
 
+  InkWell buildLinkedItinerary(BuildContext context, destination, int index) {
+    return InkWell(
+        onLongPress: () {
+          // this.onLongPressed(itineraryItems[index]);
+        },
+        onTap: () {
+          this.onPressed(this.linkedItinerary);
+        },
+        child: Container(
+            width: MediaQuery.of(context).size.width,
+            //height: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Column(children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    margin: EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                        color: this.color,
+                        borderRadius: BorderRadius.circular(100)),
+                    child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Column(children: <Widget>[
+                          Icon(Icons.flight_land,
+                              color: fontContrast(this.color), size: 20),
+                        ])),
+                  )
+                ]),
+                Flexible(
+                    child: Container(
+                        margin: EdgeInsets.only(left: 20, right: 0, bottom: 20),
+                        child: Column(children: <Widget>[
+                          Padding(
+                              padding: EdgeInsets.all(0),
+                              child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Row(
+                                            //crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: <Widget>[
+                                              Container(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width -
+                                                      105,
+                                                  child: AutoSizeText(
+                                                      destination[
+                                                          'destination_name'],
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ))),
+                                            ]),
+                                        Container(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width -
+                                                105,
+                                            padding: EdgeInsets.all(0),
+                                            margin: EdgeInsets.only(
+                                                top: 10,
+                                                left: 0,
+                                                right: 0,
+                                                bottom: 0),
+                                            child: AutoSizeText(
+                                              'Side trip to ${destination['destination_name']} tap to view this itinerary',
+                                              style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w300,
+                                                  height: 1.3),
+                                            ))
+                                      ],
+                                    )
+                                  ])),
+                          destination['image'].isEmpty == false
+                              ? this.showCaseKeys != null && index == 2
+                                  ? Showcase.withWidget(
+                                      shapeBorder: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(15)),
+                                      width: 250,
+                                      height: 50,
+                                      container: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Container(
+                                              width: 250,
+                                              child: Text(
+                                                'Tap to view details about itinerary item.\Press and hold to bring up menu items',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                                maxLines: 3,
+                                              ))
+                                        ],
+                                      ),
+                                      key: this.showCaseKeys[1],
+                                      child: renderDestinationImage(
+                                          context, destination))
+                                  : renderDestinationImage(context, destination)
+                              : Container()
+                        ])))
+              ],
+            )));
+  }
+
   InkWell renderCommentIcon(List itineraryItems, int index, totalComments) {
     return InkWell(
         borderRadius: BorderRadius.circular(100),
@@ -471,6 +625,48 @@ class DayList extends StatelessWidget {
                                   ))),
                             )
                           : Container()
+                    ])
+                  : Container(
+                      decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage('images/placeholder.png'),
+                          fit: BoxFit.cover),
+                    ))),
+        ));
+  }
+
+  Card renderDestinationImage(BuildContext context, item) {
+    return Card(
+        //opacity: 1,
+        elevation: 1,
+        margin: EdgeInsets.only(top: 15),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Container(
+          height: 200,
+          width: MediaQuery.of(context).size.width - 105,
+          child: ClipPath(
+              clipper: ShapeBorderClipper(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15))),
+              child: item['image'] != null
+                  ? Stack(fit: StackFit.expand, children: <Widget>[
+                      TransitionToImage(
+                        image: AdvancedNetworkImage(
+                          item['image'],
+                          useDiskCache: true,
+                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                        ),
+                        loadingWidgetBuilder:
+                            (BuildContext context, double progress, test) =>
+                                Center(
+                                    child: RefreshProgressIndicator(
+                          backgroundColor: Colors.white,
+                        )),
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        placeholder: const Icon(Icons.refresh),
+                        enableRefresh: true,
+                      ),
                     ])
                   : Container(
                       decoration: BoxDecoration(

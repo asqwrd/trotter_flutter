@@ -60,6 +60,9 @@ class ItineraryState extends State<Itinerary> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
@@ -256,6 +259,7 @@ class ItineraryState extends State<Itinerary> {
             onTap: () => onPush({
                   'itineraryId': this.itineraryId,
                   'dayId': dayId,
+                  "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
                   'level': 'itinerary/day'
                 }),
             child: Column(children: <Widget>[
@@ -291,6 +295,8 @@ class ItineraryState extends State<Itinerary> {
                           onPush({
                             'itineraryId': this.itineraryId,
                             'dayId': dayId,
+                            "linkedItinerary": dayBuilder[dayIndex]
+                                ['linked_itinerary'],
                             'level': 'itinerary/day'
                           });
                         },

@@ -42,6 +42,9 @@ class ProfileState extends State<Profile> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     final store = Provider.of<TrotterStore>(context);
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
 

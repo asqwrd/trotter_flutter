@@ -27,6 +27,9 @@ class ItineraryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Container(
         margin: EdgeInsets.symmetric(vertical: 0.0),
         child: buildRow(buildItems(context, this.items)));

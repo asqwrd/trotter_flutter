@@ -295,7 +295,9 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
 
   @override
   Widget build(BuildContext context) {
-    print(_form);
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     if (_form == null) {
       _form = _createForm(context);
     }
@@ -416,6 +418,9 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
 class AddButtonModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return RaisedButton(
         child: AutoSizeText("Button moved to separate widget"),
         onPressed: () {
@@ -448,6 +453,9 @@ class _TripDestinationDialogContentState
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     final store = Provider.of<TrotterStore>(context);
     return Scaffold(
         floatingActionButton: Builder(
@@ -885,6 +893,9 @@ class TripState extends State<Trip> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;

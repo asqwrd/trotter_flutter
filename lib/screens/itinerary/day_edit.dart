@@ -26,6 +26,7 @@ import 'package:intl/intl.dart';
 class DayEdit extends StatefulWidget {
   final String dayId;
   final String itineraryId;
+  final dynamic linkedItinerary;
   final dynamic startLocation;
   final ValueChanged<dynamic> onPush;
   DayEdit(
@@ -33,12 +34,14 @@ class DayEdit extends StatefulWidget {
       @required this.dayId,
       this.startLocation,
       this.itineraryId,
+      this.linkedItinerary,
       this.onPush})
       : super(key: key);
   @override
   DayEditState createState() => new DayEditState(
       dayId: this.dayId,
       itineraryId: this.itineraryId,
+      linkedItinerary: this.linkedItinerary,
       startLocation: this.startLocation,
       onPush: this.onPush);
 }
@@ -46,6 +49,7 @@ class DayEdit extends StatefulWidget {
 class DayEditState extends State<DayEdit> {
   final String dayId;
   final String itineraryId;
+  final dynamic linkedItinerary;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.transparent;
   String destinationName;
@@ -122,7 +126,12 @@ class DayEditState extends State<DayEdit> {
     super.dispose();
   }
 
-  DayEditState({this.dayId, this.itineraryId, this.startLocation, this.onPush});
+  DayEditState(
+      {this.dayId,
+      this.itineraryId,
+      this.startLocation,
+      this.onPush,
+      this.linkedItinerary});
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +185,7 @@ class DayEditState extends State<DayEdit> {
                       }
                       if (snapshot.hasData && snapshot.data.error == null) {
                         if (this.itineraryItems.length == 0 &&
+                            this.linkedItinerary == null &&
                             _pc.isPanelClosed() == true) {
                           _pc.open();
                         }
@@ -439,10 +449,12 @@ class DayEditState extends State<DayEdit> {
                 .add(Duration(days: day['day']))),
         ownerId: this.ownerId,
         controller: _sc,
+        day: day['day'],
         physics: disableScroll
             ? NeverScrollableScrollPhysics()
             : ClampingScrollPhysics(),
         items: itineraryItems,
+        linkedItinerary: this.linkedItinerary,
         color: color,
         startLocation: this.currentPosition != null
             ? this.currentPosition
@@ -454,11 +466,15 @@ class DayEditState extends State<DayEdit> {
             bottomSheetModal(context, day['day'] + 1, data);
         },
         onPressed: (data) {
-          onPush({
-            'id': data['id'],
-            'level': 'poi',
-            'google_place': data['google_place']
-          });
+          if (data['itinerary'] != null) {
+            onPush({'id': data['itinerary']['id'], 'level': 'itinerary/edit'});
+          } else {
+            onPush({
+              'id': data['id'],
+              'level': 'poi',
+              'google_place': data['google_place']
+            });
+          }
         },
         comments: true,
         showCaseKeys: [_two, _three],

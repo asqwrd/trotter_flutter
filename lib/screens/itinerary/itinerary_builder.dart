@@ -69,6 +69,9 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = 100.0;
@@ -400,6 +403,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           onPush({
                             'itineraryId': this.itineraryId,
                             'dayId': dayId,
+                            'linkedItinerary': dayBuilder[dayIndex]
+                                ['linked_itinerary'],
                             "startLocation": startLocation,
                             'level': 'itinerary/day/edit'
                           });
@@ -424,6 +429,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                             onPush({
                               'itineraryId': this.itineraryId,
                               'dayId': dayId,
+                              'linkedItinerary': dayBuilder[dayIndex]
+                                  ['linked_itinerary'],
                               "startLocation": startLocation,
                               'level': 'itinerary/day/edit'
                             });

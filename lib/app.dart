@@ -12,6 +12,7 @@ import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/auth/google.dart';
 import 'package:trotter_flutter/widgets/notification/message-notification.dart';
 import 'store/trips/middleware.dart';
@@ -243,6 +244,9 @@ class AppStateWidget extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     setState(() {
       this.appContext = context;
       store.setAppContext(context);

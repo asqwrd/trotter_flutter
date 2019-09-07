@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
 class GoogleAuthButtonContainer extends StatelessWidget {
   final TrotterStore store;
@@ -13,6 +14,9 @@ class GoogleAuthButtonContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     // Connect to the store:
     final store =
         this.store != null ? this.store : Provider.of<TrotterStore>(context);
@@ -45,6 +49,9 @@ class GoogleAuthButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     // Raised button is a widget that gives some
     // automatic Material design styles
     return RaisedButton(

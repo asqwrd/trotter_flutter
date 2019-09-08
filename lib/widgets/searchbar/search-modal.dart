@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:loadmore/loadmore.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -37,12 +38,26 @@ Future<SearchModalData> fetchSearchModal(
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
-      return SearchModalData.fromJson(json.decode(response.body));
+      final res = SearchModalData.fromJson(json.decode(response.body));
+      if (lat != null && lng != null && res.results != null) {
+        for (var result in res.results) {
+          final distanceInMeters = await Geolocator().distanceBetween(
+              result['location']['lat'], result['location']['lng'], lat, lng);
+          result['distance'] =
+              '${(distanceInMeters / 1000).toStringAsFixed(2)} km away';
+          result['distanceVal'] = distanceInMeters / 1000;
+        }
+        res.results
+            .sort((a, b) => a['distanceVal'].compareTo(b['distanceVal']));
+      }
+
+      return res;
     } else {
       // If that response was not OK, throw an error.
       return SearchModalData(error: 'Server error');
     }
   } catch (error) {
+    print(error);
     return SearchModalData(error: 'Server error');
   }
 }
@@ -61,7 +76,20 @@ Future<SearchModalData> fetchSearchModalNext(
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
-      return SearchModalData.fromJson(json.decode(response.body));
+      final res = SearchModalData.fromJson(json.decode(response.body));
+      if (lat != null && lng != null && res.results != null) {
+        for (var result in res.results) {
+          final distanceInMeters = await Geolocator().distanceBetween(
+              result['location']['lat'], result['location']['lng'], lat, lng);
+          result['distance'] =
+              '${(distanceInMeters / 1000).toStringAsFixed(2)} km away';
+          result['distanceVal'] = distanceInMeters / 1000;
+        }
+        res.results
+            .sort((a, b) => a['distanceVal'].compareTo(b['distanceVal']));
+      }
+
+      return res;
     } else {
       // If that response was not OK, throw an error.
       return SearchModalData(error: 'Server error');
@@ -453,11 +481,25 @@ class SearchModalState extends State<SearchModal> {
                                         fit: BoxFit.cover),
                                   ))),
                       ),
-                      title: AutoSizeText(
-                        results[index]['name'],
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w600),
-                      ),
+                      title: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            AutoSizeText(
+                              '${results[index]['name']}',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w600),
+                            ),
+                            results[index]['distance'] != null
+                                ? AutoSizeText(
+                                    '${results[index]['distance']}',
+                                    style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w300,
+                                        color: Colors.blueAccent),
+                                  )
+                                : Container()
+                          ]),
                       subtitle: results[index]['description_short'] != null
                           ? AutoSizeText(
                               results[index]['description_short'],

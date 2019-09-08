@@ -356,6 +356,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
             onTap: () => onPush({
                   'itineraryId': this.itineraryId,
                   'dayId': dayId,
+                  "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
                   "startLocation": startLocation,
                   'level': 'itinerary/day/edit'
                 }),

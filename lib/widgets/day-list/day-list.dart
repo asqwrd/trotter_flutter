@@ -113,13 +113,13 @@ class DayList extends StatelessWidget {
     var linkItineraryPosition = '';
     if (this.linkedItinerary != null &&
         this.day >= this.linkedItinerary['start_day'] &&
-        this.day <
+        this.day + 1 <
             (this.linkedItinerary['number_of_days'] +
                 this.linkedItinerary['start_day'])) {
       itineraryItems = ['', '', ...items, this.linkedItinerary];
       linkItineraryPosition = 'bottom';
     } else if (this.linkedItinerary != null &&
-        this.day ==
+        this.day + 1 ==
             (this.linkedItinerary['number_of_days'] +
                 this.linkedItinerary['start_day'])) {
       itineraryItems = ['', '', this.linkedItinerary, ...items];
@@ -173,12 +173,13 @@ class DayList extends StatelessWidget {
                 ]),
               );
             }
-            if (linkItineraryPosition == 'top' && index == 2) {
+
+            if (linkItineraryPosition == 'bottom' &&
+                index == itineraryItems.length - 1) {
               final destination = this.linkedItinerary['destination'];
               return buildLinkedItinerary(context, destination, index);
             }
-            if (linkItineraryPosition == 'bottom' &&
-                index == itineraryItems.length - 1) {
+            if (linkItineraryPosition == 'top' && index == 2) {
               final destination = this.linkedItinerary['destination'];
               return buildLinkedItinerary(context, destination, index);
             }
@@ -194,7 +195,7 @@ class DayList extends StatelessWidget {
                 ? this.startLocation['name']
                 : 'City Center';
             // value is 2 because first 2 values in the array are empty strings
-            if (prevIndex >= 2) {
+            if (prevIndex >= 2 && linkItineraryPosition != 'top') {
               from = itineraryItems[prevIndex]['poi']['name'];
             }
 
@@ -300,14 +301,20 @@ class DayList extends StatelessWidget {
                                                 poi == null
                                                     ? Container()
                                                     : Row(
-                                                        //crossAxisAlignment: CrossAxisAlignment.center,
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .center,
                                                         children: <Widget>[
                                                             Container(
-                                                                width: MediaQuery.of(
-                                                                            context)
-                                                                        .size
-                                                                        .width -
-                                                                    105,
+                                                                constraints: BoxConstraints(
+                                                                    maxWidth: justAdded ==
+                                                                            false
+                                                                        ? MediaQuery.of(context).size.width -
+                                                                            105
+                                                                        : MediaQuery.of(context).size.width -
+                                                                            170,
+                                                                    minWidth:
+                                                                        50),
                                                                 child: AutoSizeText(
                                                                     poi['name'],
                                                                     overflow:

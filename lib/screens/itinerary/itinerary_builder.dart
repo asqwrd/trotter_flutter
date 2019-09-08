@@ -1,356 +1,488 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:redux/redux.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_store/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/itineraries/middleware.dart';
+import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:trotter_flutter/widgets/itineraries/start-location-modal.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-
-
 
 class ItineraryBuilder extends StatefulWidget {
   final String itineraryId;
   final ValueChanged<dynamic> onPush;
-  ItineraryBuilder({Key key, @required this.itineraryId, this.onPush}) : super(key: key);
+  ItineraryBuilder({Key key, @required this.itineraryId, this.onPush})
+      : super(key: key);
   @override
-  ItineraryBuilderState createState() => new ItineraryBuilderState(itineraryId:this.itineraryId, onPush:this.onPush);
+  ItineraryBuilderState createState() => new ItineraryBuilderState(
+      itineraryId: this.itineraryId, onPush: this.onPush);
 }
 
 class ItineraryBuilderState extends State<ItineraryBuilder> {
-  bool _showTitle = false;
   static String id;
   final String itineraryId;
   final ValueChanged<dynamic> onPush;
-   GoogleMapController mapController;
-  
+  final ScrollController _sc = ScrollController();
+  PanelController _pc = new PanelController();
+  bool disableScroll = true;
+  bool errorUi = false;
+  bool loading = true;
+  String image;
+  List<dynamic> hotels;
+  dynamic destination;
+  Color color = Colors.transparent;
+  String itineraryName;
   Future<ItineraryData> data;
-  final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 280;
-
+  int startDate = 0;
+  GlobalKey _one = GlobalKey();
 
   @override
   void initState() {
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+    _sc.addListener(() {
+      setState(() {
+        if (_pc.isPanelOpen()) {
+          disableScroll = _sc.offset <= 0;
+        }
+      });
+    });
     super.initState();
-    //data = fetchItinerary(this.itineraryId);
-    
+    data = fetchItineraryBuilder(this.itineraryId);
   }
 
   @override
-  void dispose(){
-    _scrollController.dispose();
+  void dispose() {
+    _sc.dispose();
     super.dispose();
   }
 
-
-  ItineraryBuilderState({
-    this.itineraryId,
-    this.onPush
-  });
-
-  
-
+  ItineraryBuilderState({this.itineraryId, this.onPush});
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: StoreConnector <AppState, Store<AppState>>(
-        converter: (store) => store,
-        onInit: (store) async {
-          store.dispatch(new SetItineraryBuilderLoadingAction(true));
-          await fetchItineraryBuilder(store,this.itineraryId,'itinerary_builder');
-          store.dispatch(SetItineraryBuilderLoadingAction(false));
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    double _bodyHeight = MediaQuery.of(context).size.height - 110;
+    double _panelHeightClosed = 100.0;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String cacheData =
+          prefs.getString('itineraryBuilderShowcase') ?? null;
+      if (cacheData == null) {
+        ShowCaseWidget.startShowCase(context, [_one]);
+        await prefs.setString('itineraryBuilderShowcase', "true");
+      }
+    });
+    final store = Provider.of<TrotterStore>(context);
+    data.then((res) {
+      if (res.error != null) {
+        setState(() {
+          this.errorUi = true;
+        });
+      } else {
+        setState(() {
+          this.errorUi = false;
+          this.image = res.destination['image'];
+          this.destination = res.destination;
+          this.itineraryName = res.itinerary['name'];
+          this.startDate = res.itinerary['start_date'] * 1000;
+          this.color = Color(hexStringToHexInt(res.color));
+          this.hotels = res.hotels;
+          store.itineraryStore.setItineraryBuilder(
+            res.itinerary,
+            res.destination,
+            res.color,
+          );
+          store.itineraryStore.setItineraryBuilderLoading(false);
+        });
+      }
+    });
+    return Stack(alignment: Alignment.topCenter, children: <Widget>[
+      Positioned(
+          child: SlidingUpPanel(
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
+        controller: _pc,
+        backdropEnabled: true,
+        backdropColor: color,
+        backdropTapClosesPanel: false,
+        backdropOpacity: .8,
+        onPanelOpened: () {
+          setState(() {
+            disableScroll = false;
+          });
         },
-        builder: (context, store){
-            return _buildLoadedBody(context, store);
-        }
-      ) 
-    );
-  }
-  
-
-// function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, Store<AppState> store) {
-    if(store.state.itineraryBuilder == null || store.state.itineraryBuilder.loading){
-      return _buildLoadingBody(ctxt);
-    }
-    if(store.state.itineraryBuilder.error != null) {
-      return ErrorContainer(
-        onRetry: () async {
-          store.dispatch(new SetItineraryBuilderLoadingAction(true));
-          await fetchItineraryBuilder(store,this.itineraryId,'itinerary_builder');
-          store.dispatch(new SetItineraryBuilderLoadingAction(false));
+        onPanelClosed: () {
+          setState(() {
+            disableScroll = true;
+          });
         },
-      );
-    }
-
-    var itinerary = store.state.itineraryBuilder.itinerary;
-    var name = itinerary['name'];
-    var destinationName = itinerary['destination_name'];
-    var destinationCountryName = itinerary['destination_country_name'];
-    var days = itinerary['days'];
-    var destination = store.state.itineraryBuilder.destination;
-    var color = Color(hexStringToHexInt(store.state.itineraryBuilder.color));
-
-
-    return  NestedScrollView(
-      controller: _scrollController,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: _showTitle ? color : Colors.white,
-            automaticallyImplyLeading: false,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              leading: IconButton(
-                padding: EdgeInsets.all(0),
-                icon:  Icon(Icons.arrow_back),
-                onPressed: () {  Navigator.pop(context);},
-                iconSize: 30,
-                color: Colors.white,
-              ),
-              onPressed: (){
-                onPush({'query':'', 'level':'search'});
-              },
-                  
-            ),
-            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
-            flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: Stack(children: <Widget>[
-                  Positioned.fill(
-                      top: 0,
-                      child: ClipPath(
-                        clipper: BottomWaveClipperSlant(),
-                        child: CachedNetworkImage(
-                        imageUrl: destination['image'],
-                        fit: BoxFit.cover,
-                      )
-                    )
-                  ),
-                  Positioned.fill(
-                      top: 0,
-                      left: 0,
-                      child: ClipPath(
-                        clipper:BottomWaveClipperSlant(),
-                        child: Container(
-                        color: color.withOpacity(0.5),
-                      )
-                    )
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 150,
-                    width: MediaQuery.of(context).size.width,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children:<Widget>[
-                            Container(
-                              margin: EdgeInsets.only(right:10.0),
-                              child: SvgPicture.asset("images/trotter-logo.svg",
-                                width: 50.0,
-                                height: 50.0,
-                                fit: BoxFit.contain
-                              )
-                            ),
-                            Text('$name',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 40,
-                                fontWeight: FontWeight.w300
-                              )
-                            )
-                          ]
-                        ),
-                        Container(
-                          child:Text(
-                            '$destinationName, $destinationCountryName',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 25,
-                              fontWeight: FontWeight.w300
-                            )
-                          )
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        maxHeight: _panelHeightOpen,
+        panel: Center(
+            child: FutureBuilder(
+                future: data,
+                builder: (context, snapshot) {
+                  return _buildLoadedBody(context, store);
+                })),
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+              Positioned(
+                  width: MediaQuery.of(context).size.width,
+                  height: _bodyHeight,
+                  top: 0,
+                  left: 0,
+                  child: this.image != null
+                      ? TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            this.image,
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
                         )
-                      ]
-                    )
-                  ),
-                ]
-              )
-            ),
-          ),
-        ];
-      },
-      body:  _buildDay(days, destinationName, itinerary['destination'], color)
-    );
-  }
-
-  
-_buildDay(List<dynamic> days, String destinationName, String locationId, Color color){
-  return ListView.separated(
-      separatorBuilder: (BuildContext serperatorContext, int index) => new Container(margin:EdgeInsets.only(bottom: 40, top: 40), child:Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
-      padding: EdgeInsets.all(20.0),
-      itemCount: days.length,
-      shrinkWrap: true,
-      primary: true,
-      itemBuilder: (BuildContext listContext, int dayIndex){
-        var itineraryItems = days[dayIndex]['itinerary_items'];
-        var dayId = days[dayIndex]['id'];
-        
-        return GestureDetector(
-          onTap: () => onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'}),
-          child: Column(
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child:Container(
-                      child: Text(
-                        'Your ${ordinalNumber(days[dayIndex]['day'] + 1)} day in $destinationName',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w400
-                        ),
-                      )
-                    )
-                  ),
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child:Container(
-                      margin: EdgeInsets.only(bottom:20),
-                      child: Text(
-                        '${itineraryItems.length == 1 ? "place":"places"} to see',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w300
-                        ),
-                      )
-                    )
-                  )
-                ]
-              ), 
-              itineraryItems.length > 0 ? Container(
-                margin: EdgeInsets.only(top:0),
-                child: ItineraryList(
-                  items: itineraryItems,
-                  color: color,
-                  onPressed: (data){
-                    onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
-                  },
-                  onLongPressed: (data) {
-
-                  },
-                )
-              ) : Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.only(bottom:10),
-                      child: SvgPicture.asset(
-                        'images/itinerary-icon.svg',
-                        width: 100,
-                        height: 100,
-                      ),
-                    ),
-                    FlatButton(
-                      onPressed: (){
-                        onPush({'itineraryId':this.itineraryId, 'dayId':dayId, 'level':'itinerary/day/edit'});
-                      },
-                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                      clipBehavior: Clip.antiAliasWithSaveLayer,
-                      child: Text(
-                        'Start planning',
-                        style: TextStyle(
-                          color: color,
-                          fontWeight: FontWeight.w400,
-                          fontSize: 20
-                        )
-                      ),
-                    )
-                  ],
-                )
-              )
-            ]
-          )
-        );
-      },
-    );
-}
-  
-  // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
-    return Column(
-      //controller: _scrollControllerItinerary,
-      children: <Widget>[
-        Container(
-          height: 350,
-          color: Colors.white,
-          child: Stack(
-            children: <Widget>[
+                      : Container()),
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: ClipPath(
-                  clipper:BottomWaveClipperSlant(),
-                  child: Container(
-                    color: Color.fromRGBO(220, 220, 220, 0.8),
-                  )
-                )
+                child: Container(color: this.color.withOpacity(.3)),
               ),
-            ]
-          )
-        ),
-        Flexible( 
-          child: Container(
-            padding: EdgeInsets.only(top: 40.0, left:20, right:20),
-            decoration: BoxDecoration(color: Colors.white),
-            child: ListView(
-              physics: NeverScrollableScrollPhysics(),
-              children: <Widget>[
-                Align(
-                  alignment: Alignment.topLeft,
-                  child:Container(
-                    width: 200,
-                    height: 20,
-                    margin: EdgeInsets.only(bottom: 20),
-                    color: Color.fromRGBO(220, 220, 220, 0.8),
-                  )
-                ),
+              this.image == null
+                  ? Positioned(
+                      child: Center(
+                          child: RefreshProgressIndicator(
+                      backgroundColor: Colors.white,
+                    )))
+                  : Container()
+            ])),
+      )),
+      Positioned(
+          top: 0,
+          width: MediaQuery.of(context).size.width,
+          child: new TrotterAppBar(
+              onPush: onPush,
+              color: color,
+              title: this.itineraryName,
+              actions: <Widget>[
                 Container(
-                  width: double.infinity,
-                  margin: EdgeInsets.only(bottom: 30.0),
-                  child: ItineraryListLoading()
-                ),
+                    width: 50,
+                    height: 50,
+                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    child: Showcase.withWidget(
+                        shapeBorder: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100)),
+                        width: 250,
+                        height: 50,
+                        container: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Container(
+                                width: 250,
+                                child: Text(
+                                  'Tap to open location modal.\nSelect a starting location to use for each day',
+                                  style: TextStyle(color: Colors.white),
+                                  maxLines: 3,
+                                ))
+                          ],
+                        ),
+                        key: _one,
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100)),
+                          onPressed: () async {
+                            final store = Provider.of<TrotterStore>(context);
+
+                            var latlng = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    fullscreenDialog: true,
+                                    builder: (context) => StartLocationModal(
+                                          hotels: this.hotels,
+                                          destination: this.destination,
+                                        )));
+
+                            if (latlng != null) {
+                              final response = await updateStartLocation(
+                                  this.itineraryId, latlng, store);
+                              if (response.success == true) {
+                                Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: AutoSizeText(
+                                      'Updated start location',
+                                      style: TextStyle(fontSize: 13)),
+                                  duration: Duration(seconds: 5),
+                                ));
+                              } else {
+                                Scaffold.of(context).showSnackBar(SnackBar(
+                                  content: AutoSizeText(
+                                      'Failed to update start location',
+                                      style: TextStyle(fontSize: 13)),
+                                  duration: Duration(seconds: 5),
+                                ));
+                              }
+                            }
+                          },
+                          child: SvgPicture.asset("images/place-icon.svg",
+                              width: 25.0,
+                              height: 25.0,
+                              //color: fontContrast(color),
+                              fit: BoxFit.cover),
+                        ))),
               ],
-            )
-          )
-        )
-      ]
+              back: true)),
+    ]);
+  }
+
+// function for rendering view after data is loaded
+  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    if (this.errorUi == true) {
+      return ListView(
+          controller: _sc,
+          physics: disableScroll
+              ? NeverScrollableScrollPhysics()
+              : ClampingScrollPhysics(),
+          shrinkWrap: true,
+          children: <Widget>[
+            Container(
+                height: _panelHeightOpen - 80,
+                width: MediaQuery.of(context).size.width,
+                child: ErrorContainer(
+                  onRetry: () {
+                    store.itineraryStore.setItineraryBuilderLoading(true);
+                    data = fetchItineraryBuilder(this.itineraryId, store);
+                    store.itineraryStore.setItineraryBuilderLoading(false);
+                  },
+                ))
+          ]);
+    }
+    if (store.itineraryStore.itineraryBuilder.itinerary == null ||
+        store.itineraryStore.itineraryBuilder.loading ||
+        store.itineraryStore.itineraryBuilder.itinerary['id'] !=
+            this.itineraryId) {
+      return _buildLoadingBody(ctxt);
+    }
+
+    var itinerary = store.itineraryStore.itineraryBuilder.itinerary;
+    var startLocation = itinerary['start_location'] != null
+        ? itinerary['start_location']['location']
+        : itinerary['location'];
+    var destinationName = itinerary['destination_name'];
+    var destinationCountryName = itinerary['destination_country_name'];
+    var days = itinerary['days'];
+    var color =
+        Color(hexStringToHexInt(store.itineraryStore.itineraryBuilder.color));
+
+    return Container(
+        height: MediaQuery.of(context).size.height,
+        child: _buildDay(days, destinationName, destinationCountryName,
+            itinerary['destination'], color, startLocation));
+  }
+
+  _buildDay(
+      List<dynamic> days,
+      String destinationName,
+      String destinationCountryName,
+      String locationId,
+      Color color,
+      dynamic startLocation) {
+    var dayBuilder = ['', '', ...days];
+    return ListView.separated(
+      controller: _sc,
+      physics: disableScroll
+          ? NeverScrollableScrollPhysics()
+          : ClampingScrollPhysics(),
+      separatorBuilder: (BuildContext serperatorContext, int index) => index > 1
+          ? new Container(
+              margin: EdgeInsets.only(bottom: 40, top: 40),
+              child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)))
+          : Container(),
+      padding: EdgeInsets.all(20.0),
+      itemCount: dayBuilder.length,
+      shrinkWrap: true,
+      itemBuilder: (BuildContext listContext, int dayIndex) {
+        if (dayIndex == 0) {
+          return Center(
+              child: Container(
+            width: 30,
+            height: 5,
+            decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.all(Radius.circular(12.0))),
+          ));
+        }
+
+        if (dayIndex == 1) {
+          return Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.only(top: 10, bottom: 40),
+            child: AutoSizeText(
+              '$destinationName, $destinationCountryName',
+              style: TextStyle(fontSize: 25),
+            ),
+          );
+        }
+        var itineraryItems = dayBuilder[dayIndex]['itinerary_items'];
+        var dayId = dayBuilder[dayIndex]['id'];
+        final formatter = DateFormat.yMMMMd("en_US");
+
+        return InkWell(
+            onTap: () => onPush({
+                  'itineraryId': this.itineraryId,
+                  'dayId': dayId,
+                  "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
+                  "startLocation": startLocation,
+                  'level': 'itinerary/day/edit'
+                }),
+            child: Column(children: <Widget>[
+              Column(children: <Widget>[
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                        child: AutoSizeText(
+                      'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                    ))),
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                        child: AutoSizeText(
+                      formatter.format(DateTime.fromMillisecondsSinceEpoch(
+                              this.startDate,
+                              isUtc: true)
+                          .add(Duration(days: dayBuilder[dayIndex]['day']))),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                    ))),
+                Align(
+                    alignment: Alignment.topLeft,
+                    child: Container(
+                        margin: EdgeInsets.only(bottom: 20),
+                        child: AutoSizeText(
+                          '${itineraryItems.length} ${itineraryItems.length == 1 ? "place" : "places"} to see',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w300),
+                        )))
+              ]),
+              itineraryItems.length > 0 ||
+                      dayBuilder[dayIndex]['linked_itinerary'] != null
+                  ? Container(
+                      margin: EdgeInsets.only(top: 0),
+                      child: ItineraryList(
+                        items: itineraryItems,
+                        linkedItinerary: dayBuilder[dayIndex]
+                            ['linked_itinerary'],
+                        color: color,
+                        onPressed: (data) {
+                          onPush({
+                            'itineraryId': this.itineraryId,
+                            'dayId': dayId,
+                            'linkedItinerary': dayBuilder[dayIndex]
+                                ['linked_itinerary'],
+                            "startLocation": startLocation,
+                            'level': 'itinerary/day/edit'
+                          });
+                        },
+                        onLongPressed: (data) {},
+                      ))
+                  : Container(
+                      child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Container(
+                          margin: EdgeInsets.only(bottom: 10),
+                          child: SvgPicture.asset(
+                            'images/itinerary-icon.svg',
+                            width: 100,
+                            height: 100,
+                          ),
+                        ),
+                        FlatButton(
+                          onPressed: () {
+                            onPush({
+                              'itineraryId': this.itineraryId,
+                              'dayId': dayId,
+                              'linkedItinerary': dayBuilder[dayIndex]
+                                  ['linked_itinerary'],
+                              "startLocation": startLocation,
+                              'level': 'itinerary/day/edit'
+                            });
+                          },
+                          padding: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20),
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
+                          child: AutoSizeText('Start planning',
+                              style: TextStyle(
+                                  color: color,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 15)),
+                        )
+                      ],
+                    ))
+            ]));
+      },
+    );
+  }
+
+  // function for rendering while data is loading
+  Widget _buildLoadingBody(BuildContext ctxt) {
+    var children2 = <Widget>[
+      Center(
+          child: Container(
+        width: 30,
+        height: 5,
+        decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.all(Radius.circular(12.0))),
+      )),
+      Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(top: 10, bottom: 20),
+        child: AutoSizeText(
+          'Getting itinerary...',
+          style: TextStyle(fontSize: 25),
+        ),
+      ),
+      Center(heightFactor: 12, child: RefreshProgressIndicator()),
+    ];
+    return Container(
+      padding: EdgeInsets.only(top: 0.0),
+      decoration: BoxDecoration(color: Colors.transparent),
+      child: ListView(
+        controller: _sc,
+        physics: disableScroll
+            ? NeverScrollableScrollPhysics()
+            : ClampingScrollPhysics(),
+        children: children2,
+      ),
     );
   }
 }

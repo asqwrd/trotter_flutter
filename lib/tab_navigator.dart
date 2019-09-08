@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/screens/home/index.dart';
 import 'package:trotter_flutter/screens/country/index.dart';
-import 'package:trotter_flutter/screens/city/index.dart';
-import 'package:trotter_flutter/screens/city_state/index.dart';
+import 'package:trotter_flutter/screens/destination/index.dart';
 import 'package:trotter_flutter/screens/poi/index.dart';
 import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
-import 'package:trotter_flutter/screens/region/index.dart';
+import 'package:trotter_flutter/screens/notifications/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
 import 'package:trotter_flutter/screens/profile/index.dart';
+import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/searchbar/index.dart';
-
-
-
 
 class TabNavigatorRoutes {
   static const String root = '/';
@@ -31,6 +30,7 @@ class TabNavigatorRoutes {
   static const String day_edit = '/itinerary/day/edit';
   static const String day = '/itinerary/day';
   static const String createtrip = '/trip/create';
+  static const String travelinfo = '/trip/travelinfo';
 }
 
 class Contexts {
@@ -43,7 +43,7 @@ class TabNavigator extends StatelessWidget {
   final TabItem tabItem;
   //final ValueChanged<dynamic> onSwitchTab;
 
-  push(BuildContext context, Map<String, dynamic> data) {
+  Future<dynamic> push(BuildContext context, Map<String, dynamic> data) {
     var routeBuilders = _routeBuilders(context, data: data);
     var goTo = TabNavigatorRoutes.root;
     switch (data['level']) {
@@ -89,152 +89,155 @@ class TabNavigator extends StatelessWidget {
       case 'createtrip':
         goTo = TabNavigatorRoutes.createtrip;
         break;
+      case 'travelinfo':
+        goTo = TabNavigatorRoutes.travelinfo;
+        break;
       default:
         break;
     }
 
-    if(data['from'] != null && (data['from'] == 'search' || data['from'] == 'createtrip')) {
+    if (data['from'] != null &&
+        (data['from'] == 'search' || data['from'] == 'createtrip')) {
       return Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, _, __) => routeBuilders[goTo](context),
-        transitionsBuilder: (BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-            Widget child) {
-          return new FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        }),
-      );
-    } else {
-       return goTo == TabNavigatorRoutes.search || goTo == TabNavigatorRoutes.createtrip ? Navigator.push(
-        context,
-        MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (context) => routeBuilders[goTo](context),
-          )
-        )
-       : 
-       Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, _, __) => routeBuilders[goTo](context),
-          transitionsBuilder: (BuildContext context,
-            Animation<double> animation,
-            Animation<double> secondaryAnimation,
-            Widget child) {
+            pageBuilder: (context, _, __) => routeBuilders[goTo](context),
+            transitionsBuilder: (BuildContext context,
+                Animation<double> animation,
+                Animation<double> secondaryAnimation,
+                Widget child) {
               return new FadeTransition(
                 opacity: animation,
                 child: child,
               );
-            },
-            transitionDuration: const Duration(milliseconds: 300),
-          ),
-        );
-      }
+            }),
+      );
+    } else {
+      return goTo == TabNavigatorRoutes.search ||
+              goTo == TabNavigatorRoutes.createtrip
+          ? Navigator.push(
+              context,
+              MaterialPageRoute(
+                fullscreenDialog: true,
+                builder: (context) => routeBuilders[goTo](context),
+              ))
+          : Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, _, __) => routeBuilders[goTo](context),
+                transitionsBuilder: (BuildContext context,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation,
+                    Widget child) {
+                  return new FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 300),
+              ),
+            );
+    }
   }
 
-
-  Map<String, WidgetBuilder> _routeBuilders(BuildContext context,{Map<String, dynamic> data}) {
+  Map<String, WidgetBuilder> _routeBuilders(BuildContext context,
+      {Map<String, dynamic> data}) {
+    final store = Provider.of<TrotterStore>(context);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
-        countryId: data['id'],
-        onPush: (data) => push(context, data),
-      ),
-      TabNavigatorRoutes.city: (context) =>City(
-        cityId: data['id'],
-        onPush: (data) => push(context, data)
-      ),
-      TabNavigatorRoutes.region: (context) =>Region(
-        regionId: data['id'],
-        onPush: (data) => push(context, data)
-      ),
-      TabNavigatorRoutes.island: (context) => City(
-        cityId: data['id'],
-        onPush: (data) => push(context, data)
-      ),
-      TabNavigatorRoutes.cityState: (context) => CityState(
-        cityStateId: data['id'],
-        onPush: (data) => push(context, data)
-      ),
+            countryId: data['id'],
+            userId: store.currentUser != null ? store.currentUser.uid : '',
+            onPush: (data) => push(context, data),
+          ),
+      TabNavigatorRoutes.city: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.region: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.island: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.cityState: (context) => Destination(
+          destinationType: data['level'],
+          destinationId: data['id'],
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.poi: (context) => Poi(
-        poiId: data['id'],
-        locationId: data['locationId'],
-        googlePlace: data['google_place'], 
-        onPush: (data) => push(context, data)
-      ),
-      TabNavigatorRoutes.park: (context) => Park(
-        parkId: data['id'], 
-        onPush: (data) => push(context, data)
-      ),
-      TabNavigatorRoutes.trip: (context) => Trip(
-        tripId: data['id'], 
-        onPush: (data) => push(context, data)
-      ),
+          poiId: data['id'],
+          locationId: data['locationId'],
+          googlePlace: data['google_place'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.park: (context) =>
+          Park(parkId: data['id'], onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.trip: (context) =>
+          Trip(tripId: data['id'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary: (context) => Itinerary(
-        itineraryId: data['id'], 
-        onPush: (data) => push(context, data)
-      ),
+          itineraryId: data['id'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary_builder: (context) => ItineraryBuilder(
-        itineraryId: data['id'], 
-        onPush: (data) => push(context, data)
-      ),
+          itineraryId: data['id'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.day_edit: (context) => DayEdit(
-        itineraryId: data['itineraryId'], 
-        dayId: data['dayId'], 
-        onPush: (data) => push(context, data)
-      ),
+          itineraryId: data['itineraryId'],
+          dayId: data['dayId'],
+          linkedItinerary: data['linkedItinerary'],
+          startLocation: data['startLocation'],
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.day: (context) => Day(
-        itineraryId: data['itineraryId'], 
-        dayId: data['dayId'], 
-        onPush: (data) => push(context, data)
-      ),
+          itineraryId: data['itineraryId'],
+          linkedItinerary: data['linkedItinerary'],
+          dayId: data['dayId'],
+          onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
+          tripId: data['tripId'],
+          currentUserId: data['currentUserId'],
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(
-        param: data['param'],
-        onPush: (data) => push(context, data)
-      ),
+          param: data['param'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.search: (context) => Search(
-        query: '',
-        id: data['id'],
-        location: data['location'],
-        onPush: (data) => push(context, data)
-      ),
+          query: '',
+          id: data['id'],
+          location: data['location'],
+          destinationName: data['destinationName'],
+          onPush: (data) => push(context, data)),
     };
 
-    switch(this.tabItem){
+    switch (this.tabItem) {
       case TabItem.explore:
         routes[TabNavigatorRoutes.root] = (context) => Home(
-          onPush: (data) => push(context, data),
-        );
+              onPush: (data) => push(context, data),
+            );
         return routes;
       case TabItem.trips:
         routes[TabNavigatorRoutes.root] = (context) => Trips(
-            onPush: (data) => push(context, data),
-        );
+              onPush: (data) => push(context, data),
+            );
+        return routes;
+      case TabItem.notifications:
+        routes[TabNavigatorRoutes.root] = (context) => Notifications(
+              onPush: (data) => push(context, data),
+            );
         return routes;
       case TabItem.profile:
         routes[TabNavigatorRoutes.root] = (context) => Profile(
-          onPush: (data) => push(context, data),
-        );
+              onPush: (data) => push(context, data),
+            );
         return routes;
       default:
         routes[TabNavigatorRoutes.root] = (context) => Home(
-          onPush: (data) => push(context, data),
-        );
+              onPush: (data) => push(context, data),
+            );
         return routes;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     var routeBuilders = _routeBuilders(context);
-
-    //using trips context for anything trip related
-    /*if(this.tabItem == TabItem.trips){
-      Contexts.trips = context; 
-    }*/
 
     return Navigator(
         key: navigatorKey,

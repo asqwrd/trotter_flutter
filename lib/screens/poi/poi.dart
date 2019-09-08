@@ -1,41 +1,52 @@
 import 'dart:async';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:trotter_flutter/globals.dart';
 
-
-Future<PoiData> fetchPoi(String id, [bool googlePlace, String locationId]) async {
+Future<PoiData> fetchPoi(String id,
+    [bool googlePlace, String locationId]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('poi_$id') ?? null;
-  if(cacheData != null) {
+  final int cacheDataExpire = prefs.getInt('poi_$id-expiration') ?? null;
+  final currentTime = DateTime.now().millisecondsSinceEpoch;
+  if (cacheData != null &&
+      cacheDataExpire != null &&
+      (currentTime < cacheDataExpire)) {
     print('cached');
     await Future.delayed(const Duration(seconds: 1));
     return PoiData.fromJson(json.decode(cacheData));
   } else {
     try {
       print('no-cached');
-      final response = await http.get('http://localhost:3002/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId', headers:{'Authorization':'security'});
+      final response = await http.get(
+          '$ApiDomain/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId',
+          headers: {'Authorization': 'security'});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('poi_$id', response.body);
+        await prefs.setInt('poi_$id-expiration',
+            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         return PoiData.fromJson(json.decode(response.body));
       } else {
         // If that response was not OK, throw an error.
         var msg = response.statusCode;
-        return PoiData(error:'Response> $msg');
+        return PoiData(error: 'Response> $msg');
       }
-    } catch(error) {
-      return PoiData(error:'Server down');
+    } catch (error) {
+      return PoiData(error: 'Server down');
     }
   }
 }
@@ -43,342 +54,404 @@ Future<PoiData> fetchPoi(String id, [bool googlePlace, String locationId]) async
 class PoiData {
   final String color;
   final Map<String, dynamic> poi;
-  final String error; 
+  final String error;
 
   PoiData({this.color, this.poi, this.error});
 
   factory PoiData.fromJson(Map<String, dynamic> json) {
-    return PoiData(
-      color: json['color'],
-      poi: json['poi'],
-      error: null
-    );
+    return PoiData(color: json['color'], poi: json['poi'], error: null);
   }
 }
-
 
 class Poi extends StatefulWidget {
   final String poiId;
   final bool googlePlace;
   final String locationId;
   final ValueChanged<dynamic> onPush;
-  Poi({Key key, @required this.poiId, this.onPush, this.locationId, this.googlePlace,}) : super(key: key);
+  Poi({
+    Key key,
+    @required this.poiId,
+    this.onPush,
+    this.locationId,
+    this.googlePlace,
+  }) : super(key: key);
   @override
-  PoiState createState() => new PoiState(poiId:this.poiId, onPush:this.onPush, locationId: this.locationId, googlePlace: this.googlePlace);
+  PoiState createState() => new PoiState(
+      poiId: this.poiId,
+      onPush: this.onPush,
+      locationId: this.locationId,
+      googlePlace: this.googlePlace);
 }
 
 class PoiState extends State<Poi> {
-  bool _showTitle = false;
   static String id;
   final String poiId;
   final bool googlePlace;
   final String locationId;
   final ValueChanged<dynamic> onPush;
-   GoogleMapController mapController;
-  
+  Completer<GoogleMapController> _controller = Completer();
+  final ScrollController _sc = ScrollController();
+  PanelController _pc = new PanelController();
+  bool disableScroll = true;
+  bool errorUi = false;
+  bool loading = true;
+  List<dynamic> images = [];
+  String image;
+  Color color = Colors.transparent;
+  String poiName;
+
   Future<PoiData> data;
-  final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 300;
 
   @override
   void initState() {
-
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
+    _sc.addListener(() {
+      setState(() {
+        if (_pc.isPanelOpen()) {
+          disableScroll = _sc.offset <= 0;
+        }
+      });
+    });
     super.initState();
     data = fetchPoi(this.poiId, this.googlePlace, this.locationId);
-    
   }
 
   @override
-  void dispose(){
-    _scrollController.dispose();
+  void dispose() {
+    _sc.dispose();
     super.dispose();
   }
 
-
-  PoiState({
-    this.locationId,
-    this.googlePlace,
-    this.poiId,
-    this.onPush
-  });
-
-  
-
+  PoiState({this.locationId, this.googlePlace, this.poiId, this.onPush});
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: FutureBuilder(
-        future: data,
-        builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.waiting){
-            return _buildLoadingBody(context);
-          }
-          if (snapshot.hasData && snapshot.data.error == null) {
-            return _buildLoadedBody(context,snapshot);
-          } else if (snapshot.hasData && snapshot.data.error != null) {
-            return ErrorContainer(
-              onRetry: () {
-                setState(() {
-                  data = fetchPoi(this.poiId);
-                });
-              },
-            );
-          }
-          return _buildLoadingBody(context);
-        }
-      )
-    );
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
+    data.then((data) => {
+          if (data.error != null)
+            {
+              setState(() {
+                this.errorUi = true;
+              })
+            }
+          else if (data.error == null)
+            {
+              setState(() {
+                this.errorUi = false;
+                this.images = data.poi['images'];
+                this.image = data.poi['image'];
+                if (this.image == null) {
+                  this.image = '';
+                }
+                this.poiName = data.poi['name'];
+                this.color = Color(hexStringToHexInt(data.color));
+              })
+            }
+        });
+
+    return Stack(alignment: Alignment.topCenter, children: <Widget>[
+      Positioned(
+          child: SlidingUpPanel(
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
+        controller: _pc,
+        backdropEnabled: true,
+        backdropColor: color,
+        backdropTapClosesPanel: false,
+        backdropOpacity: .8,
+        onPanelOpened: () {
+          setState(() {
+            disableScroll = false;
+          });
+        },
+        onPanelClosed: () {
+          setState(() {
+            disableScroll = true;
+          });
+        },
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        maxHeight: _panelHeightOpen,
+        panel: Center(
+            child: FutureBuilder(
+                future: data,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data.error == null) {
+                    return _buildLoadedBody(context, snapshot);
+                  } else if (snapshot.hasData && snapshot.data.error != null) {
+                    return ListView(
+                        controller: _sc,
+                        physics: disableScroll
+                            ? NeverScrollableScrollPhysics()
+                            : ClampingScrollPhysics(),
+                        shrinkWrap: true,
+                        children: <Widget>[
+                          Container(
+                              height: _panelHeightOpen - 80,
+                              width: MediaQuery.of(context).size.width,
+                              child: ErrorContainer(
+                                onRetry: () {
+                                  setState(() {
+                                    data = fetchPoi(this.poiId);
+                                  });
+                                },
+                              ))
+                        ]);
+                  }
+                  return _buildLoadingBody(context);
+                })),
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+              Positioned.fill(
+                  top: 0,
+                  child: this.image == null
+                      ? Container(
+                          child: Center(
+                              child: RefreshProgressIndicator(
+                          backgroundColor: Colors.white,
+                        )))
+                      : TransitionToImage(
+                          image: this.image.length > 0
+                              ? AdvancedNetworkImage(
+                                  this.image,
+                                  useDiskCache: true,
+                                  cacheRule: CacheRule(
+                                      maxAge: const Duration(days: 7)),
+                                )
+                              : AssetImage("images/placeholder.png"),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          placeholder: Container(
+                              child: Image(
+                                  fit: BoxFit.cover,
+                                  image: AssetImage("images/placeholder.png"))),
+                          enableRefresh: true,
+                        )),
+              // this.image == null
+              //     ? Positioned(
+              //         child: Center(
+              //             child: RefreshProgressIndicator(
+              //         backgroundColor: Colors.white,
+              //       )))
+              //     : Container()
+            ])),
+      )),
+      Positioned(
+          top: 0,
+          width: MediaQuery.of(context).size.width,
+          child: new TrotterAppBar(
+              onPush: onPush, color: color, title: this.poiName, back: true)),
+    ]);
   }
-  
 
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    
-    var name = snapshot.data.poi['name'];
     var poi = snapshot.data.poi;
     var properties = poi['properties'];
-    var images = snapshot.data.poi['images'];
     var descriptionShort = snapshot.data.poi['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
 
-    void _onMapCreated(GoogleMapController controller) {
-      setState(() { 
-        mapController = controller; 
-        mapController.addMarker(
-          MarkerOptions(
-            position: LatLng(poi['location']['lat'], poi['location']['lng']),
-          )
-        );
-        /*mapController.animateCamera(CameraUpdate.newCameraPosition(
-          CameraPosition(
-            bearing: 270.0,
-            target: LatLng(poi['location']['lat'], poi['location']['lng']),
-            tilt: 30.0,
-            zoom: 17.0,
-          ),
-        ));*/
-      });
-    }
-
-    return NestedScrollView(
-      controller: _scrollController,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: _showTitle ? color : Colors.transparent,
-            automaticallyImplyLeading: false,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              fillColor: !_showTitle ? color.withOpacity(0.8) : Colors.white,
-              leading: IconButton(
-                padding: EdgeInsets.all(0),
-                icon:  Icon(Icons.arrow_back),
-                onPressed: () {  Navigator.pop(context);},
-                iconSize: 30,
-                color: Colors.white,
+    return Container(
+        height: MediaQuery.of(ctxt).size.height,
+        child: SingleChildScrollView(
+          controller: _sc,
+          physics: disableScroll
+              ? NeverScrollableScrollPhysics()
+              : ClampingScrollPhysics(),
+          child: ListView(shrinkWrap: true, primary: false, children: <Widget>[
+            Center(
+                child: Container(
+              width: 30,
+              height: 5,
+              decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.all(Radius.circular(12.0))),
+            )),
+            Container(
+              alignment: Alignment.center,
+              padding:
+                  EdgeInsets.only(top: 10, bottom: 20, left: 20, right: 20),
+              child: AutoSizeText(
+                'About ${this.poiName}',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 25),
               ),
-              onPressed: (){
-                onPush({'query':'', 'level':'search', 'id':poi['location_id'].toString()});
-              },
-                  
             ),
-            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
-            flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: Stack(children: <Widget>[
-                  Positioned.fill(
-                    top: 0,
-                    child: new Swiper(
-                      itemBuilder: (BuildContext context,int index){
-                        return Stack(
-                          fit: StackFit.expand,
-                          children: <Widget>[
-                            CachedNetworkImage(
-                              placeholder: (context, url) => SizedBox(
-                                width: 50, 
-                                height:50, 
-                                child: Align( alignment: Alignment.center, child:CircularProgressIndicator(
-                                  valueColor: new AlwaysStoppedAnimation<Color>(color),
-                                )
+            Padding(
+                padding: EdgeInsets.only(bottom: 40.0, left: 20.0, right: 20.0),
+                child: AutoSizeText(descriptionShort,
+                    style: TextStyle(
+                        fontSize: 13.0, fontWeight: FontWeight.w300))),
+            this.images != null && this.images.length > 0
+                ? Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    margin: EdgeInsets.only(bottom: 30),
+                    width: MediaQuery.of(context).size.width,
+                    height: 250,
+                    child: ClipPath(
+                      clipper: ShapeBorderClipper(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                      child: Swiper(
+                        itemBuilder: (BuildContext context, int index) {
+                          return Stack(fit: StackFit.expand, children: <Widget>[
+                            TransitionToImage(
+                              image: AdvancedNetworkImage(
+                                this.images[index]['sizes']['medium']['url'],
+                                useDiskCache: true,
+                                cacheRule:
+                                    CacheRule(maxAge: const Duration(days: 7)),
+                              ),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                                backgroundColor: Colors.white,
                               )),
-                              imageUrl: images[index]['sizes']['medium']['url'],
                               fit: BoxFit.cover,
-                            ),
-                            Container(
-                              color:Colors.black.withOpacity(0.1)
+                              alignment: Alignment.center,
+                              placeholder: const Icon(Icons.refresh),
+                              enableRefresh: true,
                             )
-
-                          ]
-                        );
-                      },
-                      loop: true,
-                      indicatorLayout: PageIndicatorLayout.SCALE,
-                      itemCount: images.length,
-                      index: 0,
-                      //transformer: DeepthPageTransformer(),
-                      pagination: new SwiperPagination(
-                        builder: new SwiperCustomPagination(builder:
-                        (BuildContext context, SwiperPluginConfig config) {
-                          return new ConstrainedBox(
-                            child: new Align(
-                                alignment: Alignment.bottomCenter,
+                          ]);
+                        },
+                        loop: true,
+                        indicatorLayout: PageIndicatorLayout.SCALE,
+                        itemCount: this.images.length,
+                        //transformer: DeepthPageTransformer(),
+                        pagination: new SwiperPagination(
+                          builder: new SwiperCustomPagination(builder:
+                              (BuildContext context,
+                                  SwiperPluginConfig config) {
+                            return new ConstrainedBox(
+                              child: new Align(
+                                alignment: Alignment.topCenter,
                                 child: new DotSwiperPaginationBuilder(
-                                        color: Colors.white,
+                                        color: Colors.black.withOpacity(.4),
                                         activeColor: color,
                                         size: 20.0,
                                         activeSize: 20.0)
                                     .build(context, config),
-                            ),
-                            constraints: new BoxConstraints.expand(height: 50.0),
-                          );
-                        }),
+                              ),
+                              constraints:
+                                  new BoxConstraints.expand(height: 50.0),
+                            );
+                          }),
+                        ),
                       ),
-                    ),
-                  ),
-                ]
-              )
-            ),
-          ),
-        ];
-      },
-      body: Container(
-        margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(bottom: 40.0, left:20.0, right: 20.0),
-              child: Text(
-                descriptionShort, 
-                style: TextStyle(
-                  fontSize: 18.0,
-                  fontWeight: FontWeight.w300
-                )
-              )
-            ),
-            Center(
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20.0),
-                height: 250.0,
-                width: double.infinity, 
-                child: ClipPath(
-                  clipper: CornerRadiusClipper(10.0), 
-                  child: GoogleMap(
-                    onMapCreated: _onMapCreated,
-                    options: GoogleMapOptions(
-                      cameraPosition: CameraPosition(
-                        bearing: 0.0,
-                        target: LatLng(poi['location']['lat'], poi['location']['lng']),
-                        tilt: 30.0,
-                        zoom: 17.0,
-                      ),
-                    ),
-                  )
-                ),
-              )
-            ),
+                    ))
+                : Container(),
             ListView.separated(
-              separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+              separatorBuilder: (BuildContext context, int index) =>
+                  new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
               padding: EdgeInsets.all(20.0),
               itemCount: properties.length,
               shrinkWrap: true,
               primary: false,
-              itemBuilder: (BuildContext context, int index) => _buildProperties(properties, index),
-            )
-            
-          ],
-        )
-      ),
-    );
+              itemBuilder: (BuildContext context, int index) =>
+                  _buildProperties(properties, index),
+            ),
+            Center(
+                child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 20.0),
+              margin: EdgeInsets.only(bottom: 20),
+              height: 250.0,
+              width: double.infinity,
+              child: ClipPath(
+                  clipper: CornerRadiusClipper(10.0),
+                  child: GoogleMap(
+                    onMapCreated: (GoogleMapController controller) {
+                      _controller.complete(controller);
+                    },
+                    markers: <Marker>[
+                      Marker(
+                          markerId: MarkerId(poi['id']),
+                          position: LatLng(
+                              poi['location']['lat'], poi['location']['lng']))
+                    ].toSet(),
+                    initialCameraPosition: CameraPosition(
+                      bearing: 0.0,
+                      target: LatLng(
+                          poi['location']['lat'], poi['location']['lng']),
+                      tilt: 30.0,
+                      zoom: 17.0,
+                    ),
+                  )),
+            )),
+          ]),
+        ));
   }
 
-  
-_buildProperties(List<dynamic> properties, int index){
-  return Container(
-    width: double.infinity,
-    padding: EdgeInsets.symmetric(vertical: 20),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
-      children: <Widget>[
-        Container(
-          margin: EdgeInsets.only(right: 10.0),
-          child:Text(
-            '${properties[index]['name']}:',
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.w500
-            ),
-          )
-        ),
-        Flexible(
-          child:Text(
-            properties[index]['value'],
-            //maxLines: 2,
-            //overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.w300
-            ),
-          )
-        ),
-      ],
-    )
-  );
-}
-  
-  // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
-    return NestedScrollView(
-      //controller: _scrollControllerPoi,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
-              ),
-            ),
-          ),
-        ];
-      },
-      body: Container(
-        padding: EdgeInsets.only(top: 40.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
+  _buildProperties(List<dynamic> properties, int index) {
+    return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
+                margin: EdgeInsets.only(right: 10.0),
+                child: AutoSizeText(
+                  '${properties[index]['name']}:',
+                  style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w500),
+                )),
+            Flexible(
+                child: AutoSizeText(
+              properties[index]['value'],
+              //maxLines: 2,
+              //overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w300),
+            )),
           ],
-        )
+        ));
+  }
+
+  // function for rendering while data is loading
+  Widget _buildLoadingBody(BuildContext ctxt) {
+    var children2 = <Widget>[
+      Center(
+          child: Container(
+        width: 30,
+        height: 5,
+        decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.all(Radius.circular(12.0))),
+      )),
+      Container(
+        alignment: Alignment.center,
+        padding: EdgeInsets.only(top: 10, bottom: 20),
+        child: AutoSizeText(
+          ' Loading...',
+          style: TextStyle(fontSize: 25),
+        ),
+      ),
+      Center(heightFactor: 12, child: RefreshProgressIndicator()),
+    ];
+    return Container(
+      padding: EdgeInsets.only(top: 0.0),
+      decoration: BoxDecoration(color: Colors.transparent),
+      child: ListView(
+        controller: _sc,
+        physics: disableScroll
+            ? NeverScrollableScrollPhysics()
+            : ClampingScrollPhysics(),
+        children: children2,
       ),
     );
   }

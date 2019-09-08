@@ -1,8 +1,8 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:html_unescape/html_unescape.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class ItineraryCard extends StatelessWidget {
   final String2VoidFunc onPressed;
@@ -23,6 +23,9 @@ class ItineraryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Container(
         margin: EdgeInsets.symmetric(vertical: 20.0),
         child: Container(
@@ -39,13 +42,13 @@ class ItineraryCard extends StatelessWidget {
         onLongPress: () {
           this.onLongPressed({'item': item});
         },
-        child: Column(
+        child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                  width: double.infinity,
-                  height: 250,
+                  width: 70,
+                  height: 70,
                   child: Stack(
                     children: <Widget>[
                       Positioned(
@@ -55,14 +58,6 @@ class ItineraryCard extends StatelessWidget {
                         valueColor: new AlwaysStoppedAnimation<Color>(color),
                       )))),
                       Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.black.withOpacity(0.05),
-                          ),
-                        ),
-                      ),
-                      Positioned.fill(
                         child: ClipPath(
                             clipper: ShapeBorderClipper(
                                 shape: RoundedRectangleBorder(
@@ -71,64 +66,87 @@ class ItineraryCard extends StatelessWidget {
                                             ['images'][0]['sizes']['medium']
                                         ['url'] !=
                                     null
-                                ? CachedNetworkImage(
-                                    placeholder: (context, url) => SizedBox(
-                                        width: 50,
-                                        height: 50,
-                                        child: Align(
-                                            alignment: Alignment.center,
+                                ? TransitionToImage(
+                                    image: AdvancedNetworkImage(
+                                      item['days'][0]['itinerary_items'][0]
+                                              ['poi']['images'][0]['sizes']
+                                          ['medium']['url'],
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    ),
+                                    loadingWidgetBuilder: (BuildContext context,
+                                            double progress, test) =>
+                                        Center(
                                             child: CircularProgressIndicator(
-                                              valueColor:
-                                                  new AlwaysStoppedAnimation<
-                                                      Color>(color),
-                                            ))),
+                                      backgroundColor: Colors.white,
+                                    )),
                                     fit: BoxFit.cover,
-                                    imageUrl: item['days'][0]['itinerary_items']
-                                            [0]['poi']['images'][0]['sizes']
-                                        ['medium']['url'],
-                                    errorWidget: (context, url, error) =>
-                                        Container(
-                                            decoration: BoxDecoration(
-                                          image: DecorationImage(
-                                              image: AssetImage(
-                                                  'images/placeholder.jpg'),
-                                              fit: BoxFit.cover),
-                                        )))
+                                    alignment: Alignment.center,
+                                    placeholder: const Icon(Icons.refresh),
+                                    enableRefresh: true,
+                                  )
                                 : Container(
                                     decoration: BoxDecoration(
                                     image: DecorationImage(
                                         image: AssetImage(
-                                            'images/placeholder.jpg'),
+                                            'images/placeholder.png'),
                                         fit: BoxFit.cover),
                                   ))),
                       )
                     ],
                   )),
               Container(
-                  padding: EdgeInsets.symmetric(vertical: 10.0),
-                  //width: double.infinity,
-                  child: Row(mainAxisSize: MainAxisSize.max, children: <Widget>[
-                    Flexible(
-                        child: Text(
-                      item['name'],
-                      textAlign: TextAlign.left,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w400,
-                          color: this.color),
-                    )),
-                    Flexible(
-                        child: Text(
-                      ' ${new HtmlUnescape().convert('&bull;')} ${item['destination_name']}, ${item['destination_country_name']}',
-                      textAlign: TextAlign.left,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
-                    )),
-                  ]))
+                  padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 10),
+                  width: MediaQuery.of(ctxt).size.width - 130,
+                  height: 70,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Container(
+                            child: AutoSizeText(
+                          item['name'],
+                          textAlign: TextAlign.left,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              color: this.color),
+                        )),
+                        Container(
+                            margin: EdgeInsets.only(top: 5),
+                            child: Row(children: <Widget>[
+                              Icon(
+                                Icons.place,
+                                size: 10,
+                                color: Colors.black.withOpacity(.3),
+                              ),
+                              AutoSizeText(
+                                '${item['destination_name']}, ${item['destination_country_name']}',
+                                textAlign: TextAlign.left,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.black.withOpacity(.5)),
+                              )
+                            ])),
+                        Container(
+                            height: 30,
+                            alignment: Alignment.bottomLeft,
+                            child: AutoSizeText(
+                              '${item['days'].length} day itinerary',
+                              textAlign: TextAlign.left,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w300),
+                            )),
+                      ]))
             ]));
   }
 }

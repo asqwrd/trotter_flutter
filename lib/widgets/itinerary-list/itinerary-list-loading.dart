@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
 class ItineraryListLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     return Container(
         margin: EdgeInsets.symmetric(vertical: 0.0),
         child: buildRow(buildItems(context)));

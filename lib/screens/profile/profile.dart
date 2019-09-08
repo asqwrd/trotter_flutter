@@ -1,205 +1,239 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:flutter_store/flutter_store.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/auth.dart';
+import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-
 
 class Profile extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
   Profile({Key key, this.onPush}) : super(key: key);
   @override
-  ProfileState createState() => new ProfileState(onPush:this.onPush);
+  ProfileState createState() => new ProfileState(onPush: this.onPush);
 }
 
 class ProfileState extends State<Profile> {
   final ValueChanged<dynamic> onPush;
-  bool _showTitle = false;
+  PanelController _pc = new PanelController();
+
   final ScrollController _scrollController = ScrollController();
   var kExpandedHeight = 280;
-
+  var trip;
+  final color = Color.fromRGBO(1, 155, 174, 1);
 
   @override
   void initState() {
-     _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
-
-    }));
     super.initState();
-    
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
 
-
-  ProfileState({
-    this.onPush
-  });
-
-  
-
+  ProfileState({this.onPush});
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector <AppState, AppState>(
-      converter: (store) => store.state,
-      builder: (context, store)=> _buildContent(context,store)
-    );
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
+    final store = Provider.of<TrotterStore>(context);
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+
+    return Stack(alignment: Alignment.topCenter, children: <Widget>[
+      Positioned(
+          child: SlidingUpPanel(
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        minHeight: _panelHeightOpen,
+        controller: _pc,
+        backdropEnabled: true,
+        backdropColor: color,
+        isDraggable: false,
+        backdropTapClosesPanel: false,
+        backdropOpacity: .8,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        maxHeight: _panelHeightOpen,
+        panel: Center(child: _buildContent(context, store)),
+        body: Container(color: color),
+      )),
+      Positioned(
+          top: 0,
+          width: MediaQuery.of(context).size.width,
+          child: new TrotterAppBar(
+            onPush: onPush,
+            color: color,
+            title: 'Profile',
+            showSearch: false,
+          )),
+    ]);
   }
 
-  Widget _buildContent(BuildContext context, AppState store){
-    var color = Color.fromRGBO(1, 155, 174,1);
-    return NestedScrollView(
-      controller: _scrollController,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: this._showTitle ? color : Colors.white,
-            automaticallyImplyLeading: false,
-            title: this._showTitle ? Row(
+  Widget _buildContent(BuildContext context, TrotterStore store) {
+    final List<Widget> fields = [
+      store.currentUser != null
+          ? ListTile(
+              title: CountryCodePicker(
+                onChanged: (CountryCode data) {
+                  print(data.code);
+                  setState(() {
+                    store.updateUserCountry(data.code);
+                  });
+                },
+                showOnlyCountryWhenClosed: true,
+                initialSelection: store.currentUser.country,
+                showCountryOnly: true,
+                alignLeft: true,
+              ),
+            )
+          : Container(),
+      store.currentUser != null
+          ? ListTile(
+              title: AutoSizeText('Notifications'),
+              trailing: Switch(
+                value: store.currentUser.notificationOn,
+                onChanged: (value) {
+                  setState(() {
+                    //isSwitched = value;
+                    store.updateUserNotification(value);
+                  });
+                },
+                activeTrackColor: color.withOpacity(.5),
+                activeColor: color,
+              ),
+            )
+          : Container()
+    ];
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        Center(
+            child: ListView(shrinkWrap: true, children: <Widget>[
+          Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children:<Widget>[
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
                 Container(
-                  margin: EdgeInsets.only(right:10.0),
-                  child: store.currentUser == null ? SvgPicture.asset("images/avatar-icon.svg",
-                    width: 30.0,
-                    height: 30.0,
-                    fit: BoxFit.contain
-                  ) : Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(100),
-                      border:Border.all(
-                        style: BorderStyle.solid,
-                        color: Colors.white,
-                        width: 2
-                      )
-                    ),
-                    child: ClipPath(
-                    clipper: CornerRadiusClipper(100),
-                    child:Image.network(
-                      store.currentUser.photoUrl,
-                      width: 30.0,
-                      height: 30.0,
-                      fit:BoxFit.contain
-                    )
-                  )) 
-                ),
-                Text('Profile',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w300
-                  )
-                )
-              ]
-            ) : Container(),
-            flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: Stack(children: <Widget>[
-                  Positioned.fill(
-                      top: 0,
-                      child:ClipPath(
-                      child: Image.asset("images/search2.jpg", fit:BoxFit.cover),
-                      clipper: CurveClipper(),
-                    )),
-                    Positioned.fill(
-                      top: 0,
-                      left: 0,
-                      child: ClipPath(
-                        clipper:CurveClipper(),
-                        child: Container(
-                        color: color.withOpacity(0.5),
-                      )
-                    )
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 100,
-                    width: MediaQuery.of(context).size.width,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children:<Widget>[
-                        Container(
-                          margin: EdgeInsets.only(right:10.0),
-                          child: store.currentUser == null ? SvgPicture.asset("images/avatar-icon.svg",
-                            width: 100.0,
-                            height: 100.0,
-                            fit: BoxFit.contain
-                          ) : Container(
+                    margin: EdgeInsets.only(right: 10.0, bottom: 10, top: 10),
+                    child: store.currentUser == null
+                        ? SvgPicture.asset(
+                            "images/avatar-icon.svg",
+                            width: 80.0,
+                            height: 80.0,
+                            fit: BoxFit.contain,
+                            color: color,
+                          )
+                        : Container(
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(100),
-                              border:Border.all(
-                                style: BorderStyle.solid,
-                                color: Colors.white,
-                                width: 2
-                              )
-                            ),
-                            child:ClipPath(
-                            clipper: CornerRadiusClipper(100),
-                            child:Image.network(
-                              store.currentUser.photoUrl,
-                              width: 100.0,
-                              height: 100.0,
-                              fit:BoxFit.contain
-                            )
-                          ))
-                        ),
-                        store.currentUser == null ? Text('Profile',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w300
-                          )
-                        ) : Text(store.currentUser.displayName,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w300
-                          )
-                        )
-                      ]
-                    )
-                  ),
-                  
-                ]
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(
+                                    style: BorderStyle.solid,
+                                    color: Colors.white,
+                                    width: 2)),
+                            child: ClipPath(
+                                clipper: CornerRadiusClipper(300),
+                                child: Image.network(store.currentUser.photoUrl,
+                                    width: 80.0,
+                                    height: 80.0,
+                                    fit: BoxFit.contain)))),
+                store.currentUser == null
+                    ? AutoSizeText('Profile',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w300))
+                    : AutoSizeText(store.currentUser.displayName,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w300))
+              ]),
+          Container(
+              margin: EdgeInsets.only(top: 20),
+              alignment: Alignment.center,
+              child: GoogleAuthButtonContainer()),
+          store.currentUser != null
+              ? ListView.separated(
+                  separatorBuilder:
+                      (BuildContext serperatorContext, int index) =>
+                          new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                  padding: EdgeInsets.all(20.0),
+                  itemCount: fields.length,
+                  shrinkWrap: true,
+                  primary: false,
+                  itemBuilder: (BuildContext listContext, int index) {
+                    return fields[index];
+                  })
+              : Container(),
+          store.currentUser != null
+              ? Container(
+                  margin: EdgeInsets.only(top: 50),
+                  alignment: Alignment.center,
+                  child: RaisedButton(
+                    onPressed: () async {
+                      if (store.profileLoading == false) {
+                        setState(() {
+                          store.profileLoading = true;
+                        });
+                        final data = {
+                          "notifications_on": store.currentUser.notificationOn,
+                          "country": store.currentUser.country
+                        };
+                        print(data);
+                        final response =
+                            await updateUser(store.currentUser.uid, data);
+                        print(response.success);
+                        if (response.success == true) {
+                          final SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          await prefs.clear();
+                          setState(() {
+                            store.profileLoading = false;
+                          });
+                          Scaffold.of(context).showSnackBar(SnackBar(
+                            content: AutoSizeText('Profile updated',
+                                style: TextStyle(fontSize: 18)),
+                            duration: Duration(seconds: 2),
+                          ));
+                        }
+                      }
+                    },
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    color: color,
+                    child: Container(
+                      width: 100,
+                      height: 40,
+                      alignment: Alignment.center,
+                      child: AutoSizeText(
+                        'Save',
+                        textAlign: TextAlign.center,
+                        style: new TextStyle(
+                            fontSize: 15.0,
+                            fontWeight: FontWeight.w300,
+                            color: fontContrast(color)),
+                      ),
+                    ),
+                  ))
+              : Container()
+        ])),
+        store.profileLoading
+            ? Align(
+                alignment: Alignment.center,
+                child: RefreshProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(color)),
               )
-            ),
-          ),
-        ];
-      },
-      body: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          ListView(
-            children: <Widget>[
-              Align(child:GoogleAuthButtonContainer())
-            ]
-          ),
-          // this.loading ?? Align(
-          //   alignment: Alignment.center,
-          //   child: CircularProgressIndicator(
-          //     valueColor: new AlwaysStoppedAnimation<Color>(color)
-          //   ),
-          // )
-        ],
-      )
+            : Container()
+      ],
     );
-
   }
-  
-
-
 }

@@ -1,16 +1,23 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:trotter_flutter/widgets/top-list/index.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_store/flutter_store.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/middleware.dart';
+import 'package:trotter_flutter/store/store.dart';
+import 'package:trotter_flutter/store/trips/middleware.dart';
+import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'dart:core';
 import 'package:trotter_flutter/widgets/auth/index.dart';
-import 'package:trotter_flutter/widgets/searchbar/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/redux/index.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:trotter_flutter/widgets/comments/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:share/share.dart';
 
+import '../../bottom_navigation.dart';
 
 enum CardActions { delete }
 
@@ -33,685 +40,722 @@ class Trips extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
   Trips({Key key, this.onPush}) : super(key: key);
   @override
-  TripsState createState() => new TripsState(onPush:this.onPush);
+  TripsState createState() => new TripsState(onPush: this.onPush);
 
   static TripsState of(BuildContext context) {
-    return (context.inheritFromWidgetOfExactType(_MyInheritedTrips) as _MyInheritedTrips).data;
+    return (context.inheritFromWidgetOfExactType(_MyInheritedTrips)
+            as _MyInheritedTrips)
+        .data;
   }
 }
 
 class TripsState extends State<Trips> {
-  bool _showTitle = false;
   bool refreshing = false;
   bool loggedIn = false;
   BuildContext context;
   final ValueChanged<dynamic> onPush;
-  
-  
-  Future<TripsData> data;
-  final ScrollController _scrollController = ScrollController();
-    var kExpandedHeight = 280;
+  bool isSub = false;
 
-    
+  Future<TripsData> data;
+  ScrollController _sc = new ScrollController();
+  PanelController _pc = new PanelController();
+  bool disableScroll = true;
 
   @override
   void initState() {
-    _scrollController.addListener(() => setState(() {
-      _showTitle =_scrollController.hasClients &&
-      _scrollController.offset > kExpandedHeight - kToolbarHeight;
+    _sc.addListener(() {
+      setState(() {
+        if (_pc.isPanelOpen()) {
+          disableScroll = _sc.offset <= 0;
+        }
+      });
+    });
 
-    }));
     super.initState();
-    
   }
+
   @override
-  void dispose(){
-    _scrollController.dispose();
+  void dispose() {
+    _sc.dispose();
     super.dispose();
   }
 
+  TripsState({this.onPush});
 
-  TripsState({
-    this.onPush
-  });
-
- 
   @override
   Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     this.context = context;
-    var color = Color.fromRGBO(234, 189, 149,1);
-    return StoreConnector <AppState, TripViewModel>(
-      converter: (store) => TripViewModel.create(store),
-      onInit: (store) async {
-        if(store.state.currentUser != null){
-          store.dispatch(new SetTripsLoadingAction(true));
-          await fetchTrips(store);
-          store.dispatch(SetTripsLoadingAction(false));
-          this.loggedIn = true;
+    var color = Color.fromRGBO(234, 189, 149, 1);
+    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+    double _bodyHeight = MediaQuery.of(context).size.height - 110;
+    double _panelHeightClosed = 100.0;
+    final store = Provider.of<TrotterStore>(context);
+    if (isSub == false) {
+      store.eventBus.on<FocusChangeEvent>().listen((event) async {
+        // All events are of type UserLoggedInEvent (or subtypes of it).
+        if (event.tab == TabItem.trips) {
+          // add mark notification as read if it makes it to the page
+          final eventdata = event.data;
+          if (eventdata['level'] == 'comments') {
+            await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (context) => CommentsModal(
+                        itineraryId: eventdata['itineraryId'],
+                        dayId: eventdata['dayId'],
+                        tripId: eventdata['tripId'],
+                        currentUserId: store.currentUser.uid,
+                        itineraryItemId: eventdata['itineraryItemId'],
+                        title:
+                            '${eventdata['itineraryName']} - ${eventdata['itineraryItemName']}')));
+            onPush({
+              "itineraryId": eventdata['itineraryId'],
+              "dayId": eventdata['dayId'],
+              "startLocation": eventdata['startLocation'],
+              'level': 'itinerary/day/edit'
+            });
+          } else {
+            fetchTrips(store);
+            onPush(eventdata);
+          }
         }
-      },
-      rebuildOnChange: true,
-      builder: (context, viewModel){
-        var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
-        var tripsError = StoreProvider.of<AppState>(context).state.tripsError;
-        var offline = StoreProvider.of<AppState>(context).state.offline; 
-        return Scaffold(
-          floatingActionButton: (currentUser != null && tripsError == null && offline == false) ? FloatingActionButton(
-            backgroundColor: color,
-            onPressed: () { 
-              onPush({"level": "createtrip"});
-              if(StoreProvider.of<AppState>(context).state.trips.length == 0){
-                setState(() {
-                  this._showTitle = false;           
-                });
-              }
-            },
-            tooltip: 'Create trip',
-            child: Icon(Icons.add),
-            elevation: 5.0,
-          ) : null,
-          body: _buildLoadedBody(context, viewModel, color)
-        );
-      }
-    );
+      });
+      setState(() {
+        isSub = true;
+      });
+    }
+
+    return Stack(alignment: Alignment.topCenter, children: <Widget>[
+      Positioned(
+          child: SlidingUpPanel(
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        minHeight: _panelHeightClosed,
+        controller: _pc,
+        backdropEnabled: true,
+        backdropColor: color,
+        backdropTapClosesPanel: false,
+        backdropOpacity: .8,
+        onPanelOpened: () {
+          setState(() {
+            disableScroll = false;
+          });
+        },
+        onPanelClosed: () {
+          setState(() {
+            disableScroll = true;
+          });
+        },
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        maxHeight: _panelHeightOpen,
+        panel: Center(child: buildScaffold(color, store, context)),
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+              Positioned(
+                  width: MediaQuery.of(context).size.width,
+                  height: _bodyHeight,
+                  top: 0,
+                  left: 0,
+                  child: Image.asset(
+                    "images/trips2.jpg",
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                  )),
+              Positioned.fill(
+                top: 0,
+                left: 0,
+                child: Container(color: color.withOpacity(.3)),
+              ),
+            ])),
+      )),
+      Positioned(
+          top: 0,
+          width: MediaQuery.of(context).size.width,
+          child: new TrotterAppBar(
+            onPush: onPush,
+            color: color,
+            title: 'Trips',
+            actions: <Widget>[
+              Container(
+                  width: 58,
+                  height: 58,
+                  margin: EdgeInsets.symmetric(horizontal: 0),
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () async {
+                      store.setTripsRefreshing(true);
+                      await fetchTrips(store);
+                      store.setTripsRefreshing(false);
+                    },
+                    child: SvgPicture.asset("images/refresh_icon.svg",
+                        width: 24.0,
+                        height: 24.0,
+                        color: Colors.white,
+                        fit: BoxFit.contain),
+                  ))
+            ],
+          )),
+    ]);
   }
 
-  
-  
+  Scaffold buildScaffold(
+      Color color, TrotterStore store, BuildContext context) {
+    var currentUser = store.currentUser;
+    var tripsError = store.tripStore.tripsError;
+    var offline = store.offline;
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        floatingActionButton:
+            (currentUser != null && tripsError == null && offline == false)
+                ? FloatingActionButton(
+                    backgroundColor: color,
+                    onPressed: () {
+                      onPush({"level": "createtrip"});
+                    },
+                    tooltip: 'Create trip',
+                    child: Icon(Icons.add),
+                    elevation: 5.0,
+                  )
+                : null,
+        body: _buildLoadedBody(context, store, color));
+  }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, TripViewModel viewModel, Color color) {
-    var error =  StoreProvider.of<AppState>(context).state.tripsError;
-    var offline =  StoreProvider.of<AppState>(context).state.offline;
-    var trips = StoreProvider.of<AppState>(context).state.trips;
-    var currentUser = StoreProvider.of<AppState>(context).state.currentUser;
-    var loading = StoreProvider.of<AppState>(context).state.tripLoading;
-    var store = StoreProvider.of<AppState>(context);
-    if(loading == true)
-      return _buildLoadingBody(context, viewModel);
-      
-    if(error != null && offline == false){
+  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store, Color color) {
+    var error = store.tripStore.tripsError;
+    var offline = store.offline;
+    var trips = store.tripStore.trips;
+    var currentUser = store.currentUser;
+    var loading = store.tripsLoading;
+
+    if (error != null && offline == false) {
       return ErrorContainer(
         color: color,
-        onRetry: (){
-          store.dispatch(new SetTripsLoadingAction(true));
-          viewModel.onGetTrips();
+        onRetry: () {
+          store.tripStore.setTripsLoading(true);
+          fetchTrips(store);
         },
       );
     }
-    
-   if(currentUser == null){
+
+    if (currentUser == null) {
       return Scaffold(
-        
-        appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            brightness: Brightness.light,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              fillColor: color.withOpacity(0.3),
-              onPressed: (){
-                onPush({'query':'', 'level':'search'});
-              },     
-            ),
-          ),
-          body:Stack( children: <Widget>[
-            Center(
-            child:Container(
-              color:Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Image.asset('images/trips-login.png', width:170, height: 170, fit: BoxFit.contain),
-                  Text(
-                    'Want to create a trip?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 35,
-                      color: color,
-                      fontWeight: FontWeight.w300
-                      
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Sign up and start planning right away.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 25,
-                      color: color,
-                      fontWeight: FontWeight.w300
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(top: 40),
-                    child: GoogleAuthButtonContainer()
-                  )
-                ],
-              )
-            )
-          ),
-          this.refreshing == true ? Center(
-              child: RefreshProgressIndicator()
-            ) : Container()
-          ])); 
-    } else if(currentUser != null && this.loggedIn == false){
-      store.dispatch(new SetTripsLoadingAction(true));
-      fetchTrips(store);
-      this.loggedIn = true;
-    }
-
-    
-    if(trips.length == 0) {
-      return Scaffold(
-        
-        appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            brightness: Brightness.light,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              fillColor: color.withOpacity(0.3),
-              onPressed: (){
-                onPush({'query':'', 'level':'search'});
-              },     
-            ),
-          ),
-          body:Stack( children: <Widget>[
-            Center(
-            child:Container(
-              color:Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Image.asset('images/trips-empty.png', width:170, height: 170, fit: BoxFit.contain),
-                  Text(
-                    'No trips planned yet?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 35,
-                      color: color,
-                      fontWeight: FontWeight.w300
-                      
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Create a trip to start planning your next adventure!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 25,
-                      color: color,
-                      fontWeight: FontWeight.w200
-                    ),
-                  )
-                ],
-              )
-            )
-          ),
-          this.refreshing == true ? Center(
-              child: RefreshProgressIndicator()
-            ) : Container()
-          ])); 
-    }
-   
-
-
-    return NestedScrollView(
-      controller: _scrollController,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: this._showTitle ? color : Colors.white,
-            automaticallyImplyLeading: false,
-            title: SearchBar(
-              placeholder: 'Explore the world',
-              onPressed: (){
-                onPush({'query':'', 'level':'search'});
-              },
-                  
-            ),
-            bottom: PreferredSize(preferredSize: Size.fromHeight(15), child: Container(),),
-            flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                collapseMode: CollapseMode.parallax,
-                background: Stack(children: <Widget>[
-                  Positioned.fill(
-                      top: 0,
-                      child: ClipPath(
-                        clipper: BottomWaveClipper(),
-                        child: Image.asset(
-                        'images/trips.jpg',
-                        fit: BoxFit.cover,
-                      )
-                    )
-                  ),
-                  Positioned.fill(
-                      top: 0,
-                      left: 0,
-                      child: ClipPath(
-                        clipper:BottomWaveClipper(),
-                        child: Container(
-                        color: color.withOpacity(0.5),
-                      )
-                    )
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 180,
-                    width: MediaQuery.of(context).size.width,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children:<Widget>[
-                        Container(
-                          margin: EdgeInsets.only(right:10.0),
-                          child: SvgPicture.asset("images/trotter-logo.svg",
-                            width: 50.0,
-                            height: 50.0,
-                            fit: BoxFit.contain
-                          )
-                        ),
-                        Text('Trips',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w300
-                          )
-                        )
-                      ]
-                    )
-                  ),
-                ]
-              )
-            ),
-          ),
-        ];
-      },
-      body: Container(
-        margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(color: Colors.white),
-        child: Stack(
-          children: <Widget>[
-            Positioned.fill(
-              child: RefreshIndicator(
-                onRefresh: () => viewModel.onGetTrips(),
-                child: Stack(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(20),
+                child: Column(
                   children: <Widget>[
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: trips.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        var color = Color(hexStringToHexInt(trips[index]['color']));
-                        //var maincolor = Color.fromRGBO(1, 155, 174, 1);            
-                        var onPressed2 = () async {
-                          var undoData = {
-                            "trip":{
-                              "image": trips[index]['image'],
-                              "name": trips[index]['name']
-                            },
-                            "destinations": trips[index]['destinations']
-                          };
-                          setState(() {
-                            this.refreshing = true;                                
-                          });
-                          var response = await viewModel.onDeleteTrip(trips[index]['id']);
-                          setState(() {
-                            this.refreshing = false;                           
-                          });
-                          if(response.success == true) {
-                            this.context = context;
-                            setState(() {
-                              if(StoreProvider.of<AppState>(context).state.trips.length == 0){
-                                this._showTitle = false;
-                              }                                
-                            });
-                            Scaffold
-                            .of(context)
-                            .showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${trips[index]['name']}\'s was deleted.',
-                                  style: TextStyle(
-                                    fontSize: 18
-                                  )
-                                ),
-                                duration: Duration(seconds: 2),
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  textColor: color,
-                                  onPressed: () async {
-                                    setState(() {
-                                      this.refreshing = true;                               
-                                    });
-                                    var response = await viewModel.undoDeleteTrip(undoData, index);
-                                    setState(() {
-                                      this.refreshing = false;
-                                    });
-                                    if(response.success == true){
-                                      Scaffold.of(this.context).removeCurrentSnackBar();
-                                      Scaffold
-                                      .of(this.context)
-                                      .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Undo successful!',
-                                            style: TextStyle(
-                                              fontSize: 18
-                                            )
-                                          ),
-                                          duration: Duration(seconds: 2),
-                                        )
-                                      ); 
-    
-                                    } else {
-                                      Scaffold.of(this.context).removeCurrentSnackBar();
-                                      Scaffold
-                                      .of(this.context)
-                                      .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Sorry the undo failed!',
-                                            style: TextStyle(
-                                              fontSize: 18
-                                            )
-                                          ),
-                                          duration: Duration(seconds: 2)
-                                        )
-                                      ); 
-                                    }
-
-                                  },
-                                ),
-                              )
-                            ); 
-                          } else {
-                            Scaffold
-                            .of(context)
-                            .showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${trips[index]['name']} failed to be deleted.',
-                                  style: TextStyle(
-                                    fontSize: 18
-                                  )
-                                ),
-                                duration: Duration(seconds: 2)
-                              )
-                            ); 
-                          }
-                        };
-                        return InkWell(
-                          onTap: () async {
-                            onPush({'id':trips[index]['id'].toString(), 'level':'trip'});
-                          },
-                          child:Card(
-                            semanticContainer: true,
-                            color: Colors.white,
-                            clipBehavior: Clip.antiAliasWithSaveLayer,
-                            child: Column(
-                              children: <Widget>[  
-                                Container(
-                                  height: 350.0,
-                                  width: double.infinity,
-                                  color: Colors.white,
-                                  child: Stack(
-                                    children: <Widget>[
-                                      Positioned.fill(
-                                        top:0,
-                                        left:0,
-                                        
-                                        child: ClipPath( 
-                                          clipper: CurveClipper(),
-                                          child: CachedNetworkImage(
-                                            imageUrl: trips[index]['image'],
-                                            fit: BoxFit.cover,
-                                          )
-                                        )
-                                      ),
-                                      Positioned.fill(
-                                        top:0,
-                                        left:0,
-                                        
-                                        child: ClipPath( 
-                                          clipper: CurveClipper(),
-                                          child: Container(
-                                            color: color.withOpacity(.3),
-                                          )
-                                        )
-                                      ),
-                                      Positioned.fill(
-                                        top:300,
-                                        left:0,
-                                        child: ListView(
-                                          shrinkWrap: true,
-                                          primary: false,
-                                          children:<Widget>[
-                                            Padding(
-                                              padding: EdgeInsets.only(top: 0.0, bottom: 10, left:20, right:20),
-                                              child: Text(
-                                                trips[index]['name'].toUpperCase(),
-                                                overflow: TextOverflow.fade,
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  color: color,
-                                                  fontSize: 25.0,
-                                                  fontWeight: FontWeight.w500
-                                                  
-                                                ),
-                                              )
-                                            ),
-                                            Align(child:Container(
-                                              padding: EdgeInsets.symmetric(horizontal: 20),
-                                              width: 130,
-                                              child: Divider(
-                                                color: Color.fromRGBO(0, 0, 0, 0.4),
-                                                
-                                                
-                                              )
-                                            )),
-                                          ] 
-                                        ),
-                                      ),
-                                      Positioned(
-                                        top:20,
-                                        left: 20,
-                                        child: GestureDetector( 
-                                          onTap: onPressed2,
-                                          child: Container(
-                                            padding: EdgeInsets.all(5),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(15),
-                                              color: fontContrast(color).withOpacity(.3)
-                                            ),
-                                            child: Icon(EvilIcons.close, color: fontContrast(color).withOpacity(.8),size: 35,)
-                                          ),
-                                        )
-                                      ),
-                                    ],
-                                  )                         
-                                ),
-                                ListView(
-                                  shrinkWrap: true,
-                                  primary: false,
-                                  children:<Widget>[
-                                    _buildDestinationInfo(trips[index]['destinations'], color),
-                                  ] 
-                                )
-                              ]
-                            ),
-                            
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            elevation:1,
-                            margin: EdgeInsets.only(top:20, left:20, right:20, bottom:20),
-                          )
-                        );
-                      },
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10, bottom: 20),
+                      child: AutoSizeText(
+                        'Get Started',
+                        style: TextStyle(fontSize: 25),
+                      ),
                     )
-                  ]
-                )
-              )
-            ),
-            this.refreshing == true ? Center(
-              child: RefreshProgressIndicator()
-            ) : Container()
-          ]
-        )
-      ),
-    );
+                  ],
+                ),
+              )),
+          body: Stack(children: <Widget>[
+            Center(
+                child: Container(
+                    color: Colors.transparent,
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Container(
+                            width: MediaQuery.of(context).size.width / 2,
+                            height: MediaQuery.of(context).size.width / 2,
+                            foregroundDecoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(.3),
+                                    Colors.white.withOpacity(1),
+                                    Colors.white.withOpacity(1),
+                                  ],
+                                  center: Alignment.center,
+                                  focal: Alignment.center,
+                                  radius: 1.05,
+                                ),
+                                borderRadius: BorderRadius.circular(130)),
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage('images/trips-login.jpg'),
+                                    fit: BoxFit.contain),
+                                borderRadius: BorderRadius.circular(130))),
+                        AutoSizeText(
+                          'Want to create a trip?',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ),
+                        SizedBox(height: 10),
+                        AutoSizeText(
+                          'Sign up and start planning right away.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 20,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ),
+                        Container(
+                            margin: EdgeInsets.only(top: 35),
+                            child: GoogleAuthButtonContainer())
+                      ],
+                    ))),
+            store.tripsLoading == true
+                ? Center(child: RefreshProgressIndicator())
+                : Container()
+          ]));
+    } else if (currentUser != null && trips == null) {
+      fetchTrips(store).then((res) {
+        setState(() {
+          this.loggedIn = true;
+        });
+      });
+    }
+
+    if (loading == true || trips == null) {
+      return ListView(children: <Widget>[
+        Center(
+            child: Container(
+          width: 30,
+          height: 5,
+          decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.all(Radius.circular(12.0))),
+        )),
+        Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(top: 10, bottom: 20),
+          child: AutoSizeText(
+            'Getting trips...',
+            style: TextStyle(fontSize: 25),
+          ),
+        ),
+        Center(child: RefreshProgressIndicator())
+      ]);
+    }
+
+    if (trips.length == 0) {
+      return Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(20),
+                child: Column(
+                  children: <Widget>[
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10, bottom: 20),
+                      child: AutoSizeText(
+                        'Get started',
+                        style: TextStyle(fontSize: 25),
+                      ),
+                    )
+                  ],
+                ),
+              )),
+          body: Stack(children: <Widget>[
+            Center(
+                child: Container(
+                    color: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Container(
+                            width: MediaQuery.of(context).size.width / 2,
+                            height: MediaQuery.of(context).size.width / 2,
+                            foregroundDecoration: BoxDecoration(
+                                gradient: RadialGradient(
+                                  colors: [
+                                    Colors.white.withOpacity(.2),
+                                    Colors.white.withOpacity(1),
+                                    Colors.white.withOpacity(1),
+                                  ],
+                                  center: Alignment.center,
+                                  focal: Alignment.center,
+                                  radius: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(130)),
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage('images/trips-empty.jpg'),
+                                    fit: BoxFit.contain),
+                                borderRadius: BorderRadius.circular(130))),
+                        AutoSizeText(
+                          'No trips planned yet?',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ),
+                        SizedBox(height: 10),
+                        AutoSizeText(
+                          'Create a trip to start planning your next adventure!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w200),
+                        )
+                      ],
+                    ))),
+            store.tripsLoading == true
+                ? Center(child: RefreshProgressIndicator())
+                : Container()
+          ]));
+    }
+
+    var tripBuilder = ['', '', ...trips];
+
+    return Container(
+        height: MediaQuery.of(context).size.height,
+        child: Stack(children: <Widget>[
+          ListView.builder(
+            controller: _sc,
+            physics: disableScroll
+                ? NeverScrollableScrollPhysics()
+                : ClampingScrollPhysics(),
+            itemCount: tripBuilder.length,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == 0) {
+                return Center(
+                    child: Container(
+                  width: 30,
+                  height: 5,
+                  decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.all(Radius.circular(12.0))),
+                ));
+              }
+
+              if (index == 1) {
+                return Container(
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                  child: AutoSizeText(
+                    'Your adventures',
+                    style: TextStyle(fontSize: 25),
+                  ),
+                );
+              }
+              var color = Color(hexStringToHexInt(tripBuilder[index]['color']));
+              //var maincolor = Color.fromRGBO(1, 155, 174, 1);
+              var onPressed2 = () async {
+                final details = await fetchFlightsAccomodations(
+                    tripBuilder[index]['id'], store.currentUser.uid);
+                var undoData = {
+                  "trip": {
+                    "image": tripBuilder[index]['image'],
+                    "name": tripBuilder[index]['name'],
+                    "owner_id": currentUser.uid,
+                    "group": tripBuilder[index]['group']
+                  },
+                  "destinations": tripBuilder[index]['destinations'],
+                  "user": {
+                    "displayName": store.currentUser.displayName,
+                    "photoUrl": store.currentUser.photoUrl,
+                    "email": store.currentUser.email,
+                    "phoneNumber": store.currentUser.phoneNumber,
+                    "uid": store.currentUser.uid,
+                  }
+                };
+                store.setTripsRefreshing(true);
+
+                var response =
+                    await deleteTrip(store, tripBuilder[index]['id']);
+                store.setTripsRefreshing(false);
+                if (response.success == true) {
+                  this.context = context;
+                  Scaffold.of(context).showSnackBar(SnackBar(
+                    content: AutoSizeText(
+                        '${tripBuilder[index]['name']}\'s was deleted.',
+                        style: TextStyle(fontSize: 13)),
+                    duration: Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: 'Undo',
+                      textColor: color,
+                      onPressed: () async {
+                        store.setTripsRefreshing(true);
+
+                        var undoResponse =
+                            await undoDeleteTrip(store, undoData, index - 2);
+
+                        for (var detail in details.flightsAccomodations) {
+                          for (var item in detail['details']) {
+                            final destination = undoResponse
+                                .trip['destinations']
+                                .firstWhere((item) {
+                              return item['destination_id'] ==
+                                  detail['destination']['destination_id'];
+                            });
+                            postAddFlightsAndAccomodations(
+                                undoResponse.trip['id'],
+                                destination['id'],
+                                item);
+                          }
+                        }
+                        store.setTripsRefreshing(false);
+                        if (response.success == true) {
+                          Scaffold.of(this.context).removeCurrentSnackBar();
+                          Scaffold.of(this.context).showSnackBar(SnackBar(
+                            content: AutoSizeText('Undo successful!',
+                                style: TextStyle(fontSize: 13)),
+                            duration: Duration(seconds: 2),
+                          ));
+                        } else {
+                          Scaffold.of(this.context).removeCurrentSnackBar();
+                          Scaffold.of(this.context).showSnackBar(SnackBar(
+                              content: AutoSizeText('Sorry the undo failed!',
+                                  style: TextStyle(fontSize: 13)),
+                              duration: Duration(seconds: 2)));
+                        }
+                      },
+                    ),
+                  ));
+                } else {
+                  Scaffold.of(context).showSnackBar(SnackBar(
+                      content: AutoSizeText(
+                          '${tripBuilder[index]['name']} failed to be deleted.',
+                          style: TextStyle(fontSize: 13)),
+                      duration: Duration(seconds: 2)));
+                }
+              };
+              return InkWell(
+                  onTap: () async {
+                    onPush({
+                      'id': tripBuilder[index]['id'].toString(),
+                      'level': 'trip'
+                    });
+                  },
+                  child: Card(
+                    semanticContainer: true,
+                    color: Colors.transparent,
+                    clipBehavior: Clip.antiAliasWithSaveLayer,
+                    child: Column(children: <Widget>[
+                      Container(
+                          height: 230.0,
+                          width: double.infinity,
+                          color: Colors.transparent,
+                          child: Stack(
+                            children: <Widget>[
+                              Positioned.fill(
+                                  top: 0,
+                                  left: 0,
+                                  child: TransitionToImage(
+                                    image: AdvancedNetworkImage(
+                                      tripBuilder[index]['image'],
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    ),
+                                    loadingWidgetBuilder: (BuildContext context,
+                                            double progress, test) =>
+                                        Center(
+                                            child: RefreshProgressIndicator(
+                                      backgroundColor: Colors.white,
+                                    )),
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
+                                    placeholder: const Icon(Icons.refresh),
+                                    enableRefresh: true,
+                                  )),
+                              Positioned.fill(
+                                  top: 0,
+                                  left: 0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        gradient: RadialGradient(
+                                            center: Alignment.center,
+                                            focal: Alignment.center,
+                                            radius: .75,
+                                            // begin: FractionalOffset.topCenter,
+                                            // end: FractionalOffset.bottomCenter,
+                                            colors: [
+                                          Colors.grey.withOpacity(0.0),
+                                          color,
+                                        ],
+                                            stops: [
+                                          0.0,
+                                          1.0
+                                        ])),
+                                  )),
+                              Positioned.fill(
+                                top: 30,
+                                left: 20,
+                                child: ListView(
+                                    shrinkWrap: true,
+                                    primary: false,
+                                    children: <Widget>[
+                                      Padding(
+                                          padding: EdgeInsets.only(
+                                            top: 0.0,
+                                            bottom: 10,
+                                            left: 20,
+                                          ),
+                                          child: AutoSizeText(
+                                            tripBuilder[index]['name'],
+                                            overflow: TextOverflow.fade,
+                                            textAlign: TextAlign.left,
+                                            style: TextStyle(
+                                                color: fontContrast(color),
+                                                fontSize: 20.0,
+                                                fontWeight: FontWeight.w400),
+                                          )),
+                                    ]),
+                              ),
+                              Positioned(
+                                  top: 20,
+                                  right: 20,
+                                  child: Column(children: <Widget>[
+                                    tripBuilder[index]['owner_id'] ==
+                                            currentUser.uid
+                                        ? GestureDetector(
+                                            onTap: onPressed2,
+                                            child: Container(
+                                                padding: EdgeInsets.all(5),
+                                                decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            15),
+                                                    color: Colors.transparent),
+                                                child: Icon(
+                                                  EvilIcons.close,
+                                                  color: fontContrast(color),
+                                                  size: 30,
+                                                )),
+                                          )
+                                        : Container(),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Share.share(
+                                            'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application');
+                                      },
+                                      child: Container(
+                                          padding: EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                              color: Colors.transparent),
+                                          child: Icon(
+                                            EvilIcons.share_google,
+                                            color: fontContrast(color),
+                                            size: 35,
+                                          )),
+                                    )
+                                  ])),
+                              Positioned(
+                                  left: 10,
+                                  bottom: 15,
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: <Widget>[
+                                      _buildDestinationInfo(
+                                          tripBuilder[index]['destinations'],
+                                          color),
+                                    ],
+                                  )),
+                              Positioned(
+                                  right: 35,
+                                  bottom: 25,
+                                  width: 220,
+                                  height: 40,
+                                  child: buildTravelers(
+                                      tripBuilder[index]['travelers']))
+                            ],
+                          )),
+                    ]),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    elevation: 1,
+                    margin: EdgeInsets.only(
+                        top: 20, left: 20, right: 20, bottom: 20),
+                  ));
+            },
+          ),
+          store.tripsRefreshing == true
+              ? Center(child: RefreshProgressIndicator())
+              : Container()
+        ]));
   }
 
-  _buildDestinationInfo(List<dynamic> destinations, Color color){
+  _buildDestinationInfo(List<dynamic> destinations, Color color) {
     var widgets = <Widget>[];
     var length = destinations.length;
-    if(length > 3){
-      length = 3;
+    if (length > 3) {
+      length = 2;
     }
-    for (var i = 0; i < length; i++){
-      var destination =  destinations[i];
-      // var startDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['start_date']*1000));
-      // var endDate = new DateFormat.yMMMd("en_US").format(new DateTime.fromMillisecondsSinceEpoch(destination['end_date']*1000));
-      widgets.add(
-        Padding(
-          padding: EdgeInsets.only(top:0, bottom:10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.all(3),
-                margin: EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(200),
-                  color:color,
+    for (var i = 0; i < length; i++) {
+      var destination = destinations[i];
 
-                ),
-                child:Icon(EvilIcons.location, color:fontContrast(color), size: 15,)
-              ),
-              Text(
-                '${destination['destination_name']}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  color: Colors.black,
-                  fontSize: 20,
-                )
-              ),
-              /*destination['start_date'] > 0 && destination['end_date'] > 0 ? 
-              Text(
-                ' ${new HtmlUnescape().convert('&bull;')} $startDate - $endDate',
-                style: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  color: Colors.black,
-                  fontSize: 18
-                )
-              ):
-              Text(
-                ' ${new HtmlUnescape().convert('&bull;')} Dates have not been set',
-                style: TextStyle(
-                  fontWeight: FontWeight.w300,
-                  color: Colors.red,
-                  fontSize: 18
-                )
-              ),*/
-            ],
-          )
-        )
-      );
+      widgets.add(Padding(
+        padding: EdgeInsets.only(top: 0, bottom: 5),
+        child: AutoSizeText('${destination['destination_name']}',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: fontContrast(color),
+              fontSize: 15,
+            )),
+      ));
     }
-    if(destinations.length > length) {
-      widgets.add(
-        Padding(
-          padding: EdgeInsets.only(top:0, bottom:10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.all(3),
-                margin: EdgeInsets.only(right: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(200),
-                  color:Color.fromRGBO(0, 0, 0, .3),
-
-                ),
-                child:Icon(EvilIcons.location, color:fontContrast(color), size: 15,)
-              ),
-              Text(
-                '$length of ${destinations.length}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  color: Color.fromRGBO(0, 0, 0, .5),
-                  fontSize: 20,
-                )
-              ),
-            ],
-          )
-        )
-      );
+    if (destinations.length > length) {
+      widgets.add(Padding(
+        padding: EdgeInsets.only(top: 0, bottom: 10),
+        child: AutoSizeText('+${destinations.length - length} more',
+            textAlign: TextAlign.left,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              color: fontContrast(color),
+              fontSize: 15,
+            )),
+      ));
     }
     return Container(
-      margin: EdgeInsets.only(top:40, bottom:20),
-      padding: EdgeInsets.symmetric(horizontal: 60),
-      child:Column(
-        children: widgets,
-      )
-    );
-  }
-  
-  // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt, TripViewModel viewModel) {
-    return NestedScrollView(
-      //controller: _scrollControllerTrips,
-      headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            expandedHeight: 350,
-            floating: false,
-            pinned: true,
-            backgroundColor: Color.fromRGBO(194, 121, 73, 1),
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              collapseMode: CollapseMode.parallax,
-              background: Container(
-                color: Color.fromRGBO(240, 240, 240, 1)
-              ),
-            ),
-          ),
-        ];
-      },
-      body: RefreshIndicator(
-        onRefresh: ()=> viewModel.onGetTrips(),
-        child: Container(
-        padding: EdgeInsets.only(top: 40.0),
-        decoration: BoxDecoration(color: Colors.white),
-        child: ListView(
-          children: <Widget>[
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-            Container(
-              height: 175.0,
-              width: double.infinity,
-              margin: EdgeInsets.only(bottom: 30.0),
-              child: TopListLoading()
-            ),
-          ],
-        )
-      ),
-    ));
+        margin: EdgeInsets.only(top: 40, bottom: 20),
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: widgets,
+        ));
   }
 }

@@ -12,6 +12,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/globals.dart';
+import 'package:rating_bar/rating_bar.dart';
 
 Future<SearchModalData> fetchSearchModal(
   String query,
@@ -39,17 +40,17 @@ Future<SearchModalData> fetchSearchModal(
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       final res = SearchModalData.fromJson(json.decode(response.body));
-      if (lat != null && lng != null && res.results != null) {
-        for (var result in res.results) {
-          final distanceInMeters = await Geolocator().distanceBetween(
-              result['location']['lat'], result['location']['lng'], lat, lng);
-          result['distance'] =
-              '${(distanceInMeters / 1000).toStringAsFixed(2)} km away';
-          result['distanceVal'] = distanceInMeters / 1000;
-        }
-        res.results
-            .sort((a, b) => a['distanceVal'].compareTo(b['distanceVal']));
-      }
+      // if (lat != null && lng != null && res.results != null) {
+      //   // for (var result in res.results) {
+      //   //   final distanceInMeters = await Geolocator().distanceBetween(
+      //   //       result['location']['lat'], result['location']['lng'], lat, lng);
+      //   //   result['distance'] =
+      //   //       '${(distanceInMeters / 1000).toStringAsFixed(2)} km away';
+      //   //   result['distanceVal'] = distanceInMeters / 1000;
+      //   // }
+      //   // res.results
+      //   //     .sort((a, b) => a['distanceVal'].compareTo(b['distanceVal']));
+      // }
 
       return res;
     } else {
@@ -122,12 +123,16 @@ class SearchModal extends StatefulWidget {
   final String id;
   final dynamic location;
   final dynamic near;
+  final dynamic destination;
   final String destinationName;
   final ValueChanged<dynamic> onSelect;
+  final ValueChanged<dynamic> onPush;
   SearchModal(
       {Key key,
       @required this.query,
       this.onSelect,
+      this.onPush,
+      this.destination,
       this.id,
       this.location,
       this.near,
@@ -138,8 +143,10 @@ class SearchModal extends StatefulWidget {
       query: this.query,
       id: this.id,
       destinationName: this.destinationName,
+      destination: this.destination,
       onSelect: this.onSelect,
       near: this.near,
+      onPush: this.onPush,
       location: this.location);
 }
 
@@ -148,10 +155,12 @@ class SearchModalState extends State<SearchModal> {
   String id;
   String destinationName;
   dynamic location;
+  dynamic destination;
   dynamic near;
   bool selectId = false;
   bool nearId = false;
   final ValueChanged<dynamic> onSelect;
+  final ValueChanged<dynamic> onPush;
   GoogleMapController mapController;
   String nextPageToken;
   List<dynamic> results;
@@ -167,8 +176,12 @@ class SearchModalState extends State<SearchModal> {
     nearId = this.id != null && this.id.isNotEmpty && this.near != null;
     data = fetchSearchModal(
         '',
-        this.location != null ? this.location['lat'] : null,
-        this.location != null ? this.location['lng'] : null,
+        this.near != null
+            ? this.near['location']['lat']
+            : this.location != null ? this.location['lat'] : null,
+        this.near != null
+            ? this.near['location']['lng']
+            : this.location != null ? this.location['lng'] : null,
         selectId);
     data.then((res) {
       setState(() {
@@ -184,6 +197,8 @@ class SearchModalState extends State<SearchModal> {
       this.id,
       this.destinationName,
       this.near,
+      this.destination,
+      this.onPush,
       this.location});
 
   @override
@@ -235,8 +250,12 @@ class SearchModalState extends State<SearchModal> {
                 txt.text = '';
                 data = fetchSearchModal(
                     '',
-                    this.location != null ? this.location['lat'] : null,
-                    this.location != null ? this.location['lng'] : null,
+                    this.near != null
+                        ? this.near['location']['lat']
+                        : this.location != null ? this.location['lat'] : null,
+                    this.near != null
+                        ? this.near['location']['lng']
+                        : this.location != null ? this.location['lng'] : null,
                     selectId);
                 data.then((res) {
                   setState(() {
@@ -264,8 +283,12 @@ class SearchModalState extends State<SearchModal> {
                 txt.text = '';
                 data = fetchSearchModal(
                     '',
-                    this.location != null ? this.location['lat'] : null,
-                    this.location != null ? this.location['lng'] : null,
+                    this.near != null
+                        ? this.near['location']['lat']
+                        : this.location != null ? this.location['lat'] : null,
+                    this.near != null
+                        ? this.near['location']['lng']
+                        : this.location != null ? this.location['lng'] : null,
                     selectId);
                 data.then((res) {
                   setState(() {
@@ -363,12 +386,16 @@ class SearchModalState extends State<SearchModal> {
                                           recentSearchModal[index]['value'];
                                       data = fetchSearchModal(
                                           recentSearchModal[index]['value'],
-                                          this.location != null
-                                              ? this.location['lat']
-                                              : null,
-                                          this.location != null
-                                              ? this.location['lng']
-                                              : null,
+                                          this.near != null
+                                              ? this.near['location']['lat']
+                                              : this.location != null
+                                                  ? this.location['lat']
+                                                  : null,
+                                          this.near != null
+                                              ? this.near['location']['lng']
+                                              : this.location != null
+                                                  ? this.location['lng']
+                                                  : null,
                                           selectId);
                                       data.then((res) {
                                         setState(() {
@@ -397,13 +424,17 @@ class SearchModalState extends State<SearchModal> {
                             onRetry: () {
                               setState(() {
                                 data = fetchSearchModal(
-                                    '',
-                                    this.location != null
-                                        ? this.location['lat']
-                                        : null,
-                                    this.location != null
-                                        ? this.location['lng']
-                                        : null,
+                                    txt.text,
+                                    this.near != null
+                                        ? this.near['location']['lat']
+                                        : this.location != null
+                                            ? this.location['lat']
+                                            : null,
+                                    this.near != null
+                                        ? this.near['location']['lng']
+                                        : this.location != null
+                                            ? this.location['lng']
+                                            : null,
                                     selectId);
                                 data.then((res) {
                                   setState(() {
@@ -481,25 +512,56 @@ class SearchModalState extends State<SearchModal> {
                                         fit: BoxFit.cover),
                                   ))),
                       ),
-                      title: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
                             AutoSizeText(
                               '${results[index]['name']}',
                               style: TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.w600),
                             ),
-                            results[index]['distance'] != null
-                                ? AutoSizeText(
-                                    '${results[index]['distance']}',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w300,
-                                        color: Colors.blueAccent),
-                                  )
-                                : Container()
+                            Container(
+                                width: 100,
+                                child: RatingBar.readOnly(
+                                  initialRating:
+                                      results[index]['score'].toDouble(),
+                                  size: 20,
+                                  isHalfAllowed: true,
+                                  halfFilledIcon: Icons.star_half,
+                                  filledIcon: Icons.star,
+                                  emptyIcon: Icons.star_border,
+                                )),
+                            // results[index]['distance'] != null
+                            //     ? AutoSizeText(
+                            //         '${results[index]['distance']}',
+                            //         style: TextStyle(
+                            //             fontSize: 15,
+                            //             fontWeight: FontWeight.w300,
+                            //             color: Colors.blueAccent),
+                            //       )
+                            //     : Container()
                           ]),
+                      trailing: this.near != null || this.location != null
+                          ? IconButton(
+                              iconSize: 20,
+                              icon: Icon(
+                                Icons.open_in_new,
+                                color: Colors.blueGrey,
+                              ),
+                              onPressed: () {
+                                this.onPush({
+                                  'id': results[index]['id'],
+                                  'destination': this.destination,
+                                  'level': 'poi',
+                                  'google_place': results[index]['google_place']
+                                });
+                              },
+                            )
+                          : Container(
+                              width: 20,
+                              height: 20,
+                            ),
                       subtitle: results[index]['description_short'] != null
                           ? AutoSizeText(
                               results[index]['description_short'],
@@ -527,80 +589,110 @@ class SearchModalState extends State<SearchModal> {
           border: Border(
               bottom:
                   BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  IconButton(
-                    padding: EdgeInsets.all(0),
-                    icon: Icon(Icons.close),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    iconSize: 30,
-                    color: Colors.black,
-                  ),
-                  FlatButton(
-                    child: AutoSizeText('Clear'),
-                    onPressed: () {
-                      setState(() {
-                        txt.text = '';
-                        data = fetchSearchModal(
-                            '',
-                            this.location != null ? this.location['lat'] : null,
-                            this.location != null ? this.location['lng'] : null,
-                            selectId);
-                      });
-                      data.then((res) {
-                        setState(() {
-                          this.nextPageToken = res.nextPageToken;
-                          this.results = res.results;
-                        });
-                      });
-                    },
-                  )
-                ]),
-            TextField(
-              enabled: true,
-              controller: txt,
-              cursorColor: Colors.black,
-              textInputAction: TextInputAction.search,
-              enableInteractiveSelection: true,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.only(
-                      left: 20.0, right: 20.0, bottom: 20, top: 10),
-                  hintText: selectId
-                      ? 'Search for places in $destinationName...'
-                      : 'Search for destinations to travel to...'),
-              onChanged: (value) {
-                if (timer != null) {
-                  timer.cancel();
-                  timer = null;
-                }
-                timer = new Timer(const Duration(milliseconds: 500), () {
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
+          Widget>[
+        Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                padding: EdgeInsets.all(0),
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                iconSize: 30,
+                color: Colors.black,
+              ),
+              FlatButton(
+                child: AutoSizeText('Clear'),
+                onPressed: () {
                   setState(() {
+                    txt.text = '';
                     data = fetchSearchModal(
-                        value,
-                        this.location != null ? this.location['lat'] : null,
-                        this.location != null ? this.location['lng'] : null,
+                        '',
+                        this.near != null
+                            ? this.near['location']['lat']
+                            : this.location != null
+                                ? this.location['lat']
+                                : null,
+                        this.near != null
+                            ? this.near['location']['lng']
+                            : this.location != null
+                                ? this.location['lng']
+                                : null,
                         selectId);
-                    data.then((res) {
-                      setState(() {
-                        this.nextPageToken = res.nextPageToken;
-                        this.results = res.results;
-                      });
+                  });
+                  data.then((res) {
+                    setState(() {
+                      this.nextPageToken = res.nextPageToken;
+                      this.results = res.results;
                     });
                   });
+                },
+              )
+            ]),
+        TextField(
+          enabled: true,
+          controller: txt,
+          cursorColor: Colors.black,
+          textInputAction: TextInputAction.search,
+          enableInteractiveSelection: true,
+          decoration: InputDecoration(
+              border: InputBorder.none,
+              contentPadding:
+                  EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20, top: 10),
+              hintText: selectId
+                  ? 'Search for places in $destinationName...'
+                  : 'Search for destinations to travel to...'),
+          onChanged: (value) {
+            if (timer != null) {
+              timer.cancel();
+              timer = null;
+            }
+            timer = new Timer(const Duration(milliseconds: 500), () {
+              setState(() {
+                data = fetchSearchModal(
+                    value,
+                    this.near != null
+                        ? this.near['location']['lat']
+                        : this.location != null ? this.location['lat'] : null,
+                    this.near != null
+                        ? this.near['location']['lng']
+                        : this.location != null ? this.location['lng'] : null,
+                    selectId);
+                data.then((res) {
+                  setState(() {
+                    this.nextPageToken = res.nextPageToken;
+                    this.results = res.results;
+                  });
                 });
-              },
-            ),
-            Container(
-                margin: EdgeInsets.symmetric(horizontal: 20.0),
-                child: Wrap(spacing: 10.0, children: chips))
-          ]),
+              });
+            });
+          },
+          onEditingComplete: () {
+            setState(() {
+              data = fetchSearchModal(
+                  txt.text,
+                  this.near != null
+                      ? this.near['location']['lat']
+                      : this.location != null ? this.location['lat'] : null,
+                  this.near != null
+                      ? this.near['location']['lng']
+                      : this.location != null ? this.location['lng'] : null,
+                  selectId);
+              data.then((res) {
+                setState(() {
+                  this.nextPageToken = res.nextPageToken;
+                  this.results = res.results;
+                });
+              });
+            });
+          },
+        ),
+        Container(
+            margin: EdgeInsets.symmetric(horizontal: 20.0),
+            child: Wrap(spacing: 10.0, children: chips))
+      ]),
     );
   }
 

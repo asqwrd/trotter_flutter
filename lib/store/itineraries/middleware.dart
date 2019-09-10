@@ -175,6 +175,7 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
   final isLocationEnabled = await locationService.Location().hasPermission();
 
   if (startLocation != null && isLocationEnabled) {
+    print(startLocation);
     location = '${startLocation['lat']},${startLocation['lng']}';
     position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);

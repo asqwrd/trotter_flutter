@@ -158,9 +158,11 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                 });
               },
               onPanelClosed: () {
-                setState(() {
-                  disableScroll = true;
-                });
+                if (disableScroll == false) {
+                  setState(() {
+                    disableScroll = true;
+                  });
+                }
               },
               borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30), topRight: Radius.circular(30)),
@@ -318,7 +320,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
               if (currentUser == null) {
                 loginBottomSheet(context, data, color);
               } else {
-                await addToItinerary(context, items, index, color, destination);
+                await addToItinerary(context, items[index], color, destination);
               }
             },
             child: Padding(

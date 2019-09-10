@@ -123,6 +123,7 @@ class CommentsModalState extends State<CommentsModal> {
   final String title;
   final String currentUserId;
   List<dynamic> comments = [];
+  bool sending = false;
   int total = 0;
   dynamic data;
   var txt = new TextEditingController();
@@ -223,7 +224,6 @@ class CommentsModalState extends State<CommentsModal> {
                           var last = this
                               .comments[this.comments.length - 1]['created_at']
                               .toString();
-                          print(last);
                           var res = await fetchCommentsModal(this.dayId,
                               this.itineraryId, this.itineraryItemId, last);
                           setState(() {
@@ -253,7 +253,13 @@ class CommentsModalState extends State<CommentsModal> {
                                     results[index]['created_at']))),
                           );
                         },
-                      ))
+                      )),
+                  this.sending == true
+                      ? Center(
+                          child: RefreshProgressIndicator(
+                          backgroundColor: Colors.white,
+                        ))
+                      : Container()
                 ])),
                 Container(
                   decoration: BoxDecoration(
@@ -277,32 +283,38 @@ class CommentsModalState extends State<CommentsModal> {
                     trailing: IconButton(
                       icon: Icon(SimpleLineIcons.paper_plane),
                       onPressed: () async {
-                        final store = Provider.of<TrotterStore>(ctxt);
-                        final data = {
-                          "msg": txt.text,
-                          "created_at": DateTime.now().millisecondsSinceEpoch,
-                          "user": {
-                            "uid": store.currentUser.uid,
-                            "photoUrl": store.currentUser.photoUrl,
-                            "email": store.currentUser.email,
-                            "phoneNumber": store.currentUser.phoneNumber,
-                            "displayName": store.currentUser.displayName
-                          }
-                        };
-                        final response = await postCommentsModal(
-                            this.dayId,
-                            this.itineraryId,
-                            this.itineraryItemId,
-                            this.tripId,
-                            data);
-                        if (response.success == true) {
+                        if (this.sending == false) {
+                          final store = Provider.of<TrotterStore>(ctxt);
+                          final data = {
+                            "msg": txt.text,
+                            "created_at": DateTime.now().millisecondsSinceEpoch,
+                            "user": {
+                              "uid": store.currentUser.uid,
+                              "photoUrl": store.currentUser.photoUrl,
+                              "email": store.currentUser.email,
+                              "phoneNumber": store.currentUser.phoneNumber,
+                              "displayName": store.currentUser.displayName
+                            }
+                          };
                           setState(() {
-                            this.comments.add(response.comment);
-                            txt.clear();
-                            _sc.animateTo(MediaQuery.of(context).size.height,
-                                duration: Duration(milliseconds: 1000),
-                                curve: Curves.ease);
+                            this.sending = true;
                           });
+                          final response = await postCommentsModal(
+                              this.dayId,
+                              this.itineraryId,
+                              this.itineraryItemId,
+                              this.tripId,
+                              data);
+                          if (response.success == true) {
+                            setState(() {
+                              this.comments.add(response.comment);
+                              txt.clear();
+                              _sc.animateTo(MediaQuery.of(context).size.height,
+                                  duration: Duration(milliseconds: 1000),
+                                  curve: Curves.ease);
+                              this.sending = false;
+                            });
+                          }
                         }
                       },
                     ),

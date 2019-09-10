@@ -222,7 +222,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                         CrossAxisAlignment.center,
                                     children: <Widget>[
                                       AutoSizeText(
-                                          '${segment['number_of_pax']} ${segment['number_of_pax'] > 1 ? 'people' : 'person'} traveling'),
+                                          '${travelers.length} ${travelers.length > 1 ? 'people' : 'person'} traveling'),
                                       Container(
                                           width: 30,
                                           height: 1,

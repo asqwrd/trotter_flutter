@@ -221,9 +221,11 @@ class DestinationState extends State<Destination>
               });
             },
             onPanelClosed: () {
-              setState(() {
-                disableScroll = true;
-              });
+              if (disableScroll == false) {
+                setState(() {
+                  disableScroll = true;
+                });
+              }
             },
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(30), topRight: Radius.circular(30)),
@@ -425,7 +427,11 @@ class DestinationState extends State<Destination>
         widgets.add(TopList(
             items: section['items'],
             onPressed: (data) {
-              onPush({'id': data['id'], 'level': data['level']});
+              onPush({
+                'id': data['id'],
+                'level': data['level'],
+                "destination": destination
+              });
             },
             onLongPressed: (data) async {
               var currentUser = store.currentUser;
@@ -433,7 +439,7 @@ class DestinationState extends State<Destination>
                 loginBottomSheet(context, data, color);
               } else {
                 var index = data['index'];
-                await addToItinerary(context, items, index, color, destination);
+                await addToItinerary(context, items[index], color, destination);
               }
             },
             header: section['header']));
@@ -534,7 +540,11 @@ class DestinationState extends State<Destination>
                     onTap: () {
                       var id = items[index]['id'];
                       var level = items[index]['level'];
-                      onPush({'id': id.toString(), 'level': level.toString()});
+                      onPush({
+                        'id': id.toString(),
+                        'level': level.toString(),
+                        "destination": destination
+                      });
                     },
                     onLongPress: () async {
                       var currentUser = store.currentUser;
@@ -542,7 +552,7 @@ class DestinationState extends State<Destination>
                         loginBottomSheet(context, data, color);
                       } else {
                         await addToItinerary(
-                            context, items, index, color, destination);
+                            context, items[index], color, destination);
                       }
                     },
                     child: Padding(

@@ -244,9 +244,11 @@ class CreateTripState extends State<CreateTrip> {
           });
         },
         onPanelClosed: () {
-          setState(() {
-            disableScroll = true;
-          });
+           if (disableScroll == false) {
+            setState(() {
+              disableScroll = true;
+            });
+          }
         },
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(15), topRight: Radius.circular(15)),

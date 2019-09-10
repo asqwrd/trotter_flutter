@@ -4,6 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:trotter_flutter/globals.dart';
+import 'package:trotter_flutter/widgets/itineraries/bottomsheet.dart';
 
 Future<PoiData> fetchPoi(String id,
     [bool googlePlace, String locationId]) async {
@@ -55,8 +57,9 @@ class PoiData {
   final String color;
   final Map<String, dynamic> poi;
   final String error;
+  final dynamic destination;
 
-  PoiData({this.color, this.poi, this.error});
+  PoiData({this.color, this.poi, this.error, this.destination});
 
   factory PoiData.fromJson(Map<String, dynamic> json) {
     return PoiData(color: json['color'], poi: json['poi'], error: null);
@@ -67,18 +70,21 @@ class Poi extends StatefulWidget {
   final String poiId;
   final bool googlePlace;
   final String locationId;
+  final dynamic destination;
   final ValueChanged<dynamic> onPush;
   Poi({
     Key key,
     @required this.poiId,
     this.onPush,
     this.locationId,
+    this.destination,
     this.googlePlace,
   }) : super(key: key);
   @override
   PoiState createState() => new PoiState(
       poiId: this.poiId,
       onPush: this.onPush,
+      destination: this.destination,
       locationId: this.locationId,
       googlePlace: this.googlePlace);
 }
@@ -87,6 +93,7 @@ class PoiState extends State<Poi> {
   static String id;
   final String poiId;
   final bool googlePlace;
+  final dynamic destination;
   final String locationId;
   final ValueChanged<dynamic> onPush;
   Completer<GoogleMapController> _controller = Completer();
@@ -99,6 +106,7 @@ class PoiState extends State<Poi> {
   String image;
   Color color = Colors.transparent;
   String poiName;
+  dynamic poi;
 
   Future<PoiData> data;
 
@@ -121,7 +129,12 @@ class PoiState extends State<Poi> {
     super.dispose();
   }
 
-  PoiState({this.locationId, this.googlePlace, this.poiId, this.onPush});
+  PoiState(
+      {this.locationId,
+      this.googlePlace,
+      this.poiId,
+      this.onPush,
+      this.destination});
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +161,7 @@ class PoiState extends State<Poi> {
                   this.image = '';
                 }
                 this.poiName = data.poi['name'];
+                this.poi = data.poi;
                 this.color = Color(hexStringToHexInt(data.color));
               })
             }
@@ -170,9 +184,11 @@ class PoiState extends State<Poi> {
           });
         },
         onPanelClosed: () {
-          setState(() {
-            disableScroll = true;
-          });
+          if (disableScroll == false) {
+            setState(() {
+              disableScroll = true;
+            });
+          }
         },
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30), topRight: Radius.circular(30)),
@@ -252,7 +268,30 @@ class PoiState extends State<Poi> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: this.poiName, back: true)),
+            onPush: onPush,
+            color: color,
+            title: this.poiName,
+            back: true,
+            actions: <Widget>[
+              Container(
+                  width: 58,
+                  height: 58,
+                  margin: EdgeInsets.symmetric(horizontal: 0),
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () async {
+                      await addToItinerary(
+                          context, this.poi, color, destination);
+                    },
+                    child: SvgPicture.asset("images/add-icon.svg",
+                        width: 24.0,
+                        height: 24.0,
+                        color: Colors.white,
+                        fit: BoxFit.contain),
+                  ))
+            ],
+          )),
     ]);
   }
 
@@ -341,7 +380,7 @@ class PoiState extends State<Poi> {
                               child: new Align(
                                 alignment: Alignment.topCenter,
                                 child: new DotSwiperPaginationBuilder(
-                                        color: Colors.black.withOpacity(.4),
+                                        color: Colors.white.withOpacity(.6),
                                         activeColor: color,
                                         size: 20.0,
                                         activeSize: 20.0)

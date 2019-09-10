@@ -7,14 +7,14 @@ import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 
-Future addToItinerary(BuildContext context, List items, int index, Color color,
-    dynamic destination) async {
+Future addToItinerary(
+    BuildContext context, dynamic poi, Color color, dynamic destination) async {
   final store = Provider.of<TrotterStore>(context);
   var selectedItineraryId =
       store.itineraryStore.selectedItinerary.selectedItineraryId;
   var selectedItineraryDestination =
       store.itineraryStore.selectedItinerary.destinationId;
-  var poi = items[index];
+
   if (selectedItineraryId != null &&
       selectedItineraryDestination == destination['id']) {
     var result = await showDayBottomSheet(store, context, selectedItineraryId,

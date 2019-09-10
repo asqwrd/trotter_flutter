@@ -167,9 +167,11 @@ class DayEditState extends State<DayEdit> {
           }
         },
         onPanelClosed: () {
-          setState(() {
-            disableScroll = true;
-          });
+          if (disableScroll == false) {
+            setState(() {
+              disableScroll = true;
+            });
+          }
         },
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30), topRight: Radius.circular(30)),
@@ -358,6 +360,8 @@ class DayEditState extends State<DayEdit> {
                                         fullscreenDialog: true,
                                         builder: (context) => SearchModal(
                                             query: '',
+                                            onPush: onPush,
+                                            destination: this.destination,
                                             destinationName:
                                                 this.destinationName,
                                             location: this.location,

@@ -167,6 +167,7 @@ class TabNavigator extends StatelessWidget {
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.poi: (context) => Poi(
           poiId: data['id'],
+          destination: data['destination'],
           locationId: data['locationId'],
           googlePlace: data['google_place'],
           onPush: (data) => push(context, data)),

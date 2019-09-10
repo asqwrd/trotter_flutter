@@ -242,9 +242,11 @@ class HomeState extends State<Home> {
           }
         },
         onPanelClosed: () {
-          setState(() {
-            disableScroll = true;
-          });
+          if (disableScroll == false) {
+            setState(() {
+              disableScroll = true;
+            });
+          }
         },
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(30), topRight: Radius.circular(30)),

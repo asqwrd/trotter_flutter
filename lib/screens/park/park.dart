@@ -120,13 +120,14 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
       return getErrorWidget(context, errorDetails);
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     data.then((data) => {
           if (data.error != null)
             {
               setState(() {
                 this.errorUi = true;
+                this.loading = false;
               })
             }
           else if (data.error == null)
@@ -136,6 +137,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                 this.image = data.park['image'];
                 this.parkName = data.park['name'];
                 this.pois = data.pois;
+                this.loading = false;
                 this.color = Color(hexStringToHexInt(data.color));
               })
             }
@@ -241,7 +243,12 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-              onPush: onPush, color: color, title: this.parkName, back: true)),
+            onPush: onPush,
+            color: color,
+            title: this.parkName,
+            back: true,
+            loading: loading,
+          )),
     ]);
   }
 

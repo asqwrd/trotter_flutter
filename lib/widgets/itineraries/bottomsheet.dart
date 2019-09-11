@@ -23,17 +23,19 @@ Future addToItinerary(
       store.itineraryStore
           .setSelectedItinerary(null, destination['id'], null, true);
     }
+    return Future.value({"selected": true});
   } else {
-    showItineraryBottomSheet(
+    var res = await showItineraryBottomSheet(
         store, context, destination['id'], poi, color, destination);
+    print(res);
   }
 }
 
-void showItineraryBottomSheet(TrotterStore store, context, String destinationId,
-    dynamic poi, Color color, dynamic destination) {
+Future showItineraryBottomSheet(TrotterStore store, context,
+    String destinationId, dynamic poi, Color color, dynamic destination) {
   var data = fetchItineraries(
       "destination=$destinationId&user_id=${store.currentUser.uid}");
-  showModalBottomSheet(
+  return showModalBottomSheet(
       context: context,
       builder: (BuildContext bc) {
         return FutureBuilder(
@@ -408,8 +410,8 @@ showDayBottomSheet(
                                       days[dayIndex]['day'] + 1,
                                     );
 
-                                    Navigator.pop(
-                                        context, {'selected': days[dayIndex]});
+                                    Navigator.pop(listContext,
+                                        {'selected': days[dayIndex]});
                                     store.setBottomSheetLoading(false);
                                   },
                                   contentPadding: EdgeInsets.symmetric(

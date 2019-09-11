@@ -109,7 +109,7 @@ class NotificationsState extends State<Notifications> {
                     child: SvgPicture.asset("images/refresh_icon.svg",
                         width: 24.0,
                         height: 24.0,
-                        color: Colors.white,
+                        color: fontContrast(color),
                         fit: BoxFit.contain),
                   ))
             ],

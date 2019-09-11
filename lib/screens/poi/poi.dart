@@ -107,6 +107,7 @@ class PoiState extends State<Poi> {
   Color color = Colors.transparent;
   String poiName;
   dynamic poi;
+  bool addedToItinerary = false;
 
   Future<PoiData> data;
 
@@ -149,6 +150,7 @@ class PoiState extends State<Poi> {
             {
               setState(() {
                 this.errorUi = true;
+                this.loading = false;
               })
             }
           else if (data.error == null)
@@ -157,6 +159,7 @@ class PoiState extends State<Poi> {
                 this.errorUi = false;
                 this.images = data.poi['images'];
                 this.image = data.poi['image'];
+                this.loading = false;
                 if (this.image == null) {
                   this.image = '';
                 }
@@ -167,132 +170,150 @@ class PoiState extends State<Poi> {
             }
         });
 
-    return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: .8,
-        onPanelOpened: () {
-          setState(() {
-            disableScroll = false;
-          });
+    return WillPopScope(
+        onWillPop: () {
+          Navigator.pop(context, {"addedToItinerary": this.addedToItinerary});
+          return;
         },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: FutureBuilder(
-                future: data,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data.error == null) {
-                    return _buildLoadedBody(context, snapshot);
-                  } else if (snapshot.hasData && snapshot.data.error != null) {
-                    return ListView(
-                        controller: _sc,
-                        physics: disableScroll
-                            ? NeverScrollableScrollPhysics()
-                            : ClampingScrollPhysics(),
-                        shrinkWrap: true,
-                        children: <Widget>[
-                          Container(
-                              height: _panelHeightOpen - 80,
-                              width: MediaQuery.of(context).size.width,
-                              child: ErrorContainer(
-                                onRetry: () {
-                                  setState(() {
-                                    data = fetchPoi(this.poiId);
-                                  });
-                                },
-                              ))
-                        ]);
-                  }
-                  return _buildLoadingBody(context);
-                })),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned.fill(
-                  top: 0,
-                  child: this.image == null
-                      ? Container(
-                          child: Center(
-                              child: RefreshProgressIndicator(
-                          backgroundColor: Colors.white,
-                        )))
-                      : TransitionToImage(
-                          image: this.image.length > 0
-                              ? AdvancedNetworkImage(
-                                  this.image,
-                                  useDiskCache: true,
-                                  cacheRule: CacheRule(
-                                      maxAge: const Duration(days: 7)),
-                                )
-                              : AssetImage("images/placeholder.png"),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
+        child: Stack(alignment: Alignment.topCenter, children: <Widget>[
+          Positioned(
+              child: SlidingUpPanel(
+            parallaxEnabled: true,
+            parallaxOffset: .5,
+            minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
+            controller: _pc,
+            backdropEnabled: true,
+            backdropColor: color,
+            backdropTapClosesPanel: false,
+            backdropOpacity: .8,
+            onPanelOpened: () {
+              setState(() {
+                disableScroll = false;
+              });
+            },
+            onPanelClosed: () {
+              if (disableScroll == false) {
+                setState(() {
+                  disableScroll = true;
+                });
+              }
+            },
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+            maxHeight: _panelHeightOpen,
+            panel: Center(
+                child: FutureBuilder(
+                    future: data,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data.error == null) {
+                        return _buildLoadedBody(context, snapshot);
+                      } else if (snapshot.hasData &&
+                          snapshot.data.error != null) {
+                        return ListView(
+                            controller: _sc,
+                            physics: disableScroll
+                                ? NeverScrollableScrollPhysics()
+                                : ClampingScrollPhysics(),
+                            shrinkWrap: true,
+                            children: <Widget>[
+                              Container(
+                                  height: _panelHeightOpen - 80,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: ErrorContainer(
+                                    onRetry: () {
+                                      setState(() {
+                                        data = fetchPoi(this.poiId);
+                                      });
+                                    },
+                                  ))
+                            ]);
+                      }
+                      return _buildLoadingBody(context);
+                    })),
+            body: Container(
+                height: _bodyHeight,
+                child: Stack(children: <Widget>[
+                  Positioned.fill(
+                      top: 0,
+                      child: this.image == null
+                          ? Container(
+                              child: Center(
+                                  child: RefreshProgressIndicator(
+                              backgroundColor: Colors.white,
+                            )))
+                          : TransitionToImage(
+                              image: this.image.length > 0
+                                  ? AdvancedNetworkImage(
+                                      this.image,
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
+                                    )
+                                  : AssetImage("images/placeholder.png"),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
                                   Center(
                                       child: RefreshProgressIndicator(
-                            backgroundColor: Colors.white,
-                          )),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: Container(
-                              child: Image(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage("images/placeholder.png"))),
-                          enableRefresh: true,
-                        )),
-              // this.image == null
-              //     ? Positioned(
-              //         child: Center(
-              //             child: RefreshProgressIndicator(
-              //         backgroundColor: Colors.white,
-              //       )))
-              //     : Container()
-            ])),
-      )),
-      Positioned(
-          top: 0,
-          width: MediaQuery.of(context).size.width,
-          child: new TrotterAppBar(
-            onPush: onPush,
-            color: color,
-            title: this.poiName,
-            back: true,
-            actions: <Widget>[
-              Container(
-                  width: 58,
-                  height: 58,
-                  margin: EdgeInsets.symmetric(horizontal: 0),
-                  child: FlatButton(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100)),
-                    onPressed: () async {
-                      await addToItinerary(
-                          context, this.poi, color, destination);
-                    },
-                    child: SvgPicture.asset("images/add-icon.svg",
-                        width: 24.0,
-                        height: 24.0,
-                        color: Colors.white,
-                        fit: BoxFit.contain),
-                  ))
-            ],
+                                backgroundColor: Colors.white,
+                              )),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: Container(
+                                  child: Image(
+                                      fit: BoxFit.cover,
+                                      image: AssetImage(
+                                          "images/placeholder.png"))),
+                              enableRefresh: true,
+                            )),
+                  Positioned.fill(
+                    top: 0,
+                    left: 0,
+                    child: Container(color: this.color.withOpacity(.3)),
+                  ),
+                  // this.image == null
+                  //     ? Positioned(
+                  //         child: Center(
+                  //             child: RefreshProgressIndicator(
+                  //         backgroundColor: Colors.white,
+                  //       )))
+                  //     : Container()
+                ])),
           )),
-    ]);
+          Positioned(
+              top: 0,
+              width: MediaQuery.of(context).size.width,
+              child: new TrotterAppBar(
+                loading: loading,
+                onPush: onPush,
+                color: color,
+                title: this.poiName,
+                back: true,
+                actions: <Widget>[
+                  Container(
+                      width: 58,
+                      height: 58,
+                      margin: EdgeInsets.symmetric(horizontal: 0),
+                      child: FlatButton(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100)),
+                        onPressed: () async {
+                          var res = await addToItinerary(
+                              context, this.poi, color, destination);
+                          if (res != null && res['selected'] != null) {
+                            setState(() {
+                              this.addedToItinerary = true;
+                            });
+                          }
+                        },
+                        child: SvgPicture.asset("images/add-icon.svg",
+                            width: 24.0,
+                            height: 24.0,
+                            color: fontContrast(color),
+                            fit: BoxFit.contain),
+                      ))
+                ],
+              )),
+        ]));
   }
 
 // function for rendering view after data is loaded

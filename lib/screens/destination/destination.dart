@@ -201,6 +201,7 @@ class DestinationState extends State<Destination>
                 this.play = data.play;
                 this.nightlife = data.nightlife;
                 this.shop = data.shop;
+                this.loading = false;
               })
             }
         });
@@ -310,6 +311,7 @@ class DestinationState extends State<Destination>
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+              loading: loading,
               onPush: onPush,
               color: color,
               title: this.destinationName,

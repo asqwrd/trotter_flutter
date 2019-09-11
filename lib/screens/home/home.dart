@@ -305,6 +305,7 @@ class HomeState extends State<Home> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+            loading: loading,
             onPush: onPush,
             color: color,
             actions: <Widget>[

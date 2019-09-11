@@ -55,6 +55,7 @@ class TripsState extends State<Trips> {
   BuildContext context;
   final ValueChanged<dynamic> onPush;
   bool isSub = false;
+  bool loading = true;
 
   Future<TripsData> data;
   ScrollController _sc = new ScrollController();
@@ -90,8 +91,8 @@ class TripsState extends State<Trips> {
     this.context = context;
     var color = Color.fromRGBO(234, 189, 149, 1);
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     final store = Provider.of<TrotterStore>(context);
     if (isSub == false) {
       store.eventBus.on<FocusChangeEvent>().listen((event) async {
@@ -180,6 +181,7 @@ class TripsState extends State<Trips> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+            loading: store.tripsLoading,
             onPush: onPush,
             color: color,
             title: 'Trips',
@@ -199,7 +201,7 @@ class TripsState extends State<Trips> {
                     child: SvgPicture.asset("images/refresh_icon.svg",
                         width: 24.0,
                         height: 24.0,
-                        color: Colors.white,
+                        color: fontContrast(color),
                         fit: BoxFit.contain),
                   ))
             ],

@@ -244,7 +244,7 @@ class CreateTripState extends State<CreateTrip> {
           });
         },
         onPanelClosed: () {
-           if (disableScroll == false) {
+          if (disableScroll == false) {
             setState(() {
               disableScroll = true;
             });

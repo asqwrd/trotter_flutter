@@ -123,6 +123,11 @@ class CountryState extends State<Country> {
     });
     super.initState();
     data = fetchCountry(this.countryId, this.userId);
+    data.then((res) {
+      setState(() {
+        this.loading = false;
+      });
+    });
   }
 
   @override
@@ -257,6 +262,7 @@ class CountryState extends State<Country> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+            loading: loading,
             onPush: onPush,
             color: this.color,
             title: this.countryName,

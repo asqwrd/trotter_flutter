@@ -159,6 +159,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
               top: 0,
               width: MediaQuery.of(context).size.width,
               child: new TrotterAppBar(
+                  loading: loading,
                   onPush: onPush,
                   color: color,
                   title: 'Transport & lodging',
@@ -185,7 +186,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                           child: SvgPicture.asset("images/refresh_icon.svg",
                               width: 24.0,
                               height: 24.0,
-                              color: Colors.white,
+                              color: fontContrast(color),
                               fit: BoxFit.contain),
                         ))
                   ],

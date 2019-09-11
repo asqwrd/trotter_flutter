@@ -64,19 +64,21 @@ class ItineraryState extends State<Itinerary> {
       return getErrorWidget(context, errorDetails);
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     final store = Provider.of<TrotterStore>(context);
 
     data.then((res) {
       if (res.error != null) {
         setState(() {
           this.errorUi = true;
+          this.loading = false;
         });
       } else if (res.error == null) {
         setState(() {
           this.errorUi = false;
           this.image = res.destination['image'];
+          this.loading = false;
           this.itineraryName = res.itinerary['name'];
           this.color = Color(hexStringToHexInt(res.color));
           store.itineraryStore.setItineraryLoading(false);
@@ -163,6 +165,7 @@ class ItineraryState extends State<Itinerary> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+              loading: loading,
               onPush: onPush,
               color: color,
               title: this.itineraryName,

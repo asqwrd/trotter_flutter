@@ -96,8 +96,8 @@ class DayState extends State<Day> {
       return getErrorWidget(context, errorDetails);
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingUpPanel(
@@ -239,6 +239,7 @@ class DayState extends State<Day> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+              loading: loading,
               onPush: onPush,
               color: color,
               title: this.itineraryName,

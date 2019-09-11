@@ -10,6 +10,7 @@ class TrotterAppBar extends StatelessWidget {
       @required this.onPush,
       @required this.color,
       this.back,
+      this.loading,
       this.showSearch,
       this.actions,
       this.title,
@@ -25,6 +26,7 @@ class TrotterAppBar extends StatelessWidget {
   final dynamic location;
   final String id;
   final bool showSearch;
+  final bool loading;
 
   @override
   Widget build(BuildContext context) {
@@ -32,75 +34,98 @@ class TrotterAppBar extends StatelessWidget {
       return getErrorWidget(context, errorDetails);
     };
     var actions = this.actions;
+    var loading = this.loading;
     if (this.actions == null) {
       actions = [];
     }
+    if (this.loading == null) {
+      loading = false;
+    }
+    // for (var action in actions) {
+    //   action = IgnorePointer(ignoring: loading, child: action);
+    // }
+    // print(actions[0]);
+
     return Container(
         child: AppBar(
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-      centerTitle: true,
-      leading: back == true || back != null
-          ? IconButton(
-              padding: EdgeInsets.all(0),
-              icon: SvgPicture.asset(
-                'images/back-icon.svg',
-                width: 30,
-                height: 30,
-              ),
-              onPressed: () {
-                if (back is Function) {
-                  back();
-                } else {
-                  Navigator.pop(context);
-                }
-              },
-              iconSize: 30,
-              color: Colors.white,
-            )
-          : Container(
-              padding: EdgeInsets.symmetric(horizontal: 14),
-              child: SvgPicture.asset("images/trotter-logo.svg",
-                  width: 24.0, height: 24.0, fit: BoxFit.contain)),
-      title: title != null
-          ? AutoSizeText(
-              title,
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 24),
-            )
-          : AutoSizeText(
-              'Trotter',
-              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 24),
-            ),
-      actions: <Widget>[
-        ...actions,
-        this.showSearch == true || this.showSearch == null
-            ? Container(
-                width: 58,
-                height: 58,
-                margin: EdgeInsets.symmetric(horizontal: 0),
-                child: FlatButton(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(100)),
-                  onPressed: () {
-                    print(this.location);
-                    print(this.title);
-                    onPush({
-                      'query': '',
-                      'level': 'search',
-                      'id': this.id,
-                      'location': this.location,
-                      'destinationName': this.title
-                    });
-                  },
-                  child: SvgPicture.asset("images/search-icon.svg",
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+            centerTitle: true,
+            leading: back == true || back != null
+                ? IconButton(
+                    padding: EdgeInsets.all(0),
+                    icon: SvgPicture.asset(
+                      'images/back-icon.svg',
+                      width: 30,
+                      height: 30,
+                      color: fontContrast(color),
+                    ),
+                    onPressed: () {
+                      if (back is Function) {
+                        back();
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
+                    iconSize: 30,
+                    color: fontContrast(color),
+                  )
+                : Container(
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: SvgPicture.asset(
+                      "images/trotter-logo.svg",
                       width: 24.0,
                       height: 24.0,
-                      //color: fontContrast(color),
-                      fit: BoxFit.contain),
-                ))
-            : Container()
-      ],
-    ));
+                      fit: BoxFit.contain,
+                      color: fontContrast(color),
+                    )),
+            title: title != null
+                ? AutoSizeText(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w300,
+                        fontSize: 24,
+                        color: fontContrast(color)),
+                  )
+                : AutoSizeText(
+                    'Trotter',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w300,
+                        fontSize: 24,
+                        color: fontContrast(color)),
+                  ),
+            actions: <Widget>[
+          ...actions.map((action) {
+            return IgnorePointer(ignoring: loading, child: action);
+          }),
+          this.showSearch == true || this.showSearch == null
+              ? Container(
+                  width: 58,
+                  height: 58,
+                  margin: EdgeInsets.symmetric(horizontal: 0),
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () {
+                      if (loading == false) {
+                        onPush({
+                          'query': '',
+                          'level': 'search',
+                          'id': this.id,
+                          'location': this.location,
+                          'destinationName': this.title
+                        });
+                      }
+                    },
+                    child: SvgPicture.asset("images/search-icon.svg",
+                        width: 24.0,
+                        height: 24.0,
+                        color: fontContrast(color),
+                        fit: BoxFit.contain),
+                  ))
+              : Container()
+        ]));
   }
 }
 

@@ -1104,6 +1104,7 @@ class TripState extends State<Trip> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+            loading: loading,
               onPush: onPush,
               color: color,
               title: this.tripName,
@@ -1125,7 +1126,7 @@ class TripState extends State<Trip> {
                                     SvgPicture.asset("images/setting-icon.svg",
                                         width: 35,
                                         height: 35,
-                                        //color: fontContrast(color),
+                                        color: fontContrast(color),
                                         fit: BoxFit.cover),
                               ))
                           : Container(width: 20, height: 20)

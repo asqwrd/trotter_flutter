@@ -40,7 +40,7 @@ class StartLocationModalState extends State<StartLocationModal> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt) {
     final cityCenter = {
-      "hotel_name": 'City Center',
+      "hotel_name": 'City center',
       "type": 'Meeting point',
       "lat": this.destination['location']['lat'].toString(),
       "lon": this.destination['location']['lng'].toString()

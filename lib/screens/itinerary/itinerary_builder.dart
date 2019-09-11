@@ -73,8 +73,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       return getErrorWidget(context, errorDetails);
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       final String cacheData =
@@ -99,6 +99,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           this.startDate = res.itinerary['start_date'] * 1000;
           this.color = Color(hexStringToHexInt(res.color));
           this.hotels = res.hotels;
+          this.loading = false;
           store.itineraryStore.setItineraryBuilder(
             res.itinerary,
             res.destination,
@@ -186,6 +187,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+              loading: loading,
               onPush: onPush,
               color: color,
               title: this.itineraryName,
@@ -253,7 +255,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           child: SvgPicture.asset("images/place-icon.svg",
                               width: 25.0,
                               height: 25.0,
-                              //color: fontContrast(color),
+                              color: fontContrast(color),
                               fit: BoxFit.cover),
                         ))),
               ],

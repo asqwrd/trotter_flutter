@@ -126,7 +126,7 @@ class SearchModal extends StatefulWidget {
   final dynamic destination;
   final String destinationName;
   final ValueChanged<dynamic> onSelect;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   SearchModal(
       {Key key,
       @required this.query,
@@ -160,7 +160,7 @@ class SearchModalState extends State<SearchModal> {
   bool selectId = false;
   bool nearId = false;
   final ValueChanged<dynamic> onSelect;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   GoogleMapController mapController;
   String nextPageToken;
   List<dynamic> results;
@@ -272,7 +272,6 @@ class SearchModalState extends State<SearchModal> {
           selected: selectId,
           label: AutoSizeText(this.destinationName),
           onSelected: (bool value) {
-            print(chips.length);
             if ((chips.length == 2 && this.near == null) ||
                 (this.near != null && chips.length == 3)) {
               setState(() {
@@ -329,124 +328,129 @@ class SearchModalState extends State<SearchModal> {
           }));
     }
 
-    return Scaffold(
-      resizeToAvoidBottomPadding: false,
-      body: isLoading
-          ? Column(children: <Widget>[
-              renderTopBar(timer, chips),
-              Flexible(child: _buildLoadingBody())
-            ])
-          : results != null
+    return WillPopScope(
+        onWillPop: () {
+          Navigator.pop(context);
+          return;
+        },
+        child: Scaffold(
+          resizeToAvoidBottomPadding: false,
+          body: isLoading
               ? Column(children: <Widget>[
                   renderTopBar(timer, chips),
-                  Flexible(
-                      child: this.location != null
-                          ? LoadMore(
-                              delegate:
-                                  TrotterLoadMoreDelegate(Colors.blueAccent),
-                              isFinish: this.nextPageToken == null ||
-                                  this.nextPageToken.isEmpty,
-                              onLoadMore: () async {
-                                if (this.results != null) {
-                                  var location = this.nearId
-                                      ? this.near['location']
-                                      : this.location;
-                                  var res = await fetchSearchModalNext(
-                                      txt.text,
-                                      location['lat'],
-                                      location['lng'],
-                                      this.nextPageToken);
-                                  setState(() {
-                                    this.results = this.results
-                                      ..addAll(res.results);
-                                    this.nextPageToken = res.nextPageToken;
-                                  });
-                                }
-                                return true;
-                              },
-                              child: renderResults(results))
-                          : renderResults(results))
+                  Flexible(child: _buildLoadingBody())
                 ])
-              : error == null && recentSearchModal != null
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                          renderTopBar(timer, chips),
-                          Flexible(
-                              child: ListView.builder(
-                            //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                            itemCount: recentSearchModal.length,
-                            //shrinkWrap: true,
-                            primary: false,
-                            itemBuilder: (BuildContext context, int index) {
-                              return InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      txt.text =
-                                          recentSearchModal[index]['value'];
-                                      data = fetchSearchModal(
-                                          recentSearchModal[index]['value'],
-                                          this.near != null
-                                              ? this.near['location']['lat']
-                                              : this.location != null
-                                                  ? this.location['lat']
-                                                  : null,
-                                          this.near != null
-                                              ? this.near['location']['lng']
-                                              : this.location != null
-                                                  ? this.location['lng']
-                                                  : null,
-                                          selectId);
-                                      data.then((res) {
+              : results != null
+                  ? Column(children: <Widget>[
+                      renderTopBar(timer, chips),
+                      Flexible(
+                          child: this.location != null
+                              ? LoadMore(
+                                  delegate: TrotterLoadMoreDelegate(
+                                      Colors.blueAccent),
+                                  isFinish: this.nextPageToken == null ||
+                                      this.nextPageToken.isEmpty,
+                                  onLoadMore: () async {
+                                    if (this.results != null) {
+                                      var location = this.nearId
+                                          ? this.near['location']
+                                          : this.location;
+                                      var res = await fetchSearchModalNext(
+                                          txt.text,
+                                          location['lat'],
+                                          location['lng'],
+                                          this.nextPageToken);
+                                      setState(() {
+                                        this.results = this.results
+                                          ..addAll(res.results);
+                                        this.nextPageToken = res.nextPageToken;
+                                      });
+                                    }
+                                    return true;
+                                  },
+                                  child: renderResults(results))
+                              : renderResults(results))
+                    ])
+                  : error == null && recentSearchModal != null
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                              renderTopBar(timer, chips),
+                              Flexible(
+                                  child: ListView.builder(
+                                //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                                itemCount: recentSearchModal.length,
+                                //shrinkWrap: true,
+                                primary: false,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return InkWell(
+                                      onTap: () {
                                         setState(() {
-                                          this.nextPageToken =
-                                              res.nextPageToken;
-                                          this.results = res.results;
+                                          txt.text =
+                                              recentSearchModal[index]['value'];
+                                          data = fetchSearchModal(
+                                              recentSearchModal[index]['value'],
+                                              this.near != null
+                                                  ? this.near['location']['lat']
+                                                  : this.location != null
+                                                      ? this.location['lat']
+                                                      : null,
+                                              this.near != null
+                                                  ? this.near['location']['lng']
+                                                  : this.location != null
+                                                      ? this.location['lng']
+                                                      : null,
+                                              selectId);
+                                          data.then((res) {
+                                            setState(() {
+                                              this.nextPageToken =
+                                                  res.nextPageToken;
+                                              this.results = res.results;
+                                            });
+                                          });
                                         });
+                                      },
+                                      child: ListTile(
+                                          contentPadding: EdgeInsets.symmetric(
+                                              vertical: 5, horizontal: 20),
+                                          title: AutoSizeText(
+                                            recentSearchModal[index]['value'],
+                                          )));
+                                },
+                              ))
+                            ])
+                      : ListView(shrinkWrap: true, children: <Widget>[
+                          Container(
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.height - 40,
+                              child: ErrorContainer(
+                                color: Color.fromRGBO(106, 154, 168, 1),
+                                onRetry: () {
+                                  setState(() {
+                                    data = fetchSearchModal(
+                                        txt.text,
+                                        this.near != null
+                                            ? this.near['location']['lat']
+                                            : this.location != null
+                                                ? this.location['lat']
+                                                : null,
+                                        this.near != null
+                                            ? this.near['location']['lng']
+                                            : this.location != null
+                                                ? this.location['lng']
+                                                : null,
+                                        selectId);
+                                    data.then((res) {
+                                      setState(() {
+                                        this.nextPageToken = res.nextPageToken;
+                                        this.results = res.results;
                                       });
                                     });
-                                  },
-                                  child: ListTile(
-                                      contentPadding: EdgeInsets.symmetric(
-                                          vertical: 5, horizontal: 20),
-                                      title: AutoSizeText(
-                                        recentSearchModal[index]['value'],
-                                      )));
-                            },
-                          ))
-                        ])
-                  : ListView(shrinkWrap: true, children: <Widget>[
-                      Container(
-                          width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 40,
-                          child: ErrorContainer(
-                            color: Color.fromRGBO(106, 154, 168, 1),
-                            onRetry: () {
-                              setState(() {
-                                data = fetchSearchModal(
-                                    txt.text,
-                                    this.near != null
-                                        ? this.near['location']['lat']
-                                        : this.location != null
-                                            ? this.location['lat']
-                                            : null,
-                                    this.near != null
-                                        ? this.near['location']['lng']
-                                        : this.location != null
-                                            ? this.location['lng']
-                                            : null,
-                                    selectId);
-                                data.then((res) {
-                                  setState(() {
-                                    this.nextPageToken = res.nextPageToken;
-                                    this.results = res.results;
                                   });
-                                });
-                              });
-                            },
-                          ))
-                    ]),
-    );
+                                },
+                              ))
+                        ]),
+        ));
   }
 
   ListView renderResults(results) {
@@ -549,7 +553,7 @@ class SearchModalState extends State<SearchModal> {
                                 Icons.open_in_new,
                                 color: Colors.blueGrey,
                               ),
-                              onPressed: () {
+                              onPressed: () async {
                                 this.onPush({
                                   'id': results[index]['id'],
                                   'destination': this.destination,

@@ -28,7 +28,7 @@ class DayEdit extends StatefulWidget {
   final String itineraryId;
   final dynamic linkedItinerary;
   final dynamic startLocation;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   DayEdit(
       {Key key,
       @required this.dayId,
@@ -50,7 +50,7 @@ class DayEditState extends State<DayEdit> {
   final String dayId;
   final String itineraryId;
   final dynamic linkedItinerary;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   Color color = Colors.transparent;
   String destinationName;
   String destinationId;
@@ -69,6 +69,7 @@ class DayEditState extends State<DayEdit> {
   String itineraryName;
   dynamic currentPosition;
   int startDate;
+  dynamic day;
 
   Future<DayData> data;
   TrotterStore store;
@@ -106,6 +107,7 @@ class DayEditState extends State<DayEdit> {
             this.destination = data.destination;
             this.destinationId = data.destination['id'].toString();
             this.itineraryItems = data.day['itinerary_items'].sublist(1);
+            this.day = data.day;
             this.startLocation = data.itinerary['start_location'];
             this.currentPosition = data.currentPosition;
             this.image = data.destination['image'];
@@ -136,8 +138,8 @@ class DayEditState extends State<DayEdit> {
   @override
   Widget build(BuildContext context) {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = 100.0;
+    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
     }
@@ -317,6 +319,7 @@ class DayEditState extends State<DayEdit> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
+              loading: loading,
               onPush: onPush,
               color: color,
               title: this.itineraryName,
@@ -403,6 +406,49 @@ class DayEditState extends State<DayEdit> {
                                         response.destination['id'].toString();
                                     this.itineraryItems =
                                         response.day['itinerary_items'];
+                                    this.loading = false;
+                                  });
+                                } else if (store
+                                        .itineraryStore
+                                        .selectedItinerary
+                                        .selectedItinerary['days']
+                                            [this.day['day']]['itinerary_items']
+                                        .length !=
+                                    this.itineraryItems.length) {
+                                  setState(() {
+                                    this.loading = true;
+                                  });
+                                  var response =
+                                      await fetchDay(itineraryId, dayId);
+                                  setState(() {
+                                    this.canView = response
+                                        .itinerary['travelers']
+                                        .any((traveler) =>
+                                            store.currentUser.uid == traveler);
+                                    this.color = Color(
+                                        hexStringToHexInt(response.color));
+                                    this.itineraryName =
+                                        response.itinerary['name'];
+                                    this.ownerId =
+                                        response.itinerary['owner_id'];
+                                    this.tripId = response.itinerary['trip_id'];
+                                    this.startDate =
+                                        response.itinerary['start_date'] * 1000;
+                                    this.destinationName =
+                                        response.destination['name'];
+                                    this.location =
+                                        response.destination['location'];
+                                    this.destination = response.destination;
+                                    this.destinationId =
+                                        response.destination['id'].toString();
+                                    this.itineraryItems = response
+                                        .day['itinerary_items']
+                                        .sublist(1);
+                                    this.startLocation =
+                                        response.itinerary['start_location'];
+                                    this.currentPosition =
+                                        response.currentPosition;
+                                    this.image = response.destination['image'];
                                     this.loading = false;
                                   });
                                 }

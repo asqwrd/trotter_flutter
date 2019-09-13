@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_loader/awesome_loader.dart';
+import 'package:flare_loading/flare_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:loadmore/loadmore.dart';
 
@@ -354,4 +355,32 @@ Widget getErrorWidget(BuildContext context, FlutterErrorDetails error) {
       style: Theme.of(context).textTheme.title.copyWith(color: Colors.white),
     ),
   );
+}
+
+class TrotterLoading extends StatelessWidget {
+  const TrotterLoading({
+    Key key,
+    @required this.color,
+    @required this.file,
+    @required this.animation,
+  }) : super(key: key);
+
+  final Color color;
+  final String file;
+  final String animation;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        color: this.color,
+        child: Center(
+            child: FlareLoading(
+          name: file,
+          startAnimation: animation,
+          loopAnimation: animation,
+          endAnimation: animation,
+          onSuccess: (data) {},
+          onError: (data, error) {},
+        )));
+  }
 }

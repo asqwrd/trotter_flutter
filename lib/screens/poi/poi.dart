@@ -108,6 +108,7 @@ class PoiState extends State<Poi> {
   String poiName;
   dynamic poi;
   bool addedToItinerary = false;
+  bool imageLoading = true;
 
   Future<PoiData> data;
 
@@ -185,7 +186,7 @@ class PoiState extends State<Poi> {
             backdropEnabled: true,
             backdropColor: color,
             backdropTapClosesPanel: false,
-            backdropOpacity: .8,
+            backdropOpacity: 1,
             onPanelOpened: () {
               setState(() {
                 disableScroll = false;
@@ -235,13 +236,8 @@ class PoiState extends State<Poi> {
                 child: Stack(children: <Widget>[
                   Positioned.fill(
                       top: 0,
-                      child: this.image == null
-                          ? Container(
-                              child: Center(
-                                  child: RefreshProgressIndicator(
-                              backgroundColor: Colors.white,
-                            )))
-                          : TransitionToImage(
+                      child: this.image != null
+                          ? TransitionToImage(
                               image: this.image.length > 0
                                   ? AdvancedNetworkImage(
                                       this.image,
@@ -252,10 +248,7 @@ class PoiState extends State<Poi> {
                                   : AssetImage("images/placeholder.png"),
                               loadingWidgetBuilder: (BuildContext context,
                                       double progress, test) =>
-                                  Center(
-                                      child: RefreshProgressIndicator(
-                                backgroundColor: Colors.white,
-                              )),
+                                  Container(),
                               fit: BoxFit.cover,
                               alignment: Alignment.center,
                               placeholder: Container(
@@ -264,19 +257,40 @@ class PoiState extends State<Poi> {
                                       image: AssetImage(
                                           "images/placeholder.png"))),
                               enableRefresh: true,
-                            )),
+                              loadedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                              loadFailedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                            )
+                          : Container()),
                   Positioned.fill(
                     top: 0,
                     left: 0,
-                    child: Container(color: this.color.withOpacity(.3)),
+                    child: Container(
+                        color: this.imageLoading
+                            ? this.color
+                            : this.color.withOpacity(.3)),
                   ),
-                  // this.image == null
-                  //     ? Positioned(
-                  //         child: Center(
-                  //             child: RefreshProgressIndicator(
-                  //         backgroundColor: Colors.white,
-                  //       )))
-                  //     : Container()
+                  this.image == null || this.imageLoading == true
+                      ? Positioned.fill(
+                          top: -((_bodyHeight / 2) + 100),
+                          // left: -50,
+                          child: Center(
+                              child: Container(
+                                  width: 250,
+                                  child: TrotterLoading(
+                                      file: 'assets/globe.flr',
+                                      animation: 'flight',
+                                      color: Colors.transparent))))
+                      : Container()
                 ])),
           )),
           Positioned(
@@ -378,10 +392,7 @@ class PoiState extends State<Poi> {
                               ),
                               loadingWidgetBuilder: (BuildContext context,
                                       double progress, test) =>
-                                  Center(
-                                      child: RefreshProgressIndicator(
-                                backgroundColor: Colors.white,
-                              )),
+                                  Container(),
                               fit: BoxFit.cover,
                               alignment: Alignment.center,
                               placeholder: const Icon(Icons.refresh),
@@ -501,7 +512,7 @@ class PoiState extends State<Poi> {
           style: TextStyle(fontSize: 25),
         ),
       ),
-      Center(heightFactor: 12, child: RefreshProgressIndicator()),
+      //Center(heightFactor: 12, child: RefreshProgressIndicator()),
     ];
     return Container(
       padding: EdgeInsets.only(top: 0.0),

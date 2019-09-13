@@ -260,7 +260,7 @@ class NotificationsState extends State<Notifications> {
                     type == 'user_travel_details_remove'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.arrow_right),
-                    title: new AutoSizeText('Go to transport & lodging'),
+                    title: new AutoSizeText('Go to travel logistics'),
                     onTap: () async {
                       data['navigationData']['currentUserId'] =
                           store.currentUser.uid;

@@ -231,7 +231,7 @@ class DayList extends StatelessWidget {
                             child: Align(
                                 alignment: Alignment.topCenter,
                                 child: Column(children: <Widget>[
-                                  Icon(Icons.access_time,
+                                  Icon(Icons.place,
                                       color: fontContrast(color), size: 20),
                                 ])),
                           ),
@@ -270,7 +270,7 @@ class DayList extends StatelessWidget {
                         Flexible(
                             child: Container(
                                 margin: EdgeInsets.only(
-                                    left: 20, right: 0, bottom: 20),
+                                    left: 10, right: 0, bottom: 20),
                                 child: Column(children: <Widget>[
                                   Align(
                                       alignment: Alignment.centerLeft,

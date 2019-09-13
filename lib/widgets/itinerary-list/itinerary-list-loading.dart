@@ -15,9 +15,11 @@ class ItineraryListLoading extends StatelessWidget {
 
   buildItems(BuildContext context) {
     var widgets = <Widget>[];
+
     for (int i = 0; i < 3; i++) {
       widgets.add(buildBody(context, i, 3));
     }
+
     return widgets;
   }
 
@@ -31,7 +33,7 @@ class ItineraryListLoading extends StatelessWidget {
     );
   }
 
-  Widget buildBody(BuildContext context, index, int count) {
+  Widget buildBody(BuildContext context, int index, int count) {
     var width = MediaQuery.of(context).size.width;
     if (index + 1 == count && count.isEven && count > 2) {
       width = MediaQuery.of(context).size.width;
@@ -41,29 +43,22 @@ class ItineraryListLoading extends StatelessWidget {
       width = (MediaQuery.of(context).size.width - 60) * .5;
     }
 
-    return new InkWell(
-        onTap: () {},
-        onLongPress: () {},
+    return Shimmer.fromColors(
+        baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+        highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
         child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              Shimmer.fromColors(
-                  baseColor: Color.fromRGBO(220, 220, 220, 0.8),
-                  highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
-                  child: Container(
-                      height: 250,
-                      width: width,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Color.fromRGBO(220, 220, 220, 0.8)))
-                        ],
-                      ))),
+              Container(
+                width: width,
+                height: 250,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Color.fromRGBO(220, 220, 220, 0.8),
+                ),
+              ),
               Container(
                   width: width,
                   margin: EdgeInsets.only(top: 10),
@@ -72,20 +67,24 @@ class ItineraryListLoading extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: <Widget>[
-                        Shimmer.fromColors(
-                            baseColor: Color.fromRGBO(220, 220, 220, 0.8),
-                            highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
-                            child: Container(
-                              color: Color.fromRGBO(220, 220, 220, 0.8),
-                              height: 20,
-                              margin: EdgeInsets.symmetric(vertical: 10),
-                              width: 150,
-                            )),
                         Container(
-                          color: Color.fromRGBO(220, 220, 220, 0.8),
-                          height: 20,
-                          width: 120,
+                          padding: EdgeInsets.only(left: 20.0, top: 10.0),
+                          width: 100.0,
+                          height: 18.0,
+                          margin: EdgeInsets.only(left: 0.0, bottom: 10),
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(240, 240, 240, 0.8),
+                          ),
                         ),
+                        Container(
+                          padding: EdgeInsets.only(left: 20.0, top: 10.0),
+                          width: 70.0,
+                          height: 18.0,
+                          margin: EdgeInsets.only(left: 0.0),
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(240, 240, 240, 0.8),
+                          ),
+                        )
                       ]))
             ]));
   }

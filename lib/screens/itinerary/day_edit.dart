@@ -25,6 +25,7 @@ import 'package:intl/intl.dart';
 
 class DayEdit extends StatefulWidget {
   final String dayId;
+  final Color color;
   final String itineraryId;
   final dynamic linkedItinerary;
   final dynamic startLocation;
@@ -33,6 +34,7 @@ class DayEdit extends StatefulWidget {
       {Key key,
       @required this.dayId,
       this.startLocation,
+      this.color,
       this.itineraryId,
       this.linkedItinerary,
       this.onPush})
@@ -41,6 +43,7 @@ class DayEdit extends StatefulWidget {
   DayEditState createState() => new DayEditState(
       dayId: this.dayId,
       itineraryId: this.itineraryId,
+      color: this.color,
       linkedItinerary: this.linkedItinerary,
       startLocation: this.startLocation,
       onPush: this.onPush);
@@ -70,6 +73,7 @@ class DayEditState extends State<DayEdit> {
   dynamic currentPosition;
   int startDate;
   dynamic day;
+  bool imageLoading = true;
 
   Future<DayData> data;
   TrotterStore store;
@@ -133,6 +137,7 @@ class DayEditState extends State<DayEdit> {
       this.itineraryId,
       this.startLocation,
       this.onPush,
+      this.color,
       this.linkedItinerary});
 
   @override
@@ -156,7 +161,7 @@ class DayEditState extends State<DayEdit> {
         backdropEnabled: true,
         backdropColor: color,
         backdropTapClosesPanel: false,
-        backdropOpacity: .8,
+        backdropOpacity: 1,
         onPanelOpened: () async {
           setState(() {
             disableScroll = false;
@@ -215,7 +220,9 @@ class DayEditState extends State<DayEdit> {
                                     onRetry: () {
                                       setState(() {
                                         data = fetchDay(
-                                            this.itineraryId, this.dayId);
+                                            this.itineraryId,
+                                            this.dayId,
+                                            this.startLocation['location']);
                                         data.then((data) {
                                           if (data.error == null) {
                                             setState(() {
@@ -275,20 +282,32 @@ class DayEditState extends State<DayEdit> {
                           ),
                           loadingWidgetBuilder:
                               (BuildContext context, double progress, test) =>
-                                  Center(
-                                      child: RefreshProgressIndicator(
-                            backgroundColor: Colors.white,
-                          )),
+                                  Center(),
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
+                          loadedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
+                          loadFailedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
                         )
                       : Container()),
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: Container(color: this.color.withOpacity(.3)),
+                child: Container(
+                    color: this.imageLoading
+                        ? this.color
+                        : this.color.withOpacity(.3)),
               ),
               Positioned(
                   left: 0,
@@ -306,12 +325,17 @@ class DayEditState extends State<DayEdit> {
                                     fontWeight: FontWeight.w300))
                             : Container(),
                       ])),
-              this.image == null
-                  ? Positioned(
+              this.image == null || this.imageLoading
+                  ? Positioned.fill(
+                      top: -((_bodyHeight / 2) + 100),
+                      // left: -50,
                       child: Center(
-                          child: RefreshProgressIndicator(
-                      backgroundColor: Colors.white,
-                    )))
+                          child: Container(
+                              width: 250,
+                              child: TrotterLoading(
+                                  file: 'assets/globe.flr',
+                                  animation: 'flight',
+                                  color: Colors.transparent))))
                   : Container()
             ])),
       )),
@@ -325,6 +349,58 @@ class DayEditState extends State<DayEdit> {
               title: this.itineraryName,
               showSearch: false,
               actions: <Widget>[
+                Container(
+                    width: 58,
+                    height: 58,
+                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      onPressed: () async {
+                        data = fetchDay(this.itineraryId, this.dayId,
+                            this.startLocation['location']);
+                        setState(() {
+                          this.loading = true;
+                        });
+                        data.then((data) {
+                          if (data.error == null) {
+                            setState(() {
+                              this.canView = data.itinerary['travelers'].any(
+                                  (traveler) =>
+                                      store.currentUser.uid == traveler);
+                              this.color = Color(hexStringToHexInt(data.color));
+                              this.itineraryName = data.itinerary['name'];
+                              this.ownerId = data.itinerary['owner_id'];
+                              this.tripId = data.itinerary['trip_id'];
+                              this.startDate =
+                                  data.itinerary['start_date'] * 1000;
+                              this.destinationName = data.destination['name'];
+                              this.location = data.destination['location'];
+                              this.destination = data.destination;
+                              this.destinationId =
+                                  data.destination['id'].toString();
+                              this.itineraryItems =
+                                  data.day['itinerary_items'].sublist(1);
+                              this.day = data.day;
+                              this.startLocation =
+                                  data.itinerary['start_location'];
+                              this.currentPosition = data.currentPosition;
+                              this.image = data.destination['image'];
+                              this.loading = false;
+                            });
+                          } else {
+                            setState(() {
+                              this.errorUi = true;
+                            });
+                          }
+                        });
+                      },
+                      child: SvgPicture.asset("images/refresh_icon.svg",
+                          width: 24.0,
+                          height: 24.0,
+                          color: fontContrast(color),
+                          fit: BoxFit.contain),
+                    )),
                 this.canView == true
                     ? Container(
                         width: 70,
@@ -418,8 +494,8 @@ class DayEditState extends State<DayEdit> {
                                   setState(() {
                                     this.loading = true;
                                   });
-                                  var response =
-                                      await fetchDay(itineraryId, dayId);
+                                  var response = await fetchDay(itineraryId,
+                                      dayId, this.startLocation['location']);
                                   setState(() {
                                     this.canView = response
                                         .itinerary['travelers']
@@ -699,7 +775,7 @@ class DayEditState extends State<DayEdit> {
   Widget _buildLoadingBody(BuildContext ctxt) {
     return Column(children: <Widget>[
       Container(
-        color: Color.fromRGBO(240, 240, 240, 1),
+        color: Color.fromRGBO(240, 240, 240, 0),
       ),
       Flexible(
         child: DayListLoading(),

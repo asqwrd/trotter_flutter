@@ -922,7 +922,7 @@ class TripState extends State<Trip> {
           });
         },
         onPanelClosed: () {
-           if (disableScroll == false) {
+          if (disableScroll == false) {
             setState(() {
               disableScroll = true;
             });
@@ -1004,7 +1004,7 @@ class TripState extends State<Trip> {
             height: _bodyHeight,
             child: Stack(children: <Widget>[
               this.destinations == null
-                  ? Container()
+                  ? Container(color: this.color)
                   : Positioned.fill(
                       top: 0,
                       child: new Swiper(
@@ -1092,11 +1092,16 @@ class TripState extends State<Trip> {
                       ),
                     ),
               this.destinations == null
-                  ? Positioned(
+                  ? Positioned.fill(
+                      top: -((_bodyHeight / 2) + 100),
+                      // left: -50,
                       child: Center(
-                          child: RefreshProgressIndicator(
-                      backgroundColor: Colors.white,
-                    )))
+                          child: Container(
+                              width: 250,
+                              child: TrotterLoading(
+                                  file: 'assets/globe.flr',
+                                  animation: 'flight',
+                                  color: Colors.transparent))))
                   : Container()
             ])),
       )),
@@ -1104,7 +1109,7 @@ class TripState extends State<Trip> {
           top: 0,
           width: MediaQuery.of(context).size.width,
           child: new TrotterAppBar(
-            loading: loading,
+              loading: loading,
               onPush: onPush,
               color: color,
               title: this.tripName,
@@ -1122,12 +1127,12 @@ class TripState extends State<Trip> {
                                 onPressed: () {
                                   bottomSheetModal(context, this.trip);
                                 },
-                                child:
-                                    SvgPicture.asset("images/setting-icon.svg",
-                                        width: 35,
-                                        height: 35,
-                                        color: fontContrast(color),
-                                        fit: BoxFit.cover),
+                                child: SvgPicture.asset(
+                                    "images/setting-icon.svg",
+                                    width: 35,
+                                    height: 35,
+                                    color: fontContrast(color),
+                                    fit: BoxFit.cover),
                               ))
                           : Container(width: 20, height: 20)
                     ]
@@ -1165,7 +1170,7 @@ class TripState extends State<Trip> {
                 child: buildTravelers(this.travelers)))
       },
       {
-        "label": "Transport & lodging",
+        "label": "Travel logistics",
         "icon": Icon(Icons.flight, color: iconColor),
         "level": "travelinfo"
       },
@@ -1237,6 +1242,7 @@ class TripState extends State<Trip> {
                           dynamic destination = fields[index]['destination'];
                           if (fields[index]['id'] != null) {
                             onPush({
+                              'color': this.color,
                               'id': fields[index]['id'].toString(),
                               'level': fields[index]['level'].toString()
                             });
@@ -1270,17 +1276,20 @@ class TripState extends State<Trip> {
                               destination['itinerary_id'] = response.id;
                             });
                             onPush({
+                              'color': this.color,
                               'id': response.id,
                               'level': fields[index]['level'].toString()
                             });
                           } else if (destination != null &&
                               !destination['itinerary_id'].isEmpty) {
                             onPush({
+                              'color': this.color,
                               'id': destination['itinerary_id'].toString(),
                               'level': fields[index]['level'].toString()
                             });
                           } else if (fields[index]['level'] == 'travelinfo') {
                             var res = await onPush({
+                              'color': this.color,
                               'tripId': this.tripId,
                               'currentUserId': store.currentUser.uid,
                               "level": "travelinfo"

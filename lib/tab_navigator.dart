@@ -178,10 +178,13 @@ class TabNavigator extends StatelessWidget {
       TabNavigatorRoutes.itinerary: (context) => Itinerary(
           itineraryId: data['id'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary_builder: (context) => ItineraryBuilder(
-          itineraryId: data['id'], onPush: (data) => push(context, data)),
+          itineraryId: data['id'],
+          color: data['color'],
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.day_edit: (context) => DayEdit(
           itineraryId: data['itineraryId'],
           dayId: data['dayId'],
+          color: data['color'],
           linkedItinerary: data['linkedItinerary'],
           startLocation: data['startLocation'],
           onPush: (data) => push(context, data)),

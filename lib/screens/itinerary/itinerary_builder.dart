@@ -20,12 +20,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 class ItineraryBuilder extends StatefulWidget {
   final String itineraryId;
+  final Color color;
   final ValueChanged<dynamic> onPush;
-  ItineraryBuilder({Key key, @required this.itineraryId, this.onPush})
+  ItineraryBuilder(
+      {Key key, @required this.itineraryId, this.onPush, this.color})
       : super(key: key);
   @override
   ItineraryBuilderState createState() => new ItineraryBuilderState(
-      itineraryId: this.itineraryId, onPush: this.onPush);
+      itineraryId: this.itineraryId, onPush: this.onPush, color: this.color);
 }
 
 class ItineraryBuilderState extends State<ItineraryBuilder> {
@@ -45,6 +47,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   Future<ItineraryData> data;
   int startDate = 0;
   GlobalKey _one = GlobalKey();
+  bool imageLoading = true;
 
   @override
   void initState() {
@@ -65,7 +68,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     super.dispose();
   }
 
-  ItineraryBuilderState({this.itineraryId, this.onPush});
+  ItineraryBuilderState({this.itineraryId, this.onPush, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +122,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         backdropEnabled: true,
         backdropColor: color,
         backdropTapClosesPanel: false,
-        backdropOpacity: .8,
+        backdropOpacity: 1,
         onPanelOpened: () {
           setState(() {
             disableScroll = false;
@@ -149,7 +152,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                   height: _bodyHeight,
                   top: 0,
                   left: 0,
-                  child: this.image != null
+                  child: this.image != null && this.loading == false
                       ? TransitionToImage(
                           image: AdvancedNetworkImage(
                             this.image,
@@ -159,27 +162,44 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           ),
                           loadingWidgetBuilder:
                               (BuildContext context, double progress, test) =>
-                                  Center(
-                                      child: RefreshProgressIndicator(
-                            backgroundColor: Colors.white,
-                          )),
+                                  Container(),
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
+                          loadedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
+                          loadFailedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
                         )
                       : Container()),
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: Container(color: this.color.withOpacity(.3)),
+                child: Container(
+                    color: this.imageLoading
+                        ? this.color
+                        : this.color.withOpacity(.3)),
               ),
-              this.image == null
-                  ? Positioned(
+              this.image == null || this.imageLoading
+                  ? Positioned.fill(
+                      top: -((_bodyHeight / 2) + 100),
+                      // left: -50,
                       child: Center(
-                          child: RefreshProgressIndicator(
-                      backgroundColor: Colors.white,
-                    )))
+                          child: Container(
+                              width: 250,
+                              child: TrotterLoading(
+                                  file: 'assets/globe.flr',
+                                  animation: 'flight',
+                                  color: Colors.transparent))))
                   : Container()
             ])),
       )),
@@ -408,6 +428,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           onPush({
                             'itineraryId': this.itineraryId,
                             'dayId': dayId,
+                            'color': this.color,
                             'linkedItinerary': dayBuilder[dayIndex]
                                 ['linked_itinerary'],
                             "startLocation": startLocation,
@@ -433,6 +454,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           onPressed: () {
                             onPush({
                               'itineraryId': this.itineraryId,
+                              'color': this.color,
                               'dayId': dayId,
                               'linkedItinerary': dayBuilder[dayIndex]
                                   ['linked_itinerary'],
@@ -464,7 +486,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         width: 30,
         height: 5,
         decoration: BoxDecoration(
-            color: Colors.grey[300],
+            color: Colors.transparent,
             borderRadius: BorderRadius.all(Radius.circular(12.0))),
       )),
       Container(
@@ -475,16 +497,16 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           style: TextStyle(fontSize: 25),
         ),
       ),
-      Center(heightFactor: 12, child: RefreshProgressIndicator()),
+      Flexible(child: ItineraryListLoading()),
     ];
     return Container(
-      padding: EdgeInsets.only(top: 0.0),
+      padding: EdgeInsets.only(top: 0.0, left: 20, right: 20),
       decoration: BoxDecoration(color: Colors.transparent),
-      child: ListView(
-        controller: _sc,
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
+      child: Column(
+        // controller: _sc,
+        // physics: disableScroll
+        //     ? NeverScrollableScrollPhysics()
+        //     : ClampingScrollPhysics(),
         children: children2,
       ),
     );

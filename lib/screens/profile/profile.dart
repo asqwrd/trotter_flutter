@@ -107,7 +107,7 @@ class ProfileState extends State<Profile> {
                     store.updateUserNotification(value);
                   });
                 },
-                activeTrackColor: color.withOpacity(.5),
+                activeTrackColor: color.withOpacity(.65),
                 activeColor: color,
               ),
             )

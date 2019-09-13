@@ -162,7 +162,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                   loading: loading,
                   onPush: onPush,
                   color: color,
-                  title: 'Transport & lodging',
+                  title: 'Travel logistics',
                   actions: <Widget>[
                     Container(
                         width: 58,

@@ -36,6 +36,7 @@ class ItineraryState extends State<Itinerary> {
   Color color = Colors.transparent;
   String itineraryName;
   Future<ItineraryData> data;
+  bool imageLoading = true;
 
   @override
   void initState() {
@@ -97,7 +98,7 @@ class ItineraryState extends State<Itinerary> {
         backdropEnabled: true,
         backdropColor: color,
         backdropTapClosesPanel: false,
-        backdropOpacity: .8,
+        backdropOpacity: 1,
         onPanelOpened: () {
           setState(() {
             disableScroll = false;
@@ -137,27 +138,44 @@ class ItineraryState extends State<Itinerary> {
                           ),
                           loadingWidgetBuilder:
                               (BuildContext context, double progress, test) =>
-                                  Center(
-                                      child: RefreshProgressIndicator(
-                            backgroundColor: Colors.white,
-                          )),
+                                  Container(),
                           fit: BoxFit.cover,
                           alignment: Alignment.center,
                           placeholder: const Icon(Icons.refresh),
                           enableRefresh: true,
+                          loadedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
+                          loadFailedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
                         )
                       : Container()),
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: Container(color: this.color.withOpacity(.3)),
+                child: Container(
+                    color: this.imageLoading
+                        ? this.color
+                        : this.color.withOpacity(.3)),
               ),
-              this.image == null
-                  ? Positioned(
+              this.image == null || this.imageLoading == true
+                  ? Positioned.fill(
+                      top: -((_bodyHeight / 2) + 100),
+                      // left: -50,
                       child: Center(
-                          child: RefreshProgressIndicator(
-                      backgroundColor: Colors.white,
-                    )))
+                          child: Container(
+                              width: 250,
+                              child: TrotterLoading(
+                                  file: 'assets/globe.flr',
+                                  animation: 'flight',
+                                  color: Colors.transparent))))
                   : Container()
             ])),
       )),

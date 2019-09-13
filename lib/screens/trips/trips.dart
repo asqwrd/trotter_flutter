@@ -173,7 +173,7 @@ class TripsState extends State<Trips> {
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: Container(color: color.withOpacity(.3)),
+                child: Container(color: color.withOpacity(.65)),
               ),
             ])),
       )),

@@ -4,12 +4,14 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:trotter_flutter/widgets/vaccine-list/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/globals.dart';
@@ -106,7 +108,7 @@ class CountryState extends State<Country> {
   bool errorUi = false;
   bool loading = true;
   String image;
-  Color color = Colors.transparent;
+  Color color = Colors.black.withOpacity(.3);
   String countryName;
   bool imageLoading = true;
 
@@ -744,11 +746,43 @@ class CountryState extends State<Country> {
         alignment: Alignment.center,
         padding: EdgeInsets.only(top: 10, bottom: 20),
         child: AutoSizeText(
-          'Loading...',
+          'Getting tips & requirements...',
           style: TextStyle(fontSize: 25),
         ),
       ),
-      Center(heightFactor: 12, child: RefreshProgressIndicator()),
+      Align(
+          alignment: Alignment.topLeft,
+          child: Container(
+              width: MediaQuery.of(context).size.width - 30,
+              child: TextLoading(
+                  margin:
+                      EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10)))),
+      Align(
+          alignment: Alignment.topLeft,
+          child: Container(
+              width: MediaQuery.of(context).size.width - 50,
+              child: TextLoading(
+                  margin:
+                      EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10)))),
+      Align(
+          alignment: Alignment.topLeft,
+          child: Container(
+              width: MediaQuery.of(context).size.width - 100,
+              child: TextLoading(
+                  margin:
+                      EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10)))),
+      Shimmer.fromColors(
+          baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+          highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+          child: Container(
+            decoration: BoxDecoration(
+                color: Color.fromRGBO(220, 220, 220, 0.8),
+                borderRadius: BorderRadius.circular(10)),
+            margin: EdgeInsets.only(left: 20.0, right: 20.0, top: 20),
+            height: 240.0,
+          )),
+      CarouselLoading(),
+      CarouselLoading()
     ];
     return Container(
       padding: EdgeInsets.only(top: 0.0),

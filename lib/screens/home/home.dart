@@ -229,7 +229,7 @@ class HomeState extends State<Home> {
         backdropEnabled: true,
         backdropColor: color,
         backdropTapClosesPanel: false,
-        backdropOpacity: .8,
+        backdropOpacity: 1,
         onPanelOpened: () async {
           setState(() {
             disableScroll = false;
@@ -297,7 +297,7 @@ class HomeState extends State<Home> {
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: Container(color: color.withOpacity(.65)),
+                child: Container(color: color.withOpacity(.3)),
               ),
             ])),
       )),

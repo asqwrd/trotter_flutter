@@ -93,6 +93,7 @@ class NotificationsState extends State<Notifications> {
           child: new TrotterAppBar(
             onPush: onPush,
             color: color,
+            showSearch: false,
             title: 'Notifications',
             actions: <Widget>[
               Container(
@@ -109,6 +110,80 @@ class NotificationsState extends State<Notifications> {
                     child: SvgPicture.asset("images/refresh_icon.svg",
                         width: 24.0,
                         height: 24.0,
+                        color: fontContrast(color),
+                        fit: BoxFit.contain),
+                  )),
+              Container(
+                  width: 65,
+                  height: 65,
+                  margin: EdgeInsets.symmetric(horizontal: 0),
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () async {
+                      //fetchNotifications(store);
+                      final response = await showDialog(
+                        context: context,
+                        barrierDismissible: false, // user must tap button!
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5)),
+                            title: Text('Clear notifications?'),
+                            content: SingleChildScrollView(
+                              child: ListBody(
+                                children: <Widget>[
+                                  Text(
+                                      'This will mark all notifications as read.'),
+                                ],
+                              ),
+                            ),
+                            actions: <Widget>[
+                              FlatButton(
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                child: Container(
+                                    width: 80,
+                                    child: Text(
+                                      'Cancel',
+                                      style: TextStyle(color: this.color),
+                                    )),
+                                onPressed: () {
+                                  Navigator.of(context).pop({"clear": false});
+                                },
+                              ),
+                              FlatButton(
+                                padding: EdgeInsets.symmetric(horizontal: 20),
+                                color: this.color.withOpacity(1),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50)),
+                                child: Container(
+                                    width: 80,
+                                    child: Text(
+                                      'Clear',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w300),
+                                    )),
+                                onPressed: () {
+                                  Navigator.of(context).pop({"clear": true});
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      print(response);
+                      if (response['clear'] == true) {
+                        store.setNotificationsLoading(true);
+                        await clearNotifications(store);
+                        fetchNotifications(store);
+                        //store.setNotificationsLoading(false);
+                      }
+                    },
+                    child: SvgPicture.asset("images/mark-all.svg",
+                        width: 40.0,
+                        height: 40.0,
                         color: fontContrast(color),
                         fit: BoxFit.contain),
                   ))

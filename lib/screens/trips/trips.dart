@@ -140,7 +140,7 @@ class TripsState extends State<Trips> {
         backdropEnabled: true,
         backdropColor: color,
         backdropTapClosesPanel: false,
-        backdropOpacity: .8,
+        backdropOpacity: 1,
         onPanelOpened: () {
           setState(() {
             disableScroll = false;
@@ -173,7 +173,7 @@ class TripsState extends State<Trips> {
               Positioned.fill(
                 top: 0,
                 left: 0,
-                child: Container(color: color.withOpacity(.65)),
+                child: Container(color: color.withOpacity(.3)),
               ),
             ])),
       )),

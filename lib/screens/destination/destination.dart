@@ -138,7 +138,7 @@ class DestinationState extends State<Destination>
   bool errorUi = false;
   bool loading = true;
   String image;
-  Color color = Colors.transparent;
+  Color color = Colors.black.withOpacity(.3);
   String destinationName;
   dynamic location;
   dynamic discover = [];
@@ -312,7 +312,7 @@ class DestinationState extends State<Destination>
                             ? this.color
                             : this.color.withOpacity(.3)),
                   ),
-                  this.image == null || this.imageLoading
+                  this.image == null || this.imageLoading == true
                       ? Positioned.fill(
                           top: -((_bodyHeight / 2) + 100),
                           // left: -50,

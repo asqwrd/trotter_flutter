@@ -264,7 +264,7 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
 
 responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
     String dayId, String destinationId, String addedBy,
-    [int toIndex]) async {
+    [int toIndex, String movedByUid]) async {
   final store = Provider.of<TrotterStore>(context);
   var data = {
     "poi": poi,
@@ -274,8 +274,8 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
     "poi_id": poi['id'],
     "added_by": addedBy
   };
-  var response =
-      await addToDay(store, item['id'], dayId, destinationId, data, true);
+  var response = await addToDay(
+      store, item['id'], dayId, destinationId, data, true, movedByUid);
   if (response.success == true) {
     Scaffold.of(context).showSnackBar(SnackBar(
       content: AutoSizeText(
@@ -299,6 +299,7 @@ showDayBottomSheet(
     String addedBy,
     {force: false,
     isSelecting: false,
+    String movedByUid: '',
     String movingFromId}) {
   final storeApp = Provider.of<TrotterStore>(context);
   final data = fetchSelectedItinerary(storeApp, itineraryId);
@@ -401,14 +402,14 @@ showDayBottomSheet(
                                     store.setBottomSheetLoading(true);
 
                                     await responseFromDayBottomSheet(
-                                      listContext,
-                                      item,
-                                      poi,
-                                      days[dayIndex]['id'],
-                                      destinationId,
-                                      addedBy,
-                                      days[dayIndex]['day'] + 1,
-                                    );
+                                        listContext,
+                                        item,
+                                        poi,
+                                        days[dayIndex]['id'],
+                                        destinationId,
+                                        addedBy,
+                                        days[dayIndex]['day'] + 1,
+                                        movedByUid);
 
                                     Navigator.pop(listContext,
                                         {'selected': days[dayIndex]});

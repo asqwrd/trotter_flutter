@@ -38,15 +38,21 @@ class ItineraryList extends StatelessWidget {
   buildItems(BuildContext context, List<dynamic> items) {
     var widgets = <Widget>[];
     var length = items.length;
+    var totalLength = items.length;
     if (length > 3) {
       length = 3;
     }
+
+    if (this.linkedItinerary != null) {
+      totalLength++;
+    }
+
     for (int i = 0; i < length; i++) {
-      widgets.add(buildBody(context, items[i], i, items.length));
+      widgets.add(buildBody(context, items[i], i, totalLength));
     }
     if (this.linkedItinerary != null && length < 3) {
       widgets.add(buildBodyItinerary(context,
-          this.linkedItinerary['destination'], length + 1, items.length));
+          this.linkedItinerary['destination'], length + 1, totalLength));
     }
     return widgets;
   }

@@ -197,6 +197,8 @@ class DayList extends StatelessWidget {
             // value is 2 because first 2 values in the array are empty strings
             if (prevIndex >= 2 && linkItineraryPosition != 'top') {
               from = itineraryItems[prevIndex]['poi']['name'];
+            } else if (prevIndex >= 3 && linkItineraryPosition == 'top') {
+              from = itineraryItems[prevIndex]['poi']['name'];
             }
 
             var time = itineraryItems[index]['travel']['duration']['text'];

@@ -485,12 +485,18 @@ class DayEditState extends State<DayEdit> {
                                     this.loading = false;
                                   });
                                 } else if (store
-                                        .itineraryStore
-                                        .selectedItinerary
-                                        .selectedItinerary['days']
-                                            [this.day['day']]['itinerary_items']
-                                        .length !=
-                                    this.itineraryItems.length) {
+                                            .itineraryStore
+                                            .selectedItinerary
+                                            .selectedItinerary !=
+                                        null &&
+                                    store
+                                            .itineraryStore
+                                            .selectedItinerary
+                                            .selectedItinerary['days']
+                                                    [this.day['day']]
+                                                ['itinerary_items']
+                                            .length !=
+                                        this.itineraryItems.length) {
                                   setState(() {
                                     this.loading = true;
                                   });

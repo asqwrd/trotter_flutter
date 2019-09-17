@@ -15,11 +15,8 @@ import 'package:trotter_flutter/globals.dart';
 import 'package:rating_bar/rating_bar.dart';
 
 Future<SearchModalData> fetchSearchModal(
-  String query,
-  double lat,
-  double lng,
-  bool searchPoi,
-) async {
+    String query, double lat, double lng, bool searchPoi,
+    {near: false}) async {
   try {
     var response;
     if (query.isEmpty && !searchPoi) {
@@ -28,7 +25,15 @@ Future<SearchModalData> fetchSearchModal(
     } else if (query.isEmpty && searchPoi) {
       response = await http.get('$ApiDomain/api/search/recent?poi=true',
           headers: {'Authorization': 'security'});
-    } else if (query.isNotEmpty && (lat != null && lng != null) && searchPoi) {
+    } else if (query.isNotEmpty &&
+        (lat != null && lng != null && near == true) &&
+        searchPoi) {
+      response = await http.get(
+          '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&isNear=$near',
+          headers: {'Authorization': 'security'});
+    } else if (query.isNotEmpty &&
+        (lat != null && lng != null && near == false) &&
+        searchPoi) {
       response = await http.get(
           '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng',
           headers: {'Authorization': 'security'});
@@ -64,16 +69,19 @@ Future<SearchModalData> fetchSearchModal(
 }
 
 Future<SearchModalData> fetchSearchModalNext(
-  String query,
-  double lat,
-  double lng,
-  String nextPageToken,
-) async {
+    String query, double lat, double lng, String nextPageToken,
+    {near: false}) async {
   try {
     var response;
-    response = await http.get(
-        '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&nextPageToken=$nextPageToken',
-        headers: {'Authorization': 'security'});
+    if (lat != null && lng != null && near == true) {
+      response = await http.get(
+          '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&nextPageToken=$nextPageToken&isNear=$near',
+          headers: {'Authorization': 'security'});
+    } else if (lat != null && lng != null && near == false) {
+      response = await http.get(
+          '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&nextPageToken=$nextPageToken',
+          headers: {'Authorization': 'security'});
+    }
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -182,7 +190,8 @@ class SearchModalState extends State<SearchModal> {
         this.near != null
             ? this.near['location']['lng']
             : this.location != null ? this.location['lng'] : null,
-        selectId);
+        selectId,
+        near: nearId);
     data.then((res) {
       setState(() {
         this.nextPageToken = res.nextPageToken;
@@ -249,14 +258,15 @@ class SearchModalState extends State<SearchModal> {
                 nearId = false;
                 txt.text = '';
                 data = fetchSearchModal(
-                    '',
+                    txt.text,
                     this.near != null
                         ? this.near['location']['lat']
                         : this.location != null ? this.location['lat'] : null,
                     this.near != null
                         ? this.near['location']['lng']
                         : this.location != null ? this.location['lng'] : null,
-                    selectId);
+                    selectId,
+                    near: nearId);
                 data.then((res) {
                   setState(() {
                     this.nextPageToken = res.nextPageToken;
@@ -279,16 +289,17 @@ class SearchModalState extends State<SearchModal> {
                 if (selectId == false && this.near != null) {
                   nearId = selectId;
                 }
-                txt.text = '';
+                //txt.text = '';
                 data = fetchSearchModal(
-                    '',
+                    txt.text,
                     this.near != null
                         ? this.near['location']['lat']
                         : this.location != null ? this.location['lat'] : null,
                     this.near != null
                         ? this.near['location']['lng']
                         : this.location != null ? this.location['lng'] : null,
-                    selectId);
+                    selectId,
+                    near: nearId);
                 data.then((res) {
                   setState(() {
                     this.nextPageToken = res.nextPageToken;
@@ -315,9 +326,10 @@ class SearchModalState extends State<SearchModal> {
               if (nearId == true) {
                 selectId = true;
               }
-              txt.text = '';
-              data = fetchSearchModal('', this.near['location']['lat'],
-                  this.near['location']['lng'], nearId || selectId);
+              //txt.text = '';
+              data = fetchSearchModal(txt.text, this.near['location']['lat'],
+                  this.near['location']['lng'], nearId || selectId,
+                  near: nearId);
               data.then((res) {
                 setState(() {
                   this.nextPageToken = res.nextPageToken;
@@ -359,7 +371,8 @@ class SearchModalState extends State<SearchModal> {
                                           txt.text,
                                           location['lat'],
                                           location['lng'],
-                                          this.nextPageToken);
+                                          this.nextPageToken,
+                                          near: nearId);
                                       setState(() {
                                         this.results = this.results
                                           ..addAll(res.results);
@@ -400,7 +413,8 @@ class SearchModalState extends State<SearchModal> {
                                                   : this.location != null
                                                       ? this.location['lng']
                                                       : null,
-                                              selectId);
+                                              selectId,
+                                              near: nearId);
                                           data.then((res) {
                                             setState(() {
                                               this.nextPageToken =
@@ -439,7 +453,8 @@ class SearchModalState extends State<SearchModal> {
                                             : this.location != null
                                                 ? this.location['lng']
                                                 : null,
-                                        selectId);
+                                        selectId,
+                                        near: nearId);
                                     data.then((res) {
                                       setState(() {
                                         this.nextPageToken = res.nextPageToken;
@@ -595,46 +610,45 @@ class SearchModalState extends State<SearchModal> {
                   BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
           Widget>[
-        Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                padding: EdgeInsets.all(0),
-                icon: Icon(Icons.close),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                iconSize: 30,
-                color: Colors.black,
-              ),
-              FlatButton(
-                child: AutoSizeText('Clear'),
-                onPressed: () {
-                  setState(() {
-                    txt.text = '';
-                    data = fetchSearchModal(
-                        '',
-                        this.near != null
-                            ? this.near['location']['lat']
-                            : this.location != null
-                                ? this.location['lat']
-                                : null,
-                        this.near != null
-                            ? this.near['location']['lng']
-                            : this.location != null
-                                ? this.location['lng']
-                                : null,
-                        selectId);
-                  });
-                  data.then((res) {
-                    setState(() {
-                      this.nextPageToken = res.nextPageToken;
-                      this.results = res.results;
-                    });
-                  });
-                },
-              )
-            ]),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <
+            Widget>[
+          IconButton(
+            padding: EdgeInsets.all(0),
+            icon: Icon(Icons.close),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            iconSize: 30,
+            color: Colors.black,
+          ),
+          FlatButton(
+            child: AutoSizeText('Clear', style: TextStyle(color: Colors.blue)),
+            color: Colors.blue.shade100,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            onPressed: () {
+              setState(() {
+                txt.text = '';
+                data = fetchSearchModal(
+                    '',
+                    this.near != null
+                        ? this.near['location']['lat']
+                        : this.location != null ? this.location['lat'] : null,
+                    this.near != null
+                        ? this.near['location']['lng']
+                        : this.location != null ? this.location['lng'] : null,
+                    selectId,
+                    near: nearId);
+              });
+              data.then((res) {
+                setState(() {
+                  this.nextPageToken = res.nextPageToken;
+                  this.results = res.results;
+                });
+              });
+            },
+          )
+        ]),
         TextField(
           enabled: true,
           controller: txt,
@@ -648,31 +662,32 @@ class SearchModalState extends State<SearchModal> {
               hintText: selectId
                   ? 'Search for places in $destinationName...'
                   : 'Search for destinations to travel to...'),
-          onChanged: (value) {
-            if (timer != null) {
-              timer.cancel();
-              timer = null;
-            }
-            timer = new Timer(const Duration(milliseconds: 500), () {
-              setState(() {
-                data = fetchSearchModal(
-                    value,
-                    this.near != null
-                        ? this.near['location']['lat']
-                        : this.location != null ? this.location['lat'] : null,
-                    this.near != null
-                        ? this.near['location']['lng']
-                        : this.location != null ? this.location['lng'] : null,
-                    selectId);
-                data.then((res) {
-                  setState(() {
-                    this.nextPageToken = res.nextPageToken;
-                    this.results = res.results;
-                  });
-                });
-              });
-            });
-          },
+          // onChanged: (value) {
+          //   if (timer != null) {
+          //     timer.cancel();
+          //     timer = null;
+          //   }
+          //   timer = new Timer(const Duration(milliseconds: 500), () {
+          //     setState(() {
+          //       data = fetchSearchModal(
+          //           value,
+          //           this.near != null
+          //               ? this.near['location']['lat']
+          //               : this.location != null ? this.location['lat'] : null,
+          //           this.near != null
+          //               ? this.near['location']['lng']
+          //               : this.location != null ? this.location['lng'] : null,
+          //           selectId,
+          //           near: nearId);
+          //       data.then((res) {
+          //         setState(() {
+          //           this.nextPageToken = res.nextPageToken;
+          //           this.results = res.results;
+          //         });
+          //       });
+          //     });
+          //   });
+          // },
           onEditingComplete: () {
             setState(() {
               data = fetchSearchModal(
@@ -683,7 +698,8 @@ class SearchModalState extends State<SearchModal> {
                   this.near != null
                       ? this.near['location']['lng']
                       : this.location != null ? this.location['lng'] : null,
-                  selectId);
+                  selectId,
+                  near: nearId);
               data.then((res) {
                 setState(() {
                   this.nextPageToken = res.nextPageToken;

@@ -488,7 +488,11 @@ class SearchState extends State<Search> {
                     color: Colors.black,
                   ),
                   FlatButton(
-                    child: AutoSizeText('Clear'),
+                    child: AutoSizeText('Clear',
+                        style: TextStyle(color: Colors.blue)),
+                    color: Colors.blue.shade100,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                     onPressed: () {
                       setState(() {
                         txt.text = '';
@@ -520,24 +524,39 @@ class SearchState extends State<Search> {
                   hintText: selectId
                       ? 'Search for places in ${this.destinationName}...'
                       : 'Search for destinations to travel to...'),
-              onChanged: (value) {
-                if (timer != null) {
-                  timer.cancel();
-                  timer = null;
-                }
-                timer = new Timer(const Duration(milliseconds: 500), () {
-                  print('Print $value');
-                  setState(() {
-                    data = fetchSearch(
-                        value,
-                        this.location != null ? this.location['lat'] : null,
-                        this.location != null ? this.location['lng'] : null,
-                        selectId);
-                    data.then((res) {
-                      setState(() {
-                        this.nextPageToken = res.nextPageToken;
-                        this.results = res.results;
-                      });
+              // onChanged: (value) {
+              //   if (timer != null) {
+              //     timer.cancel();
+              //     timer = null;
+              //   }
+              //   timer = new Timer(const Duration(milliseconds: 500), () {
+              //     print('Print $value');
+              //     setState(() {
+              //       data = fetchSearch(
+              //           value,
+              //           this.location != null ? this.location['lat'] : null,
+              //           this.location != null ? this.location['lng'] : null,
+              //           selectId);
+              //       data.then((res) {
+              //         setState(() {
+              //           this.nextPageToken = res.nextPageToken;
+              //           this.results = res.results;
+              //         });
+              //       });
+              //     });
+              //   });
+              // },
+              onEditingComplete: () {
+                setState(() {
+                  data = fetchSearch(
+                      txt.text,
+                      this.location != null ? this.location['lat'] : null,
+                      this.location != null ? this.location['lng'] : null,
+                      selectId);
+                  data.then((res) {
+                    setState(() {
+                      this.nextPageToken = res.nextPageToken;
+                      this.results = res.results;
                     });
                   });
                 });

@@ -262,8 +262,8 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
           )));
 }
 
-responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
-    String dayId, String destinationId, String addedBy,
+Future<DayData> responseFromDayBottomSheet(BuildContext context, dynamic item,
+    dynamic poi, String dayId, String destinationId, String addedBy,
     [int toIndex, String movedByUid]) async {
   final store = Provider.of<TrotterStore>(context);
   var data = {
@@ -286,6 +286,8 @@ responseFromDayBottomSheet(BuildContext context, dynamic item, dynamic poi,
       duration: Duration(seconds: 2),
     ));
   }
+
+  return response;
 }
 
 showDayBottomSheet(
@@ -401,18 +403,22 @@ showDayBottomSheet(
                                   onTap: () async {
                                     store.setBottomSheetLoading(true);
 
-                                    await responseFromDayBottomSheet(
-                                        listContext,
-                                        item,
-                                        poi,
-                                        days[dayIndex]['id'],
-                                        destinationId,
-                                        addedBy,
-                                        days[dayIndex]['day'] + 1,
-                                        movedByUid);
+                                    var response =
+                                        await responseFromDayBottomSheet(
+                                            listContext,
+                                            item,
+                                            poi,
+                                            days[dayIndex]['id'],
+                                            destinationId,
+                                            addedBy,
+                                            days[dayIndex]['day'] + 1,
+                                            movedByUid);
 
-                                    Navigator.pop(listContext,
-                                        {'selected': days[dayIndex]});
+                                    Navigator.pop(listContext, {
+                                      'selected': days[dayIndex],
+                                      "movedPlaceId": response.justAdded,
+                                      "movedDayId": days[dayIndex]['id']
+                                    });
                                     store.setBottomSheetLoading(false);
                                   },
                                   contentPadding: EdgeInsets.symmetric(

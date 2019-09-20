@@ -667,13 +667,18 @@ class DayEditState extends State<DayEdit> {
                           isSelecting: false,
                           movedByUid: store.currentUser.uid,
                           movingFromId: this.dayId);
-                      if (result != null && result['selected'] != null) {
+                      if (result != null &&
+                          result['selected'] != null &&
+                          result['movedDayId'] != null &&
+                          result['movedPlaceId'] != null) {
                         setState(() {
                           this.loading = true;
                         });
                         var response = await deleteFromDay(this.itineraryId,
                             this.dayId, id, store.currentUser.uid,
-                            sendNotification: false);
+                            sendNotification: false,
+                            movedDayId: result['movedDayId'],
+                            movedPlaceId: result['movedPlaceId']);
                         if (response.success == true) {
                           setState(() {
                             this

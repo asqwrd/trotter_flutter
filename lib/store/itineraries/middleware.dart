@@ -264,10 +264,10 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
 
 Future<DeleteItemData> deleteFromDay(String itineraryId, String dayId,
     String itineraryItemId, String currentUserId,
-    {sendNotification: true}) async {
+    {sendNotification: true, movedPlaceId: '', movedDayId: ''}) async {
   try {
     final response = await http.delete(
-        '$ApiDomain/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId?deletedBy=$currentUserId&sendNotification=$sendNotification',
+        '$ApiDomain/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId?deletedBy=$currentUserId&sendNotification=$sendNotification&movedPlaceId=$movedPlaceId&movedDayId=$movedDayId',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON

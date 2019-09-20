@@ -7,7 +7,7 @@ description: A travel guide app.
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 26.0.0+26
+version: 1.0.0+27
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -24,43 +24,41 @@ dependencies:
   showcaseview: ^0.1.2
   date_range_picker: ^1.0.6
   duration: ^2.0.8
-  firebase_dynamic_links: ^0.5.0
+  firebase_dynamic_links: ^0.5.0+1
   flutter_store: ^1.0.0+4
-  firebase_messaging: ^5.1.5
-  share: ^0.6.1+1
+  firebase_messaging: ^5.1.6
+  share: ^0.6.2+1
   http: ^0.12.0+1
   flutter_svg: ^0.13.0+2
   shared_preferences: ^0.4.3
-  sliding_up_panel: ^0.3.4
+  sliding_up_panel: ^0.3.5
   flutter_swiper: ^1.1.6
   transformer_page_view: ^0.1.6
-  google_maps_flutter: ^0.5.21
+  google_maps_flutter: ^0.5.21+2
   shimmer: ^0.0.6
   flare_flutter: ^1.5.8
   flare_loading: ^2.0.2
-  intl: ^0.15.8
+  intl: ^0.16.0
   html_unescape: ^1.0.1+2
   flutter_typeahead: ^1.6.1
-  datetime_picker_formfield: ^0.2.0
   queries: ^0.1.12
   recase: ^2.0.0+1
   flutter_page_indicator: ^0.0.3
   bubble_bottom_bar: ^1.2.0
-  flutter_fab_dialer: ^0.1.1
-  flutter_vector_icons: ^0.1.0
+  flutter_vector_icons: ^0.2.1
   transparent_image: ^0.1.0
-  firebase_auth: ^0.14.0+1
-  google_sign_in: ^4.0.2
-  timezone: ^0.5.4
+  firebase_auth: ^0.14.0+5
+  google_sign_in: ^4.0.7
+  timezone: ^0.5.5
   badges: ^1.1.0
   flutter_advanced_networkimage: ^0.5.0
-  timeago: ^2.0.18
+  timeago: ^2.0.19
   notification_permissions: ^0.4.0
   location: ^2.3.5
-  loadmore: ^1.0.3
+  loadmore: ^1.0.4
   awesome_loader: ^0.0.3
   country_code_picker: ^1.1.7
-  geolocator: ^5.1.1+1
+  geolocator: ^5.1.3
   flutter_launcher_icons: "^0.7.0"
   device_info: ^0.4.0+2
   event_bus: ^1.1.0
@@ -157,7 +155,7 @@ flutter:
     - images/M.png
     - images/N.png
     - images/trips-empty.png
-    - packages/timezone/data/2019a.tzf
+    - packages/timezone/data/2019b.tzf
     - assets/Map.flr
     - assets/Plane.flr
     - assets/globe.flr

@@ -71,7 +71,7 @@ class ParkData {
 
 class Park extends StatefulWidget {
   final String parkId;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   Park({Key key, @required this.parkId, this.onPush}) : super(key: key);
   @override
   ParkState createState() =>
@@ -82,7 +82,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
   static String id;
   final String parkId;
   Future<ParkData> data;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -348,7 +348,23 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
               if (currentUser == null) {
                 loginBottomSheet(context, data, color);
               } else {
-                await addToItinerary(context, items[index], color, destination);
+                final result = await addToItinerary(
+                    context, items[index], color, destination);
+                if (result != null &&
+                    result['selected'] != null &&
+                    result['dayId'] != null &&
+                    result['itinerary'] != null &&
+                    result['poi'] != null &&
+                    result['dayIndex'] != null) {
+                  //Navigator.of(context).pop();
+
+                  await showSuccessSnackbar(context,
+                      onPush: onPush,
+                      dayId: result['dayId'],
+                      dayIndex: result['dayIndex'],
+                      itinerary: result['itinerary'],
+                      poi: result['poi']);
+                }
               }
             },
             child: Padding(

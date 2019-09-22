@@ -71,7 +71,7 @@ class Poi extends StatefulWidget {
   final bool googlePlace;
   final String locationId;
   final dynamic destination;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   Poi({
     Key key,
     @required this.poiId,
@@ -95,7 +95,7 @@ class PoiState extends State<Poi> {
   final bool googlePlace;
   final dynamic destination;
   final String locationId;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   Completer<GoogleMapController> _controller = Completer();
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
@@ -312,12 +312,25 @@ class PoiState extends State<Poi> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100)),
                         onPressed: () async {
-                          var res = await addToItinerary(
+                          var result = await addToItinerary(
                               context, this.poi, color, destination);
-                          if (res != null && res['selected'] != null) {
+                          if (result != null &&
+                              result['selected'] != null &&
+                              result['dayId'] != null &&
+                              result['itinerary'] != null &&
+                              result['poi'] != null &&
+                              result['dayIndex'] != null) {
+                            //Navigator.of(context).pop();
                             setState(() {
                               this.addedToItinerary = true;
                             });
+
+                            await showSuccessSnackbar(context,
+                                onPush: onPush,
+                                dayId: result['dayId'],
+                                dayIndex: result['dayIndex'],
+                                itinerary: result['itinerary'],
+                                poi: result['poi']);
                           }
                         },
                         child: SvgPicture.asset("images/add-icon.svg",

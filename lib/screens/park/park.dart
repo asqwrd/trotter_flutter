@@ -91,6 +91,8 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
   String image;
   Color color = Colors.transparent;
   String parkName;
+  dynamic park;
+  dynamic location;
   dynamic pois = [];
   bool imageLoading = true;
 
@@ -137,6 +139,7 @@ class ParkState extends State<Park> with SingleTickerProviderStateMixin {
                 this.errorUi = false;
                 this.image = data.park['image'];
                 this.parkName = data.park['name'];
+                this.park = data.park;
                 this.pois = data.pois;
                 this.loading = false;
                 this.color = Color(hexStringToHexInt(data.color));

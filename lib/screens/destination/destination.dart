@@ -111,7 +111,7 @@ class DestinationData {
 class Destination extends StatefulWidget {
   final String destinationId;
   final String destinationType;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   Destination(
       {Key key,
       @required this.destinationId,
@@ -131,7 +131,7 @@ class DestinationState extends State<Destination>
   final String destinationId;
   final String destinationType;
   Future<DestinationData> data;
-  final ValueChanged<dynamic> onPush;
+  final Future2VoidFunc onPush;
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -141,6 +141,7 @@ class DestinationState extends State<Destination>
   Color color = Colors.black.withOpacity(.3);
   String destinationName;
   dynamic location;
+  dynamic destination;
   dynamic discover = [];
   dynamic eat = [];
   dynamic play = [];
@@ -194,6 +195,7 @@ class DestinationState extends State<Destination>
                 this.image = data.destination['image'];
                 //print(this.image);
                 this.destinationName = data.destination['name'];
+                this.destination = data.destination;
                 this.location = data.destination['location'];
                 this.color = Color(hexStringToHexInt(data.color));
                 this.discover = data.discover;
@@ -335,6 +337,7 @@ class DestinationState extends State<Destination>
               color: color,
               title: this.destinationName,
               back: true,
+              destination: this.destination,
               id: this.destinationId,
               location: this.location)),
     ]);
@@ -366,7 +369,8 @@ class DestinationState extends State<Destination>
     ];
     var tabContents = <Widget>[
       _buildTabContent(
-          _buildAllTab(allTab, descriptionShort, color, destination), 'All'),
+          _buildAllTab(ctxt, allTab, descriptionShort, color, destination),
+          'All'),
     ];
     for (var tab in allTab) {
       if (tab['items'].length > 0) {
@@ -410,8 +414,8 @@ class DestinationState extends State<Destination>
             children: widgets));
   }
 
-  _buildAllTab(List<dynamic> sections, String description, Color color,
-      dynamic destination) {
+  _buildAllTab(BuildContext context, List<dynamic> sections, String description,
+      Color color, dynamic destination) {
     final store = Provider.of<TrotterStore>(context);
     var widgets = <Widget>[
       GestureDetector(
@@ -460,7 +464,23 @@ class DestinationState extends State<Destination>
                 loginBottomSheet(context, data, color);
               } else {
                 var index = data['index'];
-                await addToItinerary(context, items[index], color, destination);
+                var result = await addToItinerary(
+                    context, items[index], color, destination);
+                if (result != null &&
+                    result['selected'] != null &&
+                    result['dayId'] != null &&
+                    result['itinerary'] != null &&
+                    result['poi'] != null &&
+                    result['dayIndex'] != null) {
+                  //Navigator.of(context).pop();
+
+                  await showSuccessSnackbar(context,
+                      onPush: onPush,
+                      dayId: result['dayId'],
+                      dayIndex: result['dayIndex'],
+                      itinerary: result['itinerary'],
+                      poi: result['poi']);
+                }
               }
             },
             header: section['header']));

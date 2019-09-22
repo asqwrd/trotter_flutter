@@ -94,6 +94,7 @@ class Search extends StatefulWidget {
   final String id;
   final dynamic location;
   final String destinationName;
+  final dynamic destination;
   final ValueChanged<dynamic> onPush;
   Search(
       {Key key,
@@ -101,6 +102,7 @@ class Search extends StatefulWidget {
       this.onPush,
       this.id,
       this.location,
+      this.destination,
       this.destinationName})
       : super(key: key);
   @override
@@ -108,6 +110,7 @@ class Search extends StatefulWidget {
       query: this.query,
       id: this.id,
       onPush: this.onPush,
+      destination: this.destination,
       destinationName: this.destinationName,
       location: this.location);
 }
@@ -117,6 +120,7 @@ class SearchState extends State<Search> {
   String id;
   dynamic location;
   String destinationName;
+  final dynamic destination;
   bool selectId = false;
   final ValueChanged<dynamic> onPush;
   GoogleMapController mapController;
@@ -149,7 +153,12 @@ class SearchState extends State<Search> {
   }
 
   SearchState(
-      {this.query, this.onPush, this.id, this.location, this.destinationName});
+      {this.query,
+      this.onPush,
+      this.id,
+      this.location,
+      this.destination,
+      this.destinationName});
 
   @override
   Widget build(BuildContext context) {
@@ -375,11 +384,11 @@ class SearchState extends State<Search> {
         return selectId == false
             ? InkWell(
                 onTap: () {
-                  print(results[index]['google_place']);
                   onPush({
                     'id': results[index]['id'].toString(),
                     'level': results[index]['level'].toString(),
                     'from': 'search',
+                    'destination': this.destination,
                     'google_place': results[index]['google_place']
                   });
                 },
@@ -398,6 +407,7 @@ class SearchState extends State<Search> {
                     'id': results[index]['id'].toString(),
                     'level': results[index]['level'].toString(),
                     'from': 'search',
+                    'destination': this.destination,
                     'google_place': results[index]['google_place']
                   });
                 },

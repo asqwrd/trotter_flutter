@@ -15,6 +15,7 @@ class TrotterAppBar extends StatelessWidget {
       this.actions,
       this.title,
       this.id,
+      this.destination,
       this.location})
       : super(key: key);
 
@@ -27,6 +28,7 @@ class TrotterAppBar extends StatelessWidget {
   final String id;
   final bool showSearch;
   final bool loading;
+  final dynamic destination;
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +116,8 @@ class TrotterAppBar extends StatelessWidget {
                           'level': 'search',
                           'id': this.id,
                           'location': this.location,
-                          'destinationName': this.title
+                          'destinationName': this.title,
+                          'destination': this.destination,
                         });
                       }
                     },

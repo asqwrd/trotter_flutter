@@ -204,6 +204,7 @@ class TabNavigator extends StatelessWidget {
           id: data['id'],
           location: data['location'],
           destinationName: data['destinationName'],
+          destination: data['destination'],
           onPush: (data) => push(context, data)),
     };
 

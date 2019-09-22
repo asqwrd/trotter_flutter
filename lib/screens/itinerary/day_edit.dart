@@ -664,13 +664,20 @@ class DayEditState extends State<DayEdit> {
                           this.destination,
                           data['added_by'],
                           force: true,
+                          startDate: this.startDate,
                           isSelecting: false,
                           movedByUid: store.currentUser.uid,
-                          movingFromId: this.dayId);
+                          movingFromId: this.dayId,
+                          onPush: onPush);
                       if (result != null &&
                           result['selected'] != null &&
-                          result['movedDayId'] != null &&
+                          result['dayId'] != null &&
+                          result['toIndex'] != null &&
+                          result['itinerary'] != null &&
+                          result['poi'] != null &&
+                          result['dayIndex'] != null &&
                           result['movedPlaceId'] != null) {
+                        Navigator.of(context).pop();
                         setState(() {
                           this.loading = true;
                         });
@@ -686,7 +693,15 @@ class DayEditState extends State<DayEdit> {
                                 .removeWhere((item) => item['id'] == id);
                             store.itineraryStore
                                 .updateItineraryBuilderDelete(this.dayId, id);
-                            Navigator.of(context).pop();
+
+                            showSuccessSnackbar(this.context,
+                                onPush: onPush,
+                                toIndex: result['toIndex'],
+                                dayId: result['dayId'],
+                                dayIndex: result['dayIndex'],
+                                itinerary: result['itinerary'],
+                                poi: result['poi']);
+
                             this.loading = false;
                           });
                         } else {

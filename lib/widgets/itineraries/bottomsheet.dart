@@ -1,33 +1,40 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/itinerary-list/index.dart';
 
 Future addToItinerary(
-    BuildContext context, dynamic poi, Color color, dynamic destination) async {
+    BuildContext context, dynamic poi, Color color, dynamic destination,
+    {Future2VoidFunc onPush, int startDate}) async {
   final store = Provider.of<TrotterStore>(context);
-  var selectedItineraryId =
+  final selectedItineraryId =
       store.itineraryStore.selectedItinerary.selectedItineraryId;
-  var selectedItineraryDestination =
+  final selectedItineraryDestination =
       store.itineraryStore.selectedItinerary.destinationId;
+  final startDate = store.itineraryStore.selectedItinerary.selectedItinerary !=
+          null
+      ? store.itineraryStore.selectedItinerary.selectedItinerary['start_date']
+      : 0;
 
   if (selectedItineraryId != null &&
       selectedItineraryDestination == destination['id']) {
     var result = await showDayBottomSheet(store, context, selectedItineraryId,
-        poi, destination['id'], color, destination, store.currentUser.uid);
+        poi, destination['id'], color, destination, store.currentUser.uid,
+        onPush: onPush, startDate: startDate * 1000);
     if (result != null && result['change'] != null) {
       store.itineraryStore
           .setSelectedItinerary(null, destination['id'], null, true);
     }
-    return Future.value({"selected": true});
+    return result;
   } else {
-    var res = await showItineraryBottomSheet(
+    await showItineraryBottomSheet(
         store, context, destination['id'], poi, color, destination);
-    print(res);
   }
 }
 
@@ -185,11 +192,13 @@ _buildLoadingList() {
 }
 
 _buildItems(TrotterStore store, BuildContext context, List<dynamic> items,
-    dynamic poi, String destinationId, Color color, dynamic destination) {
+    dynamic poi, String destinationId, Color color, dynamic destination,
+    {Future2VoidFunc onPush, int startDate}) {
   var widgets = <Widget>[];
   for (var item in items) {
     widgets.add(_buildBody(
-        store, context, item, poi, destinationId, color, destination));
+        store, context, item, poi, destinationId, color, destination,
+        onPush: onPush));
   }
   return widgets;
 }
@@ -204,7 +213,8 @@ _buildRow(List<Widget> widgets) {
 }
 
 Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
-    dynamic poi, String destinationId, Color color, dynamic destination) {
+    dynamic poi, String destinationId, Color color, dynamic destination,
+    {Future2VoidFunc onPush}) {
   var days = item['days'] as List;
   var itineraryItems = days.firstWhere((day) {
     var items = day['itinerary_items'] as List;
@@ -218,7 +228,8 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
             store.itineraryStore.setSelectItineraryLoading(true);
             Navigator.pop(context);
             var result = await showDayBottomSheet(store, context, item['id'],
-                poi, destinationId, color, destination, store.currentUser.uid);
+                poi, destinationId, color, destination, store.currentUser.uid,
+                onPush: onPush, startDate: item['start_date'] * 1000);
             if (result != null && result['change'] != null) {
               store.itineraryStore
                   .setSelectedItinerary(null, destinationId, null);
@@ -242,7 +253,9 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
                         destinationId,
                         color,
                         destination,
-                        store.currentUser.uid);
+                        store.currentUser.uid,
+                        onPush: onPush,
+                        startDate: item['start_date'] * 1000);
                     if (result != null && result['change'] != null) {
                       store.itineraryStore
                           .setSelectedItinerary(null, destinationId, null);
@@ -264,7 +277,11 @@ Widget _buildBody(TrotterStore store, BuildContext context, dynamic item,
 
 Future<DayData> responseFromDayBottomSheet(BuildContext context, dynamic item,
     dynamic poi, String dayId, String destinationId, String addedBy,
-    [int toIndex, String movedByUid]) async {
+    [int toIndex,
+    dayIndex,
+    String movedByUid,
+    BuildContext mainContext,
+    Future2VoidFunc onPush]) async {
   final store = Provider.of<TrotterStore>(context);
   var data = {
     "poi": poi,
@@ -276,16 +293,6 @@ Future<DayData> responseFromDayBottomSheet(BuildContext context, dynamic item,
   };
   var response = await addToDay(
       store, item['id'], dayId, destinationId, data, true, movedByUid);
-  if (response.success == true) {
-    Scaffold.of(context).showSnackBar(SnackBar(
-      content: AutoSizeText(
-          toIndex != null
-              ? '${poi['name']} added to day $toIndex'
-              : '${poi['name']} added to ${item['name']}',
-          style: TextStyle(fontSize: 18)),
-      duration: Duration(seconds: 2),
-    ));
-  }
 
   return response;
 }
@@ -300,9 +307,11 @@ showDayBottomSheet(
     dynamic destination,
     String addedBy,
     {force: false,
+    int startDate,
     isSelecting: false,
     String movedByUid: '',
-    String movingFromId}) {
+    String movingFromId,
+    onPush: Future2VoidFunc}) {
   final storeApp = Provider.of<TrotterStore>(context);
   final data = fetchSelectedItinerary(storeApp, itineraryId);
   return showModalBottomSheet(
@@ -338,6 +347,7 @@ showDayBottomSheet(
               if (movingFromId != null) {
                 days.removeWhere((day) => movingFromId == day['id']);
               }
+              final formatter = DateFormat.yMMMMd("en_US");
               return IgnorePointer(
                   ignoring: store.bottomSheetLoading,
                   child: Stack(children: <Widget>[
@@ -412,23 +422,47 @@ showDayBottomSheet(
                                             destinationId,
                                             addedBy,
                                             days[dayIndex]['day'] + 1,
-                                            movedByUid);
-
+                                            dayIndex,
+                                            movedByUid,
+                                            context,
+                                            onPush);
                                     Navigator.pop(listContext, {
                                       'selected': days[dayIndex],
+                                      'toIndex': days[dayIndex]['day'] + 1,
+                                      'poi': poi,
+                                      'itinerary': item,
                                       "movedPlaceId": response.justAdded,
-                                      "movedDayId": days[dayIndex]['id']
+                                      "dayIndex": dayIndex,
+                                      "dayId": days[dayIndex]['id']
                                     });
+
                                     store.setBottomSheetLoading(false);
                                   },
                                   contentPadding: EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 5),
-                                  title: AutoSizeText(
-                                    'Day ${days[dayIndex]['day'] + 1}',
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500),
-                                  ),
+                                  title: Row(children: <Widget>[
+                                    AutoSizeText(
+                                      'Day ${days[dayIndex]['day'] + 1} - ',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                    Align(
+                                        alignment: Alignment.topLeft,
+                                        child: Container(
+                                            child: AutoSizeText(
+                                          formatter.format(DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                      startDate,
+                                                      isUtc: true)
+                                              .add(Duration(
+                                                  days: days[dayIndex]
+                                                      ['day']))),
+                                          style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w300),
+                                        )))
+                                  ]),
                                   subtitle: AutoSizeText(
                                     '${days[dayIndex]['itinerary_items'].length} ${days[dayIndex]['itinerary_items'].length == 1 ? "place" : "places"} to see',
                                     style: TextStyle(
@@ -449,6 +483,43 @@ showDayBottomSheet(
                   ]));
             });
       });
+}
+
+Future<ScaffoldFeatureController<SnackBar, SnackBarClosedReason>>
+    showSuccessSnackbar(BuildContext context,
+        {dynamic poi,
+        dynamic itinerary,
+        String dayId,
+        Future2VoidFunc onPush,
+        int dayIndex,
+        int toIndex}) async {
+  return Scaffold.of(context).showSnackBar(SnackBar(
+    content: AutoSizeText(
+        toIndex != null
+            ? '${poi['name']} added to day $toIndex'
+            : '${poi['name']} added to ${itinerary['name']}',
+        style: TextStyle(fontSize: 18)),
+    duration: Duration(seconds: 2),
+    action: onPush != null
+        ? SnackBarAction(
+            label: 'Go to day',
+            // textColor: this.color,
+            onPressed: () async {
+              //print(item['start_location']);
+              //print(item['days'][dayIndex]);
+              // Navigator.pop(mainContext);
+              await onPush({
+                'itineraryId': itinerary['id'],
+                'dayId': dayId,
+                "linkedItinerary": itinerary['days'][dayIndex]
+                    ['linked_itinerary'],
+                "startLocation": itinerary['start_location']['location'],
+                'level': 'itinerary/day/edit'
+              });
+            },
+          )
+        : null,
+  ));
 }
 
 Widget _buildLoadingBody(BuildContext ctxt, int index) {

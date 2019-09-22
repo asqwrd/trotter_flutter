@@ -302,6 +302,7 @@ class PoiState extends State<Poi> {
                 color: color,
                 title: this.poiName,
                 back: true,
+                destination: this.destination,
                 actions: <Widget>[
                   Container(
                       width: 58,

@@ -122,6 +122,8 @@ class PoiState extends State<Poi> {
       });
     });
     super.initState();
+    print("this.googlePlace");
+    print(this.googlePlace);
     data = fetchPoi(this.poiId, this.googlePlace, this.locationId);
   }
 
@@ -312,8 +314,14 @@ class PoiState extends State<Poi> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100)),
                         onPressed: () async {
+                          this.poi['google_place'] = this.googlePlace;
                           var result = await addToItinerary(
                               context, this.poi, color, destination);
+                          print(result['selected']);
+                          print(result['dayId']);
+                          print(result['itinerary']);
+                          print(result['poi']);
+                          print(result['dayIndex']);
                           if (result != null &&
                               result['selected'] != null &&
                               result['dayId'] != null &&

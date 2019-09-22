@@ -684,7 +684,7 @@ class DayEditState extends State<DayEdit> {
                         var response = await deleteFromDay(this.itineraryId,
                             this.dayId, id, store.currentUser.uid,
                             sendNotification: false,
-                            movedDayId: result['movedDayId'],
+                            movedDayId: result['dayId'],
                             movedPlaceId: result['movedPlaceId']);
                         if (response.success == true) {
                           setState(() {

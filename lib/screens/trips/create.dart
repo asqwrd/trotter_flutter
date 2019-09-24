@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'dart:core';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
@@ -24,7 +23,6 @@ class CreateTrip extends StatefulWidget {
 class CreateTripState extends State<CreateTrip> {
   final ValueChanged<dynamic> onPush;
   final dynamic param;
-  GoogleMapController mapController;
 
   Future<CreateTripData> data;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();

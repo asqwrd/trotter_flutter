@@ -8,7 +8,6 @@ import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/globals.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-search-modal.dart';
 
@@ -77,7 +76,6 @@ class TravelersModalState extends State<TravelersModal> {
   List<String> deletedTravelers = [];
   bool showSave = false;
   final ValueChanged<dynamic> onAdd;
-  GoogleMapController mapController;
   List<Widget> selectedUsers = [];
   List<String> selectedUsersUid = [];
 

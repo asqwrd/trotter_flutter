@@ -10,7 +10,6 @@ import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/globals.dart';
 import 'package:rating_bar/rating_bar.dart';
 
@@ -169,7 +168,6 @@ class SearchModalState extends State<SearchModal> {
   bool nearId = false;
   final ValueChanged<dynamic> onSelect;
   final Future2VoidFunc onPush;
-  GoogleMapController mapController;
   String nextPageToken;
   List<dynamic> results;
 

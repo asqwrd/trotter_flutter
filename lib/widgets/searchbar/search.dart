@@ -9,7 +9,6 @@ import 'package:trotter_flutter/widgets/loaders/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:trotter_flutter/globals.dart';
 
 Future<SearchData> fetchSearch(
@@ -123,7 +122,6 @@ class SearchState extends State<Search> {
   final dynamic destination;
   bool selectId = false;
   final ValueChanged<dynamic> onPush;
-  GoogleMapController mapController;
   List<dynamic> results;
   String nextPageToken;
 

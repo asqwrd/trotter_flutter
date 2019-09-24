@@ -6,10 +6,11 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart';
 import 'package:duration/duration.dart';
+import 'package:trotter_flutter/globals.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:trotter_flutter/widgets/map/static-map.dart';
 
 class FlightsAccomodationsList extends StatelessWidget {
   final dynamic destination;
@@ -317,28 +318,31 @@ class FlightsAccomodationsList extends StatelessWidget {
                     Container(
                         height: 200,
                         width: MediaQuery.of(context).size.width,
-                        child: ClipPath(
-                            clipper: CornerRadiusClipper(10.0),
-                            child: GoogleMap(
-                              // onMapCreated: (GoogleMapController controller) {
-                              //   _controller.complete(controller);
-                              // },
-                              markers: <Marker>[
-                                Marker(
-                                    markerId:
-                                        MarkerId(segment['confirmation_no']),
-                                    position: LatLng(
-                                        double.parse(segment['lat']),
-                                        double.parse(segment['lon'])))
-                              ].toSet(),
-                              initialCameraPosition: CameraPosition(
-                                bearing: 0.0,
-                                target: LatLng(double.parse(segment['lat']),
-                                    double.parse(segment['lon'])),
-                                tilt: 30.0,
-                                zoom: 17.0,
-                              ),
-                            ))),
+                        child: StaticMap(GOOGLE_API_KEY,
+                            width: MediaQuery.of(context).size.width,
+                            height: 200,
+                            color: Colors.blueGrey,
+                            zoom: 18,
+                            lat: double.parse(segment['lat']),
+                            lng: double.parse(segment['lon']))
+                        // GoogleMap(
+                        //   markers: <Marker>[
+                        //     Marker(
+                        //         markerId:
+                        //             MarkerId(segment['confirmation_no']),
+                        //         position: LatLng(
+                        //             double.parse(segment['lat']),
+                        //             double.parse(segment['lon'])))
+                        //   ].toSet(),
+                        //   initialCameraPosition: CameraPosition(
+                        //     bearing: 0.0,
+                        //     target: LatLng(double.parse(segment['lat']),
+                        //         double.parse(segment['lon'])),
+                        //     tilt: 30.0,
+                        //     zoom: 17.0,
+                        //   ),
+                        // )
+                        ),
                     Container(
                         height: 170,
                         margin: EdgeInsets.only(top: 10),

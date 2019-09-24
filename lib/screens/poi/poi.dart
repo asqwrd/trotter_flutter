@@ -13,10 +13,10 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:trotter_flutter/globals.dart';
 import 'package:trotter_flutter/widgets/itineraries/bottomsheet.dart';
+import 'package:trotter_flutter/widgets/map/static-map.dart';
 
 Future<PoiData> fetchPoi(String id,
     [bool googlePlace, String locationId]) async {
@@ -96,7 +96,7 @@ class PoiState extends State<Poi> {
   final dynamic destination;
   final String locationId;
   final Future2VoidFunc onPush;
-  Completer<GoogleMapController> _controller = Completer();
+  //Completer<GoogleMapController> _controller = Completer();
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -122,8 +122,6 @@ class PoiState extends State<Poi> {
       });
     });
     super.initState();
-    print("this.googlePlace");
-    print(this.googlePlace);
     data = fetchPoi(this.poiId, this.googlePlace, this.locationId);
   }
 
@@ -317,11 +315,7 @@ class PoiState extends State<Poi> {
                           this.poi['google_place'] = this.googlePlace;
                           var result = await addToItinerary(
                               context, this.poi, color, destination);
-                          print(result['selected']);
-                          print(result['dayId']);
-                          print(result['itinerary']);
-                          print(result['poi']);
-                          print(result['dayIndex']);
+
                           if (result != null &&
                               result['selected'] != null &&
                               result['dayId'] != null &&
@@ -460,31 +454,37 @@ class PoiState extends State<Poi> {
             ),
             Center(
                 child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 20.0),
-              margin: EdgeInsets.only(bottom: 20),
-              height: 250.0,
-              width: double.infinity,
-              child: ClipPath(
-                  clipper: CornerRadiusClipper(10.0),
-                  child: GoogleMap(
-                    onMapCreated: (GoogleMapController controller) {
-                      _controller.complete(controller);
-                    },
-                    markers: <Marker>[
-                      Marker(
-                          markerId: MarkerId(poi['id']),
-                          position: LatLng(
-                              poi['location']['lat'], poi['location']['lng']))
-                    ].toSet(),
-                    initialCameraPosition: CameraPosition(
-                      bearing: 0.0,
-                      target: LatLng(
-                          poi['location']['lat'], poi['location']['lng']),
-                      tilt: 30.0,
-                      zoom: 17.0,
-                    ),
-                  )),
-            )),
+                    padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    margin: EdgeInsets.only(bottom: 20),
+                    height: 250.0,
+                    width: MediaQuery.of(context).size.width,
+                    child: StaticMap(GOOGLE_API_KEY,
+                        width: MediaQuery.of(context).size.width,
+                        height: 250,
+                        color: this.color,
+                        zoom: 18,
+                        lat: poi['location']['lat'],
+                        lng: poi['location']['lng'])
+                    // GoogleMap(
+                    //   onMapCreated: (GoogleMapController controller) {
+                    //     _controller.complete(controller);
+                    //   },
+                    //   markers: <Marker>[
+                    //     Marker(
+                    //         markerId: MarkerId(poi['id']),
+                    //         position: LatLng(
+                    //             poi['location']['lat'], poi['location']['lng']))
+                    //   ].toSet(),
+                    //   initialCameraPosition: CameraPosition(
+                    //     bearing: 0.0,
+                    //     target: LatLng(
+                    //         poi['location']['lat'], poi['location']['lng']),
+                    //     tilt: 30.0,
+                    //     zoom: 17.0,
+                    //   ),
+                    // )
+
+                    )),
           ]),
         ));
   }

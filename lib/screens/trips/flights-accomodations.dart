@@ -313,6 +313,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                 children: <Widget>[
                   Container(
                       color: Colors.transparent,
+                      alignment: Alignment.center,
                       child: _renderTabBar(Colors.blueGrey, Colors.black)),
                   Flexible(
                       child: Container(
@@ -348,6 +349,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     return TabBar(
       labelColor: mainColor,
       isScrollable: true,
+      labelPadding: EdgeInsets.only(top: 20, right: 20, left: 20),
       unselectedLabelColor: Colors.black.withOpacity(0.6),
       indicator: BoxDecoration(
           border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),

@@ -84,6 +84,7 @@ class DayEditState extends State<DayEdit> {
   GlobalKey _one = GlobalKey();
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
+  GlobalKey _four = GlobalKey();
 
   @override
   void initState() {
@@ -175,7 +176,7 @@ class DayEditState extends State<DayEdit> {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           final String cacheData = prefs.getString('dayEditShowcase') ?? null;
           if (cacheData == null) {
-            ShowCaseWidget.startShowCase(context, [_one, _two, _three]);
+            ShowCaseWidget.startShowCase(context, [_one, _two, _three, _four]);
             await prefs.setString('dayEditShowcase', "true");
           }
         },
@@ -716,7 +717,7 @@ class DayEditState extends State<DayEdit> {
           }
         },
         comments: true,
-        showCaseKeys: [_two, _three],
+        showCaseKeys: [_two, _three, _four],
         onCommentPressed: (itineraryItem) async {
           final totalComments = await Navigator.push(
               context,

@@ -266,13 +266,48 @@ class DayList extends StatelessWidget {
                                 child: Align(
                                     alignment: Alignment.topCenter,
                                     child: Column(children: <Widget>[
-                                      Icon(
-                                          this.visited == false ||
-                                                  this.visited == null
-                                              ? Icons.place
-                                              : Icons.check,
-                                          color: fontContrast(color),
-                                          size: 20),
+                                      this.showCaseKeys != null && index == 2
+                                          ? Showcase.withWidget(
+                                              shapeBorder:
+                                                  RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              15)),
+                                              width: 250,
+                                              height: 50,
+                                              container: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: <Widget>[
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Container(
+                                                      width: 250,
+                                                      child: Text(
+                                                        'Tap this button to set a place to visited after you have gone there.',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.white),
+                                                        maxLines: 3,
+                                                      ))
+                                                ],
+                                              ),
+                                              key: this.showCaseKeys[0],
+                                              child: Icon(
+                                                  this.visited == false ||
+                                                          this.visited == null
+                                                      ? Icons.place
+                                                      : Icons.check,
+                                                  color: fontContrast(color),
+                                                  size: 20))
+                                          : Icon(
+                                              this.visited == false ||
+                                                      this.visited == null
+                                                  ? Icons.place
+                                                  : Icons.check,
+                                              color: fontContrast(color),
+                                              size: 20),
                                     ])),
                               )),
                           this.comments != null && this.comments == true
@@ -293,14 +328,14 @@ class DayList extends StatelessWidget {
                                           Container(
                                               width: 250,
                                               child: Text(
-                                                'Tap to open comments modal',
+                                                'Tap to open comments',
                                                 style: TextStyle(
                                                     color: Colors.white),
                                                 maxLines: 3,
                                               ))
                                         ],
                                       ),
-                                      key: this.showCaseKeys[0],
+                                      key: this.showCaseKeys[1],
                                       child: renderCommentIcon(
                                           itineraryItems, index, totalComments))
                                   : renderCommentIcon(
@@ -464,7 +499,7 @@ class DayList extends StatelessWidget {
                                                   Container(
                                                       width: 250,
                                                       child: Text(
-                                                        'Tap to view details about itinerary item.\Press and hold to bring up menu items',
+                                                        'Tap to view details about itinerary item.\nPress and hold to bring up menu items',
                                                         style: TextStyle(
                                                             color:
                                                                 Colors.white),
@@ -472,7 +507,7 @@ class DayList extends StatelessWidget {
                                                       ))
                                                 ],
                                               ),
-                                              key: this.showCaseKeys[1],
+                                              key: this.showCaseKeys[2],
                                               child:
                                                   renderPoiImage(context, item))
                                           : renderPoiImage(context, item)
@@ -587,14 +622,14 @@ class DayList extends StatelessWidget {
                                           Container(
                                               width: 250,
                                               child: Text(
-                                                'Tap to view details about itinerary item.\Press and hold to bring up menu items',
+                                                'Tap to view details about itinerary item.\nPress and hold to bring up menu items',
                                                 style: TextStyle(
                                                     color: Colors.white),
                                                 maxLines: 3,
                                               ))
                                         ],
                                       ),
-                                      key: this.showCaseKeys[1],
+                                      key: this.showCaseKeys[2],
                                       child: renderDestinationImage(
                                           context, destination))
                                   : renderDestinationImage(context, destination)

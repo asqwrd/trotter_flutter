@@ -10,6 +10,7 @@ import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/screens/itinerary/toggle-visited-modal.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -61,6 +62,7 @@ class DayEditState extends State<DayEdit> {
   dynamic startLocation;
   dynamic location;
   List<dynamic> itineraryItems = [];
+  List<dynamic> visited = [];
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -86,6 +88,9 @@ class DayEditState extends State<DayEdit> {
   @override
   void initState() {
     super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   toggleDialog(context);
+    // });
     getLocationPermission().then((res) {
       _sc.addListener(() {
         setState(() {
@@ -95,7 +100,7 @@ class DayEditState extends State<DayEdit> {
         });
       });
 
-      data = fetchDay(this.itineraryId, this.dayId, this.startLocation);
+      data = fetchDay(this.itineraryId, this.dayId, this.startLocation, "true");
       data.then((data) {
         if (data.error == null) {
           setState(() {
@@ -111,6 +116,7 @@ class DayEditState extends State<DayEdit> {
             this.destination = data.destination;
             this.destinationId = data.destination['id'].toString();
             this.itineraryItems = data.day['itinerary_items'].sublist(1);
+            this.visited = data.visited;
             this.day = data.day;
             this.startLocation = data.itinerary['start_location'];
             this.currentPosition = data.currentPosition;
@@ -222,7 +228,8 @@ class DayEditState extends State<DayEdit> {
                                         data = fetchDay(
                                             this.itineraryId,
                                             this.dayId,
-                                            this.startLocation['location']);
+                                            this.startLocation['location'],
+                                            'true');
                                         data.then((data) {
                                           if (data.error == null) {
                                             setState(() {
@@ -248,6 +255,7 @@ class DayEditState extends State<DayEdit> {
                                               this.itineraryItems = data
                                                   .day['itinerary_items']
                                                   .sublist(1);
+                                              this.visited = data.visited;
                                               this.startLocation = data
                                                   .itinerary['start_location'];
                                               this.currentPosition =
@@ -358,7 +366,7 @@ class DayEditState extends State<DayEdit> {
                           borderRadius: BorderRadius.circular(100)),
                       onPressed: () async {
                         data = fetchDay(this.itineraryId, this.dayId,
-                            this.startLocation['location']);
+                            this.startLocation['location'], "true");
                         setState(() {
                           this.loading = true;
                         });
@@ -381,6 +389,7 @@ class DayEditState extends State<DayEdit> {
                                   data.destination['id'].toString();
                               this.itineraryItems =
                                   data.day['itinerary_items'].sublist(1);
+                              this.visited = data.visited;
                               this.day = data.day;
                               this.startLocation =
                                   data.itinerary['start_location'];
@@ -482,6 +491,7 @@ class DayEditState extends State<DayEdit> {
                                         response.destination['id'].toString();
                                     this.itineraryItems =
                                         response.day['itinerary_items'];
+                                    this.visited = response.visited;
                                     this.loading = false;
                                   });
                                 } else if (store
@@ -500,8 +510,11 @@ class DayEditState extends State<DayEdit> {
                                   setState(() {
                                     this.loading = true;
                                   });
-                                  var response = await fetchDay(itineraryId,
-                                      dayId, this.startLocation['location']);
+                                  var response = await fetchDay(
+                                      itineraryId,
+                                      dayId,
+                                      this.startLocation['location'],
+                                      "true");
                                   setState(() {
                                     this.canView = response
                                         .itinerary['travelers']
@@ -526,6 +539,7 @@ class DayEditState extends State<DayEdit> {
                                     this.itineraryItems = response
                                         .day['itinerary_items']
                                         .sublist(1);
+                                    this.visited = response.visited;
                                     this.startLocation =
                                         response.itinerary['start_location'];
                                     this.currentPosition =
@@ -573,9 +587,102 @@ class DayEditState extends State<DayEdit> {
     //var itinerary = snapshot.data.itinerary;
     var color = Color(hexStringToHexInt(snapshot.data.color));
     final formatter = DateFormat.yMMMMd("en_US");
+    return DefaultTabController(
+        length: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+                color: Colors.transparent,
+                alignment: Alignment.center,
+                child: _renderTabBar(this.color, Colors.black)),
+            Flexible(
+                child: Container(
+                    width: MediaQuery.of(ctxt).size.width,
+                    child: TabBarView(children: <Widget>[
+                      renderItinerary(day, formatter, color, ctxt),
+                      renderVisited(day, formatter, color, ctxt),
+                    ])))
+          ],
+        ));
+  }
+
+  _renderTab(String label) {
+    return AutoSizeText(label,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w300,
+        ));
+  }
+
+  _renderTabBar(Color mainColor, Color fontColor) {
+    return TabBar(
+      labelColor: mainColor,
+      labelPadding: EdgeInsets.all(20),
+      isScrollable: true,
+      unselectedLabelColor: Colors.black.withOpacity(0.6),
+      indicator: BoxDecoration(
+          border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
+      tabs: <Widget>[
+        _renderTab('Itinerary'),
+        _renderTab('Visited'),
+      ],
+    );
+  }
+
+  onToggleVisited(BuildContext ctxt, dynamic item) async {
+    print(item['visited']);
+    setState(() {
+      this.loading = true;
+    });
+    final response =
+        await toggleVisited(store, itineraryId, dayId, item['id'], item);
+    if (response.success == true) {
+      setState(() {
+        //this.color = Color(hexStringToHexInt(response.color));
+        // this.destinationName = response.destination['name'];
+        //this.destinationId = response.destination['id'].toString();
+        this.itineraryItems = response.day['itinerary_items'];
+        this.visited = response.visited;
+        this.loading = false;
+        Scaffold.of(ctxt).showSnackBar(SnackBar(
+          content: AutoSizeText('Visit status successfully changed',
+              style: TextStyle(fontSize: 18)),
+          duration: Duration(seconds: 2),
+        ));
+      });
+    } else {
+      Scaffold.of(ctxt).showSnackBar(SnackBar(
+        content: AutoSizeText('Failed to mark place as visited',
+            style: TextStyle(fontSize: 18)),
+        duration: Duration(seconds: 2),
+      ));
+    }
+  }
+
+  toggleDialog(BuildContext builderContext) {
+    return showDialog<dynamic>(
+      context: context,
+      builder: (BuildContext context) {
+        return ToggleVisitedModal(color: color);
+      },
+      barrierDismissible: false,
+    );
+  }
+
+  renderItinerary(day, DateFormat formatter, Color color, BuildContext ctxt) {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
         header: '${ordinalNumber(day['day'] + 1)} day',
+        tabs: true,
+        onToggleVisited: (item) async {
+          var time = await toggleDialog(ctxt);
+          var data = item;
+          if (time != null) {
+            onToggleVisited(context, data);
+          }
+        },
         subHeader: formatter.format(
             DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)
                 .add(Duration(days: day['day']))),
@@ -610,6 +717,74 @@ class DayEditState extends State<DayEdit> {
         },
         comments: true,
         showCaseKeys: [_two, _three],
+        onCommentPressed: (itineraryItem) async {
+          final totalComments = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  fullscreenDialog: true,
+                  builder: (context) => CommentsModal(
+                      itineraryId: this.itineraryId,
+                      dayId: this.dayId,
+                      tripId: this.tripId,
+                      currentUserId: store.currentUser.uid,
+                      itineraryItemId: itineraryItem['id'],
+                      title:
+                          '${this.itineraryName} - ${itineraryItem['poi']['name']}')));
+          setState(() {
+            itineraryItem['total_comments'] = totalComments['total_comments'];
+          });
+        },
+      ),
+      this.loading
+          ? Align(
+              alignment: Alignment.center,
+              child: RefreshProgressIndicator(
+                valueColor: new AlwaysStoppedAnimation<Color>(color),
+              ))
+          : Container()
+    ]);
+  }
+
+  renderVisited(day, DateFormat formatter, Color color, BuildContext ctxt) {
+    return Stack(fit: StackFit.expand, children: <Widget>[
+      DayList(
+        header: '${ordinalNumber(day['day'] + 1)} day',
+        tabs: true,
+        onToggleVisited: (item) => onToggleVisited(ctxt, item),
+        subHeader: formatter.format(
+            DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)
+                .add(Duration(days: day['day']))),
+        ownerId: this.ownerId,
+        controller: _sc,
+        day: day['day'],
+        physics: disableScroll
+            ? NeverScrollableScrollPhysics()
+            : ClampingScrollPhysics(),
+        items: visited,
+        color: color,
+        linkedItinerary: this.linkedItinerary,
+        startLocation: this.currentPosition != null
+            ? this.currentPosition
+            : this.startLocation,
+        onLongPressed: (data) {
+          final store = Provider.of<TrotterStore>(ctxt);
+          if (this.ownerId == store.currentUser.uid ||
+              store.currentUser.uid == data['added_by'])
+            bottomSheetModal(context, day['day'] + 1, data);
+        },
+        onPressed: (data) {
+          if (data['itinerary'] != null) {
+            onPush({'id': data['itinerary']['id'], 'level': 'itinerary/edit'});
+          } else {
+            onPush({
+              'id': data['id'],
+              'level': 'poi',
+              'google_place': data['google_place']
+            });
+          }
+        },
+        comments: true,
+        visited: true,
         onCommentPressed: (itineraryItem) async {
           final totalComments = await Navigator.push(
               context,
@@ -763,6 +938,7 @@ class DayEditState extends State<DayEdit> {
                                       response.destination['id'].toString();
                                   this.itineraryItems =
                                       response.day['itinerary_items'];
+                                  this.visited = response.visited;
                                   this.loading = false;
                                   Scaffold.of(ctxt).removeCurrentSnackBar();
                                   Scaffold.of(ctxt).showSnackBar(SnackBar(

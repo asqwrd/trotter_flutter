@@ -10,6 +10,7 @@ class DayList extends StatelessWidget {
   final String2VoidFunc onPressed;
   final Function(dynamic) onLongPressed;
   final Function(dynamic) onCommentPressed;
+  final Function(dynamic) onToggleVisited;
   final Color color;
   final List<dynamic> items;
   final Function(String) callback;
@@ -25,6 +26,8 @@ class DayList extends StatelessWidget {
   final bool comments;
   final dynamic linkedItinerary;
   final List<GlobalKey> showCaseKeys;
+  final bool tabs;
+  final bool visited;
 
   //passing props in react style
   DayList(
@@ -44,6 +47,9 @@ class DayList extends StatelessWidget {
       this.subHeader,
       this.comments,
       this.showCaseKeys,
+      this.tabs,
+      this.visited,
+      this.onToggleVisited,
       this.startLocation});
 
   @override
@@ -83,23 +89,41 @@ class DayList extends StatelessWidget {
                               image: AssetImage('images/day-empty.jpg'),
                               fit: BoxFit.contain),
                           borderRadius: BorderRadius.circular(130))),
-                  AutoSizeText(
-                    'Lets find some things to do',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 25,
-                        color: color,
-                        fontWeight: FontWeight.w300),
-                  ),
+                  this.visited != true
+                      ? AutoSizeText(
+                          'Lets find some things to do',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        )
+                      : AutoSizeText(
+                          'All the places you have visited for the day',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ),
                   SizedBox(height: 10),
-                  AutoSizeText(
-                    'Tap the drop point icon at the top to search',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 15,
-                        color: color,
-                        fontWeight: FontWeight.w300),
-                  ),
+                  this.visited != true
+                      ? AutoSizeText(
+                          'Tap the drop point icon at the top to search',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        )
+                      : AutoSizeText(
+                          'Places you mark as visited will appear here',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ),
                 ],
               ))),
     ]);
@@ -143,7 +167,7 @@ class DayList extends StatelessWidget {
                   : Container(),
           itemCount: itineraryItems.length,
           itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
+            if (index == 0 && this.tabs != true) {
               return Center(
                   child: Container(
                 width: 30,
@@ -152,6 +176,8 @@ class DayList extends StatelessWidget {
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.all(Radius.circular(12.0))),
               ));
+            } else if (index == 0 && this.tabs == true) {
+              return Container();
             }
 
             if (index == 1) {
@@ -224,19 +250,31 @@ class DayList extends StatelessWidget {
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
                         Column(children: <Widget>[
-                          Container(
-                            padding: EdgeInsets.all(10),
-                            margin: EdgeInsets.only(bottom: 20),
-                            decoration: BoxDecoration(
-                                color: color,
-                                borderRadius: BorderRadius.circular(100)),
-                            child: Align(
-                                alignment: Alignment.topCenter,
-                                child: Column(children: <Widget>[
-                                  Icon(Icons.place,
-                                      color: fontContrast(color), size: 20),
-                                ])),
-                          ),
+                          InkWell(
+                              customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100)),
+                              radius: 100,
+                              onTap: () {
+                                onToggleVisited(itineraryItems[index]);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                margin: EdgeInsets.only(bottom: 20),
+                                decoration: BoxDecoration(
+                                    color: color,
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: Column(children: <Widget>[
+                                      Icon(
+                                          this.visited == false ||
+                                                  this.visited == null
+                                              ? Icons.place
+                                              : Icons.check,
+                                          color: fontContrast(color),
+                                          size: 20),
+                                    ])),
+                              )),
                           this.comments != null && this.comments == true
                               ? this.showCaseKeys != null && index == 2
                                   ? Showcase.withWidget(
@@ -274,22 +312,24 @@ class DayList extends StatelessWidget {
                                 margin: EdgeInsets.only(
                                     left: 10, right: 0, bottom: 20),
                                 child: Column(children: <Widget>[
-                                  Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Container(
-                                          //color: color,
-                                          //padding: EdgeInsets.all(10),
-                                          margin: EdgeInsets.only(
-                                              top: 10, bottom: 20),
-                                          child: AutoSizeText(
-                                            '${travelTime['distance']['text']} away from $from \nTravel time is $time',
-                                            textAlign: TextAlign.left,
-                                            style: TextStyle(
-                                                color: color,
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w600,
-                                                height: 1.1),
-                                          ))),
+                                  this.visited == false || this.visited == null
+                                      ? Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Container(
+                                              //color: color,
+                                              //padding: EdgeInsets.all(10),
+                                              margin: EdgeInsets.only(
+                                                  top: 10, bottom: 20),
+                                              child: AutoSizeText(
+                                                '${travelTime['distance']['text']} away from $from \nTravel time is $time',
+                                                textAlign: TextAlign.left,
+                                                style: TextStyle(
+                                                    color: color,
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                    height: 1.1),
+                                              )))
+                                      : Container(),
                                   Padding(
                                       padding: EdgeInsets.all(0),
                                       child: Row(
@@ -324,8 +364,12 @@ class DayList extends StatelessWidget {
                                                                             .ellipsis,
                                                                     style:
                                                                         TextStyle(
-                                                                      color: Colors
-                                                                          .black,
+                                                                      color: this.visited == false ||
+                                                                              this.visited ==
+                                                                                  null
+                                                                          ? Colors
+                                                                              .black
+                                                                          : color,
                                                                       fontSize:
                                                                           17,
                                                                       fontWeight:

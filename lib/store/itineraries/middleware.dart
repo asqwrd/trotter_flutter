@@ -168,7 +168,7 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
 }
 
 Future<DayData> fetchDay(String itineraryId, String dayId,
-    [dynamic startLocation]) async {
+    [dynamic startLocation, String filter = '']) async {
   var location = '';
   double distanceInMeters = -1;
   Position position;
@@ -178,7 +178,6 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
     location = '${startLocation['lat']},${startLocation['lng']}';
     position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    print(startLocation);
     distanceInMeters = await Geolocator().distanceBetween(position.latitude,
         position.longitude, startLocation['lat'], startLocation['lng']);
 
@@ -189,7 +188,7 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
 
   try {
     final response = await http.get(
-        '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId?latlng=$location',
+        '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId?latlng=$location&filter=$filter',
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -244,6 +243,43 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
         store.itineraryStore.updateItineraryBuilder(
             dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
       }
+      store.itineraryStore.setItineraryError(null);
+      store.setOffline(false);
+
+      return res;
+    } else {
+      // If that response was not OK, throw an error.
+      store.itineraryStore.setItineraryError('Server is down');
+      store.setOffline(true);
+      return DayData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    store.itineraryStore.setItineraryError('Server is down');
+    store.setOffline(true);
+    return DayData(success: false);
+  }
+}
+
+Future<DayData> toggleVisited(
+  TrotterStore store,
+  String itineraryId,
+  String dayId,
+  String itineraryItemId,
+  dynamic data,
+) async {
+  try {
+    final response = await http.put(
+        '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/toggle',
+        body: json.encode(data),
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var res = DayData.fromJson(json.decode(response.body));
+      var itineraryItems = res.day['itinerary_items'];
+      itineraryItems = itineraryItems.sublist(1);
+      res.day['itinerary_items'] = itineraryItems;
+
       store.itineraryStore.setItineraryError(null);
       store.setOffline(false);
 
@@ -351,6 +387,7 @@ class DayData {
   final Map<String, dynamic> destination;
   final String color;
   final String justAdded;
+  final List<dynamic> visited;
   final bool success;
   bool usedCurrentPoistion;
   dynamic currentPosition;
@@ -365,6 +402,7 @@ class DayData {
       this.success,
       this.usedCurrentPoistion,
       this.currentPosition,
+      this.visited,
       this.error});
 
   factory DayData.fromJson(Map<String, dynamic> json) {
@@ -372,6 +410,7 @@ class DayData {
         day: json['day'],
         color: json['itinerary']['color'],
         justAdded: json['justAdded'],
+        visited: json['visited'],
         destination: json['itinerary']['destination'],
         itinerary: json['itinerary']['itinerary'],
         success: true,

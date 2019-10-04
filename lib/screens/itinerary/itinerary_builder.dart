@@ -83,7 +83,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       final String cacheData =
           prefs.getString('itineraryBuilderShowcase') ?? null;
       if (cacheData == null) {
-        ShowCaseWidget.startShowCase(context, [_one]);
+        ShowCaseWidget.of(context).startShowCase([_one]);
         await prefs.setString('itineraryBuilderShowcase', "true");
       }
     });

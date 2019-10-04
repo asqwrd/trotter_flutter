@@ -263,19 +263,23 @@ class AppStateWidget extends State<App> {
           Focus(
               focusNode: store.explore,
               child: ShowCaseWidget(
-                  child: _buildOffstageNavigator(TabItem.explore))),
+                  builder:Builder(
+                    builder : (context)=> _buildOffstageNavigator(TabItem.explore)))),
           Focus(
               focusNode: store.trips,
               child: ShowCaseWidget(
-                  child: _buildOffstageNavigator(TabItem.trips))),
+                  builder:Builder(
+                    builder : (context)=> _buildOffstageNavigator(TabItem.trips)))),
           Focus(
               focusNode: store.notification,
               child: ShowCaseWidget(
-                  child: _buildOffstageNavigator(TabItem.notifications))),
+                  builder:Builder(
+                    builder : (context)=> _buildOffstageNavigator(TabItem.notifications)))),
           Focus(
               focusNode: store.profile,
               child: ShowCaseWidget(
-                  child: _buildOffstageNavigator(TabItem.profile))),
+                  builder:Builder(
+                    builder : (context)=>_buildOffstageNavigator(TabItem.profile)))),
         ]),
         bottomNavigationBar: BottomNavigation(
             currentTab: currentTab,

@@ -237,7 +237,7 @@ class HomeState extends State<Home> {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           final String cacheData = prefs.getString('homeShowcase') ?? null;
           if (cacheData == null) {
-            ShowCaseWidget.startShowCase(context, [_one]);
+            ShowCaseWidget.of(context).startShowCase([_one]);
             await prefs.setString('homeShowcase', "true");
           }
         },

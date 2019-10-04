@@ -176,7 +176,7 @@ class DayEditState extends State<DayEdit> {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           final String cacheData = prefs.getString('dayEditShowcase') ?? null;
           if (cacheData == null) {
-            ShowCaseWidget.startShowCase(context, [_one, _two, _three, _four]);
+            ShowCaseWidget.of(context).startShowCase([_one, _two, _three, _four]);
             await prefs.setString('dayEditShowcase', "true");
           }
         },

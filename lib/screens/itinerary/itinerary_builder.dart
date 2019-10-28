@@ -88,7 +88,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       }
     });
     final store = Provider.of<TrotterStore>(context);
-    
+
     data.then((res) {
       if (res.error != null) {
         setState(() {
@@ -376,111 +376,115 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         var itineraryItems = dayBuilder[dayIndex]['itinerary_items'];
         var dayId = dayBuilder[dayIndex]['id'];
         final formatter = DateFormat.yMMMMd("en_US");
-        final currentEpoch = DateTime.now();
-        final currentDay = DateTime.fromMillisecondsSinceEpoch(
-                              this.startDate,
-                              isUtc: true)
-                          .add(Duration(days: dayBuilder[dayIndex]['day']));
+
+        final currentTime = DateTime.now();
+        final tempDay =
+            DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: false)
+                .add(Duration(days: dayBuilder[dayIndex]['day']));
+        final compareDay = DateTime(tempDay.year, tempDay.month, tempDay.day, currentTime.hour, currentTime.minute, currentTime.second, currentTime.millisecond, currentTime.microsecond);
+        
         return Opacity(
-          opacity: currentDay.isBefore(currentEpoch) ? 0.5 : 1,
-          child: InkWell(
-            onTap: () => onPush({
-                  'itineraryId': this.itineraryId,
-                  'dayId': dayId,
-                  "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
-                  "startLocation": startLocation,
-                  'level': 'itinerary/day/edit'
-                }),
-            child: Column(children: <Widget>[
-              Column(children: <Widget>[
-                Align(
-                    alignment: Alignment.topLeft,
-                    child: Container(
-                        child: AutoSizeText(
-                      'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
-                    ))),
-                Align(
-                    alignment: Alignment.topLeft,
-                    child: Container(
-                        child: AutoSizeText(
-                      formatter.format(DateTime.fromMillisecondsSinceEpoch(
-                              this.startDate,
-                              isUtc: true)
-                          .add(Duration(days: dayBuilder[dayIndex]['day']))),
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
-                    ))),
-                Align(
-                    alignment: Alignment.topLeft,
-                    child: Container(
-                        margin: EdgeInsets.only(bottom: 20),
-                        child: AutoSizeText(
-                          '${itineraryItems.length} ${itineraryItems.length == 1 ? "place" : "places"} to see',
+            opacity: compareDay.isBefore(currentTime) ? 0.5 : 1,
+            child: InkWell(
+                onTap: () => onPush({
+                      'itineraryId': this.itineraryId,
+                      'dayId': dayId,
+                      "linkedItinerary": dayBuilder[dayIndex]
+                          ['linked_itinerary'],
+                      "startLocation": startLocation,
+                      'level': 'itinerary/day/edit'
+                    }),
+                child: Column(children: <Widget>[
+                  Column(children: <Widget>[
+                    Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                            child: AutoSizeText(
+                          'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.w400),
+                        ))),
+                    Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                            child: AutoSizeText(
+                          formatter.format(DateTime.fromMillisecondsSinceEpoch(
+                                  this.startDate,
+                                  isUtc: true)
+                              .add(
+                                  Duration(days: dayBuilder[dayIndex]['day']))),
                           style: TextStyle(
                               fontSize: 15, fontWeight: FontWeight.w300),
-                        )))
-              ]),
-              itineraryItems.length > 0 ||
-                      dayBuilder[dayIndex]['linked_itinerary'] != null
-                  ? Container(
-                      margin: EdgeInsets.only(top: 0),
-                      child: ItineraryList(
-                        items: itineraryItems,
-                        linkedItinerary: dayBuilder[dayIndex]
-                            ['linked_itinerary'],
-                        color: color,
-                        onPressed: (data) {
-                          onPush({
-                            'itineraryId': this.itineraryId,
-                            'dayId': dayId,
-                            'color': this.color,
-                            'linkedItinerary': dayBuilder[dayIndex]
-                                ['linked_itinerary'],
-                            "startLocation": startLocation,
-                            'level': 'itinerary/day/edit'
-                          });
-                        },
-                        onLongPressed: (data) {},
-                      ))
-                  : Container(
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: SvgPicture.asset(
-                            'images/itinerary-icon.svg',
-                            width: 100,
-                            height: 100,
-                          ),
-                        ),
-                        FlatButton(
-                          onPressed: () {
-                            onPush({
-                              'itineraryId': this.itineraryId,
-                              'color': this.color,
-                              'dayId': dayId,
-                              'linkedItinerary': dayBuilder[dayIndex]
-                                  ['linked_itinerary'],
-                              "startLocation": startLocation,
-                              'level': 'itinerary/day/edit'
-                            });
-                          },
-                          padding: EdgeInsets.symmetric(
-                              vertical: 15, horizontal: 20),
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: AutoSizeText('Start planning',
+                        ))),
+                    Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                            margin: EdgeInsets.only(bottom: 20),
+                            child: AutoSizeText(
+                              '${itineraryItems.length} ${itineraryItems.length == 1 ? "place" : "places"} to see',
                               style: TextStyle(
-                                  color: color,
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 15)),
-                        )
-                      ],
-                    ))
-            ])));
+                                  fontSize: 15, fontWeight: FontWeight.w300),
+                            )))
+                  ]),
+                  itineraryItems.length > 0 ||
+                          dayBuilder[dayIndex]['linked_itinerary'] != null
+                      ? Container(
+                          margin: EdgeInsets.only(top: 0),
+                          child: ItineraryList(
+                            items: itineraryItems,
+                            linkedItinerary: dayBuilder[dayIndex]
+                                ['linked_itinerary'],
+                            color: color,
+                            onPressed: (data) {
+                              onPush({
+                                'itineraryId': this.itineraryId,
+                                'dayId': dayId,
+                                'color': this.color,
+                                'linkedItinerary': dayBuilder[dayIndex]
+                                    ['linked_itinerary'],
+                                "startLocation": startLocation,
+                                'level': 'itinerary/day/edit'
+                              });
+                            },
+                            onLongPressed: (data) {},
+                          ))
+                      : Container(
+                          child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.only(bottom: 10),
+                              child: SvgPicture.asset(
+                                'images/itinerary-icon.svg',
+                                width: 100,
+                                height: 100,
+                              ),
+                            ),
+                            FlatButton(
+                              onPressed: () {
+                                onPush({
+                                  'itineraryId': this.itineraryId,
+                                  'color': this.color,
+                                  'dayId': dayId,
+                                  'linkedItinerary': dayBuilder[dayIndex]
+                                      ['linked_itinerary'],
+                                  "startLocation": startLocation,
+                                  'level': 'itinerary/day/edit'
+                                });
+                              },
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 15, horizontal: 20),
+                              clipBehavior: Clip.antiAliasWithSaveLayer,
+                              child: AutoSizeText('Start planning',
+                                  style: TextStyle(
+                                      color: color,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 15)),
+                            )
+                          ],
+                        ))
+                ])));
       },
     );
   }

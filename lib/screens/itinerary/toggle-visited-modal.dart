@@ -23,6 +23,13 @@ class _ToggleVisitedModalState extends State<ToggleVisitedModal> {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    textController.dispose();
+
+    super.dispose();
+  }
+
   _getContent(BuildContext buildContext) {
     Color color = widget.color;
     final fields = <Widget>[
@@ -68,8 +75,14 @@ class _ToggleVisitedModalState extends State<ToggleVisitedModal> {
               return null;
             },
           )),
-      Container(
-          child: InputDecorator(
+      GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            print(FocusScope.of(buildContext));
+            print('hi');
+            FocusScope.of(buildContext).unfocus();
+          },
+          child: DropdownButtonFormField(
               decoration: InputDecoration(
                 filled: true,
                 focusedBorder: OutlineInputBorder(
@@ -83,29 +96,26 @@ class _ToggleVisitedModalState extends State<ToggleVisitedModal> {
                 contentPadding:
                     EdgeInsets.only(top: 5.0, bottom: 5, right: 10, left: 20),
               ),
-              child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: dropdownValue,
-                  icon: Icon(Icons.arrow_downward),
-                  iconSize: 15,
-                  elevation: 16,
-                  style: TextStyle(fontSize: 13, color: Colors.black87),
-                  underline: Container(),
-                  onChanged: (String newValue) {
-                    print(newValue);
-                    setState(() {
-                      dropdownValue = newValue;
-                    });
-                  },
-                  items: <dynamic>[
-                    {"display": 'Hours', "value": "hour"},
-                    {"display": 'Minutes', "value": "minute"}
-                  ].map((dynamic value) {
-                    return DropdownMenuItem<String>(
-                      value: value['value'],
-                      child: Text(value['display']),
-                    );
-                  }).toList()))),
+              value: dropdownValue,
+              icon: Icon(Icons.keyboard_arrow_down),
+              iconSize: 15,
+              elevation: 16,
+              style: TextStyle(fontSize: 13, color: Colors.black87),
+              isExpanded: true,
+              items: <dynamic>[
+                {"display": 'Hours', "value": "hour"},
+                {"display": 'Minutes', "value": "minute"}
+              ].map((dynamic value) {
+                return DropdownMenuItem<String>(
+                  value: value['value'],
+                  child: Text(value['display']),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  dropdownValue = value;
+                });
+              })),
       Container(
           width: double.infinity,
           margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),
@@ -149,7 +159,7 @@ class _ToggleVisitedModalState extends State<ToggleVisitedModal> {
                 child: ListView.builder(
                     shrinkWrap: true,
                     itemCount: fields.length,
-                    itemBuilder: (_, int index) {
+                    itemBuilder: (BuildContext listContext, int index) {
                       return fields[index];
                     }))));
   }
@@ -159,3 +169,57 @@ class _ToggleVisitedModalState extends State<ToggleVisitedModal> {
     return _getContent(context);
   }
 }
+
+// class DropdownFormField extends FormField<String> {
+
+//   DropdownFormField({
+//     FormFieldSetter<String> onSaved,
+//     FormFieldValidator<String> validator,
+//     String initialValue = '',
+//     bool autovalidate = false
+//   }) : super(
+//     onSaved: onSaved,
+//     validator: validator,
+//     initialValue: initialValue,
+//     autovalidate: autovalidate,
+//     builder: (FormFieldState<String> state) {
+//       return InputDecorator(
+//                   decoration: InputDecoration(
+//                     filled: true,
+//                     focusedBorder: OutlineInputBorder(
+//                         borderRadius: BorderRadius.all(Radius.circular(5.0)),
+//                         borderSide:
+//                             BorderSide(width: 0.0, color: Colors.transparent)),
+//                     enabledBorder: OutlineInputBorder(
+//                         borderRadius: BorderRadius.all(Radius.circular(5.0)),
+//                         borderSide:
+//                             BorderSide(width: 0.0, color: Colors.transparent)),
+//                     contentPadding: EdgeInsets.only(
+//                         top: 5.0, bottom: 5, right: 10, left: 20),
+//                   ),
+//                   child: DropdownButton<String>(
+//                       isExpanded: true,
+//                       value: state.value,
+//                       icon: Icon(Icons.keyboard_arrow_down),
+//                       iconSize: 15,
+//                       elevation: 16,
+//                       style: TextStyle(fontSize: 13, color: Colors.black87),
+//                       underline: Container(),
+//                       onChanged: (String newValue) {
+//                         print(newValue);
+//                         // setState(() {
+//                         //   dropdownValue = newValue;
+//                         // });
+//                         state.didChange(newValue);
+//                       },
+//                       items: <dynamic>[
+//                         {"display": 'Hours', "value": "hour"},
+//                         {"display": 'Minutes', "value": "minute"}
+//                       ].map((dynamic value) {
+//                         return DropdownMenuItem<String>(
+//                           value: value['value'],
+//                           child: Text(value['display']),
+//                         );
+//                       }).toList()))    }
+//   );
+// }

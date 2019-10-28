@@ -172,8 +172,8 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
   var location = '';
   double distanceInMeters = -1;
   Position position;
-  final PermissionStatus isLocationEnabled = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
-
+  final PermissionStatus isLocationEnabled =
+      await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
 
   if (startLocation != null && isLocationEnabled == PermissionStatus.granted) {
     location = '${startLocation['lat']},${startLocation['lng']}';
@@ -277,9 +277,17 @@ Future<DayData> toggleVisited(
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var res = DayData.fromJson(json.decode(response.body));
+
       var itineraryItems = res.day['itinerary_items'];
       itineraryItems = itineraryItems.sublist(1);
+      var allItineraryItems = [...itineraryItems, ...res.visited];
       res.day['itinerary_items'] = itineraryItems;
+      if (store.itineraryStore.itineraryBuilder.itinerary != null &&
+          store.itineraryStore.itineraryBuilder.itinerary['id'] ==
+              itineraryId) {
+        store.itineraryStore.updateItineraryBuilder(
+            dayId, allItineraryItems, res.justAdded, res.itinerary);
+      }
 
       store.itineraryStore.setItineraryError(null);
       store.setOffline(false);

@@ -85,12 +85,13 @@ class ItineraryStore extends Store {
   }
 
   updateItineraryBuilder(String dayId, List<dynamic> itineraryItems,
-      String justAdded, Map<String, dynamic> itinerary, String destinationId) {
+      String justAdded, Map<String, dynamic> itinerary,
+      [String destinationId]) {
     var itinerary = _itineraryBuilder.itinerary;
     var index = itinerary["days"].indexWhere((day) => day['id'] == dayId);
     var justAddedIndex =
         itineraryItems.indexWhere((itin) => itin['id'] == justAdded);
-    itineraryItems[justAddedIndex]['justAdded'] = true;
+    if (justAddedIndex > 0) itineraryItems[justAddedIndex]['justAdded'] = true;
     itinerary["days"][index]["itinerary_items"] = itineraryItems;
     setState(() {
       _itineraryBuilder = ItineraryData(

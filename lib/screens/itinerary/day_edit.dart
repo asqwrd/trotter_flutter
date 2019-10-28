@@ -176,7 +176,8 @@ class DayEditState extends State<DayEdit> {
           final SharedPreferences prefs = await SharedPreferences.getInstance();
           final String cacheData = prefs.getString('dayEditShowcase') ?? null;
           if (cacheData == null) {
-            ShowCaseWidget.of(context).startShowCase([_one, _two, _three, _four]);
+            ShowCaseWidget.of(context)
+                .startShowCase([_one, _two, _three, _four]);
             await prefs.setString('dayEditShowcase', "true");
           }
         },
@@ -504,7 +505,7 @@ class DayEditState extends State<DayEdit> {
                                             .itineraryStore
                                             .selectedItinerary
                                             .selectedItinerary['days']
-                                                    [this.day['day']]
+                                                [this.day['day']]
                                                 ['itinerary_items']
                                             .length !=
                                         this.itineraryItems.length) {
@@ -869,6 +870,9 @@ class DayEditState extends State<DayEdit> {
                             this
                                 .itineraryItems
                                 .removeWhere((item) => item['id'] == id);
+                            this
+                                .visited
+                                .removeWhere((item) => item['id'] == id);
                             store.itineraryStore
                                 .updateItineraryBuilderDelete(this.dayId, id);
 
@@ -909,6 +913,7 @@ class DayEditState extends State<DayEdit> {
                           this
                               .itineraryItems
                               .removeWhere((item) => item['id'] == id);
+                          this.visited.removeWhere((item) => item['id'] == id);
                           store.itineraryStore
                               .updateItineraryBuilderDelete(this.dayId, id);
                           this.loading = false;

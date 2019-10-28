@@ -33,5 +33,5 @@ Instructions for backend is here https://github.com/asqwrd/trotter-api
 1. `flutter build appbundle --release`
 2. Sign the build
    - Navigate to `/build/app/outputs/bundle/release`
-   - Manually sign using keystore `jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../../../../../android/key.jks app.aab key`
+   - Manually sign using keystore `jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore ../../../../../android/key.jks app-release.aab key`
 3. Upload signed build to Play console

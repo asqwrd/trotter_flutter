@@ -56,6 +56,7 @@ dependencies:
   timeago: ^2.0.19
   notification_permissions: ^0.4.0
   location: ^2.3.5
+  permission_handler: ^3.3.0
   loadmore: ^1.0.4
   awesome_loader: ^0.0.3
   country_code_picker: ^1.1.7

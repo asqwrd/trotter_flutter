@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:location/location.dart' as locationService;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
@@ -172,9 +172,10 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
   var location = '';
   double distanceInMeters = -1;
   Position position;
-  final isLocationEnabled = await locationService.Location().hasPermission();
+  final PermissionStatus isLocationEnabled = await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
 
-  if (startLocation != null && isLocationEnabled) {
+
+  if (startLocation != null && isLocationEnabled == PermissionStatus.granted) {
     location = '${startLocation['lat']},${startLocation['lng']}';
     position = await Geolocator()
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);

@@ -1249,6 +1249,7 @@ class TripState extends State<Trip> {
                           } else if (destination != null &&
                               destination['itinerary_id'].isEmpty &&
                               fields[index]['route'] == 'itinerary/edit') {
+                                
                             dynamic data = {
                               "itinerary": {
                                 "name": trip['name'],

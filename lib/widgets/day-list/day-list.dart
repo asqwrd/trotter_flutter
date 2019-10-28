@@ -356,7 +356,7 @@ class DayList extends StatelessWidget {
                                               margin: EdgeInsets.only(
                                                   top: 10, bottom: 20),
                                               child: AutoSizeText(
-                                                '${travelTime['distance']['text']} away from $from \nTravel time is $time',
+                                                '${travelTime['distance']['text']} from $from \nTravel time is $time',
                                                 textAlign: TextAlign.left,
                                                 style: TextStyle(
                                                     color: color,

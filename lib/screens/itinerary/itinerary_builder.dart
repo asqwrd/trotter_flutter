@@ -88,6 +88,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       }
     });
     final store = Provider.of<TrotterStore>(context);
+    
     data.then((res) {
       if (res.error != null) {
         setState(() {
@@ -375,8 +376,14 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         var itineraryItems = dayBuilder[dayIndex]['itinerary_items'];
         var dayId = dayBuilder[dayIndex]['id'];
         final formatter = DateFormat.yMMMMd("en_US");
-
-        return InkWell(
+        final currentEpoch = DateTime.now();
+        final currentDay = DateTime.fromMillisecondsSinceEpoch(
+                              this.startDate,
+                              isUtc: true)
+                          .add(Duration(days: dayBuilder[dayIndex]['day']));
+        return Opacity(
+          opacity: currentDay.isBefore(currentEpoch) ? 0.5 : 1,
+          child: InkWell(
             onTap: () => onPush({
                   'itineraryId': this.itineraryId,
                   'dayId': dayId,
@@ -473,7 +480,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                         )
                       ],
                     ))
-            ]));
+            ])));
       },
     );
   }

@@ -680,7 +680,9 @@ class DayEditState extends State<DayEdit> {
         onToggleVisited: (item) async {
           var time = await toggleDialog(ctxt);
           var data = item;
+          print(time);
           if (time != null) {
+            data['time'] = time;
             onToggleVisited(context, data);
           }
         },

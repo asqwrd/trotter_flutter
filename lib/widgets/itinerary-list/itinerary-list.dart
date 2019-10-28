@@ -151,7 +151,7 @@ class ItineraryList extends StatelessWidget {
                                 fontSize: 15, fontWeight: FontWeight.w400)),
                         AutoSizeText(
                             time['unit'].toString().isEmpty == false
-                                ? 'Estimated time ${new HtmlUnescape().convert('&bull;')} ${time['value']} ${time['unit']}'
+                                ? 'Estimated time ${new HtmlUnescape().convert('&bull;')} ${time['value']} ${time['unit']}${double.parse(time['value']) != 1 ? 's':''}'
                                 : 'Estimated time ${new HtmlUnescape().convert('&bull;')} 1 hour',
                             textAlign: TextAlign.left,
                             style: TextStyle(

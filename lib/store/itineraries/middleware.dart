@@ -218,7 +218,7 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
 
 Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
     String destinationId, dynamic data,
-    [bool optimize, userId]) async {
+    [bool optimize, userId = '']) async {
   try {
     final response = await http.post(
         '$ApiDomain/api/itineraries/add/$itineraryId/day/$dayId?optimize=$optimize&userId=$userId',

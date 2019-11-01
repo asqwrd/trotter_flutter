@@ -228,21 +228,23 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
       // If server returns an OK response, parse the JSON
       var res = DayData.fromJson(json.decode(response.body));
       var itineraryItems = res.day['itinerary_items'];
+      var allItineraryItems = [];
       if (optimize == false) {
         itineraryItems = itineraryItems.sublist(1);
+        allItineraryItems = [...itineraryItems, ...res.visited];
         res.day['itinerary_items'] = itineraryItems;
       }
       if (store.itineraryStore.selectedItinerary != null &&
           store.itineraryStore.selectedItinerary.selectedItineraryId ==
               itineraryId) {
-        store.itineraryStore.updateSelectedItinerary(
-            dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
+        store.itineraryStore.updateSelectedItinerary(dayId, allItineraryItems,
+            res.justAdded, res.itinerary, destinationId);
       }
       if (store.itineraryStore.itineraryBuilder.itinerary != null &&
           store.itineraryStore.itineraryBuilder.itinerary['id'] ==
               itineraryId) {
-        store.itineraryStore.updateItineraryBuilder(
-            dayId, itineraryItems, res.justAdded, res.itinerary, destinationId);
+        store.itineraryStore.updateItineraryBuilder(dayId, allItineraryItems,
+            res.justAdded, res.itinerary, destinationId);
       }
       store.itineraryStore.setItineraryError(null);
       store.setOffline(false);

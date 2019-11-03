@@ -228,12 +228,12 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
       // If server returns an OK response, parse the JSON
       var res = DayData.fromJson(json.decode(response.body));
       var itineraryItems = res.day['itinerary_items'];
-      var allItineraryItems = [];
-      //if (optimize == false ) {
-      itineraryItems = itineraryItems.sublist(1);
-      allItineraryItems = [...itineraryItems, ...res.visited];
-      res.day['itinerary_items'] = itineraryItems;
-      //}
+      var allItineraryItems = itineraryItems;
+      if (optimize == false) {
+        itineraryItems = itineraryItems.sublist(1);
+        allItineraryItems = [...itineraryItems, ...res.visited];
+        res.day['itinerary_items'] = itineraryItems;
+      }
       if (store.itineraryStore.selectedItinerary != null &&
           store.itineraryStore.selectedItinerary.selectedItineraryId ==
               itineraryId) {

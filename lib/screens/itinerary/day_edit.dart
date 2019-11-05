@@ -588,7 +588,7 @@ class DayEditState extends State<DayEdit> {
     var day = snapshot.data.day;
     //var itinerary = snapshot.data.itinerary;
     var color = Color(hexStringToHexInt(snapshot.data.color));
-    final formatter = DateFormat.yMMMMd("en_US");
+    final formatter = DateFormat.yMMMMEEEEd("en_US");
     return DefaultTabController(
         length: 2,
         child: Column(

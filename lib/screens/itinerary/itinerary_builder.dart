@@ -375,14 +375,22 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         }
         var itineraryItems = dayBuilder[dayIndex]['itinerary_items'];
         var dayId = dayBuilder[dayIndex]['id'];
-        final formatter = DateFormat.yMMMMd("en_US");
+        final formatter = DateFormat.yMMMMEEEEd("en_US");
 
         final currentTime = DateTime.now();
         final tempDay =
             DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: false)
                 .add(Duration(days: dayBuilder[dayIndex]['day']));
-        final compareDay = DateTime(tempDay.year, tempDay.month, tempDay.day, currentTime.hour, currentTime.minute, currentTime.second, currentTime.millisecond, currentTime.microsecond);
-        
+        final compareDay = DateTime(
+            tempDay.year,
+            tempDay.month,
+            tempDay.day,
+            currentTime.hour,
+            currentTime.minute,
+            currentTime.second,
+            currentTime.millisecond,
+            currentTime.microsecond);
+
         return Opacity(
             opacity: compareDay.isBefore(currentTime) ? 0.5 : 1,
             child: InkWell(

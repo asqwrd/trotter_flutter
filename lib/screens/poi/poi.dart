@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:rating_bar/rating_bar.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -17,6 +18,7 @@ import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:trotter_flutter/globals.dart';
 import 'package:trotter_flutter/widgets/itineraries/bottomsheet.dart';
 import 'package:trotter_flutter/widgets/map/static-map.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 Future<PoiData> fetchPoi(String id,
     [bool googlePlace, String locationId]) async {
@@ -41,7 +43,16 @@ Future<PoiData> fetchPoi(String id,
         await prefs.setString('poi_$id', response.body);
         await prefs.setInt('poi_$id-expiration',
             DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
-        return PoiData.fromJson(json.decode(response.body));
+        var poi = PoiData.fromJson(json.decode(response.body));
+        var openNow = poi.poi['opening_hours']['open_now'];
+        if (poi.poi['properties'] != null && openNow != null) {
+          poi.poi['properties'].add({
+            "key": "open_now",
+            "name": "Open now",
+            "value": openNow == true ? 'Yes' : 'No'
+          });
+        }
+        return poi;
       } else {
         // If that response was not OK, throw an error.
         var msg = response.statusCode;
@@ -349,7 +360,10 @@ class PoiState extends State<Poi> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     var poi = snapshot.data.poi;
-    var properties = poi['properties'];
+    List<dynamic> properties = poi['properties'];
+    List<dynamic> reviews = poi['reviews'];
+    reviews.sort((a, b) => b['time'].compareTo(a['time']));
+
     var descriptionShort = snapshot.data.poi['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
 
@@ -455,7 +469,7 @@ class PoiState extends State<Poi> {
             Center(
                 child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 20.0),
-                    margin: EdgeInsets.only(bottom: 20),
+                    margin: EdgeInsets.only(bottom: 40),
                     height: 250.0,
                     width: MediaQuery.of(context).size.width,
                     child: StaticMap(GOOGLE_API_KEY,
@@ -464,27 +478,47 @@ class PoiState extends State<Poi> {
                         color: this.color,
                         zoom: 18,
                         lat: poi['location']['lat'],
-                        lng: poi['location']['lng'])
-                    // GoogleMap(
-                    //   onMapCreated: (GoogleMapController controller) {
-                    //     _controller.complete(controller);
-                    //   },
-                    //   markers: <Marker>[
-                    //     Marker(
-                    //         markerId: MarkerId(poi['id']),
-                    //         position: LatLng(
-                    //             poi['location']['lat'], poi['location']['lng']))
-                    //   ].toSet(),
-                    //   initialCameraPosition: CameraPosition(
-                    //     bearing: 0.0,
-                    //     target: LatLng(
-                    //         poi['location']['lat'], poi['location']['lng']),
-                    //     tilt: 30.0,
-                    //     zoom: 17.0,
-                    //   ),
-                    // )
-
-                    )),
+                        lng: poi['location']['lng']))),
+            reviews.length > 0
+                ? Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        AutoSizeText(
+                          'Google Reviews',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w600),
+                        ),
+                        Container(
+                            margin: EdgeInsets.symmetric(horizontal: 10),
+                            width: 100,
+                            child: RatingBar.readOnly(
+                              initialRating: poi['score'].toDouble(),
+                              size: 20,
+                              isHalfAllowed: true,
+                              halfFilledIcon: Icons.star_half,
+                              filledIcon: Icons.star,
+                              emptyIcon: Icons.star_border,
+                            )),
+                        AutoSizeText(
+                          '${poi['score']}',
+                          style: TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ))
+                : Container(),
+            ListView.separated(
+              separatorBuilder: (BuildContext context, int index) =>
+                  new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+              padding: EdgeInsets.all(20.0),
+              itemCount: reviews.length,
+              shrinkWrap: true,
+              primary: false,
+              itemBuilder: (BuildContext context, int index) =>
+                  _buildReviews(reviews, index),
+            ),
           ]),
         ));
   }
@@ -513,6 +547,61 @@ class PoiState extends State<Poi> {
             )),
           ],
         ));
+  }
+
+  _buildReviews(List<dynamic> reviews, int index) {
+    return Container(
+        margin: EdgeInsets.symmetric(vertical: 20),
+        child: ListTile(
+            leading: Container(
+              width: 40.0,
+              height: 40.0,
+              child: CircleAvatar(
+                  child: TransitionToImage(
+                image: AdvancedNetworkImage(
+                  reviews[index]['profile_photo_url'],
+                  useDiskCache: true,
+                  cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                ),
+                loadingWidgetBuilder:
+                    (BuildContext context, double progress, test) => Center(
+                        child: CircularProgressIndicator(
+                  backgroundColor: Colors.white,
+                )),
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                placeholder: const Icon(Icons.refresh),
+                enableRefresh: true,
+              )),
+            ),
+            title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  AutoSizeText(
+                    '${reviews[index]['author_name']}',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  ),
+                  Container(
+                      width: 100,
+                      child: RatingBar.readOnly(
+                        initialRating: reviews[index]['rating'].toDouble(),
+                        size: 20,
+                        isHalfAllowed: true,
+                        halfFilledIcon: Icons.star_half,
+                        filledIcon: Icons.star,
+                        emptyIcon: Icons.star_border,
+                      )),
+                ]),
+            trailing: AutoSizeText(timeago.format(
+                DateTime.fromMillisecondsSinceEpoch(
+                    reviews[index]['time'] * 1000))),
+            subtitle: AutoSizeText(
+              reviews[index]['text'],
+              //maxLines: 2,
+              //overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+            )));
   }
 
   // function for rendering while data is loading

@@ -584,7 +584,7 @@ class PoiState extends State<Poi> {
                 children: <Widget>[
                   AutoSizeText(
                     '${reviews[index]['author_name']}',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                   Container(
                       width: 100,
@@ -604,7 +604,7 @@ class PoiState extends State<Poi> {
               reviews[index]['text'],
               //maxLines: 2,
               //overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
             )));
   }
 

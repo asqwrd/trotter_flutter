@@ -362,7 +362,11 @@ class PoiState extends State<Poi> {
     var poi = snapshot.data.poi;
     List<dynamic> properties = poi['properties'];
     List<dynamic> reviews = poi['reviews'];
-    reviews.sort((a, b) => b['time'].compareTo(a['time']));
+    if (reviews != null) {
+      reviews.sort((a, b) => b['time'].compareTo(a['time']));
+    } else {
+      reviews = [];
+    }
 
     var descriptionShort = snapshot.data.poi['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));

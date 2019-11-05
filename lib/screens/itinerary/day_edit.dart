@@ -264,6 +264,7 @@ class DayEditState extends State<DayEdit> {
                                                   data.currentPosition;
                                               this.image =
                                                   data.destination['image'];
+                                              this.loading = false;
                                             });
                                           }
                                         });

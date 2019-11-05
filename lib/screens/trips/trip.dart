@@ -1249,7 +1249,6 @@ class TripState extends State<Trip> {
                           } else if (destination != null &&
                               destination['itinerary_id'].isEmpty &&
                               fields[index]['route'] == 'itinerary/edit') {
-                                
                             dynamic data = {
                               "itinerary": {
                                 "name": trip['name'],
@@ -1270,6 +1269,7 @@ class TripState extends State<Trip> {
                             setState(() {
                               this.loading = true;
                             });
+
                             var response =
                                 await postCreateItinerary(store, data);
                             setState(() {
@@ -1283,6 +1283,8 @@ class TripState extends State<Trip> {
                             });
                           } else if (destination != null &&
                               !destination['itinerary_id'].isEmpty) {
+                            store.itineraryStore
+                                .setItineraryBuilderLoading(true);
                             onPush({
                               'color': this.color,
                               'id': destination['itinerary_id'].toString(),

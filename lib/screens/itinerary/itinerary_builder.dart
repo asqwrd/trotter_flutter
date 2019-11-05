@@ -211,6 +211,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
               loading: loading,
               onPush: onPush,
               color: color,
+              showSearch: false,
               title: this.itineraryName,
               actions: <Widget>[
                 Container(
@@ -279,6 +280,23 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                               color: fontContrast(color),
                               fit: BoxFit.cover),
                         ))),
+                Container(
+                    width: 58,
+                    height: 58,
+                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      onPressed: () async {
+                        store.itineraryStore.setItineraryBuilderLoading(true);
+                        data = fetchItineraryBuilder(this.itineraryId, store);
+                      },
+                      child: SvgPicture.asset("images/refresh_icon.svg",
+                          width: 24.0,
+                          height: 24.0,
+                          color: fontContrast(color),
+                          fit: BoxFit.contain),
+                    )),
               ],
               back: true)),
     ]);
@@ -302,13 +320,12 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                   onRetry: () {
                     store.itineraryStore.setItineraryBuilderLoading(true);
                     data = fetchItineraryBuilder(this.itineraryId, store);
-                    store.itineraryStore.setItineraryBuilderLoading(false);
                   },
                 ))
           ]);
     }
     if (store.itineraryStore.itineraryBuilder.itinerary == null ||
-        store.itineraryStore.itineraryBuilder.loading ||
+        store.itineraryStore.itineraryBuilder.loading == true ||
         store.itineraryStore.itineraryBuilder.itinerary['id'] !=
             this.itineraryId) {
       return _buildLoadingBody(ctxt);

@@ -557,6 +557,7 @@ class PoiState extends State<Poi> {
     return Container(
         margin: EdgeInsets.symmetric(vertical: 20),
         child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 0),
             leading: Container(
               width: 35.0,
               height: 35.0,

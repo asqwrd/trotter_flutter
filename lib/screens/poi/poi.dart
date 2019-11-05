@@ -558,8 +558,8 @@ class PoiState extends State<Poi> {
         margin: EdgeInsets.symmetric(vertical: 20),
         child: ListTile(
             leading: Container(
-              width: 40.0,
-              height: 40.0,
+              width: 35.0,
+              height: 35.0,
               child: CircleAvatar(
                   child: TransitionToImage(
                 image: AdvancedNetworkImage(

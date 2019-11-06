@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:loadmore/loadmore.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
@@ -145,6 +146,7 @@ class HomeState extends State<Home> {
   bool errorUi = false;
   bool loading = true;
   List<dynamic> itineraries = [];
+  List<dynamic> thingsToDo;
   int totalPublic = 0;
   final Color color = Color.fromRGBO(216, 167, 177, 1);
   GlobalKey _one = GlobalKey();
@@ -166,6 +168,8 @@ class HomeState extends State<Home> {
     _sc.dispose();
     super.dispose();
   }
+
+  Future<ThingsToDoData> doData;
 
   Future<HomeData> data = fetchHome();
   Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
@@ -193,7 +197,18 @@ class HomeState extends State<Home> {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
-
+    final store = Provider.of<TrotterStore>(context);
+    //print(this.thingsToDo);
+    if (store.currentUser != null && this.thingsToDo == null) {
+      doData = fetchThingsToDo(store.currentUser.uid);
+    }
+    if (doData != null) {
+      doData.then((response) {
+        setState(() {
+          this.thingsToDo = response.destinations;
+        });
+      });
+    }
     dataItineraries.then((data) => {
           if (data.error == null)
             {
@@ -393,6 +408,33 @@ class HomeState extends State<Home> {
     ));
   }
 
+  Widget _buildThingsToDo(
+      BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
+    var widgets = <Widget>[];
+    for (var item in thingsToDo) {
+      widgets.add(TopList(
+        items: item['places'],
+        header: 'Things to do in ${item['destination']['destination_name']}',
+        subText:
+            'Here are some popular places to visit for your trip to ${item['destination']['destination_name']}',
+        onLongPressed: (data) {},
+        onPressed: (data) {
+          onPush({
+            'id': data['id'].toString(),
+            'level': data['level'].toString(),
+            "google_place": true
+          });
+        },
+      ));
+    }
+
+    return Container(
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    ));
+  }
+
   Widget _buildItineraryLoading(BuildContext ctxt) {
     var widgets = <Widget>[
       Shimmer.fromColors(
@@ -438,7 +480,7 @@ class HomeState extends State<Home> {
   // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     var popularCities = snapshot.hasData ? snapshot.data.popularCities : [];
-    var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
+    //var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
     final store = Provider.of<TrotterStore>(context);
 
     return Container(
@@ -507,6 +549,7 @@ class HomeState extends State<Home> {
                       key: _one,
                       child: TopList(
                           items: popularCities,
+                          enableMini: true,
                           onPressed: (data) {
                             onPush({'id': data['id'], 'level': data['level']});
                           },
@@ -518,26 +561,66 @@ class HomeState extends State<Home> {
                               bottomSheetModal(context, data['poi']);
                             }
                           },
+                          subText:
+                              "Learn about popular cities and why so many people like to travel to them.",
                           header: "Trending cities")),
-              snapshot.connectionState == ConnectionState.waiting
-                  ? Container(
-                      width: double.infinity,
-                      margin: EdgeInsets.only(bottom: 30.0),
-                      child: TopListLoading())
-                  : TopList(
-                      items: popularIslands,
-                      onPressed: (data) {
-                        onPush({'id': data['id'], 'level': data['level']});
-                      },
-                      onLongPressed: (data) {
-                        var currentUser = store.currentUser;
-                        if (currentUser == null) {
-                          loginBottomSheet(context, data, color);
-                        } else {
-                          bottomSheetModal(context, data['poi']);
-                        }
-                      },
-                      header: "Explore these islands"),
+              // snapshot.connectionState == ConnectionState.waiting
+              //     ? Container(
+              //         width: double.infinity,
+              //         margin: EdgeInsets.only(bottom: 30.0),
+              //         child: TopListLoading())
+              //     : TopList(
+              //         items: popularIslands,
+              //         onPressed: (data) {
+              //           onPush({'id': data['id'], 'level': data['level']});
+              //         },
+              //         onLongPressed: (data) {
+              //           var currentUser = store.currentUser;
+              //           if (currentUser == null) {
+              //             loginBottomSheet(context, data, color);
+              //           } else {
+              //             bottomSheetModal(context, data['poi']);
+              //           }
+              //         },
+              //         header: "Explore these islands"),
+              FutureBuilder(
+                  future: doData,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return _buildItineraryLoading(context);
+                    } else if (snapshot.hasData &&
+                        snapshot.data.success == true) {
+                      return _buildThingsToDo(context, snapshot, color);
+                    } else if (snapshot.hasData &&
+                        snapshot.data.success == false) {
+                      return Container(
+                          margin: EdgeInsets.only(bottom: 20),
+                          child: Column(
+                            children: <Widget>[
+                              Container(
+                                  margin: EdgeInsets.only(bottom: 20),
+                                  child: AutoSizeText(
+                                    'Failed to get itineraries.',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w300),
+                                  )),
+                              RetryButton(
+                                color: color,
+                                width: 100,
+                                height: 50,
+                                onPressed: () {
+                                  setState(() {
+                                    doData =
+                                        fetchThingsToDo(store.currentUser.uid);
+                                  });
+                                },
+                              )
+                            ],
+                          ));
+                    }
+                    return _buildItineraryLoading(context);
+                  }),
               FutureBuilder(
                   future: dataItineraries,
                   builder: (context, snapshot) {

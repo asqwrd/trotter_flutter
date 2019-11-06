@@ -30,6 +30,37 @@ class PlacesData {
   }
 }
 
+class ThingsToDoData {
+  final List<dynamic> destinations;
+  final bool success;
+
+  ThingsToDoData({this.destinations, this.success});
+
+  factory ThingsToDoData.fromJson(Map<String, dynamic> json) {
+    return ThingsToDoData(destinations: json['destinations'], success: true);
+  }
+}
+
+Future<ThingsToDoData> fetchThingsToDo(String userId) async {
+  try {
+    final response = await http.get('$ApiDomain/api/explore/do?user_id=$userId',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var data = json.decode(response.body);
+      return ThingsToDoData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      print(msg);
+      return ThingsToDoData(success: false);
+    }
+  } catch (error) {
+    print('Response> $error');
+    return ThingsToDoData(success: false);
+  }
+}
+
 Future<PlacesData> fetchMorePlaces(
     String id, String placeType, int offset) async {
   try {

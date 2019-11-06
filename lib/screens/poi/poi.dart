@@ -310,6 +310,7 @@ class PoiState extends State<Poi> {
               child: new TrotterAppBar(
                 loading: loading,
                 onPush: onPush,
+                showSearch: false,
                 color: color,
                 title: this.poiName,
                 back: true,
@@ -480,6 +481,7 @@ class PoiState extends State<Poi> {
                         width: MediaQuery.of(context).size.width,
                         height: 250,
                         color: this.color,
+                        placeId: poi['id'],
                         zoom: 18,
                         lat: poi['location']['lat'],
                         lng: poi['location']['lng']))),

@@ -32,6 +32,7 @@ class CreateTripState extends State<CreateTrip> {
   String name;
   var destinationsCount = 0;
   List<Widget> fields;
+  List<Widget> destFields;
   final nameController = TextEditingController();
   final List<TextEditingController> datesControllers = [
     TextEditingController()
@@ -64,6 +65,36 @@ class CreateTripState extends State<CreateTrip> {
         }
       });
     });
+    this.destFields = [
+      _buildDestField(0, this.param, false),
+    ];
+
+    if (this.param != null) {
+      var destination = {
+        "location": this.param['location'],
+        "destination_id": this.param['id'],
+        "destination_name": this.param['name'],
+        "level": this.param['level'],
+        "country_id": this.param['country_id'],
+        "country_name": this.param["country_name"],
+        "start_date": null,
+        "end_date": null,
+        "image": this.param['image_hd']
+      };
+      this._destinations.add(destination);
+      //this._destinationImages.add(this.param['image']);
+    }
+    this.destinationsCount = this.destFields.length;
+    super.initState();
+  }
+
+  CreateTripState({this.onPush, this.param});
+
+  @override
+  Widget build(BuildContext context) {
+    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+      return getErrorWidget(context, errorDetails);
+    };
     this.fields = [
       Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
@@ -104,7 +135,7 @@ class CreateTripState extends State<CreateTrip> {
               return null;
             },
           )),
-      _buildDestField(0, this.param),
+      ...this.destFields,
       Align(
           alignment: Alignment.center,
           child: Container(
@@ -118,11 +149,12 @@ class CreateTripState extends State<CreateTrip> {
                           TextStyle(fontSize: 15, fontWeight: FontWeight.w300))
                 ]),
                 onPressed: () {
+                  print('add');
                   setState(() {
                     this.destinationsCount = this.destinationsCount + 1;
                     datesControllers.add(TextEditingController());
-                    this.fields.insert(this.destinationsCount,
-                        _buildDestField(this.destinationsCount - 1));
+                    this.destFields.add(
+                        _buildDestField(this.destFields.length, null, true));
                   });
                 },
               ))),
@@ -196,32 +228,6 @@ class CreateTripState extends State<CreateTrip> {
                         color: Colors.white)),
               )))
     ];
-    if (this.param != null) {
-      var destination = {
-        "location": this.param['location'],
-        "destination_id": this.param['id'],
-        "destination_name": this.param['name'],
-        "level": this.param['level'],
-        "country_id": this.param['country_id'],
-        "country_name": this.param["country_name"],
-        "start_date": null,
-        "end_date": null,
-        "image": this.param['image_hd']
-      };
-      this._destinations.add(destination);
-      //this._destinationImages.add(this.param['image']);
-    }
-    this.destinationsCount = this.destinationsCount + 1;
-    super.initState();
-  }
-
-  CreateTripState({this.onPush, this.param});
-
-  @override
-  Widget build(BuildContext context) {
-    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-      return getErrorWidget(context, errorDetails);
-    };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) + 200;
@@ -295,7 +301,7 @@ class CreateTripState extends State<CreateTrip> {
     ]);
   }
 
-  _buildDestField(int index, [dynamic param]) {
+  _buildDestField(int index, [dynamic param, bool addRemove = false]) {
     final TextEditingController _destinationTextController =
         TextEditingController();
     var dateFormat = DateFormat("EEE, MMM d, yyyy");
@@ -475,6 +481,36 @@ class CreateTripState extends State<CreateTrip> {
                       return null;
                     },
                   )))),
+      addRemove == true
+          ? Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(top: 20, left: 20, right: 20),
+              child: FlatButton(
+                shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(5.0)),
+                color: Colors.redAccent,
+                padding: EdgeInsets.symmetric(vertical: 15),
+                child: AutoSizeText(
+                  'Remove',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w300),
+                ),
+                onPressed: () {
+                  print(index);
+                  print("index");
+
+                  setState(() {
+                    this.destinationsCount = this.destFields.length;
+                    //datesControllers[index].dispose();
+                    datesControllers.removeAt(index);
+                    this.destFields.removeAt(index);
+                    this._destinations.removeAt(index);
+                  });
+                },
+              ))
+          : Container(),
       _buildDivider()
     ]);
   }

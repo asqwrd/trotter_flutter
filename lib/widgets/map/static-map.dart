@@ -14,9 +14,16 @@ class StaticMap extends StatefulWidget {
   final double lng;
   final int zoom;
   final Color color;
+  final String placeId;
 
   StaticMap(this.googleMapsApiKey,
-      {this.width, this.height, this.lat, this.lng, this.zoom, this.color});
+      {this.width,
+      this.height,
+      this.lat,
+      this.lng,
+      this.zoom,
+      this.color,
+      this.placeId});
 
   @override
   _StaticMapState createState() => new _StaticMapState(
@@ -25,6 +32,7 @@ class StaticMap extends StatefulWidget {
       lat: this.lat,
       lng: this.lng,
       color: this.color,
+      placeId: this.placeId,
       zoom: this.zoom);
 }
 
@@ -37,6 +45,7 @@ class _StaticMapState extends State<StaticMap> {
   final double lng;
   final int zoom;
   final Color color;
+  final String placeId;
 
   _buildUrl() {
     final baseUri = new Uri(
@@ -65,7 +74,13 @@ class _StaticMapState extends State<StaticMap> {
   }
 
   _StaticMapState(
-      {this.lat, this.lng, this.width, this.height, this.zoom, this.color});
+      {this.lat,
+      this.lng,
+      this.width,
+      this.height,
+      this.zoom,
+      this.color,
+      this.placeId});
 
   @override
   Widget build(BuildContext context) {
@@ -103,8 +118,11 @@ class _StaticMapState extends State<StaticMap> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(100)),
                 onPressed: () async {
-                  final url =
+                  var url =
                       'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+                  if (this.placeId != null) {
+                    url += '&query_place_id=${this.placeId}';
+                  }
                   if (await canLaunch(url)) {
                     await launch(url);
                   } else {

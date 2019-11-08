@@ -1,3 +1,6 @@
+import 'package:geolocator/geolocator.dart';
+import 'package:location/location.dart' as LocationPermission;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -41,6 +44,18 @@ class ThingsToDoData {
   }
 }
 
+class NearByData {
+  final List<dynamic> places;
+  final bool success;
+  final bool denied;
+
+  NearByData({this.places, this.success, this.denied});
+
+  factory NearByData.fromJson(Map<String, dynamic> json) {
+    return NearByData(places: json['places'], success: true, denied: false);
+  }
+}
+
 Future<ThingsToDoData> fetchThingsToDo(String userId) async {
   try {
     final response = await http.get('$ApiDomain/api/explore/do?user_id=$userId',
@@ -58,6 +73,67 @@ Future<ThingsToDoData> fetchThingsToDo(String userId) async {
   } catch (error) {
     print('Response> $error');
     return ThingsToDoData(success: false);
+  }
+}
+
+Future<bool> getLocationPermission() async {
+  var location = LocationPermission.Location();
+
+// Platform messages may fail, so we use a try/catch PlatformException.
+  try {
+    var permission = await location.hasPermission();
+    if (permission == false) {
+      await location.requestPermission();
+    }
+    return true;
+  } catch (e) {
+    if (e.code == 'PERMISSION_DENIED') {
+      var error = 'Permission denied';
+      print(error);
+    }
+    return false;
+  }
+}
+
+Future<NearByData> fetchNearbyPlaces(String type, String keywords) async {
+  final PermissionStatus isLocationEnabled =
+      await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+  Position position;
+  print(isLocationEnabled);
+  if (isLocationEnabled == PermissionStatus.granted) {
+    position = await Geolocator()
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+  } else {
+    try {
+      var getPerm = await getLocationPermission();
+      if (getPerm == true) {
+        position = await Geolocator()
+            .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      } else {
+        return NearByData(denied: true);
+      }
+    } catch (e) {
+      return NearByData(denied: true);
+    }
+  }
+  print(ApiDomain);
+  try {
+    final response = await http.get(
+        '$ApiDomain/api/explore/nearby?type=$type&lat=${position.latitude}&lng=${position.longitude}&keywords=$keywords',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var data = json.decode(response.body);
+      return NearByData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      print(msg);
+      return NearByData(success: false);
+    }
+  } catch (error) {
+    print('Response> $error');
+    return NearByData(success: false);
   }
 }
 

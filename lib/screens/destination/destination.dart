@@ -2,11 +2,15 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:loadmore/loadmore.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
+import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card-loading.dart';
+import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -25,7 +29,7 @@ Future<DestinationData> fetchDestination(
   final int cacheDataExpire =
       prefs.getInt('destination_$id-expiration') ?? null;
   final currentTime = DateTime.now().millisecondsSinceEpoch;
-  if (cacheData != null &&
+  if (cacheData == null &&
       cacheDataExpire != null &&
       (currentTime < cacheDataExpire)) {
     print('cached');
@@ -55,55 +59,79 @@ Future<DestinationData> fetchDestination(
   }
 }
 
+Future<DestinationItinerariesData> fetchDestinationItineraries(
+    String destinationId) async {
+  try {
+    final response = await http.get(
+        '$ApiDomain/api/itineraries/all?public=true&destination=$destinationId',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var data = json.decode(response.body);
+
+      return DestinationItinerariesData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return DestinationItinerariesData(error: "Api returned a $msg");
+    }
+  } catch (error) {
+    //print('Response> $error');
+    return DestinationItinerariesData(error: "Server is down");
+  }
+}
+
+Future<DestinationItinerariesData> fetchDestinationItinerariesNext(
+    String destinationId, lastId) async {
+  try {
+    final response = await http.get(
+        '$ApiDomain/api/itineraries/all?public=true&last=$lastId&destination=$destinationId',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var data = json.decode(response.body);
+
+      return DestinationItinerariesData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      return DestinationItinerariesData(error: "Api returned a $msg");
+    }
+  } catch (error) {
+    //print('Response> $error');
+    return DestinationItinerariesData(error: "Server is down");
+  }
+}
+
+class DestinationItinerariesData {
+  final List<dynamic> itineraries;
+  final dynamic totalPublic;
+  final String error;
+
+  DestinationItinerariesData({this.itineraries, this.error, this.totalPublic});
+
+  factory DestinationItinerariesData.fromJson(Map<String, dynamic> json) {
+    return DestinationItinerariesData(
+        itineraries: json['itineraries'],
+        totalPublic: json['total_public'],
+        error: null);
+  }
+}
+
 class DestinationData {
   final String color;
   final Map<String, dynamic> destination;
-  final dynamic discover;
-  final dynamic discoverLocations;
-  final dynamic eat;
-  final dynamic eatLocations;
-  final dynamic nightlife;
-  final dynamic nightlifeLocations;
-  final dynamic play;
-  final dynamic playLocations;
-  final dynamic relax;
-  final dynamic relaxLocations;
-  final dynamic see;
-  final dynamic seeLocations;
-  final dynamic shop;
-  final dynamic shopLocations;
+  final dynamic sections;
+
   final String error;
 
-  DestinationData(
-      {this.color,
-      this.destination,
-      this.discover,
-      this.eat,
-      this.nightlife,
-      this.play,
-      this.relax,
-      this.see,
-      this.shop,
-      this.discoverLocations,
-      this.eatLocations,
-      this.nightlifeLocations,
-      this.playLocations,
-      this.relaxLocations,
-      this.seeLocations,
-      this.shopLocations,
-      this.error});
+  DestinationData({this.color, this.destination, this.sections, this.error});
 
   factory DestinationData.fromJson(Map<String, dynamic> json) {
     return DestinationData(
         color: json['color'],
         destination: json['destination'],
-        discover: json['discover'],
-        eat: json['eat'],
-        nightlife: json['nightlife'],
-        play: json['play'],
-        relax: json['relax'],
-        see: json['see'],
-        shop: json['shop'],
+        sections: json['sections'],
         error: null);
   }
 }
@@ -131,6 +159,7 @@ class DestinationState extends State<Destination>
   final String destinationId;
   final String destinationType;
   Future<DestinationData> data;
+  Future<DestinationItinerariesData> dataItineraries;
   final Future2VoidFunc onPush;
   final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
@@ -142,13 +171,9 @@ class DestinationState extends State<Destination>
   String destinationName;
   dynamic location;
   dynamic destination;
-  dynamic discover = [];
-  dynamic eat = [];
-  dynamic play = [];
-  dynamic nightlife = [];
-  dynamic shop = [];
-  dynamic relax = [];
-  dynamic see = [];
+  dynamic sections = [];
+  dynamic itineraries = [];
+  int totalPublic = 0;
 
   bool imageLoading = true;
 
@@ -163,6 +188,7 @@ class DestinationState extends State<Destination>
     });
     super.initState();
     data = fetchDestination(this.destinationId, this.destinationType);
+    dataItineraries = fetchDestinationItineraries(this.destinationId);
   }
 
   DestinationState({this.destinationId, this.destinationType, this.onPush});
@@ -198,14 +224,18 @@ class DestinationState extends State<Destination>
                 this.destination = data.destination;
                 this.location = data.destination['location'];
                 this.color = Color(hexStringToHexInt(data.color));
-                this.discover = data.discover;
-                this.eat = data.eat;
-                this.see = data.see;
-                this.relax = data.relax;
-                this.play = data.play;
-                this.nightlife = data.nightlife;
-                this.shop = data.shop;
+                this.sections = data.sections;
+
                 this.loading = false;
+              })
+            }
+        });
+    dataItineraries.then((data) => {
+          if (data.error == null)
+            {
+              setState(() {
+                this.itineraries = data.itineraries;
+                this.totalPublic = data.totalPublic['count'];
               })
             }
         });
@@ -351,61 +381,21 @@ class DestinationState extends State<Destination>
     var destination = snapshot.data.destination;
     var descriptionShort = snapshot.data.destination['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
-    // var discover = snapshot.data.discover;
-    // var see = snapshot.data.see;
-    // var eat = snapshot.data.eat;
-    // var relax = snapshot.data.relax;
-    // var play = snapshot.data.play;
-    // var shop = snapshot.data.shop;
-    // var nightlife = snapshot.data.nightlife;
-    List<dynamic> allTab = [
-      {'items': this.discover['places'], 'header': 'Discover'},
-      {'items': this.see['places'], 'header': 'See'},
-      {'items': this.eat['places'], 'header': 'Eat'},
-      {'items': this.relax['places'], 'header': 'Relax'},
-      {'items': this.play['places'], 'header': 'Play'},
-      {'items': this.shop['places'], 'header': 'Shop'},
-      {'items': this.nightlife['places'], 'header': 'Nightlife'},
-    ];
-    var tabContents = <Widget>[
-      _buildTabContent(
-          _buildAllTab(ctxt, allTab, descriptionShort, color, destination),
-          'All'),
-    ];
-    for (var tab in allTab) {
-      if (tab['items'].length > 0) {
-        tabContents.add(
-          _buildListView(tab['items'], tab['header'], color, destination),
-        );
-      }
-    }
 
     return Container(
         height: MediaQuery.of(ctxt).size.height,
-        child: DefaultTabController(
-            length: tabContents.length,
-            child: ListView(
-              primary: false,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              children: <Widget>[
-                Container(
-                    color: Colors.transparent,
-                    child: _renderTabBar(color, color, allTab)),
-                Container(
-                    width: MediaQuery.of(ctxt).size.width,
-                    height: MediaQuery.of(ctxt).size.height - 180,
-                    child: TabBarView(children: tabContents))
-              ],
-            )));
+        color: Colors.transparent,
+        child: _buildSectionContent(
+          _buildSections(
+              ctxt, this.sections, descriptionShort, color, destination),
+        ));
   }
 
-  _buildTabContent(List<Widget> widgets, String key) {
+  _buildSectionContent(List<Widget> widgets) {
     return Container(
         width: MediaQuery.of(context).size.width,
         margin: EdgeInsets.only(top: 0.0, left: 0.0, right: 0.0),
-        decoration: BoxDecoration(color: Colors.white),
-        key: new PageStorageKey(key),
+        decoration: BoxDecoration(color: Colors.transparent),
         child: ListView(
             controller: _sc,
             physics: disableScroll
@@ -414,8 +404,8 @@ class DestinationState extends State<Destination>
             children: widgets));
   }
 
-  _buildAllTab(BuildContext context, List<dynamic> sections, String description,
-      Color color, dynamic destination) {
+  _buildSections(BuildContext context, List<dynamic> sections,
+      String description, Color color, dynamic destination) {
     final store = Provider.of<TrotterStore>(context);
     var widgets = <Widget>[
       GestureDetector(
@@ -447,15 +437,17 @@ class DestinationState extends State<Destination>
           ))
     ];
     for (var section in sections) {
-      var items = section['items'];
-      if (section['items'].length > 0) {
+      var items = section['places'];
+      var title = getTitle(section['key']);
+      if (items.length > 0) {
         widgets.add(TopList(
-            items: section['items'],
+            items: items,
             onPressed: (data) {
               onPush({
                 'id': data['id'],
                 'level': data['level'],
-                "destination": destination
+                "destination": destination,
+                "google_place": true,
               });
             },
             onLongPressed: (data) async {
@@ -483,253 +475,223 @@ class DestinationState extends State<Destination>
                 }
               }
             },
-            header: section['header']));
+            header: title));
       }
     }
-    return new List<Widget>.from(widgets)..addAll(<Widget>[]);
-  }
-
-  _buildListView(
-      List<dynamic> items, String key, Color color, dynamic destination) {
-    final store = Provider.of<TrotterStore>(context);
-    dynamic data;
-    switch (key) {
-      case 'Discover':
-        data = this.discover;
-        break;
-      case 'See':
-        data = this.see;
-        break;
-      case 'Relax':
-        data = this.relax;
-        break;
-      case 'Shop':
-        data = this.shop;
-        break;
-      case 'Eat':
-        data = this.eat;
-        break;
-      case 'Nightlife':
-        data = this.nightlife;
-        break;
-      case 'Play':
-        data = this.play;
-    }
-    return Container(
-        width: MediaQuery.of(context).size.width,
-        child: LoadMore(
-            delegate: TrotterLoadMoreDelegate(this.color),
-            isFinish: data['more'] == false,
-            onLoadMore: () async {
-              if (data['more'] == true) {
-                //print(data);
-                var res = await fetchMorePlaces(this.destinationId,
-                    key.toLowerCase(), data['places'].length);
-                if (res.success == true) {
-                  setState(() {
-                    switch (key) {
-                      case 'Discover':
-                        this.discover['places'] = this.discover['places']
-                          ..addAll(res.places);
-                        this.discover['more'] = res.more;
-                        break;
-                      case 'See':
-                        this.see['places'] = this.see['places']
-                          ..addAll(res.places);
-                        this.see['more'] = res.more;
-                        break;
-                      case 'Relax':
-                        this.relax['places'] = this.relax['places']
-                          ..addAll(res.places);
-                        this.relax['more'] = res.more;
-                        break;
-                      case 'Shop':
-                        this.shop['places'] = this.shop['places']
-                          ..addAll(res.places);
-                        this.shop['more'] = res.more;
-                        break;
-                      case 'Eat':
-                        this.eat['places'] = this.eat['places']
-                          ..addAll(res.places);
-                        this.eat['more'] = res.more;
-                        break;
-                      case 'Nightlife':
-                        this.nightlife['places'] = this.nightlife['places']
-                          ..addAll(res.places);
-                        this.nightlife['more'] = res.more;
-                        break;
-                      case 'Play':
-                        this.play['places'] = this.play['places']
-                          ..addAll(res.places);
-                        this.play['more'] = res.more;
-                        break;
-                    }
-                  });
-                }
+    return new List<Widget>.from(widgets)
+      ..addAll(<Widget>[
+        FutureBuilder(
+            future: dataItineraries,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return _buildItineraryLoading(context);
+              } else if (snapshot.hasData && snapshot.data.error == null) {
+                return _buildItinerary(context, snapshot, color);
+              } else if (snapshot.hasData && snapshot.data.error != null) {
+                return Container(
+                    margin: EdgeInsets.only(bottom: 20),
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                            margin: EdgeInsets.only(bottom: 20),
+                            child: AutoSizeText(
+                              'Failed to get itineraries.',
+                              style: TextStyle(
+                                  fontSize: 24, fontWeight: FontWeight.w300),
+                            )),
+                        RetryButton(
+                          color: color,
+                          width: 100,
+                          height: 50,
+                          onPressed: () {
+                            setState(() {
+                              dataItineraries = fetchDestinationItineraries(
+                                  this.destinationId);
+                            });
+                          },
+                        )
+                      ],
+                    ));
               }
-              return true;
-            },
-            child: ListView.builder(
-              controller: _sc,
-              physics: disableScroll
-                  ? NeverScrollableScrollPhysics()
-                  : ClampingScrollPhysics(),
-              key: new PageStorageKey(key),
-              itemCount: items.length,
-              itemBuilder: (BuildContext context, int index) {
-                return InkWell(
-                    onTap: () {
-                      var id = items[index]['id'];
-                      var level = items[index]['level'];
-                      onPush({
-                        'id': id.toString(),
-                        'level': level.toString(),
-                        "destination": destination
-                      });
-                    },
-                    onLongPress: () async {
-                      var currentUser = store.currentUser;
-                      if (currentUser == null) {
-                        loginBottomSheet(context, data, color);
-                      } else {
-                        await addToItinerary(
-                            context, items[index], color, destination);
-                      }
-                    },
-                    child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 20.0, horizontal: 20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: <Widget>[
-                            Container(
-                                width: 100,
-                                height: 85,
-                                margin: EdgeInsets.only(right: 20),
-                                child: ClipPath(
-                                    clipper: ShapeBorderClipper(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8))),
-                                    child: items[index]['image'] != null
-                                        ? TransitionToImage(
-                                            image: AdvancedNetworkImage(
-                                              items[index]['image'],
-                                              useDiskCache: true,
-                                              cacheRule: CacheRule(
-                                                  maxAge:
-                                                      const Duration(days: 7)),
-                                            ),
-                                            loadingWidgetBuilder: (BuildContext
-                                                        context,
-                                                    double progress,
-                                                    test) =>
-                                                Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                              backgroundColor: Colors.white,
-                                              valueColor:
-                                                  new AlwaysStoppedAnimation<
-                                                      Color>(this.color),
-                                            )),
-                                            fit: BoxFit.cover,
-                                            alignment: Alignment.center,
-                                            placeholder:
-                                                const Icon(Icons.refresh),
-                                            enableRefresh: true,
-                                          )
-                                        : Container(
-                                            decoration: BoxDecoration(
-                                            image: DecorationImage(
-                                                image: AssetImage(
-                                                    'images/placeholder.png'),
-                                                fit: BoxFit.cover),
-                                          )))),
-                            Container(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: <Widget>[
-                                  Container(
-                                      width: MediaQuery.of(context).size.width -
-                                          210,
-                                      child: AutoSizeText(
-                                        items[index]['name'],
-                                        maxLines: 2,
-                                        overflow: TextOverflow.fade,
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500),
-                                      )),
-                                  Container(
-                                      margin: EdgeInsets.only(top: 5),
-                                      width: MediaQuery.of(context).size.width -
-                                          210,
-                                      child: AutoSizeText(
-                                        items[index]['description_short'],
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 3,
-                                        style: TextStyle(
-                                            fontSize: 13.0,
-                                            fontWeight: FontWeight.w300),
-                                      ))
-                                ],
-                              ),
-                            )
-                          ],
-                        )));
-              },
-            )));
+              return _buildItineraryLoading(context);
+            })
+      ]);
   }
 
-  _renderTab(String label) {
-    return AutoSizeText(label,
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w300,
+  Widget _buildItinerary(
+      BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
+    var widgets = <Widget>[];
+    if (itineraries.length == 0) {
+      widgets.add(Container(
+          width: MediaQuery.of(ctxt).size.width,
+          padding: EdgeInsets.symmetric(horizontal: 30),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                  width: 150,
+                  height: 150,
+                  foregroundDecoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.white.withOpacity(.2),
+                          Colors.white.withOpacity(1),
+                          Colors.white.withOpacity(1),
+                        ],
+                        center: Alignment.center,
+                        focal: Alignment.center,
+                        radius: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(130)),
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage('images/day-empty.jpg'),
+                          fit: BoxFit.contain),
+                      borderRadius: BorderRadius.circular(130))),
+              AutoSizeText(
+                'Be the first to share your itinerary',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 25,
+                    color: Colors.blueGrey,
+                    fontWeight: FontWeight.w300),
+              ),
+              SizedBox(height: 10),
+              AutoSizeText(
+                'Create a trip to start planning your next adventure!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.blueGrey,
+                    fontWeight: FontWeight.w200),
+              ),
+              SizedBox(height: 30),
+              FlatButton(
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(50.0)),
+                child: AutoSizeText(
+                  'Start planning',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w200),
+                ),
+                color: Colors.blueGrey,
+                onPressed: () {
+                  onPush({'level': 'createtrip', 'param': destination});
+                },
+              )
+            ],
+          )));
+    } else {
+      widgets = <Widget>[
+        Padding(
+            padding: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
+            child: AutoSizeText(
+              'Check out itineraries',
+              style: TextStyle(
+                  fontSize: 20, color: color, fontWeight: FontWeight.w500),
+            )),
+        Padding(
+            padding: EdgeInsets.only(bottom: 10, top: 0, left: 20, right: 20),
+            child: AutoSizeText(
+              'See what other people did while traveling to ${destination['name']}',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+            ))
+      ];
+      for (var itinerary in itineraries) {
+        widgets.add(ItineraryCard(
+          item: itinerary,
+          color: color,
+          onLongPressed: (data) {},
+          onPressed: (data) {
+            onPush({
+              'id': data['id'].toString(),
+              'level': data['level'].toString()
+            });
+          },
         ));
+      }
+    }
+
+    return Container(
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    ));
   }
 
-  _renderTabBar(Color mainColor, Color fontColor, List<dynamic> sections) {
-    var tabs = [
-      Tab(child: _renderTab('All')),
+  Widget _buildItineraryLoading(BuildContext ctxt) {
+    var widgets = <Widget>[
+      Shimmer.fromColors(
+          baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+          highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+          child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                color: Color.fromRGBO(220, 220, 220, 0.8),
+                margin:
+                    EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
+                height: 20,
+                width: 200,
+              ))),
+      Shimmer.fromColors(
+          baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+          highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+          child: Container(
+            color: Color.fromRGBO(220, 220, 220, 0.8),
+            margin: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
+            height: 20,
+            width: double.infinity,
+          )),
+      Shimmer.fromColors(
+          baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+          highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+          child: Container(
+            color: Color.fromRGBO(220, 220, 220, 0.8),
+            margin: EdgeInsets.only(bottom: 10, top: 10, left: 20, right: 20),
+            height: 20,
+            width: double.infinity,
+          )),
+      ItineraryCardLoading()
     ];
 
-    for (var section in sections) {
-      if (section['items'].length > 0) {
-        tabs.add(
-          Tab(child: _renderTab(section['header'])),
-        );
-      }
-    }
+    return Container(
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    ));
+  }
 
-    return TabBar(
-      labelColor: mainColor,
-      isScrollable: true,
-      unselectedLabelColor: Colors.black.withOpacity(0.6),
-      indicator: BoxDecoration(
-          border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
-      tabs: tabs,
-    );
+  getTitle(String key) {
+    switch (key) {
+      case 'do':
+        return 'Some things to do';
+      case 'shopping':
+        return 'Nice for shopping';
+      case 'nightlife':
+        return 'Night life vibes';
+      case 'foodie':
+        return 'Good places to eat';
+    }
   }
 
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt) {
     var children2 = <Widget>[
-      TabBarLoading(),
       Container(
-          height: 185.0,
+          height: 220.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),
       Container(
-          height: 185.0,
+          height: 220.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),
       Container(
-          height: 185.0,
+          height: 220.0,
           width: double.infinity,
           margin: EdgeInsets.only(bottom: 30.0),
           child: TopListLoading()),

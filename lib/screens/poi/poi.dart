@@ -316,43 +316,45 @@ class PoiState extends State<Poi> {
                 back: true,
                 destination: this.destination,
                 actions: <Widget>[
-                  Container(
-                      width: 58,
-                      height: 58,
-                      margin: EdgeInsets.symmetric(horizontal: 0),
-                      child: FlatButton(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100)),
-                        onPressed: () async {
-                          this.poi['google_place'] = this.googlePlace;
-                          var result = await addToItinerary(
-                              context, this.poi, color, destination);
+                  this.destination != null
+                      ? Container(
+                          width: 58,
+                          height: 58,
+                          margin: EdgeInsets.symmetric(horizontal: 0),
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100)),
+                            onPressed: () async {
+                              this.poi['google_place'] = this.googlePlace;
+                              var result = await addToItinerary(
+                                  context, this.poi, color, destination);
 
-                          if (result != null &&
-                              result['selected'] != null &&
-                              result['dayId'] != null &&
-                              result['itinerary'] != null &&
-                              result['poi'] != null &&
-                              result['dayIndex'] != null) {
-                            //Navigator.of(context).pop();
-                            setState(() {
-                              this.addedToItinerary = true;
-                            });
+                              if (result != null &&
+                                  result['selected'] != null &&
+                                  result['dayId'] != null &&
+                                  result['itinerary'] != null &&
+                                  result['poi'] != null &&
+                                  result['dayIndex'] != null) {
+                                //Navigator.of(context).pop();
+                                setState(() {
+                                  this.addedToItinerary = true;
+                                });
 
-                            await showSuccessSnackbar(context,
-                                onPush: onPush,
-                                dayId: result['dayId'],
-                                dayIndex: result['dayIndex'],
-                                itinerary: result['itinerary'],
-                                poi: result['poi']);
-                          }
-                        },
-                        child: SvgPicture.asset("images/add-icon.svg",
-                            width: 24.0,
-                            height: 24.0,
-                            color: fontContrast(color),
-                            fit: BoxFit.contain),
-                      ))
+                                await showSuccessSnackbar(context,
+                                    onPush: onPush,
+                                    dayId: result['dayId'],
+                                    dayIndex: result['dayIndex'],
+                                    itinerary: result['itinerary'],
+                                    poi: result['poi']);
+                              }
+                            },
+                            child: SvgPicture.asset("images/add-icon.svg",
+                                width: 24.0,
+                                height: 24.0,
+                                color: fontContrast(color),
+                                fit: BoxFit.contain),
+                          ))
+                      : null
                 ],
               )),
         ]));

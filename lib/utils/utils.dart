@@ -3,6 +3,7 @@ import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flare_loading/flare_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:loadmore/loadmore.dart';
+import 'package:html/parser.dart' show parse;
 
 class PixelRatioDivider {
   double quantizedUnit;
@@ -29,6 +30,15 @@ String ordinalNumber(final int n) {
     default:
       return "${n}th";
   }
+}
+
+String parseHtmlString(String htmlString) {
+  if (htmlString == null) return '';
+  var document = parse(htmlString);
+
+  String parsedString = parse(document.body.text).documentElement.text;
+
+  return parsedString;
 }
 
 class BottomWaveClipper extends CustomClipper<Path> {

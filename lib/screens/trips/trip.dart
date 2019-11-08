@@ -1187,7 +1187,7 @@ class TripState extends State<Trip> {
             "destination": destination
           },
           {
-            "label": "Activities in ${destination['destination_name']}",
+            "label": "Snapshot of ${destination['destination_name']}",
             "icon": Icon(Icons.local_activity, color: iconColor),
             "id": destination['destination_id'].toString(),
             "level": destination['level'].toString()

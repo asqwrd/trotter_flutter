@@ -6,12 +6,12 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/screens/itinerary/toggle-visited-modal.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/comments/index.dart';
@@ -565,25 +565,6 @@ class DayEditState extends State<DayEdit> {
     ]);
   }
 
-  Future getLocationPermission() async {
-    var location = Location();
-
-// Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      var permission = await location.hasPermission();
-      if (permission == false) {
-        await location.requestPermission();
-        return;
-      }
-    } catch (e) {
-      if (e.code == 'PERMISSION_DENIED') {
-        var error = 'Permission denied';
-        print(error);
-      }
-      return;
-    }
-  }
-
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
     var day = snapshot.data.day;
@@ -704,10 +685,11 @@ class DayEditState extends State<DayEdit> {
             ? this.currentPosition
             : this.startLocation,
         onLongPressed: (data) {
-          final store = Provider.of<TrotterStore>(ctxt);
-          if (this.ownerId == store.currentUser.uid ||
-              store.currentUser.uid == data['added_by'])
-            bottomSheetModal(context, day['day'] + 1, data);
+          //final store = Provider.of<TrotterStore>(ctxt);
+          //print(data['group']);
+          //if (this.ownerId == store.currentUser.uid ||
+          //store.currentUser.uid == data['added_by'])
+          bottomSheetModal(context, day['day'] + 1, data);
         },
         onPressed: (data) {
           if (data['itinerary'] != null) {
@@ -900,86 +882,92 @@ class DayEditState extends State<DayEdit> {
                         }
                       }
                     }),
-                new ListTile(
-                    leading: new Icon(
-                      EvilIcons.trash,
-                    ),
-                    title: new AutoSizeText('Delete from itnerary'),
-                    onTap: () async {
-                      this.loading = true;
-                      var response = await deleteFromDay(this.itineraryId,
-                          this.dayId, id, store.currentUser.uid);
-                      if (response.success == true) {
-                        setState(() {
-                          this
-                              .itineraryItems
-                              .removeWhere((item) => item['id'] == id);
-                          this.visited.removeWhere((item) => item['id'] == id);
-                          store.itineraryStore
-                              .updateItineraryBuilderDelete(this.dayId, id);
-                          this.loading = false;
-                        });
-                        Scaffold.of(ctxt).showSnackBar(SnackBar(
-                          content: AutoSizeText('$name was removed.',
-                              style: TextStyle(fontSize: 18)),
-                          duration: Duration(seconds: 5),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            textColor: color,
-                            onPressed: () async {
-                              setState(() {
-                                this.loading = true;
-                              });
-                              var response = await addToDay(
-                                  store,
-                                  this.itineraryId,
-                                  this.dayId,
-                                  this.destinationId,
-                                  undoData,
-                                  false);
-                              if (response.success == true) {
-                                setState(() {
-                                  this.color =
-                                      Color(hexStringToHexInt(response.color));
-                                  this.destinationName =
-                                      response.destination['name'];
-                                  this.destinationId =
-                                      response.destination['id'].toString();
-                                  this.itineraryItems =
-                                      response.day['itinerary_items'];
-                                  this.visited = response.visited;
-                                  this.loading = false;
-                                  Scaffold.of(ctxt).removeCurrentSnackBar();
-                                  Scaffold.of(ctxt).showSnackBar(SnackBar(
-                                    content: AutoSizeText('Undo successful!',
-                                        style: TextStyle(fontSize: 18)),
-                                    duration: Duration(seconds: 2),
-                                  ));
-                                });
-                              } else {
-                                Scaffold.of(ctxt).removeCurrentSnackBar();
-                                Scaffold.of(ctxt).showSnackBar(SnackBar(
-                                    content: AutoSizeText(
-                                        'Sorry the undo failed!',
-                                        style: TextStyle(fontSize: 18)),
-                                    duration: Duration(seconds: 2)));
-                              }
-                            },
-                          ),
-                        ));
-                      } else {
-                        setState(() {
-                          Scaffold.of(this.context).showSnackBar(SnackBar(
-                            content: AutoSizeText(
-                                'Unable to delete from itinerary',
-                                style: TextStyle(fontSize: 18)),
-                            duration: Duration(seconds: 2),
-                          ));
-                          this.loading = false;
-                        });
-                      }
-                      Navigator.of(context).pop();
-                    }),
+                this.ownerId == store.currentUser.uid ||
+                        store.currentUser.uid == data['added_by']
+                    ? new ListTile(
+                        leading: new Icon(
+                          EvilIcons.trash,
+                        ),
+                        title: new AutoSizeText('Delete from itnerary'),
+                        onTap: () async {
+                          this.loading = true;
+                          var response = await deleteFromDay(this.itineraryId,
+                              this.dayId, id, store.currentUser.uid);
+                          if (response.success == true) {
+                            setState(() {
+                              this
+                                  .itineraryItems
+                                  .removeWhere((item) => item['id'] == id);
+                              this
+                                  .visited
+                                  .removeWhere((item) => item['id'] == id);
+                              store.itineraryStore
+                                  .updateItineraryBuilderDelete(this.dayId, id);
+                              this.loading = false;
+                            });
+                            Scaffold.of(ctxt).showSnackBar(SnackBar(
+                              content: AutoSizeText('$name was removed.',
+                                  style: TextStyle(fontSize: 18)),
+                              duration: Duration(seconds: 5),
+                              action: SnackBarAction(
+                                label: 'Undo',
+                                textColor: color,
+                                onPressed: () async {
+                                  setState(() {
+                                    this.loading = true;
+                                  });
+                                  var response = await addToDay(
+                                      store,
+                                      this.itineraryId,
+                                      this.dayId,
+                                      this.destinationId,
+                                      undoData,
+                                      false);
+                                  if (response.success == true) {
+                                    setState(() {
+                                      this.color = Color(
+                                          hexStringToHexInt(response.color));
+                                      this.destinationName =
+                                          response.destination['name'];
+                                      this.destinationId =
+                                          response.destination['id'].toString();
+                                      this.itineraryItems =
+                                          response.day['itinerary_items'];
+                                      this.visited = response.visited;
+                                      this.loading = false;
+                                      Scaffold.of(ctxt).removeCurrentSnackBar();
+                                      Scaffold.of(ctxt).showSnackBar(SnackBar(
+                                        content: AutoSizeText(
+                                            'Undo successful!',
+                                            style: TextStyle(fontSize: 18)),
+                                        duration: Duration(seconds: 2),
+                                      ));
+                                    });
+                                  } else {
+                                    Scaffold.of(ctxt).removeCurrentSnackBar();
+                                    Scaffold.of(ctxt).showSnackBar(SnackBar(
+                                        content: AutoSizeText(
+                                            'Sorry the undo failed!',
+                                            style: TextStyle(fontSize: 18)),
+                                        duration: Duration(seconds: 2)));
+                                  }
+                                },
+                              ),
+                            ));
+                          } else {
+                            setState(() {
+                              Scaffold.of(this.context).showSnackBar(SnackBar(
+                                content: AutoSizeText(
+                                    'Unable to delete from itinerary',
+                                    style: TextStyle(fontSize: 18)),
+                                duration: Duration(seconds: 2),
+                              ));
+                              this.loading = false;
+                            });
+                          }
+                          Navigator.of(context).pop();
+                        })
+                    : Container(),
               ]);
         });
   }

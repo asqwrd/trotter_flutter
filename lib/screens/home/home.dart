@@ -170,6 +170,7 @@ class HomeState extends State<Home> {
   }
 
   Future<ThingsToDoData> doData;
+  Future<NearByData> nearFoodData = fetchNearbyPlaces("restaurant", "");
 
   Future<HomeData> data = fetchHome();
   Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
@@ -179,11 +180,16 @@ class HomeState extends State<Home> {
 
   Future<Null> _refreshData() {
     //await new Future.delayed(new Duration(seconds: 2));
+    final store = Provider.of<TrotterStore>(context);
 
     setState(() {
       data = fetchHome(true);
       this.itineraries = [];
       dataItineraries = fetchHomeItineraries();
+      if (store.currentUser != null) {
+        doData = fetchThingsToDo(store.currentUser.uid);
+      }
+      nearFoodData = fetchNearbyPlaces("restaurant", "");
     });
 
     return null;
@@ -209,6 +215,7 @@ class HomeState extends State<Home> {
         });
       });
     }
+
     dataItineraries.then((data) => {
           if (data.error == null)
             {
@@ -422,11 +429,37 @@ class HomeState extends State<Home> {
           onPush({
             'id': data['id'].toString(),
             'level': data['level'].toString(),
-            "google_place": true
+            "google_place": true,
+            "destination": {"id": item['destination']['destination_id']}
           });
         },
       ));
     }
+
+    return Container(
+        child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    ));
+  }
+
+  Widget _buildNearFood(
+      BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
+    var widgets = <Widget>[];
+    var items = snapshot.data.places;
+    widgets.add(TopList(
+      items: items,
+      header: 'Places to eat near you',
+      subText: 'Check out some of these food spots near you',
+      onLongPressed: (data) {},
+      onPressed: (data) {
+        onPush({
+          'id': data['id'].toString(),
+          'level': data['level'].toString(),
+          "google_place": true
+        });
+      },
+    ));
 
     return Container(
         child: Column(
@@ -524,7 +557,9 @@ class HomeState extends State<Home> {
                   ? Container(
                       width: double.infinity,
                       margin: EdgeInsets.only(bottom: 30.0),
-                      child: TopListLoading())
+                      child: TopListLoading(
+                        enableMini: true,
+                      ))
                   : Showcase.withWidget(
                       width: 250,
                       height: 50,
@@ -583,44 +618,93 @@ class HomeState extends State<Home> {
               //           }
               //         },
               //         header: "Explore these islands"),
-              FutureBuilder(
-                  future: doData,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return _buildItineraryLoading(context);
-                    } else if (snapshot.hasData &&
-                        snapshot.data.success == true) {
-                      return _buildThingsToDo(context, snapshot, color);
-                    } else if (snapshot.hasData &&
-                        snapshot.data.success == false) {
-                      return Container(
-                          margin: EdgeInsets.only(bottom: 20),
-                          child: Column(
-                            children: <Widget>[
-                              Container(
+              store.currentUser != null
+                  ? Container(
+                      margin: EdgeInsets.symmetric(vertical: 20),
+                      child: FutureBuilder(
+                          future: doData,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return doLoadingWidget();
+                            } else if (snapshot.hasData &&
+                                snapshot.data.success == true) {
+                              return _buildThingsToDo(context, snapshot, color);
+                            } else if (snapshot.hasData &&
+                                snapshot.data.success == false) {
+                              return Container(
                                   margin: EdgeInsets.only(bottom: 20),
-                                  child: AutoSizeText(
-                                    'Failed to get itineraries.',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w300),
-                                  )),
-                              RetryButton(
-                                color: color,
-                                width: 100,
-                                height: 50,
-                                onPressed: () {
-                                  setState(() {
-                                    doData =
-                                        fetchThingsToDo(store.currentUser.uid);
-                                  });
-                                },
-                              )
-                            ],
-                          ));
-                    }
-                    return _buildItineraryLoading(context);
-                  }),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 20),
+                                          child: AutoSizeText(
+                                            'Failed to get things to do.',
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w300),
+                                          )),
+                                      RetryButton(
+                                        color: color,
+                                        width: 100,
+                                        height: 50,
+                                        onPressed: () {
+                                          setState(() {
+                                            doData = fetchThingsToDo(
+                                                store.currentUser.uid);
+                                          });
+                                        },
+                                      )
+                                    ],
+                                  ));
+                            }
+                            return doLoadingWidget();
+                          }))
+                  : Container(),
+              Container(
+                  margin: EdgeInsets.symmetric(vertical: 20),
+                  child: FutureBuilder(
+                      future: nearFoodData,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return doLoadingWidget();
+                        } else if (snapshot.hasData &&
+                            snapshot.data.success == true) {
+                          return _buildNearFood(context, snapshot, color);
+                        } else if (snapshot.hasData &&
+                            snapshot.data.denied == true) {
+                          return Container();
+                        } else if (snapshot.hasData &&
+                            snapshot.data.success == false) {
+                          return Container(
+                              margin: EdgeInsets.only(bottom: 20),
+                              child: Column(
+                                children: <Widget>[
+                                  Container(
+                                      margin: EdgeInsets.only(bottom: 20),
+                                      child: AutoSizeText(
+                                        'Failed to get near by places.',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w300),
+                                      )),
+                                  RetryButton(
+                                    color: color,
+                                    width: 100,
+                                    height: 50,
+                                    onPressed: () {
+                                      setState(() {
+                                        nearFoodData =
+                                            fetchNearbyPlaces("restaurant", "");
+                                      });
+                                    },
+                                  )
+                                ],
+                              ));
+                        }
+                        return doLoadingWidget();
+                      })),
               FutureBuilder(
                   future: dataItineraries,
                   builder: (context, snapshot) {
@@ -661,5 +745,12 @@ class HomeState extends State<Home> {
             ],
           )),
     );
+  }
+
+  Container doLoadingWidget() {
+    return Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: 30.0),
+        child: TopListLoading());
   }
 }

@@ -29,7 +29,7 @@ Future<DestinationData> fetchDestination(
   final int cacheDataExpire =
       prefs.getInt('destination_$id-expiration') ?? null;
   final currentTime = DateTime.now().millisecondsSinceEpoch;
-  if (cacheData == null &&
+  if (cacheData != null &&
       cacheDataExpire != null &&
       (currentTime < cacheDataExpire)) {
     print('cached');

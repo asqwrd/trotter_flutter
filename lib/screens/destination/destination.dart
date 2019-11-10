@@ -572,7 +572,7 @@ class DestinationState extends State<Destination>
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 25,
-                    color: Colors.blueGrey,
+                    color: Colors.black,
                     fontWeight: FontWeight.w300),
               ),
               SizedBox(height: 10),
@@ -581,7 +581,7 @@ class DestinationState extends State<Destination>
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 15,
-                    color: Colors.blueGrey,
+                    color: Colors.black,
                     fontWeight: FontWeight.w200),
               ),
               SizedBox(height: 30),

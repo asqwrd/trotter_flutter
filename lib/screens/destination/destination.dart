@@ -577,7 +577,7 @@ class DestinationState extends State<Destination>
               ),
               SizedBox(height: 10),
               AutoSizeText(
-                'Create a trip to start planning your next adventure!',
+                'Create a trip and start planning your next adventure!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 15,
@@ -592,11 +592,11 @@ class DestinationState extends State<Destination>
                 child: AutoSizeText(
                   'Start planning',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: fontContrast(this.color),
                       fontSize: 13,
                       fontWeight: FontWeight.w200),
                 ),
-                color: Colors.blueGrey,
+                color: this.color,
                 onPressed: () {
                   onPush({'level': 'createtrip', 'param': destination});
                 },

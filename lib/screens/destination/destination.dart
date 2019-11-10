@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:loadmore/loadmore.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -369,6 +370,24 @@ class DestinationState extends State<Destination>
               back: true,
               destination: this.destination,
               id: this.destinationId,
+              actions: <Widget>[
+                Container(
+                    width: 58,
+                    height: 58,
+                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      onPressed: () async {
+                        onPush({'level': 'createtrip', 'param': destination});
+                      },
+                      child: SvgPicture.asset("images/add-icon.svg",
+                          width: 24.0,
+                          height: 24.0,
+                          color: fontContrast(color),
+                          fit: BoxFit.contain),
+                    ))
+              ],
               location: this.location)),
     ]);
   }

@@ -567,7 +567,7 @@ class HomeState extends State<Home> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           TopList().buildThumbnailItem(
-                              0, popularCities[0], Colors.white),
+                              0, popularCities[0], Colors.white, true),
                           SizedBox(
                             height: 10,
                           ),

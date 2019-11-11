@@ -170,7 +170,7 @@ class HomeState extends State<Home> {
   }
 
   Future<ThingsToDoData> doData;
-  Future<NearByData> nearFoodData = fetchNearbyPlaces("restaurant", "");
+  //Future<NearByData> nearFoodData = fetchNearbyPlaces("restaurant", "");
 
   Future<HomeData> data = fetchHome();
   Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
@@ -187,9 +187,9 @@ class HomeState extends State<Home> {
       this.itineraries = [];
       dataItineraries = fetchHomeItineraries();
       if (store.currentUser != null) {
-        doData = fetchThingsToDo(store.currentUser.uid);
+        doData = fetchThingsToDo(store.currentUser.uid, true);
       }
-      nearFoodData = fetchNearbyPlaces("restaurant", "");
+      //nearFoodData = fetchNearbyPlaces("restaurant", "");
     });
 
     return null;
@@ -661,50 +661,50 @@ class HomeState extends State<Home> {
                             return doLoadingWidget();
                           }))
                   : Container(),
-              Container(
-                  margin: EdgeInsets.symmetric(vertical: 20),
-                  child: FutureBuilder(
-                      future: nearFoodData,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return doLoadingWidget();
-                        } else if (snapshot.hasData &&
-                            snapshot.data.success == true) {
-                          return _buildNearFood(context, snapshot, color);
-                        } else if (snapshot.hasData &&
-                            snapshot.data.denied == true) {
-                          return Container();
-                        } else if (snapshot.hasData &&
-                            snapshot.data.success == false) {
-                          return Container(
-                              margin: EdgeInsets.only(bottom: 20),
-                              child: Column(
-                                children: <Widget>[
-                                  Container(
-                                      margin: EdgeInsets.only(bottom: 20),
-                                      child: AutoSizeText(
-                                        'Failed to get near by places.',
-                                        style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w300),
-                                      )),
-                                  RetryButton(
-                                    color: color,
-                                    width: 100,
-                                    height: 50,
-                                    onPressed: () {
-                                      setState(() {
-                                        nearFoodData =
-                                            fetchNearbyPlaces("restaurant", "");
-                                      });
-                                    },
-                                  )
-                                ],
-                              ));
-                        }
-                        return doLoadingWidget();
-                      })),
+              // Container(
+              //     margin: EdgeInsets.symmetric(vertical: 20),
+              //     child: FutureBuilder(
+              //         future: nearFoodData,
+              //         builder: (context, snapshot) {
+              //           if (snapshot.connectionState ==
+              //               ConnectionState.waiting) {
+              //             return doLoadingWidget();
+              //           } else if (snapshot.hasData &&
+              //               snapshot.data.success == true) {
+              //             return _buildNearFood(context, snapshot, color);
+              //           } else if (snapshot.hasData &&
+              //               snapshot.data.denied == true) {
+              //             return Container();
+              //           } else if (snapshot.hasData &&
+              //               snapshot.data.success == false) {
+              //             return Container(
+              //                 margin: EdgeInsets.only(bottom: 20),
+              //                 child: Column(
+              //                   children: <Widget>[
+              //                     Container(
+              //                         margin: EdgeInsets.only(bottom: 20),
+              //                         child: AutoSizeText(
+              //                           'Failed to get near by places.',
+              //                           style: TextStyle(
+              //                               fontSize: 24,
+              //                               fontWeight: FontWeight.w300),
+              //                         )),
+              //                     RetryButton(
+              //                       color: color,
+              //                       width: 100,
+              //                       height: 50,
+              //                       onPressed: () {
+              //                         setState(() {
+              //                           nearFoodData =
+              //                               fetchNearbyPlaces("restaurant", "");
+              //                         });
+              //                       },
+              //                     )
+              //                   ],
+              //                 ));
+              //           }
+              //           return doLoadingWidget();
+              //         })),
               FutureBuilder(
                   future: dataItineraries,
                   builder: (context, snapshot) {

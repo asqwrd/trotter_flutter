@@ -1,6 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart' as LocationPermission;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -56,23 +57,41 @@ class NearByData {
   }
 }
 
-Future<ThingsToDoData> fetchThingsToDo(String userId) async {
-  try {
-    final response = await http.get('$ApiDomain/api/explore/do?user_id=$userId',
-        headers: {'Authorization': 'security'});
-    if (response.statusCode == 200) {
-      // If server returns an OK response, parse the JSON
-      var data = json.decode(response.body);
-      return ThingsToDoData.fromJson(data);
-    } else {
-      // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      print(msg);
+Future<ThingsToDoData> fetchThingsToDo(String userId,
+    [bool refresh = false]) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String cacheData = prefs.getString('thingsToDo') ?? null;
+  final int cacheDataExpire = prefs.getInt('thingsToDo-expiration') ?? null;
+  final currentTime = DateTime.now().millisecondsSinceEpoch;
+  if (cacheData != null &&
+      cacheDataExpire != null &&
+      refresh != true &&
+      (currentTime < cacheDataExpire)) {
+    var doData = json.decode(cacheData);
+
+    return ThingsToDoData.fromJson(doData);
+  } else {
+    try {
+      final response = await http.get(
+          '$ApiDomain/api/explore/do?user_id=$userId',
+          headers: {'Authorization': 'security'});
+      if (response.statusCode == 200) {
+        // If server returns an OK response, parse the JSON
+        await prefs.setString('thingsToDo', response.body);
+        await prefs.setInt('thingsToDo-expiration',
+            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
+        var data = json.decode(response.body);
+        return ThingsToDoData.fromJson(data);
+      } else {
+        // If that response was not OK, throw an error.
+        var msg = response.statusCode;
+        print(msg);
+        return ThingsToDoData(success: false);
+      }
+    } catch (error) {
+      print('Response> $error');
       return ThingsToDoData(success: false);
     }
-  } catch (error) {
-    print('Response> $error');
-    return ThingsToDoData(success: false);
   }
 }
 

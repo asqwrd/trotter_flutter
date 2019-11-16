@@ -13,9 +13,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:trotter_flutter/globals.dart';
+import 'package:trotter_flutter/widgets/images/image-swiper.dart';
 import 'package:trotter_flutter/widgets/itineraries/bottomsheet.dart';
 import 'package:trotter_flutter/widgets/map/static-map.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -408,60 +407,7 @@ class PoiState extends State<Poi> {
                     style: TextStyle(
                         fontSize: 13.0, fontWeight: FontWeight.w300))),
             this.images != null && this.images.length > 0
-                ? Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    margin: EdgeInsets.only(bottom: 30),
-                    width: MediaQuery.of(context).size.width,
-                    height: 250,
-                    child: ClipPath(
-                      clipper: ShapeBorderClipper(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10))),
-                      child: Swiper(
-                        itemBuilder: (BuildContext context, int index) {
-                          return Stack(fit: StackFit.expand, children: <Widget>[
-                            TransitionToImage(
-                              image: AdvancedNetworkImage(
-                                this.images[index]['sizes']['medium']['url'],
-                                useDiskCache: true,
-                                cacheRule:
-                                    CacheRule(maxAge: const Duration(days: 7)),
-                              ),
-                              loadingWidgetBuilder: (BuildContext context,
-                                      double progress, test) =>
-                                  Container(),
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
-                              placeholder: const Icon(Icons.refresh),
-                              enableRefresh: true,
-                            )
-                          ]);
-                        },
-                        loop: true,
-                        indicatorLayout: PageIndicatorLayout.SCALE,
-                        itemCount: this.images.length,
-                        //transformer: DeepthPageTransformer(),
-                        pagination: new SwiperPagination(
-                          builder: new SwiperCustomPagination(builder:
-                              (BuildContext context,
-                                  SwiperPluginConfig config) {
-                            return new ConstrainedBox(
-                              child: new Align(
-                                alignment: Alignment.topCenter,
-                                child: new DotSwiperPaginationBuilder(
-                                        color: Colors.white.withOpacity(.6),
-                                        activeColor: color,
-                                        size: 20.0,
-                                        activeSize: 20.0)
-                                    .build(context, config),
-                              ),
-                              constraints:
-                                  new BoxConstraints.expand(height: 50.0),
-                            );
-                          }),
-                        ),
-                      ),
-                    ))
+                ? ImageSwiper(context: context, images: images, color: color)
                 : Container(),
             ListView.separated(
               separatorBuilder: (BuildContext context, int index) =>

@@ -126,6 +126,10 @@ flutter:
     - images/placeholder.jpg
     - images/placeholder.png
     - images/search2.jpg
+    - images/see.jpg
+    - images/nightlife.jpg
+    - images/shopping.jpg
+    - images/food.jpg
     - images/search-icon.svg
     - images/setting-icon.svg
     - images/back-icon.svg
@@ -140,6 +144,10 @@ flutter:
     - images/forward.svg
     - images/avatar-icon.svg
     - images/place-icon.svg
+    - images/see-icon.svg
+    - images/nightlife-icon.svg
+    - images/eat-icon.svg
+    - images/shopping-icon.svg
     - images/reminder-icon.svg
     - images/mark-all.svg
     - images/place-icon.png

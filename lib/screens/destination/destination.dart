@@ -10,15 +10,15 @@ import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
+import 'package:trotter_flutter/widgets/images/image-swiper.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card-loading.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card.dart';
+import 'package:trotter_flutter/widgets/recommendations/circle-list.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/widgets/itineraries/index.dart';
-import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/globals.dart';
@@ -122,17 +122,17 @@ class DestinationItinerariesData {
 class DestinationData {
   final String color;
   final Map<String, dynamic> destination;
-  final dynamic sections;
+  final dynamic articles;
 
   final String error;
 
-  DestinationData({this.color, this.destination, this.sections, this.error});
+  DestinationData({this.color, this.destination, this.articles, this.error});
 
   factory DestinationData.fromJson(Map<String, dynamic> json) {
     return DestinationData(
         color: json['color'],
         destination: json['destination'],
-        sections: json['sections'],
+        articles: json['articles'],
         error: null);
   }
 }
@@ -172,7 +172,7 @@ class DestinationState extends State<Destination>
   String destinationName;
   dynamic location;
   dynamic destination;
-  dynamic sections = [];
+  dynamic articles = [];
   dynamic itineraries = [];
   int totalPublic = 0;
 
@@ -225,7 +225,7 @@ class DestinationState extends State<Destination>
                 this.destination = data.destination;
                 this.location = data.destination['location'];
                 this.color = Color(hexStringToHexInt(data.color));
-                this.sections = data.sections;
+                this.articles = data.articles;
 
                 this.loading = false;
               })
@@ -404,13 +404,13 @@ class DestinationState extends State<Destination>
     return Container(
         height: MediaQuery.of(ctxt).size.height,
         color: Colors.transparent,
-        child: _buildSectionContent(
-          _buildSections(
-              ctxt, this.sections, descriptionShort, color, destination),
+        child: _buildArticleContent(
+          _buildArticles(
+              ctxt, this.articles, descriptionShort, color, destination),
         ));
   }
 
-  _buildSectionContent(List<Widget> widgets) {
+  _buildArticleContent(List<Widget> widgets) {
     return Container(
         width: MediaQuery.of(context).size.width,
         margin: EdgeInsets.only(top: 0.0, left: 0.0, right: 0.0),
@@ -423,10 +423,18 @@ class DestinationState extends State<Destination>
             children: widgets));
   }
 
-  _buildSections(BuildContext context, List<dynamic> sections,
+  _buildArticles(BuildContext context, List<dynamic> articles,
       String description, Color color, dynamic destination) {
     final store = Provider.of<TrotterStore>(context);
     var widgets = <Widget>[
+      Center(
+          child: Container(
+        width: 30,
+        height: 5,
+        decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.all(Radius.circular(12.0))),
+      )),
       GestureDetector(
         onTap: () {
           onPush(
@@ -449,54 +457,111 @@ class DestinationState extends State<Destination>
             )),
       ),
       Container(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 10),
           child: AutoSizeText(
-            description,
-            style: TextStyle(fontSize: 13.0, fontWeight: FontWeight.w300),
-          ))
+            parseHtmlString(
+                destination['structured_content']['sections'][0]['body']),
+            maxLines: 4,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 13.0, fontWeight: FontWeight.w300, height: 1.8),
+          )),
+      Container(
+          margin: EdgeInsets.only(bottom: 10),
+          alignment: Alignment.topLeft,
+          child: FlatButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder: (context) {
+                          List<dynamic> sections =
+                              destination['structured_content']['sections'];
+                          List<dynamic> images =
+                              destination['structured_content']['images'];
+                          return StucturedContent(
+                              sections: sections, images: images);
+                        }));
+              },
+              child: AutoSizeText(
+                "Read more",
+                style: TextStyle(
+                    fontSize: 13.0, fontWeight: FontWeight.w400, color: color),
+              ))),
+      ImageSwiper(
+          context: context, images: this.destination['images'], color: color),
+      CirlcleList(
+          items: [
+            {
+              "name": "See & Do",
+              "color": "#ffac8e",
+              "image": 'images/see.jpg',
+            },
+            {
+              "name": "Eat & Drink",
+              "color": "#fd7792",
+              "image": 'images/food.jpg',
+            },
+            {
+              "name": "Nightlife",
+              "color": "#3f4d71",
+              "image": 'images/nightlife.jpg',
+            },
+            {
+              "name": "Shopping",
+              "color": "#55ae95",
+              "image": 'images/shopping.jpg',
+            }
+          ],
+          onPressed: (data) {},
+          onLongPressed: (data) {},
+          subText:
+              "See some recommendations for sights, food, shopping and nightlife",
+          header: "Experiencing ${destination['name']}"),
     ];
-    for (var section in sections) {
-      var items = section['places'];
-      var title = getTitle(section['key']);
-      if (items.length > 0) {
-        widgets.add(TopList(
-            items: items,
-            onPressed: (data) {
-              onPush({
-                'id': data['id'],
-                'level': data['level'],
-                "destination": destination,
-                "google_place": true,
-              });
-            },
-            onLongPressed: (data) async {
-              var currentUser = store.currentUser;
-              if (currentUser == null) {
-                loginBottomSheet(context, data, color);
-              } else {
-                var index = data['index'];
-                var result = await addToItinerary(
-                    context, items[index], color, destination);
-                if (result != null &&
-                    result['selected'] != null &&
-                    result['dayId'] != null &&
-                    result['itinerary'] != null &&
-                    result['poi'] != null &&
-                    result['dayIndex'] != null) {
-                  //Navigator.of(context).pop();
+    // for (var article in articles) {
+    //   var items = article['places'];
+    //   var title = article['name'];
+    //   if (items.length > 0) {
+    //     widgets.add(TopList(
+    //         items: items,
+    //         onPressed: (data) {
+    //           onPush({
+    //             'id': data['id'],
+    //             'level': data['level'],
+    //             "destination": destination,
+    //             "google_place": true,
+    //           });
+    //         },
+    //         onLongPressed: (data) async {
+    //           var currentUser = store.currentUser;
+    //           if (currentUser == null) {
+    //             loginBottomSheet(context, data, color);
+    //           } else {
+    //             var index = data['index'];
+    //             var result = await addToItinerary(
+    //                 context, items[index], color, destination);
+    //             if (result != null &&
+    //                 result['selected'] != null &&
+    //                 result['dayId'] != null &&
+    //                 result['itinerary'] != null &&
+    //                 result['poi'] != null &&
+    //                 result['dayIndex'] != null) {
+    //               //Navigator.of(context).pop();
 
-                  await showSuccessSnackbar(context,
-                      onPush: onPush,
-                      dayId: result['dayId'],
-                      dayIndex: result['dayIndex'],
-                      itinerary: result['itinerary'],
-                      poi: result['poi']);
-                }
-              }
-            },
-            header: title));
-      }
-    }
+    //               await showSuccessSnackbar(context,
+    //                   onPush: onPush,
+    //                   dayId: result['dayId'],
+    //                   dayIndex: result['dayIndex'],
+    //                   itinerary: result['itinerary'],
+    //                   poi: result['poi']);
+    //             }
+    //           }
+    //         },
+    //         header: title));
+    //   }
+    // }
     return new List<Widget>.from(widgets)
       ..addAll(<Widget>[
         FutureBuilder(
@@ -726,5 +791,101 @@ class DestinationState extends State<Destination>
         children: children2,
       ),
     );
+  }
+}
+
+class StucturedContent extends StatelessWidget {
+  const StucturedContent({
+    Key key,
+    @required this.sections,
+    @required this.images,
+  }) : super(key: key);
+
+  final List sections;
+  final List images;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(shrinkWrap: true, primary: false, children: <Widget>[
+      Container(
+          //color: color,
+          height: 80,
+          child: TrotterAppBar(
+              title: 'About ${destination['name']}',
+              back: true,
+              onPush: () {},
+              showSearch: false,
+              color: Colors.white)),
+      Container(
+          height: MediaQuery.of(context).size.height - 150,
+          child: ListView.builder(
+              shrinkWrap: true,
+              primary: true,
+              itemCount: sections.length,
+              itemBuilder: (BuildContext listContext, int index) {
+                var title = sections[index]['title'];
+                String body = sections[index]['body'];
+                List<dynamic> bodyImages = sections[index]['body_images'];
+                return body.isNotEmpty
+                    ? Container(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          children: <Widget>[
+                            Align(
+                                alignment: Alignment.topLeft,
+                                child: AutoSizeText(
+                                  title,
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.8),
+                                )),
+                            bodyImages.length > 0
+                                ? Container(
+                                    margin: EdgeInsets.symmetric(vertical: 20),
+                                    child: ClipPath(
+                                        clipper: ShapeBorderClipper(
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8))),
+                                        child: TransitionToImage(
+                                          image: AdvancedNetworkImage(
+                                            images[bodyImages[0]]['sizes']
+                                                ['medium']['url'],
+                                            useDiskCache: true,
+                                            cacheRule: CacheRule(
+                                                maxAge:
+                                                    const Duration(days: 7)),
+                                          ),
+                                          loadingWidgetBuilder: (BuildContext
+                                                      context,
+                                                  double progress,
+                                                  test) =>
+                                              Center(
+                                                  child:
+                                                      RefreshProgressIndicator(
+                                            backgroundColor: Colors.white,
+                                          )),
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.center,
+                                          placeholder:
+                                              const Icon(Icons.refresh),
+                                          enableRefresh: true,
+                                        )))
+                                : Container(),
+                            AutoSizeText(
+                              parseHtmlString(body),
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                  fontSize: 13.0,
+                                  fontWeight: FontWeight.w300,
+                                  height: 1.8),
+                            )
+                          ],
+                        ))
+                    : null;
+              }))
+    ]);
   }
 }

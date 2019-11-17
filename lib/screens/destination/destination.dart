@@ -1,19 +1,16 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:loadmore/loadmore.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:trotter_flutter/store/middleware.dart';
-import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/images/image-swiper.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card-loading.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card.dart';
-import 'package:trotter_flutter/widgets/recommendations/circle-list.dart';
+import 'package:trotter_flutter/widgets/recommendations/category-list.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -404,13 +401,13 @@ class DestinationState extends State<Destination>
     return Container(
         height: MediaQuery.of(ctxt).size.height,
         color: Colors.transparent,
-        child: _buildArticleContent(
-          _buildArticles(
+        child: _buildContent(
+          _buildUIComponent(
               ctxt, this.articles, descriptionShort, color, destination),
         ));
   }
 
-  _buildArticleContent(List<Widget> widgets) {
+  _buildContent(List<Widget> widgets) {
     return Container(
         width: MediaQuery.of(context).size.width,
         margin: EdgeInsets.only(top: 0.0, left: 0.0, right: 0.0),
@@ -423,9 +420,8 @@ class DestinationState extends State<Destination>
             children: widgets));
   }
 
-  _buildArticles(BuildContext context, List<dynamic> articles,
+  _buildUIComponent(BuildContext context, List<dynamic> articles,
       String description, Color color, dynamic destination) {
-    final store = Provider.of<TrotterStore>(context);
     var widgets = <Widget>[
       Center(
           child: Container(
@@ -481,7 +477,9 @@ class DestinationState extends State<Destination>
                           List<dynamic> images =
                               destination['structured_content']['images'];
                           return StucturedContent(
-                              sections: sections, images: images);
+                              sections: sections,
+                              images: images,
+                              destination: destination);
                         }));
               },
               child: AutoSizeText(
@@ -491,34 +489,17 @@ class DestinationState extends State<Destination>
               ))),
       ImageSwiper(
           context: context, images: this.destination['images'], color: color),
-      CirlcleList(
-          items: [
-            {
-              "name": "See & Do",
-              "color": "#ffac8e",
-              "image": 'images/see.jpg',
-            },
-            {
-              "name": "Eat & Drink",
-              "color": "#fd7792",
-              "image": 'images/food.jpg',
-            },
-            {
-              "name": "Nightlife",
-              "color": "#3f4d71",
-              "image": 'images/nightlife.jpg',
-            },
-            {
-              "name": "Shopping",
-              "color": "#55ae95",
-              "image": 'images/shopping.jpg',
-            }
-          ],
-          onPressed: (data) {},
-          onLongPressed: (data) {},
-          subText:
-              "See some recommendations for sights, food, shopping and nightlife",
-          header: "Experiencing ${destination['name']}"),
+      Container(
+          margin: EdgeInsets.symmetric(horizontal: 20),
+          child: CategoryList(
+              destination: destination,
+              onPressed: (data) {
+                print(data);
+              },
+              onLongPressed: (data) {},
+              subText:
+                  "See some recommendations for sights, food, shopping and nightlife",
+              header: "Experiencing ${destination['name']}")),
     ];
     // for (var article in articles) {
     //   var items = article['places'];
@@ -798,11 +779,13 @@ class StucturedContent extends StatelessWidget {
   const StucturedContent({
     Key key,
     @required this.sections,
+    @required this.destination,
     @required this.images,
   }) : super(key: key);
 
   final List sections;
   final List images;
+  final dynamic destination;
 
   @override
   Widget build(BuildContext context) {

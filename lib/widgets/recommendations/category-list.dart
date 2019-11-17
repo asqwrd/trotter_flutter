@@ -1,25 +1,24 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
-class CirlcleList extends StatelessWidget {
+class CategoryList extends StatelessWidget {
   final String2VoidFunc onPressed;
   final ValueChanged onLongPressed;
   final String name;
   final String header;
   final String subText;
-  final List<dynamic> items;
+  final dynamic destination;
+  static List<dynamic> items = [];
   final Function(String) callback;
 
   //passing props in react style
-  CirlcleList(
+  CategoryList(
       {this.header,
       this.name,
       this.onPressed,
       this.onLongPressed,
-      this.items,
+      this.destination,
       this.subText,
       this.callback});
 
@@ -29,8 +28,48 @@ class CirlcleList extends StatelessWidget {
       return getErrorWidget(context, errorDetails);
     };
     List<Widget> widgets = [];
+    var queryName =
+        destination['destination_name'].toString().replaceAll(" ", "+");
+    if (destination['destination_name'] == null &&
+        destination['name'] != null) {
+      queryName = destination['name'].toString().replaceAll(" ", "+");
+    }
+    CategoryList.items = [
+      {
+        "name": "See & Do",
+        "color": "#ffac8e",
+        "image": 'images/see.jpg',
+        "query":
+            '$queryName+${destination['country_name'].toString().replaceAll(" ", "+")}+things+to+do',
+        "destination": destination
+      },
+      {
+        "name": "Eat & Drink",
+        "color": "#fd7792",
+        "image": 'images/food.jpg',
+        "query":
+            '$queryName+${destination['country_name'].toString().replaceAll(" ", "+")}+places+to+eat',
+        "destination": destination
+      },
+      {
+        "name": "Nightlife",
+        "color": "#3f4d71",
+        "image": 'images/nightlife.jpg',
+        "query":
+            '$queryName+${destination['country_name'].toString().replaceAll(" ", "+")}+night+life',
+        "destination": destination
+      },
+      {
+        "name": "Shopping",
+        "color": "#55ae95",
+        "image": 'images/shopping.jpg',
+        "query":
+            '$queryName+${destination['country_name'].toString().replaceAll(" ", "+")}+shopping',
+        "destination": destination
+      }
+    ];
     for (var index = 0; index < items.length; index++) {
-      widgets.add(buildBody(items[index], index));
+      widgets.add(Flexible(child: buildBody(context, items[index], index)));
     }
     return Container(
         margin: EdgeInsets.symmetric(vertical: 0.0),
@@ -39,8 +78,7 @@ class CirlcleList extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Container(
-                  margin:
-                      EdgeInsets.only(left: 20.0, right: 20.0, bottom: 10.0),
+                  margin: EdgeInsets.only(left: 0.0, right: 0.0, bottom: 10.0),
                   child: AutoSizeText(
                     this.header,
                     style:
@@ -48,8 +86,8 @@ class CirlcleList extends StatelessWidget {
                   )),
               this.subText != null
                   ? Container(
-                      margin: EdgeInsets.only(
-                          left: 20.0, right: 20.0, bottom: 20.0),
+                      margin:
+                          EdgeInsets.only(left: 0.0, right: 0.0, bottom: 20.0),
                       child: AutoSizeText(
                         this.subText,
                         style: TextStyle(
@@ -67,20 +105,19 @@ class CirlcleList extends StatelessWidget {
             ]));
   }
 
-  Widget buildBody(dynamic item, int index) {
+  Widget buildBody(BuildContext context, dynamic item, int index) {
     return new InkWell(
         onTap: () {
-          var id = item['id'];
-          var level = item['level'];
-          this.onPressed({'id': id, 'level': level});
+          this.onPressed({'query': item['query'], 'destination': item});
         },
         onLongPress: () {
           this.onLongPressed({'poi': item, "index": index});
         },
-        child: buildThumbnailItem(index, item, Colors.black));
+        child: buildThumbnailItem(context, index, item, Colors.black));
   }
 
-  Container buildThumbnailItem(int index, item, Color fontColor) {
+  Container buildThumbnailItem(
+      BuildContext context, int index, item, Color fontColor) {
     return Container(
         //height:210.0,
         margin: EdgeInsets.only(left: 0.0),
@@ -89,22 +126,13 @@ class CirlcleList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Container(
-                  margin: EdgeInsets.symmetric(horizontal: 10),
+                  margin: index != items.length - 1
+                      ? EdgeInsets.only(right: 10)
+                      : EdgeInsets.only(right: 0),
                   child: Center(
                       child: Container(
                           width: 100,
                           height: 100,
-                          // decoration: BoxDecoration(
-                          //     color: Color(hexStringToHexInt(item['color']))
-                          //         .withOpacity(.3),
-                          //     borderRadius: BorderRadius.circular(100),
-                          //     border: Border.all(
-                          //         style: BorderStyle.solid,
-                          //         color: item['color'] != null
-                          //             ? Color(hexStringToHexInt(item['color']))
-                          //                 .withOpacity(.3)
-                          //             : Colors.black,
-                          //         width: 2)),
                           child: Stack(fit: StackFit.expand, children: <Widget>[
                             ClipPath(
                                 clipper: CornerRadiusClipper(10),

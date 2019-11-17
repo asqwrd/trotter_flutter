@@ -4,6 +4,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:loadmore/loadmore.dart';
@@ -11,6 +13,7 @@ import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
+import 'package:trotter_flutter/widgets/recommendations/category-list.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
@@ -419,20 +422,63 @@ class HomeState extends State<Home> {
       BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
     var widgets = <Widget>[];
     for (var item in thingsToDo) {
-      widgets.add(TopList(
-        items: item['places'],
-        header: 'Things to do in ${item['destination']['destination_name']}',
-        subText:
-            'Here are some popular places to visit for your trip to ${item['destination']['destination_name']}',
-        onLongPressed: (data) {},
-        onPressed: (data) {
-          onPush({
-            'id': data['id'].toString(),
-            'level': data['level'].toString(),
-            "google_place": true,
-            "destination": {"id": item['destination']['destination_id']}
-          });
-        },
+      var destination = item['destination'];
+      Color color = Color(hexStringToHexInt(item['color']));
+
+      widgets.add(Column(
+        children: <Widget>[
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              alignment: Alignment.topLeft,
+              child: AutoSizeText(
+                'Experience ${destination['destination_name']}',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.w500, color: color),
+              )),
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 20),
+              alignment: Alignment.topLeft,
+              child: AutoSizeText(
+                'Check out these places for your upcoming trip to ${item['destination_name']}',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+              )),
+          Container(
+              margin: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              height: 220,
+              width: double.infinity,
+              child: ClipPath(
+                  clipper: ShapeBorderClipper(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8))),
+                  child: TransitionToImage(
+                    image: AdvancedNetworkImage(
+                      destination['image'],
+                      useDiskCache: true,
+                      cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                    ),
+                    loadingWidgetBuilder:
+                        (BuildContext context, double progress, test) => Center(
+                            child: RefreshProgressIndicator(
+                      backgroundColor: Colors.white,
+                    )),
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    placeholder: const Icon(Icons.refresh),
+                    enableRefresh: true,
+                  ))),
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 20),
+              child: CategoryList(
+                  destination: destination,
+                  onPressed: (data) {
+                    print(data);
+                  },
+                  onLongPressed: (data) {},
+                  subText:
+                      "See some recommendations for sights, food, shopping and nightlife",
+                  header: "Categories of exploring")),
+        ],
       ));
     }
 
@@ -443,30 +489,30 @@ class HomeState extends State<Home> {
     ));
   }
 
-  Widget _buildNearFood(
-      BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
-    var widgets = <Widget>[];
-    var items = snapshot.data.places;
-    widgets.add(TopList(
-      items: items,
-      header: 'Places to eat near you',
-      subText: 'Check out some of these food spots near you',
-      onLongPressed: (data) {},
-      onPressed: (data) {
-        onPush({
-          'id': data['id'].toString(),
-          'level': data['level'].toString(),
-          "google_place": true
-        });
-      },
-    ));
+  // Widget _buildNearFood(
+  //     BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
+  //   var widgets = <Widget>[];
+  //   var items = snapshot.data.places;
+  //   widgets.add(TopList(
+  //     items: items,
+  //     header: 'Places to eat near you',
+  //     subText: 'Check out some of these food spots near you',
+  //     onLongPressed: (data) {},
+  //     onPressed: (data) {
+  //       onPush({
+  //         'id': data['id'].toString(),
+  //         'level': data['level'].toString(),
+  //         "google_place": true
+  //       });
+  //     },
+  //   ));
 
-    return Container(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: widgets,
-    ));
-  }
+  //   return Container(
+  //       child: Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: widgets,
+  //   ));
+  // }
 
   Widget _buildItineraryLoading(BuildContext ctxt) {
     var widgets = <Widget>[
@@ -620,7 +666,7 @@ class HomeState extends State<Home> {
               //         header: "Explore these islands"),
               store.currentUser != null
                   ? Container(
-                      margin: EdgeInsets.symmetric(vertical: 20),
+                      margin: EdgeInsets.symmetric(vertical: 0),
                       child: FutureBuilder(
                           future: doData,
                           builder: (context, snapshot) {
@@ -661,50 +707,7 @@ class HomeState extends State<Home> {
                             return doLoadingWidget();
                           }))
                   : Container(),
-              // Container(
-              //     margin: EdgeInsets.symmetric(vertical: 20),
-              //     child: FutureBuilder(
-              //         future: nearFoodData,
-              //         builder: (context, snapshot) {
-              //           if (snapshot.connectionState ==
-              //               ConnectionState.waiting) {
-              //             return doLoadingWidget();
-              //           } else if (snapshot.hasData &&
-              //               snapshot.data.success == true) {
-              //             return _buildNearFood(context, snapshot, color);
-              //           } else if (snapshot.hasData &&
-              //               snapshot.data.denied == true) {
-              //             return Container();
-              //           } else if (snapshot.hasData &&
-              //               snapshot.data.success == false) {
-              //             return Container(
-              //                 margin: EdgeInsets.only(bottom: 20),
-              //                 child: Column(
-              //                   children: <Widget>[
-              //                     Container(
-              //                         margin: EdgeInsets.only(bottom: 20),
-              //                         child: AutoSizeText(
-              //                           'Failed to get near by places.',
-              //                           style: TextStyle(
-              //                               fontSize: 24,
-              //                               fontWeight: FontWeight.w300),
-              //                         )),
-              //                     RetryButton(
-              //                       color: color,
-              //                       width: 100,
-              //                       height: 50,
-              //                       onPressed: () {
-              //                         setState(() {
-              //                           nearFoodData =
-              //                               fetchNearbyPlaces("restaurant", "");
-              //                         });
-              //                       },
-              //                     )
-              //                   ],
-              //                 ));
-              //           }
-              //           return doLoadingWidget();
-              //         })),
+
               FutureBuilder(
                   future: dataItineraries,
                   builder: (context, snapshot) {

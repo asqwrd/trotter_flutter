@@ -259,3 +259,9 @@ class FocusChangeEvent {
     return FocusChangeEvent(data: json, tab: null);
   }
 }
+
+class RefreshHomeEvent {
+  bool refresh;
+
+  RefreshHomeEvent({this.refresh});
+}

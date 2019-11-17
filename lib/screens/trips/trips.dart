@@ -4,6 +4,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
@@ -236,6 +237,7 @@ class TripsState extends State<Trips> {
     var error = store.tripStore.tripsError;
     var offline = store.offline;
     var trips = store.tripStore.trips;
+    var pastTrips = store.tripStore.pastTrips;
     var currentUser = store.currentUser;
     var loading = store.tripsLoading;
 
@@ -363,7 +365,7 @@ class TripsState extends State<Trips> {
       ]);
     }
 
-    if (trips.length == 0) {
+    if (trips.length == 0 && pastTrips.length == 0) {
       return Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
@@ -394,52 +396,7 @@ class TripsState extends State<Trips> {
                 ),
               )),
           body: Stack(children: <Widget>[
-            Center(
-                child: Container(
-                    color: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Container(
-                            width: MediaQuery.of(context).size.width / 2,
-                            height: MediaQuery.of(context).size.width / 2,
-                            foregroundDecoration: BoxDecoration(
-                                gradient: RadialGradient(
-                                  colors: [
-                                    Colors.white.withOpacity(.2),
-                                    Colors.white.withOpacity(1),
-                                    Colors.white.withOpacity(1),
-                                  ],
-                                  center: Alignment.center,
-                                  focal: Alignment.center,
-                                  radius: 1,
-                                ),
-                                borderRadius: BorderRadius.circular(130)),
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: AssetImage('images/trips-empty.jpg'),
-                                    fit: BoxFit.contain),
-                                borderRadius: BorderRadius.circular(130))),
-                        AutoSizeText(
-                          'No trips planned yet?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 25,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ),
-                        SizedBox(height: 10),
-                        AutoSizeText(
-                          'Create a trip and start planning your next adventure!',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w200),
-                        )
-                      ],
-                    ))),
+            Center(child: renderEmptyTrips(color, 'No trips planned yet?')),
             store.tripsLoading == true
                 ? Center(child: RefreshProgressIndicator())
                 : Container()
@@ -451,226 +408,275 @@ class TripsState extends State<Trips> {
     return Container(
         height: MediaQuery.of(context).size.height,
         child: Stack(children: <Widget>[
-          ListView.builder(
-            controller: _sc,
-            physics: disableScroll
-                ? NeverScrollableScrollPhysics()
-                : ClampingScrollPhysics(),
-            itemCount: tripBuilder.length,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == 0) {
-                return Center(
-                    child: Container(
-                  width: 30,
-                  height: 5,
-                  decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.all(Radius.circular(12.0))),
-                ));
-              }
-
-              if (index == 1) {
-                return Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.only(top: 10, bottom: 20),
-                  child: AutoSizeText(
-                    'Your adventures',
-                    style: TextStyle(fontSize: 25),
-                  ),
-                );
-              }
-              var color = Color(hexStringToHexInt(tripBuilder[index]['color']));
-              //var maincolor = Color.fromRGBO(1, 155, 174, 1);
-              var onPressed2 = () async {
-                final details = await fetchFlightsAccomodations(
-                    tripBuilder[index]['id'], store.currentUser.uid);
-                var undoData = {
-                  "trip": {
-                    "image": tripBuilder[index]['image'],
-                    "name": tripBuilder[index]['name'],
-                    "owner_id": currentUser.uid,
-                    "group": tripBuilder[index]['group']
-                  },
-                  "destinations": tripBuilder[index]['destinations'],
-                  "user": {
-                    "displayName": store.currentUser.displayName,
-                    "photoUrl": store.currentUser.photoUrl,
-                    "email": store.currentUser.email,
-                    "phoneNumber": store.currentUser.phoneNumber,
-                    "uid": store.currentUser.uid,
-                  }
-                };
-                store.setTripsRefreshing(true);
-
-                var response =
-                    await deleteTrip(store, tripBuilder[index]['id']);
-                store.setTripsRefreshing(false);
-                if (response.success == true) {
-                  this.context = context;
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    content: AutoSizeText(
-                        '${tripBuilder[index]['name']}\'s was deleted.',
-                        style: TextStyle(fontSize: 13)),
-                    duration: Duration(seconds: 5),
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      textColor: color,
-                      onPressed: () async {
-                        store.setTripsRefreshing(true);
-
-                        var undoResponse =
-                            await undoDeleteTrip(store, undoData, index - 2);
-
-                        for (var detail in details.flightsAccomodations) {
-                          for (var item in detail['details']) {
-                            final destination = undoResponse
-                                .trip['destinations']
-                                .firstWhere((item) {
-                              return item['destination_id'] ==
-                                  detail['destination']['destination_id'];
-                            });
-                            postAddFlightsAndAccomodations(
-                                undoResponse.trip['id'],
-                                destination['id'],
-                                item);
-                          }
-                        }
-                        store.setTripsRefreshing(false);
-                        if (response.success == true) {
-                          Scaffold.of(this.context).removeCurrentSnackBar();
-                          Scaffold.of(this.context).showSnackBar(SnackBar(
-                            content: AutoSizeText('Undo successful!',
-                                style: TextStyle(fontSize: 13)),
-                            duration: Duration(seconds: 2),
-                          ));
-                        } else {
-                          Scaffold.of(this.context).removeCurrentSnackBar();
-                          Scaffold.of(this.context).showSnackBar(SnackBar(
-                              content: AutoSizeText('Sorry the undo failed!',
-                                  style: TextStyle(fontSize: 13)),
-                              duration: Duration(seconds: 2)));
-                        }
-                      },
+          Positioned.fill(
+              top: 0,
+              left: 0,
+              child: ListView(
+                //shrinkWrap: true,
+                //primary: true,
+                controller: _sc,
+                physics: disableScroll
+                    ? NeverScrollableScrollPhysics()
+                    : ClampingScrollPhysics(),
+                children: <Widget>[
+                  Center(
+                      child: Container(
+                    width: 30,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.all(Radius.circular(12.0))),
+                  )),
+                  Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.only(top: 10, bottom: 20),
+                    child: AutoSizeText(
+                      'Your adventures',
+                      style: TextStyle(fontSize: 25),
                     ),
-                  ));
-                } else {
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                      content: AutoSizeText(
-                          '${tripBuilder[index]['name']} failed to be deleted.',
+                  ),
+                  trips.length > 0
+                      ? renderTrips(trips, store, currentUser)
+                      : renderEmptyTrips(color, 'Any upcoming trips?'),
+                  pastTrips.length > 0
+                      ? Container(
+                          margin: EdgeInsets.only(left: 20, right: 20, top: 40),
+                          child: AutoSizeText(
+                            "Where you've trotted",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w500, fontSize: 20),
+                          ))
+                      : null,
+                  renderPastTrips(pastTrips, store, currentUser)
+                ],
+              )),
+          store.tripsRefreshing == true
+              ? Center(child: RefreshProgressIndicator())
+              : Container()
+        ]));
+  }
+
+  Container renderEmptyTrips(Color color, String title) {
+    return Container(
+        color: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+                width: MediaQuery.of(context).size.width / 2,
+                height: MediaQuery.of(context).size.width / 2,
+                foregroundDecoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white.withOpacity(.2),
+                        Colors.white.withOpacity(1),
+                        Colors.white.withOpacity(1),
+                      ],
+                      center: Alignment.center,
+                      focal: Alignment.center,
+                      radius: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(130)),
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                        image: AssetImage('images/trips-empty.jpg'),
+                        fit: BoxFit.contain),
+                    borderRadius: BorderRadius.circular(130))),
+            AutoSizeText(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 25, color: color, fontWeight: FontWeight.w300),
+            ),
+            SizedBox(height: 10),
+            AutoSizeText(
+              'Create a trip and start planning your next adventure!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.black,
+                  fontWeight: FontWeight.w200),
+            )
+          ],
+        ));
+  }
+
+  renderTrips(List tripBuilder, TrotterStore store, TrotterUser currentUser) {
+    return Container(
+        child: ListView.builder(
+      primary: false,
+      shrinkWrap: true,
+      itemCount: tripBuilder.length,
+      itemBuilder: (BuildContext context, int index) {
+        var color = Color(hexStringToHexInt(tripBuilder[index]['color']));
+        //var maincolor = Color.fromRGBO(1, 155, 174, 1);
+        var onPressed2 = () async {
+          final details = await fetchFlightsAccomodations(
+              tripBuilder[index]['id'], store.currentUser.uid);
+          var undoData = {
+            "trip": {
+              "image": tripBuilder[index]['image'],
+              "name": tripBuilder[index]['name'],
+              "owner_id": currentUser.uid,
+              "group": tripBuilder[index]['group']
+            },
+            "destinations": tripBuilder[index]['destinations'],
+            "user": {
+              "displayName": store.currentUser.displayName,
+              "photoUrl": store.currentUser.photoUrl,
+              "email": store.currentUser.email,
+              "phoneNumber": store.currentUser.phoneNumber,
+              "uid": store.currentUser.uid,
+            }
+          };
+          store.setTripsRefreshing(true);
+
+          var response = await deleteTrip(store, tripBuilder[index]['id']);
+          store.setTripsRefreshing(false);
+          if (response.success == true) {
+            this.context = context;
+            Scaffold.of(context).showSnackBar(SnackBar(
+              content: AutoSizeText(
+                  '${tripBuilder[index]['name']}\'s was deleted.',
+                  style: TextStyle(fontSize: 13)),
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Undo',
+                textColor: color,
+                onPressed: () async {
+                  store.setTripsRefreshing(true);
+
+                  var undoResponse =
+                      await undoDeleteTrip(store, undoData, index - 2);
+
+                  for (var detail in details.flightsAccomodations) {
+                    for (var item in detail['details']) {
+                      final destination =
+                          undoResponse.trip['destinations'].firstWhere((item) {
+                        return item['destination_id'] ==
+                            detail['destination']['destination_id'];
+                      });
+                      postAddFlightsAndAccomodations(
+                          undoResponse.trip['id'], destination['id'], item);
+                    }
+                  }
+                  store.setTripsRefreshing(false);
+                  if (response.success == true) {
+                    Scaffold.of(this.context).removeCurrentSnackBar();
+                    Scaffold.of(this.context).showSnackBar(SnackBar(
+                      content: AutoSizeText('Undo successful!',
                           style: TextStyle(fontSize: 13)),
-                      duration: Duration(seconds: 2)));
-                }
-              };
-              return InkWell(
-                  onTap: () async {
-                    onPush({
-                      'id': tripBuilder[index]['id'].toString(),
-                      'level': 'trip'
-                    });
-                  },
-                  child: Card(
-                    semanticContainer: true,
+                      duration: Duration(seconds: 2),
+                    ));
+                    store.eventBus.fire(RefreshHomeEvent(refresh: true));
+                  } else {
+                    Scaffold.of(this.context).removeCurrentSnackBar();
+                    Scaffold.of(this.context).showSnackBar(SnackBar(
+                        content: AutoSizeText('Sorry the undo failed!',
+                            style: TextStyle(fontSize: 13)),
+                        duration: Duration(seconds: 2)));
+                  }
+                },
+              ),
+            ));
+            store.eventBus.fire(RefreshHomeEvent(refresh: true));
+          } else {
+            Scaffold.of(context).showSnackBar(SnackBar(
+                content: AutoSizeText(
+                    '${tripBuilder[index]['name']} failed to be deleted.',
+                    style: TextStyle(fontSize: 13)),
+                duration: Duration(seconds: 2)));
+          }
+        };
+        return InkWell(
+            onTap: () async {
+              onPush(
+                  {'id': tripBuilder[index]['id'].toString(), 'level': 'trip'});
+            },
+            child: Card(
+              semanticContainer: true,
+              color: Colors.transparent,
+              clipBehavior: Clip.antiAliasWithSaveLayer,
+              child: Column(children: <Widget>[
+                Container(
+                    height: 230.0,
+                    width: double.infinity,
                     color: Colors.transparent,
-                    clipBehavior: Clip.antiAliasWithSaveLayer,
-                    child: Column(children: <Widget>[
-                      Container(
-                          height: 230.0,
-                          width: double.infinity,
-                          color: Colors.transparent,
-                          child: Stack(
-                            children: <Widget>[
-                              Positioned.fill(
-                                  top: 0,
-                                  left: 0,
-                                  child: TransitionToImage(
-                                    image: AdvancedNetworkImage(
-                                      tripBuilder[index]['image'],
-                                      useDiskCache: true,
-                                      cacheRule: CacheRule(
-                                          maxAge: const Duration(days: 7)),
-                                    ),
-                                    loadingWidgetBuilder: (BuildContext context,
-                                            double progress, test) =>
-                                        Center(
-                                            child: RefreshProgressIndicator(
-                                      backgroundColor: Colors.white,
-                                    )),
-                                    fit: BoxFit.cover,
-                                    alignment: Alignment.center,
-                                    placeholder: const Icon(Icons.refresh),
-                                    enableRefresh: true,
-                                  )),
-                              Positioned.fill(
-                                  top: 0,
-                                  left: 0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                        gradient: RadialGradient(
-                                            center: Alignment.center,
-                                            focal: Alignment.center,
-                                            radius: .75,
-                                            // begin: FractionalOffset.topCenter,
-                                            // end: FractionalOffset.bottomCenter,
-                                            colors: [
-                                          Colors.grey.withOpacity(0.0),
-                                          color,
-                                        ],
-                                            stops: [
-                                          0.0,
-                                          1.0
-                                        ])),
-                                  )),
-                              Positioned.fill(
-                                top: 30,
-                                left: 20,
-                                child: ListView(
-                                    shrinkWrap: true,
-                                    primary: false,
-                                    children: <Widget>[
-                                      Padding(
-                                          padding: EdgeInsets.only(
-                                            top: 0.0,
-                                            bottom: 10,
-                                            left: 20,
-                                          ),
-                                          child: AutoSizeText(
-                                            tripBuilder[index]['name'],
-                                            overflow: TextOverflow.fade,
-                                            textAlign: TextAlign.left,
-                                            style: TextStyle(
-                                                color: fontContrast(color),
-                                                fontSize: 20.0,
-                                                fontWeight: FontWeight.w400),
-                                          )),
-                                    ]),
+                    child: Stack(
+                      children: <Widget>[
+                        Positioned.fill(
+                            top: 0,
+                            left: 0,
+                            child: TransitionToImage(
+                              image: AdvancedNetworkImage(
+                                tripBuilder[index]['image'],
+                                useDiskCache: true,
+                                cacheRule:
+                                    CacheRule(maxAge: const Duration(days: 7)),
                               ),
-                              Positioned(
-                                  top: 20,
-                                  right: 20,
-                                  child: Column(children: <Widget>[
-                                    tripBuilder[index]['owner_id'] ==
-                                            currentUser.uid
-                                        ? GestureDetector(
-                                            onTap: onPressed2,
-                                            child: Container(
-                                                padding: EdgeInsets.all(5),
-                                                decoration: BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            15),
-                                                    color: Colors.transparent),
-                                                child: Icon(
-                                                  EvilIcons.close,
-                                                  color: fontContrast(color),
-                                                  size: 30,
-                                                )),
-                                          )
-                                        : Container(),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Share.share(
-                                            'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application');
-                                      },
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                                backgroundColor: Colors.white,
+                              )),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: const Icon(Icons.refresh),
+                              enableRefresh: true,
+                            )),
+                        Positioned.fill(
+                            top: 0,
+                            left: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  gradient: RadialGradient(
+                                      center: Alignment.center,
+                                      focal: Alignment.center,
+                                      radius: .75,
+                                      // begin: FractionalOffset.topCenter,
+                                      // end: FractionalOffset.bottomCenter,
+                                      colors: [
+                                    Colors.grey.withOpacity(0.0),
+                                    color,
+                                  ],
+                                      stops: [
+                                    0.0,
+                                    1.0
+                                  ])),
+                            )),
+                        Positioned.fill(
+                          top: 30,
+                          left: 20,
+                          child: ListView(
+                              shrinkWrap: true,
+                              primary: false,
+                              children: <Widget>[
+                                Padding(
+                                    padding: EdgeInsets.only(
+                                      top: 0.0,
+                                      bottom: 10,
+                                      left: 20,
+                                    ),
+                                    child: AutoSizeText(
+                                      tripBuilder[index]['name'],
+                                      overflow: TextOverflow.fade,
+                                      textAlign: TextAlign.left,
+                                      style: TextStyle(
+                                          color: fontContrast(color),
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.w400),
+                                    )),
+                              ]),
+                        ),
+                        Positioned(
+                            top: 20,
+                            right: 20,
+                            child: Column(children: <Widget>[
+                              tripBuilder[index]['owner_id'] == currentUser.uid
+                                  ? GestureDetector(
+                                      onTap: onPressed2,
                                       child: Container(
                                           padding: EdgeInsets.all(5),
                                           decoration: BoxDecoration(
@@ -678,48 +684,170 @@ class TripsState extends State<Trips> {
                                                   BorderRadius.circular(15),
                                               color: Colors.transparent),
                                           child: Icon(
-                                            EvilIcons.share_google,
+                                            EvilIcons.close,
                                             color: fontContrast(color),
-                                            size: 35,
+                                            size: 30,
                                           )),
                                     )
-                                  ])),
-                              Positioned(
-                                  left: 10,
-                                  bottom: 15,
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      _buildDestinationInfo(
-                                          tripBuilder[index]['destinations'],
-                                          color),
-                                    ],
+                                  : Container(),
+                              GestureDetector(
+                                onTap: () {
+                                  Share.share(
+                                      'Lets plan our trip using Trotter. https://trotter.page.link/?link=http://ajibade.me?trip%3D${tripBuilder[index]['id'].toString()}&apn=org.trotter.application');
+                                },
+                                child: Container(
+                                    padding: EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(15),
+                                        color: Colors.transparent),
+                                    child: Icon(
+                                      EvilIcons.share_google,
+                                      color: fontContrast(color),
+                                      size: 35,
+                                    )),
+                              )
+                            ])),
+                        Positioned(
+                            left: 10,
+                            bottom: 15,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                _buildDestinationInfo(
+                                    tripBuilder[index]['destinations'], color),
+                              ],
+                            )),
+                        Positioned(
+                            right: 35,
+                            bottom: 25,
+                            width: 220,
+                            height: 40,
+                            child:
+                                buildTravelers(tripBuilder[index]['travelers']))
+                      ],
+                    )),
+              ]),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              elevation: 1,
+              margin: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+            ));
+      },
+    ));
+  }
+
+  renderPastTrips(List trips, TrotterStore store, TrotterUser currentUser) {
+    List<Widget> widgets = [];
+    for (var trip in trips) {
+      var color = Color(hexStringToHexInt(trip['color']));
+      widgets.add(InkWell(
+          onTap: () async {
+            onPush({
+              'id': trip['id'].toString(),
+              'level': 'trip',
+              "is_past": true
+            });
+          },
+          child: Card(
+            semanticContainer: true,
+            color: Colors.transparent,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            child: Column(children: <Widget>[
+              Container(
+                  height: 230.0,
+                  width: double.infinity,
+                  color: Colors.transparent,
+                  child: Stack(
+                    children: <Widget>[
+                      Positioned.fill(
+                          top: 0,
+                          left: 0,
+                          child: TransitionToImage(
+                            image: AdvancedNetworkImage(
+                              trip['image'],
+                              useDiskCache: true,
+                              cacheRule:
+                                  CacheRule(maxAge: const Duration(days: 7)),
+                            ),
+                            loadingWidgetBuilder:
+                                (BuildContext context, double progress, test) =>
+                                    Center(
+                                        child: RefreshProgressIndicator(
+                              backgroundColor: Colors.white,
+                            )),
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                            placeholder: const Icon(Icons.refresh),
+                            enableRefresh: true,
+                          )),
+                      Positioned.fill(
+                          top: 0,
+                          left: 0,
+                          child: Container(
+                              decoration: BoxDecoration(
+                            color: color.withOpacity(.7),
+                          ))),
+                      Positioned.fill(
+                        top: 30,
+                        left: 20,
+                        child: ListView(
+                            shrinkWrap: true,
+                            primary: false,
+                            children: <Widget>[
+                              Padding(
+                                  padding: EdgeInsets.only(
+                                    top: 0.0,
+                                    bottom: 10,
+                                    left: 20,
+                                  ),
+                                  child: AutoSizeText(
+                                    trip['name'],
+                                    overflow: TextOverflow.fade,
+                                    textAlign: TextAlign.left,
+                                    style: TextStyle(
+                                        color: fontContrast(color),
+                                        fontSize: 20.0,
+                                        fontWeight: FontWeight.w400),
                                   )),
-                              Positioned(
-                                  right: 35,
-                                  bottom: 25,
-                                  width: 220,
-                                  height: 40,
-                                  child: buildTravelers(
-                                      tripBuilder[index]['travelers']))
+                            ]),
+                      ),
+                      Positioned(
+                          left: 10,
+                          bottom: 0,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              _buildDestinationInfo(
+                                  trip['destinations'], color),
                             ],
                           )),
-                    ]),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    elevation: 1,
-                    margin: EdgeInsets.only(
-                        top: 20, left: 20, right: 20, bottom: 20),
-                  ));
-            },
-          ),
-          store.tripsRefreshing == true
-              ? Center(child: RefreshProgressIndicator())
-              : Container()
-        ]));
+                      Positioned(
+                          right: 20,
+                          bottom: 100,
+                          width: 220,
+                          height: 40,
+                          child: buildTravelers(trip['travelers']))
+                    ],
+                  )),
+            ]),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            elevation: 1,
+            margin: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+          )));
+    }
+    return Container(
+        child: GridView.count(
+      primary: false,
+      shrinkWrap: true,
+      crossAxisCount: 2,
+      childAspectRatio: 0.898,
+      children: widgets,
+    ));
   }
 
   _buildDestinationInfo(List<dynamic> destinations, Color color) {

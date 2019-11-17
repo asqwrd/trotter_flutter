@@ -726,10 +726,12 @@ class TripData {
 class Trip extends StatefulWidget {
   final Future2VoidFunc onPush;
   final String tripId;
-  Trip({Key key, this.onPush, @required this.tripId}) : super(key: key);
+  final bool isPast;
+  Trip({Key key, this.onPush, this.isPast, @required this.tripId})
+      : super(key: key);
   @override
-  TripState createState() =>
-      new TripState(onPush: this.onPush, tripId: this.tripId);
+  TripState createState() => new TripState(
+      onPush: this.onPush, tripId: this.tripId, isPast: this.isPast);
 }
 
 class TripState extends State<Trip> {
@@ -737,6 +739,7 @@ class TripState extends State<Trip> {
   final String tripId;
   Color color = Colors.blueGrey;
   bool loading = false;
+  bool isPast = false;
   List<dynamic> destinations;
   dynamic trip;
   final ScrollController _sc = ScrollController();
@@ -796,7 +799,7 @@ class TripState extends State<Trip> {
     super.dispose();
   }
 
-  TripState({this.onPush, this.tripId});
+  TripState({this.onPush, this.tripId, this.isPast});
 
   bottomSheetModal(BuildContext topcontext, dynamic data) {
     return showModalBottomSheet(
@@ -849,7 +852,8 @@ class TripState extends State<Trip> {
                       }
                     })
                 : Container(),
-            this.trip['owner_id'] == store.currentUser.uid
+            this.trip['owner_id'] == store.currentUser.uid &&
+                    this.isPast == false
                 ? ListTile(
                     leading: new Icon(Icons.pin_drop),
                     title: new AutoSizeText('Edit destinations'),
@@ -862,7 +866,8 @@ class TripState extends State<Trip> {
                       });
                     })
                 : Container(),
-            this.trip['owner_id'] != store.currentUser.uid
+            this.trip['owner_id'] != store.currentUser.uid &&
+                    this.isPast == false
                 ? ListTile(
                     leading: Icon(Icons.exit_to_app),
                     title: AutoSizeText('Leave trip'),
@@ -1165,6 +1170,7 @@ class TripState extends State<Trip> {
             height: 50,
             child: InkWell(
                 onTap: () async {
+                  print(isPast);
                   await openTravelersModal(ctxt, store);
                 },
                 child: buildTravelers(this.travelers)))
@@ -1295,7 +1301,8 @@ class TripState extends State<Trip> {
                               'color': this.color,
                               'tripId': this.tripId,
                               'currentUserId': store.currentUser.uid,
-                              "level": "travelinfo"
+                              "level": "travelinfo",
+                              "is_past": isPast
                             });
                             print(res);
                             if (res["refresh"] == true) {
@@ -1344,6 +1351,7 @@ class TripState extends State<Trip> {
                   currentUserId: store.currentUser.uid,
                   ownerId: this.trip['owner_id'],
                   tripId: this.tripId,
+                  readWrite: !this.isPast,
                 )));
 
     if (dialogData != null) {

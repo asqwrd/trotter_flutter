@@ -173,8 +173,10 @@ class TabNavigator extends StatelessWidget {
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.park: (context) =>
           Park(parkId: data['id'], onPush: (data) => push(context, data)),
-      TabNavigatorRoutes.trip: (context) =>
-          Trip(tripId: data['id'], onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.trip: (context) => Trip(
+          tripId: data['id'],
+          isPast: data['is_past'],
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary: (context) => Itinerary(
           itineraryId: data['id'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary_builder: (context) => ItineraryBuilder(
@@ -195,6 +197,7 @@ class TabNavigator extends StatelessWidget {
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
           tripId: data['tripId'],
+          isPast: data['is_past'],
           currentUserId: data['currentUserId'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(

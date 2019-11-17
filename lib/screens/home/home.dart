@@ -199,6 +199,21 @@ class HomeState extends State<Home> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final store = Provider.of<TrotterStore>(context);
+
+    store.eventBus.on<RefreshHomeEvent>().listen((event) {
+      // All events are of type UserLoggedInEvent (or subtypes of it).
+      if (event.refresh == true) {
+        final store = Provider.of<TrotterStore>(context);
+        print(store.currentUser.uid);
+        doData = fetchThingsToDo(store.currentUser.uid, true);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
@@ -208,6 +223,7 @@ class HomeState extends State<Home> {
     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     final store = Provider.of<TrotterStore>(context);
     //print(this.thingsToDo);
+
     if (store.currentUser != null && this.thingsToDo == null) {
       doData = fetchThingsToDo(store.currentUser.uid);
     }

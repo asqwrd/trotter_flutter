@@ -49,12 +49,14 @@ class TravelersModal extends StatefulWidget {
   final String ownerId;
   final String currentUserId;
   final List<dynamic> travelers;
+  final bool readWrite;
 
   TravelersModal(
       {Key key,
       @required this.tripId,
       @required this.ownerId,
       @required this.currentUserId,
+      this.readWrite,
       this.travelers,
       this.onAdd})
       : super(key: key);
@@ -64,6 +66,7 @@ class TravelersModal extends StatefulWidget {
       ownerId: this.ownerId,
       currentUserId: this.currentUserId,
       travelers: this.travelers,
+      readWrite: this.readWrite,
       onAdd: this.onAdd);
 }
 
@@ -78,6 +81,7 @@ class TravelersModalState extends State<TravelersModal> {
   final ValueChanged<dynamic> onAdd;
   List<Widget> selectedUsers = [];
   List<String> selectedUsersUid = [];
+  bool readWrite = true;
 
   Future<TravelersModalData> data;
 
@@ -100,13 +104,13 @@ class TravelersModalState extends State<TravelersModal> {
     }
   }
 
-  TravelersModalState({
-    this.tripId,
-    this.travelers,
-    this.onAdd,
-    this.currentUserId,
-    this.ownerId,
-  });
+  TravelersModalState(
+      {this.tripId,
+      this.travelers,
+      this.onAdd,
+      this.currentUserId,
+      this.ownerId,
+      this.readWrite});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +178,7 @@ class TravelersModalState extends State<TravelersModal> {
                     child: ListView.builder(
                   itemCount: results.length,
                   itemBuilder: (BuildContext context, int index) {
-                    if (index == 0) {
+                    if (index == 0 && readWrite == true) {
                       return ListTile(
                         contentPadding:
                             EdgeInsets.symmetric(vertical: 15, horizontal: 20),
@@ -214,6 +218,8 @@ class TravelersModalState extends State<TravelersModal> {
                           }
                         },
                       );
+                    } else if (index == 0) {
+                      return Container();
                     }
                     return ListTile(
                       contentPadding:
@@ -250,7 +256,8 @@ class TravelersModalState extends State<TravelersModal> {
                             fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                       trailing: results[index]['uid'] == this.currentUserId &&
-                              this.currentUserId != this.ownerId
+                              this.currentUserId != this.ownerId &&
+                              readWrite == true
                           ? FlatButton(
                               child: AutoSizeText(
                                 'Leave',
@@ -270,7 +277,8 @@ class TravelersModalState extends State<TravelersModal> {
                           : this.currentUserId == this.ownerId &&
                                   results[index]['uid'] == this.currentUserId
                               ? AutoSizeText('Organizer')
-                              : this.currentUserId == this.ownerId
+                              : this.currentUserId == this.ownerId &&
+                                      readWrite == true
                                   ? IconButton(
                                       icon: Icon(Icons.close),
                                       onPressed: () {

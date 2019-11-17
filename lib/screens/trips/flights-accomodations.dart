@@ -15,14 +15,20 @@ import 'package:trotter_flutter/store/store.dart';
 
 class FlightsAccomodations extends StatefulWidget {
   final String tripId;
+  final bool isPast;
   final String currentUserId;
   final ValueChanged<dynamic> onPush;
   FlightsAccomodations(
-      {Key key, @required this.tripId, this.currentUserId, this.onPush})
+      {Key key,
+      @required this.tripId,
+      this.currentUserId,
+      this.isPast,
+      this.onPush})
       : super(key: key);
   @override
   FlightsAccomodationsState createState() => new FlightsAccomodationsState(
       tripId: this.tripId,
+      isPast: this.isPast,
       currentUserId: this.currentUserId,
       onPush: this.onPush);
 }
@@ -32,6 +38,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   final String currentUserId;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.blueGrey;
+  bool isPast = false;
   String destinationName = '';
   dynamic destination;
   List<dynamic> itineraryItems = [];
@@ -71,7 +78,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     super.dispose();
   }
 
-  FlightsAccomodationsState({this.tripId, this.currentUserId, this.onPush});
+  FlightsAccomodationsState(
+      {this.tripId, this.currentUserId, this.onPush, this.isPast});
 
   @override
   Widget build(BuildContext context) {
@@ -204,6 +212,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
       tabContents.add(
         FlightsAccomodationsList(
             destination: destination,
+            readWrite: !isPast,
             onDeletePressed: (data) async {
               final detailId = data['id'];
               final destinationId = data['destinationId'];

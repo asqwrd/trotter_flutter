@@ -442,9 +442,11 @@ class TripsState extends State<Trips> {
                       ? Container(
                           margin: EdgeInsets.only(left: 20, right: 20, top: 40),
                           child: AutoSizeText(
-                            "Where you've trotted",
+                            "Past trips",
                             style: TextStyle(
-                                fontWeight: FontWeight.w500, fontSize: 20),
+                              fontWeight: FontWeight.w400,
+                              fontSize: 24,
+                            ),
                           ))
                       : null,
                   renderPastTrips(pastTrips, store, currentUser)

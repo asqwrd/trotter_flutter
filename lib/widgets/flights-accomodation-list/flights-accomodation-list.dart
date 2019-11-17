@@ -458,7 +458,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                               fit: BoxFit.cover),
                           borderRadius: BorderRadius.circular(130))),
                   AutoSizeText(
-                    'Your missing details for ${destination["destination_name"]}',
+                    'You\'re missing details for ${destination["destination_name"]}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 25,

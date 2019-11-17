@@ -760,6 +760,9 @@ class TripState extends State<Trip> {
 
   @override
   void initState() {
+    if (isPast == null) {
+      isPast = false;
+    }
     _sc.addListener(() {
       setState(() {
         if (_pc.isPanelOpen()) {

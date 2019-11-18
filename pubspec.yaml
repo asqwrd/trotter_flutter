@@ -55,7 +55,7 @@ dependencies:
   badges: ^1.1.0
   flutter_advanced_networkimage: ^0.6.0-alpha.1
   timeago: ^2.0.19
-  notification_permissions: ^0.4.0
+  notification_permissions: ^0.4.3
   location: ^2.3.5
   permission_handler: ^4.0.0
   loadmore: ^1.0.4

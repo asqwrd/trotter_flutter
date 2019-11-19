@@ -403,8 +403,6 @@ class TripsState extends State<Trips> {
           ]));
     }
 
-    var tripBuilder = ['', '', ...trips];
-
     return Container(
         height: MediaQuery.of(context).size.height,
         child: Stack(children: <Widget>[

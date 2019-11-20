@@ -788,86 +788,93 @@ class StucturedContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(shrinkWrap: true, primary: false, children: <Widget>[
-      Container(
-          //color: color,
-          height: 80,
-          child: TrotterAppBar(
-              title: 'About ${destination['name']}',
-              back: true,
-              onPush: () {},
-              showSearch: false,
-              color: Colors.white)),
-      Container(
-          height: MediaQuery.of(context).size.height - 150,
-          child: ListView.builder(
-              shrinkWrap: true,
-              primary: true,
-              itemCount: sections.length,
-              itemBuilder: (BuildContext listContext, int index) {
-                var title = sections[index]['title'];
-                String body = sections[index]['body'];
-                List<dynamic> bodyImages = sections[index]['body_images'];
-                return body.isNotEmpty
-                    ? Container(
-                        padding: EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: <Widget>[
-                            Align(
-                                alignment: Alignment.topLeft,
-                                child: AutoSizeText(
-                                  title,
+    return ListView(
+        physics: NeverScrollableScrollPhysics(),
+        primary: false,
+        children: <Widget>[
+          Container(
+              //color: color,
+              height: 80,
+              child: TrotterAppBar(
+                  title: 'About ${destination['name']}',
+                  back: true,
+                  onPush: () {},
+                  showSearch: false,
+                  color: Colors.white)),
+          Container(
+              height: MediaQuery.of(context).size.height - 150,
+              child: ListView.builder(
+                  shrinkWrap: true,
+                  //primary: false,
+                  itemCount: sections.length,
+                  itemBuilder: (BuildContext listContext, int index) {
+                    var title = sections[index]['title'];
+                    String body = sections[index]['body'];
+
+                    List<dynamic> bodyImages = sections[index]['body_images'];
+                    return body.isNotEmpty
+                        ? Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: <Widget>[
+                                Align(
+                                    alignment: Alignment.topLeft,
+                                    child: AutoSizeText(
+                                      title,
+                                      textAlign: TextAlign.left,
+                                      style: TextStyle(
+                                          fontSize: 20.0,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.8),
+                                    )),
+                                bodyImages.length > 0
+                                    ? Container(
+                                        margin:
+                                            EdgeInsets.symmetric(vertical: 20),
+                                        child: ClipPath(
+                                            clipper: ShapeBorderClipper(
+                                                shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8))),
+                                            child: TransitionToImage(
+                                              image: AdvancedNetworkImage(
+                                                images[bodyImages[0]]['sizes']
+                                                    ['medium']['url'],
+                                                useDiskCache: true,
+                                                cacheRule: CacheRule(
+                                                    maxAge: const Duration(
+                                                        days: 7)),
+                                              ),
+                                              loadingWidgetBuilder: (BuildContext
+                                                          context,
+                                                      double progress,
+                                                      test) =>
+                                                  Center(
+                                                      child:
+                                                          RefreshProgressIndicator(
+                                                backgroundColor: Colors.white,
+                                              )),
+                                              fit: BoxFit.cover,
+                                              alignment: Alignment.center,
+                                              placeholder:
+                                                  const Icon(Icons.refresh),
+                                              enableRefresh: true,
+                                            )))
+                                    : Container(),
+                                AutoSizeText(
+                                  parseHtmlString(body),
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
-                                      fontSize: 20.0,
-                                      fontWeight: FontWeight.w400,
+                                      fontSize: 13.0,
+                                      fontWeight: FontWeight.w300,
                                       height: 1.8),
-                                )),
-                            bodyImages.length > 0
-                                ? Container(
-                                    margin: EdgeInsets.symmetric(vertical: 20),
-                                    child: ClipPath(
-                                        clipper: ShapeBorderClipper(
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8))),
-                                        child: TransitionToImage(
-                                          image: AdvancedNetworkImage(
-                                            images[bodyImages[0]]['sizes']
-                                                ['medium']['url'],
-                                            useDiskCache: true,
-                                            cacheRule: CacheRule(
-                                                maxAge:
-                                                    const Duration(days: 7)),
-                                          ),
-                                          loadingWidgetBuilder: (BuildContext
-                                                      context,
-                                                  double progress,
-                                                  test) =>
-                                              Center(
-                                                  child:
-                                                      RefreshProgressIndicator(
-                                            backgroundColor: Colors.white,
-                                          )),
-                                          fit: BoxFit.cover,
-                                          alignment: Alignment.center,
-                                          placeholder:
-                                              const Icon(Icons.refresh),
-                                          enableRefresh: true,
-                                        )))
-                                : Container(),
-                            AutoSizeText(
-                              parseHtmlString(body),
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                  fontSize: 13.0,
-                                  fontWeight: FontWeight.w300,
-                                  height: 1.8),
-                            )
-                          ],
-                        ))
-                    : null;
-              }))
-    ]);
+                                )
+                              ],
+                            ))
+                        : Container(
+                            padding: EdgeInsets.symmetric(vertical: 20));
+                  }))
+        ]);
   }
 }

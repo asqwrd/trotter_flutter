@@ -1,8 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:loadmore/loadmore.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -128,6 +130,7 @@ class CommentsModalState extends State<CommentsModal> {
   dynamic data;
   var txt = new TextEditingController();
   var _sc = new ScrollController();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -216,11 +219,14 @@ class CommentsModalState extends State<CommentsModal> {
                 renderTopBar(),
                 Flexible(
                     child: Stack(fit: StackFit.expand, children: <Widget>[
-                  LoadMore(
-                      delegate: TrotterLoadMoreDelegate(Colors.blueAccent),
-                      isFinish: this.comments.length >= this.total,
-                      onLoadMore: () async {
+                  LazyLoadScrollView(
+                      // delegate: TrotterLoadMoreDelegate(Colors.blueAccent),
+                      // isFinish: this.comments.length >= this.total,
+                      onEndOfPage: () async {
                         if (this.comments.length > 0) {
+                          setState(() {
+                            this.isLoading = true;
+                          });
                           var last = this
                               .comments[this.comments.length - 1]['created_at']
                               .toString();
@@ -228,6 +234,7 @@ class CommentsModalState extends State<CommentsModal> {
                               this.itineraryId, this.itineraryItemId, last);
                           setState(() {
                             this.comments = this.comments..addAll(res.comments);
+                            this.isLoading = false;
                           });
                         }
                         return true;
@@ -261,6 +268,12 @@ class CommentsModalState extends State<CommentsModal> {
                         ))
                       : Container()
                 ])),
+                this.isLoading
+                    ? AwesomeLoader(
+                        loaderType: AwesomeLoader.AwesomeLoader4,
+                        color: Colors.blueAccent,
+                      )
+                    : Container(),
                 Container(
                   decoration: BoxDecoration(
                       border: Border(

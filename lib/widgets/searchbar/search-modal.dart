@@ -1,9 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:loadmore/loadmore.dart';
+import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
@@ -173,6 +174,7 @@ class SearchModalState extends State<SearchModal> {
 
   Future<SearchModalData> data;
   var txt = new TextEditingController();
+  bool isSearchLoading = false;
 
   @override
   void initState() {
@@ -355,13 +357,12 @@ class SearchModalState extends State<SearchModal> {
                       renderTopBar(timer, chips),
                       Flexible(
                           child: this.location != null
-                              ? LoadMore(
-                                  delegate: TrotterLoadMoreDelegate(
-                                      Colors.blueAccent),
-                                  isFinish: this.nextPageToken == null ||
-                                      this.nextPageToken.isEmpty,
-                                  onLoadMore: () async {
+                              ? LazyLoadScrollView(
+                                  onEndOfPage: () async {
                                     if (this.results != null) {
+                                      setState(() {
+                                        this.isSearchLoading = true;
+                                      });
                                       var location = this.nearId
                                           ? this.near['location']
                                           : this.location;
@@ -375,12 +376,19 @@ class SearchModalState extends State<SearchModal> {
                                         this.results = this.results
                                           ..addAll(res.results);
                                         this.nextPageToken = res.nextPageToken;
+                                        this.isSearchLoading = false;
                                       });
                                     }
                                     return true;
                                   },
                                   child: renderResults(results))
-                              : renderResults(results))
+                              : renderResults(results)),
+                      this.isSearchLoading
+                          ? AwesomeLoader(
+                              loaderType: AwesomeLoader.AwesomeLoader4,
+                              color: Colors.blueAccent,
+                            )
+                          : Container(),
                     ])
                   : error == null && recentSearchModal != null
                       ? Column(

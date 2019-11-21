@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:loadmore/loadmore.dart';
+import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -153,6 +154,7 @@ class HomeState extends State<Home> {
   int totalPublic = 0;
   final Color color = Color.fromRGBO(216, 167, 177, 1);
   GlobalKey _one = GlobalKey();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -579,16 +581,19 @@ class HomeState extends State<Home> {
     final store = Provider.of<TrotterStore>(context);
 
     return Container(
-      child: LoadMore(
-          delegate: TrotterLoadMoreDelegate(this.color),
-          isFinish: this.itineraries.length >= this.totalPublic ||
-              this.errorUi == true,
-          onLoadMore: () async {
+      child: LazyLoadScrollView(
+          scrollOffset: 200,
+          isLoading: this.isLoading,
+          onEndOfPage: () async {
             if (this.itineraries.length > 0) {
+              setState(() {
+                this.isLoading = true;
+              });
               var lastId = this.itineraries[this.itineraries.length - 1]['id'];
               var res = await fetchHomeItinerariesNext(lastId);
               setState(() {
                 this.itineraries = this.itineraries..addAll(res.itineraries);
+                this.isLoading = false;
               });
             }
             return true;
@@ -760,7 +765,13 @@ class HomeState extends State<Home> {
                           ));
                     }
                     return _buildItineraryLoading(context);
-                  })
+                  }),
+              this.isLoading
+                  ? AwesomeLoader(
+                      loaderType: AwesomeLoader.AwesomeLoader4,
+                      color: this.color,
+                    )
+                  : Container()
             ],
           )),
     );

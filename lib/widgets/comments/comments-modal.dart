@@ -220,10 +220,9 @@ class CommentsModalState extends State<CommentsModal> {
                 Flexible(
                     child: Stack(fit: StackFit.expand, children: <Widget>[
                   LazyLoadScrollView(
-                      // delegate: TrotterLoadMoreDelegate(Colors.blueAccent),
-                      // isFinish: this.comments.length >= this.total,
                       onEndOfPage: () async {
-                        if (this.comments.length > 0) {
+                        if (this.comments.length > 0 &&
+                            this.comments.length < this.total) {
                           setState(() {
                             this.isLoading = true;
                           });

@@ -582,10 +582,10 @@ class HomeState extends State<Home> {
 
     return Container(
       child: LazyLoadScrollView(
-          scrollOffset: 200,
           isLoading: this.isLoading,
           onEndOfPage: () async {
-            if (this.itineraries.length > 0) {
+            if (this.itineraries.length > 0 &&
+                this.itineraries.length < this.totalPublic) {
               setState(() {
                 this.isLoading = true;
               });

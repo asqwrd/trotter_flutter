@@ -359,7 +359,8 @@ class SearchModalState extends State<SearchModal> {
                           child: this.location != null
                               ? LazyLoadScrollView(
                                   onEndOfPage: () async {
-                                    if (this.results != null) {
+                                    if (this.results != null &&
+                                        this.nextPageToken.isNotEmpty) {
                                       setState(() {
                                         this.isSearchLoading = true;
                                       });

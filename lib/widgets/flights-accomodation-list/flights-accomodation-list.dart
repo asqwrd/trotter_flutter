@@ -331,25 +331,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                             color: Colors.blueGrey,
                             zoom: 18,
                             lat: double.parse(segment['lat']),
-                            lng: double.parse(segment['lon']))
-                        // GoogleMap(
-                        //   markers: <Marker>[
-                        //     Marker(
-                        //         markerId:
-                        //             MarkerId(segment['confirmation_no']),
-                        //         position: LatLng(
-                        //             double.parse(segment['lat']),
-                        //             double.parse(segment['lon'])))
-                        //   ].toSet(),
-                        //   initialCameraPosition: CameraPosition(
-                        //     bearing: 0.0,
-                        //     target: LatLng(double.parse(segment['lat']),
-                        //         double.parse(segment['lon'])),
-                        //     tilt: 30.0,
-                        //     zoom: 17.0,
-                        //   ),
-                        // )
-                        ),
+                            lng: double.parse(segment['lon']))),
                     Container(
                         height: 170,
                         margin: EdgeInsets.only(top: 10),

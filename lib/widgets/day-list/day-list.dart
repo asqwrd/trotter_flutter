@@ -66,8 +66,9 @@ class DayList extends StatelessWidget {
           child: Container(
               color: Colors.transparent,
               padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: ListView(
+                controller: this.controller,
+                shrinkWrap: true,
                 children: <Widget>[
                   Container(
                       width: MediaQuery.of(context).size.width / 2,
@@ -149,7 +150,7 @@ class DayList extends StatelessWidget {
       itineraryItems = ['', '', this.linkedItinerary, ...items];
       linkItineraryPosition = 'top';
     } else {
-      itineraryItems = ['', '', ...items];
+      itineraryItems = items;
     }
 
     return Container(
@@ -160,45 +161,43 @@ class DayList extends StatelessWidget {
           controller: this.controller ?? this.controller,
           physics: this.physics ?? this.physics,
           separatorBuilder: (BuildContext serperatorContext, int index) =>
-              index > 1
-                  ? Container(
-                      margin: EdgeInsets.only(left: 80, bottom: 20, top: 0),
-                      child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)))
-                  : Container(),
+              Container(
+                  margin: EdgeInsets.only(left: 80, bottom: 30, top: 15),
+                  child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
           itemCount: itineraryItems.length,
           itemBuilder: (BuildContext context, int index) {
-            if (index == 0 && this.tabs != true) {
-              return Center(
-                  child: Container(
-                width: 30,
-                height: 5,
-                decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
-              ));
-            } else if (index == 0 && this.tabs == true) {
-              return Container();
-            }
+            // if (index == 0 && this.tabs != true) {
+            //   return Center(
+            //       child: Container(
+            //     width: 30,
+            //     height: 5,
+            //     decoration: BoxDecoration(
+            //         color: Colors.grey[300],
+            //         borderRadius: BorderRadius.all(Radius.circular(12.0))),
+            //   ));
+            // } else if (index == 0 && this.tabs == true) {
+            //   return Container();
+            // }
 
-            if (index == 1) {
-              return Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(top: 10, bottom: 40),
-                child: Column(children: <Widget>[
-                  AutoSizeText(
-                    '${this.header}',
-                    style: TextStyle(fontSize: 25),
-                  ),
-                  this.subHeader != null
-                      ? AutoSizeText(
-                          '${this.subHeader}',
-                          style: TextStyle(
-                              fontSize: 25, fontWeight: FontWeight.w300),
-                        )
-                      : Container()
-                ]),
-              );
-            }
+            // if (index == 1) {
+            //   return Container(
+            //     alignment: Alignment.center,
+            //     padding: EdgeInsets.only(top: 10, bottom: 40),
+            //     child: Column(children: <Widget>[
+            //       AutoSizeText(
+            //         '${this.header}',
+            //         style: TextStyle(fontSize: 25),
+            //       ),
+            //       this.subHeader != null
+            //           ? AutoSizeText(
+            //               '${this.subHeader}',
+            //               style: TextStyle(
+            //                   fontSize: 25, fontWeight: FontWeight.w300),
+            //             )
+            //           : Container()
+            //     ]),
+            //   );
+            // }
 
             if (linkItineraryPosition == 'bottom' &&
                 index == itineraryItems.length - 1) {
@@ -244,6 +243,7 @@ class DayList extends StatelessWidget {
                 child: Container(
                     width: MediaQuery.of(context).size.width,
                     //height: double.infinity,
+                    // margin: EdgeInsets.symmetric(vertical: 15),
                     padding: EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,55 +377,54 @@ class DayList extends StatelessWidget {
                                               children: <Widget>[
                                                 poi == null
                                                     ? Container()
-                                                    : Row(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .center,
-                                                        children: <Widget>[
-                                                            Container(
-                                                                constraints: BoxConstraints(
-                                                                    maxWidth: justAdded ==
-                                                                            false
-                                                                        ? MediaQuery.of(context).size.width -
-                                                                            105
-                                                                        : MediaQuery.of(context).size.width -
-                                                                            170,
-                                                                    minWidth:
-                                                                        50),
-                                                                child: AutoSizeText(
-                                                                    poi['name'],
-                                                                    overflow:
-                                                                        TextOverflow
-                                                                            .ellipsis,
-                                                                    style:
-                                                                        TextStyle(
-                                                                      color: this.visited == false ||
-                                                                              this.visited ==
-                                                                                  null
-                                                                          ? Colors
-                                                                              .black
-                                                                          : color,
-                                                                      fontSize:
-                                                                          17,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w500,
-                                                                    ))),
-                                                            justAdded == true
-                                                                ? AutoSizeText(
-                                                                    ' - just added',
-                                                                    style:
-                                                                        TextStyle(
-                                                                      color:
-                                                                          color,
-                                                                      fontSize:
-                                                                          17,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .w400,
-                                                                    ))
-                                                                : Container()
-                                                          ]),
+                                                    : Container(
+                                                        margin: EdgeInsets.only(
+                                                            top: 8),
+                                                        child: Row(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .center,
+                                                            children: <Widget>[
+                                                              Container(
+                                                                  constraints: BoxConstraints(
+                                                                      maxWidth: justAdded == false
+                                                                          ? MediaQuery.of(context).size.width -
+                                                                              105
+                                                                          : MediaQuery.of(context).size.width -
+                                                                              170,
+                                                                      minWidth:
+                                                                          50),
+                                                                  child: AutoSizeText(
+                                                                      poi[
+                                                                          'name'],
+                                                                      overflow:
+                                                                          TextOverflow
+                                                                              .ellipsis,
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color: this.visited == false ||
+                                                                                this.visited == null
+                                                                            ? Colors.black
+                                                                            : color,
+                                                                        fontSize:
+                                                                            17,
+                                                                        fontWeight:
+                                                                            FontWeight.w500,
+                                                                      ))),
+                                                              justAdded == true
+                                                                  ? AutoSizeText(
+                                                                      ' - just added',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color:
+                                                                            color,
+                                                                        fontSize:
+                                                                            17,
+                                                                        fontWeight:
+                                                                            FontWeight.w400,
+                                                                      ))
+                                                                  : Container()
+                                                            ])),
                                                 poi == null
                                                     ? Container()
                                                     : poi['tags'] != null

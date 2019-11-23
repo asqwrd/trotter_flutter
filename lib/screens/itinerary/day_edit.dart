@@ -6,9 +6,10 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/screens/itinerary/toggle-visited-modal.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/middleware.dart';
@@ -63,7 +64,6 @@ class DayEditState extends State<DayEdit> {
   dynamic location;
   List<dynamic> itineraryItems = [];
   List<dynamic> visited = [];
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
@@ -85,6 +85,7 @@ class DayEditState extends State<DayEdit> {
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
   GlobalKey _four = GlobalKey();
+  bool shadow = false;
 
   @override
   void initState() {
@@ -93,14 +94,6 @@ class DayEditState extends State<DayEdit> {
     //   toggleDialog(context);
     // });
     getLocationPermission().then((res) {
-      _sc.addListener(() {
-        setState(() {
-          if (_pc.isPanelOpen()) {
-            disableScroll = _sc.offset <= 0;
-          }
-        });
-      });
-
       data = fetchDay(this.itineraryId, this.dayId, this.startLocation, "true");
       data.then((data) {
         if (data.error == null) {
@@ -135,7 +128,6 @@ class DayEditState extends State<DayEdit> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -151,204 +143,205 @@ class DayEditState extends State<DayEdit> {
   Widget build(BuildContext context) {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: errorUi == false && canView == true
-            ? _panelHeightClosed
-            : _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: 1,
-        onPanelOpened: () async {
-          setState(() {
-            disableScroll = false;
-          });
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          final String cacheData = prefs.getString('dayEditShowcase') ?? null;
-          if (cacheData == null) {
-            ShowCaseWidget.of(context)
-                .startShowCase([_one, _two, _three, _four]);
-            await prefs.setString('dayEditShowcase', "true");
-          }
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: Scaffold(
-                backgroundColor: Colors.transparent,
-                body: FutureBuilder(
-                    future: data,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return _buildLoadingBody(context);
-                      }
-                      if (snapshot.hasData && snapshot.data.error == null) {
-                        if (this.itineraryItems.length == 0 &&
-                            this.linkedItinerary == null &&
-                            _pc.isPanelClosed() == true) {
-                          _pc.open();
-                        }
-                        if (this.canView) {
-                          return _buildLoadedBody(context, snapshot);
-                        } else {
-                          return CannotView();
-                        }
-                      } else if (snapshot.hasData &&
-                          snapshot.data.error != null) {
-                        return ListView(
-                            controller: _sc,
-                            physics: disableScroll
-                                ? NeverScrollableScrollPhysics()
-                                : ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            children: <Widget>[
-                              Container(
-                                  height: _panelHeightOpen - 80,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: ErrorContainer(
-                                    color: Color.fromRGBO(106, 154, 168, 1),
-                                    onRetry: () {
-                                      setState(() {
-                                        data = fetchDay(
-                                            this.itineraryId,
-                                            this.dayId,
-                                            this.startLocation['location'],
-                                            'true');
-                                        data.then((data) {
-                                          if (data.error == null) {
+          child: SlidingPanel(
+        initialState: this.errorUi == true
+            ? InitialPanelState.expanded
+            : InitialPanelState.closed,
+        size: PanelSize(closedHeight: .45),
+        isDraggable: this.errorUi == true ? false : true,
+        autoSizing: PanelAutoSizing(),
+        decoration: PanelDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+        parallaxSlideAmount: .5,
+        backdropConfig: BackdropConfig(
+            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
+        panelController: _pc,
+        content: PanelContent(
+            panelContent: (context, _sc) {
+              if (_sc.hasListeners == false) {
+                _sc.addListener(() {
+                  if (_sc.offset > 0) {
+                    setState(() {
+                      this.shadow = true;
+                    });
+                  } else {
+                    setState(() {
+                      this.shadow = false;
+                    });
+                  }
+                });
+              }
+              return Center(
+                  child: Scaffold(
+                      backgroundColor: Colors.transparent,
+                      body: FutureBuilder(
+                          future: data,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return _buildLoadingBody(context, _sc);
+                            }
+                            if (snapshot.hasData &&
+                                snapshot.data.error == null) {
+                              if (this.itineraryItems.length == 0 &&
+                                  this.linkedItinerary == null &&
+                                  _pc.currentState == PanelState.expanded) {
+                                _pc.expand();
+                              }
+                              if (this.canView) {
+                                return _buildLoadedBody(context, snapshot, _sc);
+                              } else {
+                                return CannotView();
+                              }
+                            } else if (snapshot.hasData &&
+                                snapshot.data.error != null) {
+                              return ListView(
+                                  controller: _sc,
+                                  shrinkWrap: true,
+                                  children: <Widget>[
+                                    Container(
+                                        height: _panelHeightOpen - 80,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: ErrorContainer(
+                                          color:
+                                              Color.fromRGBO(106, 154, 168, 1),
+                                          onRetry: () {
                                             setState(() {
-                                              this.color = Color(
-                                                  hexStringToHexInt(
-                                                      data.color));
-                                              this.itineraryName =
-                                                  data.itinerary['name'];
-                                              this.ownerId =
-                                                  data.itinerary['owner_id'];
-                                              this.startDate =
-                                                  data.itinerary['start_date'] *
-                                                      1000;
-                                              this.destinationName =
-                                                  data.destination['name'];
-                                              this.location =
-                                                  data.destination['location'];
-                                              this.destination =
-                                                  data.destination;
-                                              this.destinationId = data
-                                                  .destination['id']
-                                                  .toString();
-                                              this.itineraryItems = data
-                                                  .day['itinerary_items']
-                                                  .sublist(1);
-                                              this.visited = data.visited;
-                                              this.startLocation = data
-                                                  .itinerary['start_location'];
-                                              this.currentPosition =
-                                                  data.currentPosition;
-                                              this.image =
-                                                  data.destination['image'];
-                                              this.loading = false;
+                                              data = fetchDay(
+                                                  this.itineraryId,
+                                                  this.dayId,
+                                                  this.startLocation[
+                                                      'location'],
+                                                  'true');
+                                              data.then((data) {
+                                                if (data.error == null) {
+                                                  setState(() {
+                                                    this.color = Color(
+                                                        hexStringToHexInt(
+                                                            data.color));
+                                                    this.itineraryName =
+                                                        data.itinerary['name'];
+                                                    this.ownerId = data
+                                                        .itinerary['owner_id'];
+                                                    this.startDate =
+                                                        data.itinerary[
+                                                                'start_date'] *
+                                                            1000;
+                                                    this.destinationName = data
+                                                        .destination['name'];
+                                                    this.location =
+                                                        data.destination[
+                                                            'location'];
+                                                    this.destination =
+                                                        data.destination;
+                                                    this.destinationId = data
+                                                        .destination['id']
+                                                        .toString();
+                                                    this.itineraryItems = data
+                                                        .day['itinerary_items']
+                                                        .sublist(1);
+                                                    this.visited = data.visited;
+                                                    this.startLocation =
+                                                        data.itinerary[
+                                                            'start_location'];
+                                                    this.currentPosition =
+                                                        data.currentPosition;
+                                                    this.image = data
+                                                        .destination['image'];
+                                                    this.loading = false;
+                                                  });
+                                                }
+                                              });
                                             });
-                                          }
-                                        });
-                                      });
-                                    },
-                                  ))
-                            ]);
-                      }
-                      return _buildLoadingBody(context);
-                    }))),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
-                  top: 0,
-                  left: 0,
-                  child: this.image != null
-                      ? TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            this.image,
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
+                                          },
+                                        ))
+                                  ]);
+                            }
+                            return _buildLoadingBody(context, _sc);
+                          })));
+            },
+            bodyContent: Container(
+                height: _bodyHeight,
+                child: Stack(children: <Widget>[
+                  Positioned(
+                      width: MediaQuery.of(context).size.width,
+                      height: _bodyHeight,
+                      top: 0,
+                      left: 0,
+                      child: this.image != null
+                          ? TransitionToImage(
+                              image: AdvancedNetworkImage(
+                                this.image,
+                                useDiskCache: true,
+                                cacheRule:
+                                    CacheRule(maxAge: const Duration(days: 7)),
+                              ),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
                                   Center(),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
-                          loadedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                          loadFailedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                        )
-                      : Container()),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(
-                    color: this.imageLoading
-                        ? this.color
-                        : this.color.withOpacity(.3)),
-              ),
-              Positioned(
-                  left: 0,
-                  top: (MediaQuery.of(context).size.height / 2) - 110,
-                  width: MediaQuery.of(context).size.width,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        destinationName != null
-                            ? AutoSizeText('$destinationName',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w300))
-                            : Container(),
-                      ])),
-              this.image == null || this.imageLoading
-                  ? Positioned.fill(
-                      top: -((_bodyHeight / 2) + 100),
-                      // left: -50,
-                      child: Center(
-                          child: Container(
-                              width: 250,
-                              child: TrotterLoading(
-                                  file: 'assets/globe.flr',
-                                  animation: 'flight',
-                                  color: Colors.transparent))))
-                  : Container()
-            ])),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: const Icon(Icons.refresh),
+                              enableRefresh: true,
+                              loadedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                              loadFailedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                            )
+                          : Container()),
+                  Positioned.fill(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                        color: this.imageLoading
+                            ? this.color
+                            : this.color.withOpacity(.3)),
+                  ),
+                  Positioned(
+                      left: 0,
+                      top: (MediaQuery.of(context).size.height / 2) - 110,
+                      width: MediaQuery.of(context).size.width,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            destinationName != null
+                                ? AutoSizeText('$destinationName',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w300))
+                                : Container(),
+                          ])),
+                  this.image == null || this.imageLoading
+                      ? Positioned.fill(
+                          top: -((_bodyHeight / 2) + 100),
+                          // left: -50,
+                          child: Center(
+                              child: Container(
+                                  width: 250,
+                                  child: TrotterLoading(
+                                      file: 'assets/globe.flr',
+                                      animation: 'flight',
+                                      color: Colors.transparent))))
+                      : Container()
+                ]))),
       )),
       Positioned(
           top: 0,
@@ -566,7 +559,8 @@ class DayEditState extends State<DayEdit> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(
+      BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
     var day = snapshot.data.day;
     //var itinerary = snapshot.data.itinerary;
     var color = Color(hexStringToHexInt(snapshot.data.color));
@@ -578,15 +572,27 @@ class DayEditState extends State<DayEdit> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-                color: Colors.transparent,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30)),
+                    boxShadow: this.shadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                                color: Colors.black.withOpacity(.2),
+                                blurRadius: 10.0,
+                                offset: Offset(0.0, 0.75))
+                          ]
+                        : []),
                 alignment: Alignment.center,
                 child: _renderTabBar(this.color, Colors.black)),
             Flexible(
                 child: Container(
                     width: MediaQuery.of(ctxt).size.width,
                     child: TabBarView(children: <Widget>[
-                      renderItinerary(day, formatter, color, ctxt),
-                      renderVisited(day, formatter, color, ctxt),
+                      renderItinerary(day, formatter, color, ctxt, _sc),
+                      renderVisited(day, formatter, color, ctxt, _sc),
                     ])))
           ],
         ));
@@ -655,9 +661,11 @@ class DayEditState extends State<DayEdit> {
     );
   }
 
-  renderItinerary(day, DateFormat formatter, Color color, BuildContext ctxt) {
+  renderItinerary(day, DateFormat formatter, Color color, BuildContext ctxt,
+      ScrollController _sc) {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
+        controller: _sc,
         header: '${ordinalNumber(day['day'] + 1)} day',
         tabs: true,
         onToggleVisited: (item) async {
@@ -673,11 +681,7 @@ class DayEditState extends State<DayEdit> {
             DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)
                 .add(Duration(days: day['day']))),
         ownerId: this.ownerId,
-        controller: _sc,
         day: day['day'],
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
         items: itineraryItems,
         linkedItinerary: this.linkedItinerary,
         color: color,
@@ -732,7 +736,8 @@ class DayEditState extends State<DayEdit> {
     ]);
   }
 
-  renderVisited(day, DateFormat formatter, Color color, BuildContext ctxt) {
+  renderVisited(day, DateFormat formatter, Color color, BuildContext ctxt,
+      ScrollController _sc) {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
         header: '${ordinalNumber(day['day'] + 1)} day',
@@ -744,9 +749,6 @@ class DayEditState extends State<DayEdit> {
         ownerId: this.ownerId,
         controller: _sc,
         day: day['day'],
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
         items: visited,
         color: color,
         linkedItinerary: this.linkedItinerary,
@@ -973,14 +975,21 @@ class DayEditState extends State<DayEdit> {
   }
 
   // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
-    return Column(children: <Widget>[
-      Container(
-        color: Color.fromRGBO(240, 240, 240, 0),
-      ),
-      Flexible(
-        child: DayListLoading(),
-      )
-    ]);
+  Widget _buildLoadingBody(BuildContext ctxt, ScrollController _sc) {
+    double _panelHeightOpen = MediaQuery.of(ctxt).size.height - 130;
+
+    return Container(
+        width: MediaQuery.of(ctxt).size.width,
+        height: _panelHeightOpen,
+        child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+          Container(
+            color: Color.fromRGBO(240, 240, 240, 0),
+          ),
+          Flexible(
+            child: DayListLoading(
+              controller: _sc,
+            ),
+          )
+        ]));
   }
 }

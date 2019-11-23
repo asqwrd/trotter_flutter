@@ -8,7 +8,8 @@ import 'package:flutter_store/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -48,16 +49,10 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   int startDate = 0;
   GlobalKey _one = GlobalKey();
   bool imageLoading = true;
+  bool shadow = false;
 
   @override
   void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
     super.initState();
     data = fetchItineraryBuilder(this.itineraryId);
   }
@@ -77,7 +72,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       final String cacheData =
@@ -113,97 +107,161 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         });
       }
     });
+    var itinerary = store.itineraryStore.itineraryBuilder.itinerary;
+    var destinationName =
+        itinerary != null ? itinerary['destination_name'] : '';
+    var destinationCountryName =
+        itinerary != null ? itinerary['destination_country_name'] : '';
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: 1,
-        onPanelOpened: () {
-          setState(() {
-            disableScroll = false;
-          });
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: FutureBuilder(
-                future: data,
-                builder: (context, snapshot) {
-                  return _buildLoadedBody(context, store);
-                })),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
-                  top: 0,
-                  left: 0,
-                  child: this.image != null && this.loading == false
-                      ? TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            this.image,
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
-                                  Container(),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
-                          loadedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                          loadFailedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                        )
-                      : Container()),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(
-                    color: this.imageLoading
-                        ? this.color
-                        : this.color.withOpacity(.3)),
-              ),
-              this.image == null || this.imageLoading
-                  ? Positioned.fill(
-                      top: -((_bodyHeight / 2) + 100),
-                      // left: -50,
-                      child: Center(
-                          child: Container(
-                              width: 250,
-                              child: TrotterLoading(
-                                  file: 'assets/globe.flr',
-                                  animation: 'flight',
-                                  color: Colors.transparent))))
-                  : Container()
-            ])),
-      )),
+          child: SlidingPanel(
+              initialState: this.errorUi == true
+                  ? InitialPanelState.expanded
+                  : InitialPanelState.closed,
+              size: PanelSize(closedHeight: .45),
+              isDraggable: this.errorUi == true ? false : true,
+              autoSizing: PanelAutoSizing(),
+              decoration: PanelDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30))),
+              parallaxSlideAmount: .5,
+              backdropConfig: BackdropConfig(
+                  dragFromBody: true,
+                  shadowColor: color,
+                  opacity: 1,
+                  enabled: true),
+              panelController: _pc,
+              content: PanelContent(
+                headerWidget: PanelHeaderWidget(
+                  headerContent: Container(
+                      decoration: BoxDecoration(
+                          boxShadow: this.shadow
+                              ? <BoxShadow>[
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(.2),
+                                      blurRadius: 10.0,
+                                      offset: Offset(0.0, 0.75))
+                                ]
+                              : [],
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30))),
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Center(
+                              child: Container(
+                            width: 30,
+                            height: 5,
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(12.0))),
+                          )),
+                          itinerary == null || this.loading == true
+                              ? Container(
+                                  alignment: Alignment.center,
+                                  margin: EdgeInsets.only(top: 10, bottom: 20),
+                                  child: AutoSizeText(
+                                    'Getting itinerary...',
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                )
+                              : Container(
+                                  alignment: Alignment.center,
+                                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                                  child: AutoSizeText(
+                                    '$destinationName, $destinationCountryName',
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                )
+                        ],
+                      )),
+                ),
+                panelContent: (context, scrollController) {
+                  if (scrollController.hasListeners == false) {
+                    scrollController.addListener(() {
+                      if (scrollController.offset > 0) {
+                        setState(() {
+                          this.shadow = true;
+                        });
+                      } else {
+                        setState(() {
+                          this.shadow = false;
+                        });
+                      }
+                    });
+                  }
+                  return Center(
+                      child: FutureBuilder(
+                          future: data,
+                          builder: (context, snapshot) {
+                            return _buildLoadedBody(
+                                context, store, scrollController);
+                          }));
+                },
+                bodyContent: Container(
+                    height: _bodyHeight,
+                    child: Stack(children: <Widget>[
+                      Positioned(
+                          width: MediaQuery.of(context).size.width,
+                          height: _bodyHeight,
+                          top: 0,
+                          left: 0,
+                          child: this.image != null && this.loading == false
+                              ? TransitionToImage(
+                                  image: AdvancedNetworkImage(
+                                    this.image,
+                                    useDiskCache: true,
+                                    cacheRule: CacheRule(
+                                        maxAge: const Duration(days: 7)),
+                                  ),
+                                  loadingWidgetBuilder: (BuildContext context,
+                                          double progress, test) =>
+                                      Container(),
+                                  fit: BoxFit.cover,
+                                  alignment: Alignment.center,
+                                  placeholder: const Icon(Icons.refresh),
+                                  enableRefresh: true,
+                                  loadedCallback: () async {
+                                    await Future.delayed(Duration(seconds: 2));
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  },
+                                  loadFailedCallback: () async {
+                                    await Future.delayed(Duration(seconds: 2));
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  },
+                                )
+                              : Container()),
+                      Positioned.fill(
+                        top: 0,
+                        left: 0,
+                        child: Container(
+                            color: this.imageLoading
+                                ? this.color
+                                : this.color.withOpacity(.3)),
+                      ),
+                      this.image == null || this.imageLoading
+                          ? Positioned.fill(
+                              top: -((_bodyHeight / 2) + 100),
+                              // left: -50,
+                              child: Center(
+                                  child: Container(
+                                      width: 250,
+                                      child: TrotterLoading(
+                                          file: 'assets/globe.flr',
+                                          animation: 'flight',
+                                          color: Colors.transparent))))
+                          : Container()
+                    ])),
+              ))),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -303,14 +361,15 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store) {
+  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store,
+      ScrollController scrollController) {
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     if (this.errorUi == true) {
       return ListView(
-          controller: _sc,
-          physics: disableScroll
-              ? NeverScrollableScrollPhysics()
-              : ClampingScrollPhysics(),
+          controller: scrollController,
+          // physics: disableScroll
+          //     ? NeverScrollableScrollPhysics()
+          //     : ClampingScrollPhysics(),
           shrinkWrap: true,
           children: <Widget>[
             Container(
@@ -328,7 +387,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         store.itineraryStore.itineraryBuilder.loading == true ||
         store.itineraryStore.itineraryBuilder.itinerary['id'] !=
             this.itineraryId) {
-      return _buildLoadingBody(ctxt);
+      return _buildLoadingBody(ctxt, scrollController);
     }
 
     var itinerary = store.itineraryStore.itineraryBuilder.itinerary;
@@ -344,7 +403,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     return Container(
         height: MediaQuery.of(context).size.height,
         child: _buildDay(days, destinationName, destinationCountryName,
-            itinerary['destination'], color, startLocation));
+            itinerary['destination'], color, startLocation, scrollController));
   }
 
   _buildDay(
@@ -353,43 +412,23 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       String destinationCountryName,
       String locationId,
       Color color,
-      dynamic startLocation) {
-    var dayBuilder = ['', '', ...days];
+      dynamic startLocation,
+      ScrollController scrollController) {
+    var dayBuilder = days;
     return ListView.separated(
-      controller: _sc,
-      physics: disableScroll
-          ? NeverScrollableScrollPhysics()
-          : ClampingScrollPhysics(),
-      separatorBuilder: (BuildContext serperatorContext, int index) => index > 1
-          ? new Container(
+      controller: scrollController,
+      // physics: disableScroll
+      //     ? NeverScrollableScrollPhysics()
+      //     : ClampingScrollPhysics(),
+      separatorBuilder: (BuildContext serperatorContext, int index) =>
+          new Container(
               margin: EdgeInsets.only(bottom: 40, top: 40),
-              child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)))
-          : Container(),
+              child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
+
       padding: EdgeInsets.all(20.0),
       itemCount: dayBuilder.length,
       shrinkWrap: true,
       itemBuilder: (BuildContext listContext, int dayIndex) {
-        if (dayIndex == 0) {
-          return Center(
-              child: Container(
-            width: 30,
-            height: 5,
-            decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.all(Radius.circular(12.0))),
-          ));
-        }
-
-        if (dayIndex == 1) {
-          return Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.only(top: 10, bottom: 40),
-            child: AutoSizeText(
-              '$destinationName, $destinationCountryName',
-              style: TextStyle(fontSize: 25),
-            ),
-          );
-        }
         var itineraryItems = dayBuilder[dayIndex]['itinerary_items'];
         var dayId = dayBuilder[dayIndex]['id'];
         final formatter = DateFormat.yMMMMEEEEd("en_US");
@@ -515,31 +554,20 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   }
 
   // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
+  Widget _buildLoadingBody(
+      BuildContext ctxt, ScrollController scrollController) {
     var children2 = <Widget>[
-      Center(
-          child: Container(
-        width: 30,
-        height: 5,
-        decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.all(Radius.circular(12.0))),
-      )),
-      Container(
-        alignment: Alignment.center,
-        padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: AutoSizeText(
-          'Getting itinerary...',
-          style: TextStyle(fontSize: 25),
-        ),
-      ),
-      Flexible(child: ItineraryListLoading()),
+      Container(child: ItineraryListLoading()),
     ];
+    double _panelHeightOpen = MediaQuery.of(ctxt).size.height - 130;
     return Container(
+      height: _panelHeightOpen,
+      width: MediaQuery.of(ctxt).size.width,
       padding: EdgeInsets.only(top: 0.0, left: 20, right: 20),
       decoration: BoxDecoration(color: Colors.transparent),
-      child: Column(
-        // controller: _sc,
+      child: ListView(
+        shrinkWrap: true,
+        controller: scrollController,
         // physics: disableScroll
         //     ? NeverScrollableScrollPhysics()
         //     : ClampingScrollPhysics(),

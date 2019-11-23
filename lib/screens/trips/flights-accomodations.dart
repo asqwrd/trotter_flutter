@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -51,6 +52,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   String itineraryName;
   List<dynamic> flightsAccomodations;
   bool refreshParent = false;
+  bool shadow = false;
 
   Future<FlightsAndAccomodationsData> data;
 
@@ -95,74 +97,97 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
         },
         child: Stack(alignment: Alignment.topCenter, children: <Widget>[
           Positioned(
-              child: SlidingUpPanel(
-            parallaxEnabled: true,
-            parallaxOffset: .5,
-            minHeight: _panelHeightOpen,
-            controller: _pc,
-            backdropEnabled: true,
-            backdropColor: color,
-            backdropTapClosesPanel: false,
-            backdropOpacity: .8,
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-            maxHeight: _panelHeightOpen,
-            panel: Center(
-                child: Scaffold(
-                    backgroundColor: Colors.transparent,
-                    body: FutureBuilder(
-                        future: data,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: RefreshProgressIndicator());
+              child: SlidingPanel(
+                  initialState: InitialPanelState.expanded,
+                  isDraggable: false,
+                  size: PanelSize(expandedHeight: .85),
+                  autoSizing: PanelAutoSizing(),
+                  decoration: PanelDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30))),
+                  parallaxSlideAmount: .5,
+                  panelController: _pc,
+                  content: PanelContent(
+                    panelContent: (context, scrollController) {
+                      if (scrollController.hasListeners == false) {
+                        scrollController.addListener(() {
+                          print('hi');
+                          if (scrollController.offset > 0) {
+                            setState(() {
+                              this.shadow = true;
+                            });
+                          } else {
+                            setState(() {
+                              this.shadow = false;
+                            });
                           }
-                          if (snapshot.hasData && snapshot.data.error == null) {
-                            return _buildLoadedBody(context, snapshot);
-                          } else if (snapshot.hasData &&
-                              snapshot.data.error != null) {
-                            return ListView(
-                                controller: _sc,
-                                physics: disableScroll
-                                    ? NeverScrollableScrollPhysics()
-                                    : ClampingScrollPhysics(),
-                                shrinkWrap: true,
-                                children: <Widget>[
-                                  Container(
-                                      height: _panelHeightOpen - 80,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: ErrorContainer(
-                                        color: Color.fromRGBO(106, 154, 168, 1),
-                                        onRetry: () {
-                                          setState(() {
-                                            data = fetchFlightsAccomodations(
-                                                this.tripId,
-                                                store.currentUser.uid);
-                                            data.then((data) {
-                                              if (data.error == null) {
-                                                setState(() {
-                                                  this.flightsAccomodations =
-                                                      data.flightsAccomodations;
-                                                });
-                                              }
-                                            });
-                                          });
-                                        },
-                                      ))
-                                ]);
-                          }
-                          return Center(child: RefreshProgressIndicator());
-                        }))),
-            body: Container(
-                height: _panelHeightOpen,
-                child: Stack(children: <Widget>[
-                  Positioned.fill(
-                    top: 0,
-                    left: 0,
-                    child: Container(color: this.color.withOpacity(.8)),
-                  )
-                ])),
-          )),
+                        });
+                      }
+                      return Center(
+                          child: Scaffold(
+                              backgroundColor: Colors.transparent,
+                              body: FutureBuilder(
+                                  future: data,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return Center(
+                                          child: RefreshProgressIndicator());
+                                    }
+                                    if (snapshot.hasData &&
+                                        snapshot.data.error == null) {
+                                      return _buildLoadedBody(
+                                          context, snapshot, scrollController);
+                                    } else if (snapshot.hasData &&
+                                        snapshot.data.error != null) {
+                                      return ListView(
+                                          controller: scrollController,
+                                          shrinkWrap: true,
+                                          children: <Widget>[
+                                            Container(
+                                                height: _panelHeightOpen - 80,
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: ErrorContainer(
+                                                  color: Color.fromRGBO(
+                                                      106, 154, 168, 1),
+                                                  onRetry: () {
+                                                    setState(() {
+                                                      data =
+                                                          fetchFlightsAccomodations(
+                                                              this.tripId,
+                                                              store.currentUser
+                                                                  .uid);
+                                                      data.then((data) {
+                                                        if (data.error ==
+                                                            null) {
+                                                          setState(() {
+                                                            this.flightsAccomodations =
+                                                                data.flightsAccomodations;
+                                                          });
+                                                        }
+                                                      });
+                                                    });
+                                                  },
+                                                ))
+                                          ]);
+                                    }
+                                    return Center(
+                                        child: RefreshProgressIndicator());
+                                  })));
+                    },
+                    bodyContent: Container(
+                        height: _panelHeightOpen,
+                        child: Stack(children: <Widget>[
+                          Positioned.fill(
+                            top: 0,
+                            left: 0,
+                            child: Container(color: this.color.withOpacity(.8)),
+                          )
+                        ])),
+                  ))),
           Positioned(
               top: 0,
               width: MediaQuery.of(context).size.width,
@@ -204,7 +229,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot,
+      ScrollController scrollController) {
     double _panelHeightOpen = MediaQuery.of(ctxt).size.height - 130;
     var tabContents = <Widget>[];
     for (var i = 0; i < this.flightsAccomodations.length; i++) {
@@ -213,6 +239,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
         FlightsAccomodationsList(
             destination: destination,
             readWrite: !isPast,
+            controller: scrollController,
             onDeletePressed: (data) async {
               final detailId = data['id'];
               final destinationId = data['destinationId'];
@@ -321,7 +348,19 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Container(
-                      color: Colors.transparent,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30)),
+                          boxShadow: this.shadow
+                              ? <BoxShadow>[
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(.2),
+                                      blurRadius: 10.0,
+                                      offset: Offset(0.0, 0.75))
+                                ]
+                              : []),
                       alignment: Alignment.center,
                       child: _renderTabBar(Colors.blueGrey, Colors.black)),
                   Flexible(

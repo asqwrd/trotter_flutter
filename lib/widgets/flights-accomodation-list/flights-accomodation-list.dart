@@ -51,6 +51,7 @@ class FlightsAccomodationsList extends StatelessWidget {
         margin: EdgeInsets.only(top: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
         child: ListView.builder(
+          controller: this.controller != null ? this.controller : null,
           shrinkWrap: true,
           primary: false,
           itemCount: details.length,

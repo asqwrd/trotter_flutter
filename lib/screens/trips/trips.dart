@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -62,16 +63,17 @@ class TripsState extends State<Trips> {
   ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
+  bool shadow = false;
 
   @override
   void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
+    // _sc.addListener(() {
+    //   // setState(() {
+    //   //   if (_pc.isPanelOpen()) {
+    //   //     disableScroll = _sc.offset <= 0;
+    //   //   }
+    //   // });
+    // });
 
     super.initState();
   }
@@ -91,9 +93,7 @@ class TripsState extends State<Trips> {
     };
     this.context = context;
     var color = Color.fromRGBO(234, 189, 149, 1);
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     final store = Provider.of<TrotterStore>(context);
     if (isSub == false) {
       store.eventBus.on<FocusChangeEvent>().listen((event) async {
@@ -132,52 +132,158 @@ class TripsState extends State<Trips> {
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: _panelHeightClosed,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: 1,
-        onPanelOpened: () {
-          setState(() {
-            disableScroll = false;
-          });
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(child: buildScaffold(color, store, context)),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
+      SlidingPanel(
+        autoSizing: PanelAutoSizing(),
+        parallaxSlideAmount: .5,
+        backdropConfig: BackdropConfig(
+            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
+        decoration: PanelDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+        panelController: _pc,
+        content: PanelContent(
+          headerWidget: PanelHeaderWidget(
+            headerContent: Container(
+                decoration: BoxDecoration(
+                    boxShadow: this.shadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                                color: Colors.black.withOpacity(.2),
+                                blurRadius: 10.0,
+                                offset: Offset(0.0, 0.75))
+                          ]
+                        : [],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30))),
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    store.tripStore.trips != null &&
+                            store.tripStore.trips.length > 0
+                        ? Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.only(top: 10, bottom: 20),
+                            child: AutoSizeText(
+                              'Your adventures',
+                              style: TextStyle(fontSize: 25),
+                            ),
+                          )
+                        : store.tripsLoading == true
+                            ? Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.only(top: 10, bottom: 20),
+                                child: AutoSizeText(
+                                  'Getting trips...',
+                                  style: TextStyle(fontSize: 25),
+                                ),
+                              )
+                            : Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.only(top: 10, bottom: 20),
+                                child: AutoSizeText(
+                                  'Get Started',
+                                  style: TextStyle(fontSize: 25),
+                                ),
+                              )
+                  ],
+                )),
+          ),
+          panelContent: (context, scrollController) {
+            if (scrollController.hasListeners == false) {
+              scrollController.addListener(() {
+                if (scrollController.offset > 10) {
+                  setState(() {
+                    this.shadow = true;
+                  });
+                } else {
+                  setState(() {
+                    this.shadow = false;
+                  });
+                }
+              });
+            }
+            return buildScaffold(color, store, context, scrollController);
+          },
+          bodyContent: Container(
+              height: _bodyHeight,
+              child: Stack(children: <Widget>[
+                Positioned(
+                    width: MediaQuery.of(context).size.width,
+                    height: _bodyHeight,
+                    top: 0,
+                    left: 0,
+                    child: Image.asset(
+                      "images/trips2.jpg",
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                    )),
+                Positioned.fill(
                   top: 0,
                   left: 0,
-                  child: Image.asset(
-                    "images/trips2.jpg",
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  )),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(color: color.withOpacity(.3)),
-              ),
-            ])),
-      )),
+                  child: Container(color: color.withOpacity(.3)),
+                ),
+              ])),
+        ),
+        size: PanelSize(closedHeight: .45),
+      ),
+      // Positioned(
+      //     child: SlidingUpPanel(
+      //   parallaxEnabled: true,
+      //   parallaxOffset: .5,
+      //   minHeight: _panelHeightClosed,
+      //   controller: _pc,
+      //   backdropEnabled: true,
+      //   backdropColor: color,
+      //   backdropTapClosesPanel: false,
+      //   backdropOpacity: 1,
+      //   onPanelOpened: () {
+      //     setState(() {
+      //       disableScroll = false;
+      //     });
+      //   },
+      //   onPanelClosed: () {
+      //     if (disableScroll == false) {
+      //       setState(() {
+      //         disableScroll = true;
+      //       });
+      //     }
+      //   },
+      //   borderRadius: BorderRadius.only(
+      //       topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+      //   maxHeight: _panelHeightOpen,
+      //   panel: Center(child: buildScaffold(color, store, context)),
+      //   body: Container(
+      //       height: _bodyHeight,
+      //       child: Stack(children: <Widget>[
+      //         Positioned(
+      //             width: MediaQuery.of(context).size.width,
+      //             height: _bodyHeight,
+      //             top: 0,
+      //             left: 0,
+      //             child: Image.asset(
+      //               "images/trips2.jpg",
+      //               fit: BoxFit.cover,
+      //               alignment: Alignment.center,
+      //             )),
+      //         Positioned.fill(
+      //           top: 0,
+      //           left: 0,
+      //           child: Container(color: color.withOpacity(.3)),
+      //         ),
+      //       ])),
+      // )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -210,11 +316,12 @@ class TripsState extends State<Trips> {
     ]);
   }
 
-  Scaffold buildScaffold(
-      Color color, TrotterStore store, BuildContext context) {
+  Scaffold buildScaffold(Color color, TrotterStore store, BuildContext context,
+      ScrollController scrollController) {
     var currentUser = store.currentUser;
     var tripsError = store.tripStore.tripsError;
     var offline = store.offline;
+
     return Scaffold(
         backgroundColor: Colors.transparent,
         floatingActionButton:
@@ -225,15 +332,19 @@ class TripsState extends State<Trips> {
                       onPush({"level": "createtrip"});
                     },
                     tooltip: 'Create trip',
-                    child: Icon(Icons.add),
+                    child: Icon(
+                      Icons.add,
+                      color: fontContrast(color),
+                    ),
                     elevation: 5.0,
                   )
-                : null,
-        body: _buildLoadedBody(context, store, color));
+                : Container(),
+        body: _buildLoadedBody(context, store, color, scrollController));
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store, Color color) {
+  Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store, Color color,
+      ScrollController scrollController) {
     var error = store.tripStore.tripsError;
     var offline = store.offline;
     var trips = store.tripStore.trips;
@@ -254,83 +365,57 @@ class TripsState extends State<Trips> {
     if (currentUser == null) {
       return Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              bottom: PreferredSize(
-                preferredSize: Size.fromHeight(20),
-                child: Column(
-                  children: <Widget>[
-                    Center(
-                        child: Container(
-                      width: 30,
-                      height: 5,
-                      decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(12.0))),
-                    )),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 10, bottom: 20),
-                      child: AutoSizeText(
-                        'Get Started',
-                        style: TextStyle(fontSize: 25),
-                      ),
-                    )
-                  ],
-                ),
-              )),
           body: Stack(children: <Widget>[
-            Center(
-                child: Container(
-                    color: Colors.transparent,
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Container(
-                            width: MediaQuery.of(context).size.width / 2,
-                            height: MediaQuery.of(context).size.width / 2,
-                            foregroundDecoration: BoxDecoration(
-                                gradient: RadialGradient(
-                                  colors: [
-                                    Colors.white.withOpacity(.3),
-                                    Colors.white.withOpacity(1),
-                                    Colors.white.withOpacity(1),
-                                  ],
-                                  center: Alignment.center,
-                                  focal: Alignment.center,
-                                  radius: 1.05,
-                                ),
-                                borderRadius: BorderRadius.circular(130)),
-                            decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: AssetImage('images/trips-login.jpg'),
-                                    fit: BoxFit.contain),
-                                borderRadius: BorderRadius.circular(130))),
-                        AutoSizeText(
-                          'Want to create a trip?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 25,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ),
-                        SizedBox(height: 10),
-                        AutoSizeText(
-                          'Sign up and start planning right away.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 20,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ),
-                        Container(
-                            margin: EdgeInsets.only(top: 35),
-                            child: GoogleAuthButtonContainer())
-                      ],
-                    ))),
+            Container(
+                color: Colors.transparent,
+                padding: EdgeInsets.symmetric(horizontal: 30),
+                child: ListView(
+                  controller: scrollController,
+                  //shrinkWrap: true,
+                  children: <Widget>[
+                    Container(
+                        width: MediaQuery.of(context).size.width / 2,
+                        height: MediaQuery.of(context).size.width / 2,
+                        margin: EdgeInsets.only(top: 20),
+                        foregroundDecoration: BoxDecoration(
+                            gradient: RadialGradient(
+                              colors: [
+                                Colors.white.withOpacity(.3),
+                                Colors.white.withOpacity(1),
+                                Colors.white.withOpacity(1),
+                              ],
+                              center: Alignment.center,
+                              focal: Alignment.center,
+                              radius: 1.05,
+                            ),
+                            borderRadius: BorderRadius.circular(130)),
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                image: AssetImage('images/trips-login.jpg'),
+                                fit: BoxFit.contain),
+                            borderRadius: BorderRadius.circular(130))),
+                    AutoSizeText(
+                      'Want to create a trip?',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 25,
+                          color: color,
+                          fontWeight: FontWeight.w300),
+                    ),
+                    SizedBox(height: 10),
+                    AutoSizeText(
+                      'Sign up and start planning right away.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: color,
+                          fontWeight: FontWeight.w300),
+                    ),
+                    Container(
+                        margin: EdgeInsets.only(top: 35),
+                        child: GoogleAuthButtonContainer())
+                  ],
+                )),
             store.tripsLoading == true
                 ? Center(child: RefreshProgressIndicator())
                 : Container()
@@ -344,57 +429,12 @@ class TripsState extends State<Trips> {
     }
 
     if (loading == true || trips == null) {
-      return ListView(children: <Widget>[
-        Center(
-            child: Container(
-          width: 30,
-          height: 5,
-          decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.all(Radius.circular(12.0))),
-        )),
-        Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.only(top: 10, bottom: 20),
-          child: AutoSizeText(
-            'Getting trips...',
-            style: TextStyle(fontSize: 25),
-          ),
-        ),
-        Center(child: RefreshProgressIndicator())
-      ]);
+      return Center(child: RefreshProgressIndicator());
     }
 
     if (trips.length == 0 && pastTrips.length == 0) {
       return Scaffold(
           backgroundColor: Colors.transparent,
-          appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              bottom: PreferredSize(
-                preferredSize: Size.fromHeight(20),
-                child: Column(
-                  children: <Widget>[
-                    Center(
-                        child: Container(
-                      width: 30,
-                      height: 5,
-                      decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(12.0))),
-                    )),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 10, bottom: 20),
-                      child: AutoSizeText(
-                        'Get started',
-                        style: TextStyle(fontSize: 25),
-                      ),
-                    )
-                  ],
-                ),
-              )),
           body: Stack(children: <Widget>[
             Center(child: renderEmptyTrips(color, 'No trips planned yet?')),
             store.tripsLoading == true
@@ -410,29 +450,8 @@ class TripsState extends State<Trips> {
               top: 0,
               left: 0,
               child: ListView(
-                //shrinkWrap: true,
-                //primary: true,
-                controller: _sc,
-                physics: disableScroll
-                    ? NeverScrollableScrollPhysics()
-                    : ClampingScrollPhysics(),
+                controller: scrollController,
                 children: <Widget>[
-                  Center(
-                      child: Container(
-                    width: 30,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.all(Radius.circular(12.0))),
-                  )),
-                  Container(
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.only(top: 10, bottom: 20),
-                    child: AutoSizeText(
-                      'Your adventures',
-                      style: TextStyle(fontSize: 25),
-                    ),
-                  ),
                   trips.length > 0
                       ? renderTrips(trips, store, currentUser)
                       : renderEmptyTrips(color, 'Any upcoming trips?'),
@@ -446,7 +465,7 @@ class TripsState extends State<Trips> {
                               fontSize: 24,
                             ),
                           ))
-                      : null,
+                      : Container,
                   renderPastTrips(pastTrips, store, currentUser)
                 ],
               )),

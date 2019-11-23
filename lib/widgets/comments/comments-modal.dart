@@ -5,7 +5,6 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
-import 'package:loadmore/loadmore.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';

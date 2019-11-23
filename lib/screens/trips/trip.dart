@@ -8,7 +8,8 @@ import 'dart:convert';
 import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
@@ -757,19 +758,20 @@ class TripState extends State<Trip> {
 
   Future<TripData> data;
   bool canView = true;
+  bool shadow = false;
 
   @override
   void initState() {
     if (isPast == null) {
       isPast = false;
     }
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
+    // _sc.addListener(() {
+    //   setState(() {
+    //     if (_pc.isPanelOpen()) {
+    //       disableScroll = _sc.offset <= 0;
+    //     }
+    //   });
+    // });
     data = fetchTrip(this.tripId);
     data.then((data) {
       setState(() {
@@ -906,213 +908,458 @@ class TripState extends State<Trip> {
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: errorUi == false && canView == true
-            ? _panelHeightClosed
-            : _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: .8,
-        onPanelOpened: () {
-          setState(() {
-            disableScroll = false;
-          });
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: Scaffold(
-                resizeToAvoidBottomPadding: false,
-                backgroundColor: Colors.transparent,
-                body: FutureBuilder(
-                    future: data,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data.error == null) {
-                        if (this.canView) {
-                          return _buildLoadedBody(context, snapshot, store);
-                        } else {
-                          return CannotView();
-                        }
-                      } else if (snapshot.hasData &&
-                          snapshot.data.error != null) {
-                        return ListView(
-                            controller: _sc,
-                            physics: disableScroll
-                                ? NeverScrollableScrollPhysics()
-                                : ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            children: <Widget>[
-                              Container(
-                                  height: _panelHeightOpen - 80,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: ErrorContainer(
-                                    color: Color.fromRGBO(106, 154, 168, 1),
-                                    onRetry: () {
-                                      setState(() {
-                                        data = fetchTrip(this.tripId, store);
-                                        data.then((data) {
-                                          setState(() {
-                                            this.canView = data.travelers.any(
-                                                (traveler) =>
-                                                    store.currentUser.uid ==
-                                                    traveler['uid']);
-                                            this.color = Color(
-                                                hexStringToHexInt(
-                                                    data.trip['color']));
-                                            this.destinations =
-                                                data.destinations;
-                                            this.travelers = data.travelers;
-                                            this.trip = data.trip;
-                                            this.trip['destinations'] =
-                                                this.destinations;
-                                            this.tripName = data.trip['name'];
-                                            _nameControllerModal.text =
-                                                this.tripName;
-                                            _nameDialog = TripNameDialogContent(
-                                              tripId: this.tripId,
-                                              trip: this.trip,
-                                              color: this.color,
-                                              travelers: this.travelers,
-                                              controller: _nameControllerModal,
-                                            );
-                                            this.destinationDialog =
-                                                TripDestinationDialogContent(
-                                                    color: color,
-                                                    tripId: this.tripId,
-                                                    destinations: destinations);
-                                          });
-                                        });
-                                      });
-                                    },
-                                  ))
-                            ]);
-                      }
-                      return _buildLoadingBody(context);
-                    }))),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              this.destinations == null
-                  ? Container(color: this.color)
-                  : Positioned.fill(
-                      top: 0,
-                      child: new Swiper(
-                        itemBuilder: (BuildContext context, int index) {
-                          var startDate = new DateFormat.yMMMd("en_US").format(
-                              new DateTime.fromMillisecondsSinceEpoch(
-                                  destinations[index]['start_date'] * 1000));
-                          var endDate = new DateFormat.yMMMd("en_US").format(
-                              new DateTime.fromMillisecondsSinceEpoch(
-                                  destinations[index]['end_date'] * 1000));
-                          return Stack(fit: StackFit.expand, children: <Widget>[
-                            TransitionToImage(
-                              image: AdvancedNetworkImage(
-                                this.destinations[index]['image'],
-                                useDiskCache: true,
-                                cacheRule:
-                                    CacheRule(maxAge: const Duration(days: 7)),
-                              ),
-                              loadingWidgetBuilder: (BuildContext context,
-                                      double progress, test) =>
-                                  Center(
-                                      child: RefreshProgressIndicator(
-                                backgroundColor: Colors.white,
-                              )),
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
-                              placeholder: const Icon(Icons.refresh),
-                              enableRefresh: true,
-                            ),
-                            Container(color: Colors.black.withOpacity(0.5)),
-                            Positioned(
-                                left: 0,
-                                top: (MediaQuery.of(context).size.height / 2) -
-                                    160,
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Container(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          child: AutoSizeText(
-                                              '${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name'] == 'United States' ? this.destinations[index]['parent_name'] + ', ' : ''}${this.destinations[index]['country_name']}',
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 23,
-                                                  fontWeight:
-                                                      FontWeight.w300))),
-                                      AutoSizeText('$startDate - $endDate',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w300))
-                                    ])),
-                          ]);
-                        },
-                        loop: true,
-                        indicatorLayout: PageIndicatorLayout.SCALE,
-                        itemCount: destinations.length,
-                        //index: 0,
-                        //transformer: DeepthPageTransformer(),
-                        pagination: new SwiperPagination(
-                          builder: new SwiperCustomPagination(builder:
-                              (BuildContext context,
-                                  SwiperPluginConfig config) {
-                            return new ConstrainedBox(
-                              child: new Align(
-                                alignment: Alignment.bottomCenter,
-                                child: new DotSwiperPaginationBuilder(
-                                        color: Colors.white,
-                                        activeColor: color,
-                                        size: 20.0,
-                                        activeSize: 20.0)
-                                    .build(context, config),
-                              ),
-                              constraints:
-                                  new BoxConstraints.expand(height: 50.0),
-                            );
-                          }),
-                        ),
+      SlidingPanel(
+        autoSizing: PanelAutoSizing(),
+        parallaxSlideAmount: .5,
+        backdropConfig: BackdropConfig(
+            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
+        decoration: PanelDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+        panelController: _pc,
+        content: PanelContent(
+          headerWidget: PanelHeaderWidget(
+            headerContent: Container(
+                decoration: BoxDecoration(
+                    boxShadow: this.shadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                                color: Colors.black.withOpacity(.2),
+                                blurRadius: 10.0,
+                                offset: Offset(0.0, 0.75))
+                          ]
+                        : [],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30))),
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10, bottom: 20),
+                      child: AutoSizeText(
+                        'Get Organized',
+                        style: TextStyle(fontSize: 25),
                       ),
                     ),
-              this.destinations == null
-                  ? Positioned.fill(
-                      top: -((_bodyHeight / 2) + 100),
-                      // left: -50,
-                      child: Center(
-                          child: Container(
-                              width: 250,
-                              child: TrotterLoading(
-                                  file: 'assets/globe.flr',
-                                  animation: 'flight',
-                                  color: Colors.transparent))))
-                  : Container()
-            ])),
-      )),
+                  ],
+                )),
+          ),
+          panelContent: (context, scrollController) {
+            if (scrollController.hasListeners == false) {
+              scrollController.addListener(() {
+                if (scrollController.offset > 0) {
+                  setState(() {
+                    this.shadow = true;
+                  });
+                } else {
+                  setState(() {
+                    this.shadow = false;
+                  });
+                }
+              });
+            }
+            return Center(
+                child: Scaffold(
+                    resizeToAvoidBottomPadding: false,
+                    backgroundColor: Colors.transparent,
+                    body: FutureBuilder(
+                        future: data,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData && snapshot.data.error == null) {
+                            if (this.canView) {
+                              return _buildLoadedBody(
+                                  context, snapshot, store, scrollController);
+                            } else {
+                              return CannotView();
+                            }
+                          } else if (snapshot.hasData &&
+                              snapshot.data.error != null) {
+                            return ListView(
+                                controller: scrollController,
+                                shrinkWrap: true,
+                                children: <Widget>[
+                                  Container(
+                                      height: _panelHeightOpen - 80,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: ErrorContainer(
+                                        color: Color.fromRGBO(106, 154, 168, 1),
+                                        onRetry: () {
+                                          setState(() {
+                                            data =
+                                                fetchTrip(this.tripId, store);
+                                            data.then((data) {
+                                              setState(() {
+                                                this.canView = data.travelers
+                                                    .any((traveler) =>
+                                                        store.currentUser.uid ==
+                                                        traveler['uid']);
+                                                this.color = Color(
+                                                    hexStringToHexInt(
+                                                        data.trip['color']));
+                                                this.destinations =
+                                                    data.destinations;
+                                                this.travelers = data.travelers;
+                                                this.trip = data.trip;
+                                                this.trip['destinations'] =
+                                                    this.destinations;
+                                                this.tripName =
+                                                    data.trip['name'];
+                                                _nameControllerModal.text =
+                                                    this.tripName;
+                                                _nameDialog =
+                                                    TripNameDialogContent(
+                                                  tripId: this.tripId,
+                                                  trip: this.trip,
+                                                  color: this.color,
+                                                  travelers: this.travelers,
+                                                  controller:
+                                                      _nameControllerModal,
+                                                );
+                                                this.destinationDialog =
+                                                    TripDestinationDialogContent(
+                                                        color: color,
+                                                        tripId: this.tripId,
+                                                        destinations:
+                                                            destinations);
+                                              });
+                                            });
+                                          });
+                                        },
+                                      ))
+                                ]);
+                          }
+                          return _buildLoadingBody(context, scrollController);
+                        })));
+          },
+          bodyContent: Container(
+              height: _bodyHeight,
+              child: Stack(children: <Widget>[
+                this.destinations == null
+                    ? Container(color: this.color)
+                    : Positioned.fill(
+                        top: 0,
+                        child: new Swiper(
+                          itemBuilder: (BuildContext context, int index) {
+                            var startDate = new DateFormat.yMMMd("en_US")
+                                .format(new DateTime.fromMillisecondsSinceEpoch(
+                                    destinations[index]['start_date'] * 1000));
+                            var endDate = new DateFormat.yMMMd("en_US").format(
+                                new DateTime.fromMillisecondsSinceEpoch(
+                                    destinations[index]['end_date'] * 1000));
+                            return Stack(fit: StackFit.expand, children: <
+                                Widget>[
+                              TransitionToImage(
+                                image: AdvancedNetworkImage(
+                                  this.destinations[index]['image'],
+                                  useDiskCache: true,
+                                  cacheRule: CacheRule(
+                                      maxAge: const Duration(days: 7)),
+                                ),
+                                loadingWidgetBuilder: (BuildContext context,
+                                        double progress, test) =>
+                                    Center(
+                                        child: RefreshProgressIndicator(
+                                  backgroundColor: Colors.white,
+                                )),
+                                fit: BoxFit.cover,
+                                alignment: Alignment.center,
+                                placeholder: const Icon(Icons.refresh),
+                                enableRefresh: true,
+                              ),
+                              Container(color: Colors.black.withOpacity(0.5)),
+                              Positioned(
+                                  left: 0,
+                                  top:
+                                      (MediaQuery.of(context).size.height / 2) -
+                                          160,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 20),
+                                            child: AutoSizeText(
+                                                '${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name'] == 'United States' ? this.destinations[index]['parent_name'] + ', ' : ''}${this.destinations[index]['country_name']}',
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 23,
+                                                    fontWeight:
+                                                        FontWeight.w300))),
+                                        AutoSizeText('$startDate - $endDate',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w300))
+                                      ])),
+                            ]);
+                          },
+                          loop: true,
+                          indicatorLayout: PageIndicatorLayout.SCALE,
+                          itemCount: destinations.length,
+                          //index: 0,
+                          //transformer: DeepthPageTransformer(),
+                          pagination: new SwiperPagination(
+                            builder: new SwiperCustomPagination(builder:
+                                (BuildContext context,
+                                    SwiperPluginConfig config) {
+                              return new ConstrainedBox(
+                                child: new Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: new DotSwiperPaginationBuilder(
+                                          color: Colors.white,
+                                          activeColor: color,
+                                          size: 20.0,
+                                          activeSize: 20.0)
+                                      .build(context, config),
+                                ),
+                                constraints:
+                                    new BoxConstraints.expand(height: 50.0),
+                              );
+                            }),
+                          ),
+                        ),
+                      ),
+                this.destinations == null
+                    ? Positioned.fill(
+                        top: -((_bodyHeight / 2) + 100),
+                        // left: -50,
+                        child: Center(
+                            child: Container(
+                                width: 250,
+                                child: TrotterLoading(
+                                    file: 'assets/globe.flr',
+                                    animation: 'flight',
+                                    color: Colors.transparent))))
+                    : Container()
+              ])),
+        ),
+        size: PanelSize(closedHeight: .45),
+      ),
+      // Positioned(
+      //     child: SlidingUpPanel(
+      //   parallaxEnabled: true,
+      //   parallaxOffset: .5,
+      //   minHeight: errorUi == false && canView == true
+      //       ? _panelHeightClosed
+      //       : _panelHeightOpen,
+      //   controller: _pc,
+      //   backdropEnabled: true,
+      //   backdropColor: color,
+      //   backdropTapClosesPanel: false,
+      //   backdropOpacity: .8,
+      //   onPanelOpened: () {
+      //     setState(() {
+      //       disableScroll = false;
+      //     });
+      //   },
+      //   onPanelClosed: () {
+      //     if (disableScroll == false) {
+      //       setState(() {
+      //         disableScroll = true;
+      //       });
+      //     }
+      //   },
+      //   borderRadius: BorderRadius.only(
+      //       topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+      //   maxHeight: _panelHeightOpen,
+      //   panel: Center(
+      //       child: Scaffold(
+      //           resizeToAvoidBottomPadding: false,
+      //           backgroundColor: Colors.transparent,
+      //           body: FutureBuilder(
+      //               future: data,
+      //               builder: (context, snapshot) {
+      //                 if (snapshot.hasData && snapshot.data.error == null) {
+      //                   if (this.canView) {
+      //                     return _buildLoadedBody(context, snapshot, store);
+      //                   } else {
+      //                     return CannotView();
+      //                   }
+      //                 } else if (snapshot.hasData &&
+      //                     snapshot.data.error != null) {
+      //                   return ListView(
+      //                       controller: _sc,
+      //                       physics: disableScroll
+      //                           ? NeverScrollableScrollPhysics()
+      //                           : ClampingScrollPhysics(),
+      //                       shrinkWrap: true,
+      //                       children: <Widget>[
+      //                         Container(
+      //                             height: _panelHeightOpen - 80,
+      //                             width: MediaQuery.of(context).size.width,
+      //                             child: ErrorContainer(
+      //                               color: Color.fromRGBO(106, 154, 168, 1),
+      //                               onRetry: () {
+      //                                 setState(() {
+      //                                   data = fetchTrip(this.tripId, store);
+      //                                   data.then((data) {
+      //                                     setState(() {
+      //                                       this.canView = data.travelers.any(
+      //                                           (traveler) =>
+      //                                               store.currentUser.uid ==
+      //                                               traveler['uid']);
+      //                                       this.color = Color(
+      //                                           hexStringToHexInt(
+      //                                               data.trip['color']));
+      //                                       this.destinations =
+      //                                           data.destinations;
+      //                                       this.travelers = data.travelers;
+      //                                       this.trip = data.trip;
+      //                                       this.trip['destinations'] =
+      //                                           this.destinations;
+      //                                       this.tripName = data.trip['name'];
+      //                                       _nameControllerModal.text =
+      //                                           this.tripName;
+      //                                       _nameDialog = TripNameDialogContent(
+      //                                         tripId: this.tripId,
+      //                                         trip: this.trip,
+      //                                         color: this.color,
+      //                                         travelers: this.travelers,
+      //                                         controller: _nameControllerModal,
+      //                                       );
+      //                                       this.destinationDialog =
+      //                                           TripDestinationDialogContent(
+      //                                               color: color,
+      //                                               tripId: this.tripId,
+      //                                               destinations: destinations);
+      //                                     });
+      //                                   });
+      //                                 });
+      //                               },
+      //                             ))
+      //                       ]);
+      //                 }
+      //                 return _buildLoadingBody(context);
+      //               }))),
+      //   body: Container(
+      //       height: _bodyHeight,
+      //       child: Stack(children: <Widget>[
+      //         this.destinations == null
+      //             ? Container(color: this.color)
+      //             : Positioned.fill(
+      //                 top: 0,
+      //                 child: new Swiper(
+      //                   itemBuilder: (BuildContext context, int index) {
+      //                     var startDate = new DateFormat.yMMMd("en_US").format(
+      //                         new DateTime.fromMillisecondsSinceEpoch(
+      //                             destinations[index]['start_date'] * 1000));
+      //                     var endDate = new DateFormat.yMMMd("en_US").format(
+      //                         new DateTime.fromMillisecondsSinceEpoch(
+      //                             destinations[index]['end_date'] * 1000));
+      //                     return Stack(fit: StackFit.expand, children: <Widget>[
+      //                       TransitionToImage(
+      //                         image: AdvancedNetworkImage(
+      //                           this.destinations[index]['image'],
+      //                           useDiskCache: true,
+      //                           cacheRule:
+      //                               CacheRule(maxAge: const Duration(days: 7)),
+      //                         ),
+      //                         loadingWidgetBuilder: (BuildContext context,
+      //                                 double progress, test) =>
+      //                             Center(
+      //                                 child: RefreshProgressIndicator(
+      //                           backgroundColor: Colors.white,
+      //                         )),
+      //                         fit: BoxFit.cover,
+      //                         alignment: Alignment.center,
+      //                         placeholder: const Icon(Icons.refresh),
+      //                         enableRefresh: true,
+      //                       ),
+      //                       Container(color: Colors.black.withOpacity(0.5)),
+      //                       Positioned(
+      //                           left: 0,
+      //                           top: (MediaQuery.of(context).size.height / 2) -
+      //                               160,
+      //                           width: MediaQuery.of(context).size.width,
+      //                           child: Column(
+      //                               crossAxisAlignment:
+      //                                   CrossAxisAlignment.center,
+      //                               mainAxisAlignment: MainAxisAlignment.center,
+      //                               children: <Widget>[
+      //                                 Container(
+      //                                     padding: EdgeInsets.symmetric(
+      //                                         horizontal: 20),
+      //                                     child: AutoSizeText(
+      //                                         '${this.destinations[index]['destination_name']}, ${this.destinations[index]['country_name'] == 'United States' ? this.destinations[index]['parent_name'] + ', ' : ''}${this.destinations[index]['country_name']}',
+      //                                         overflow: TextOverflow.ellipsis,
+      //                                         textAlign: TextAlign.center,
+      //                                         style: TextStyle(
+      //                                             color: Colors.white,
+      //                                             fontSize: 23,
+      //                                             fontWeight:
+      //                                                 FontWeight.w300))),
+      //                                 AutoSizeText('$startDate - $endDate',
+      //                                     style: TextStyle(
+      //                                         color: Colors.white,
+      //                                         fontSize: 15,
+      //                                         fontWeight: FontWeight.w300))
+      //                               ])),
+      //                     ]);
+      //                   },
+      //                   loop: true,
+      //                   indicatorLayout: PageIndicatorLayout.SCALE,
+      //                   itemCount: destinations.length,
+      //                   //index: 0,
+      //                   //transformer: DeepthPageTransformer(),
+      //                   pagination: new SwiperPagination(
+      //                     builder: new SwiperCustomPagination(builder:
+      //                         (BuildContext context,
+      //                             SwiperPluginConfig config) {
+      //                       return new ConstrainedBox(
+      //                         child: new Align(
+      //                           alignment: Alignment.bottomCenter,
+      //                           child: new DotSwiperPaginationBuilder(
+      //                                   color: Colors.white,
+      //                                   activeColor: color,
+      //                                   size: 20.0,
+      //                                   activeSize: 20.0)
+      //                               .build(context, config),
+      //                         ),
+      //                         constraints:
+      //                             new BoxConstraints.expand(height: 50.0),
+      //                       );
+      //                     }),
+      //                   ),
+      //                 ),
+      //               ),
+      //         this.destinations == null
+      //             ? Positioned.fill(
+      //                 top: -((_bodyHeight / 2) + 100),
+      //                 // left: -50,
+      //                 child: Center(
+      //                     child: Container(
+      //                         width: 250,
+      //                         child: TrotterLoading(
+      //                             file: 'assets/globe.flr',
+      //                             animation: 'flight',
+      //                             color: Colors.transparent))))
+      //             : Container()
+      //       ])),
+      // )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -1149,8 +1396,8 @@ class TripState extends State<Trip> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(
-      BuildContext ctxt, AsyncSnapshot snapshot, TrotterStore store) {
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot,
+      TrotterStore store, ScrollController scrollController) {
     this.trip = snapshot.data.trip;
     this.destinations = snapshot.data.destinations;
     this.travelers = snapshot.data.travelers;
@@ -1216,127 +1463,101 @@ class TripState extends State<Trip> {
     return Stack(children: <Widget>[
       Container(
           height: MediaQuery.of(ctxt).size.height,
-          child: ListView(
-              controller: _sc,
-              physics: disableScroll
-                  ? NeverScrollableScrollPhysics()
-                  : ClampingScrollPhysics(),
-              children: <Widget>[
-                Center(
-                    child: Container(
-                  width: 30,
-                  height: 5,
-                  decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.all(Radius.circular(12.0))),
-                )),
-                Container(
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.only(top: 10, bottom: 20),
-                  child: AutoSizeText(
-                    'Get Organized',
-                    style: TextStyle(fontSize: 25),
-                  ),
-                ),
-                ListView.separated(
-                    shrinkWrap: true,
-                    primary: false,
-                    padding: EdgeInsets.all(0),
-                    itemCount: fields.length,
-                    separatorBuilder: (BuildContext context, int index) =>
-                        new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                    itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                        onTap: () async {
-                          dynamic destination = fields[index]['destination'];
-                          if (fields[index]['id'] != null) {
-                            onPush({
-                              'color': this.color,
-                              'id': fields[index]['id'].toString(),
-                              'level': fields[index]['level'].toString()
-                            });
-                          } else if (destination != null &&
-                              destination['itinerary_id'].isEmpty &&
-                              fields[index]['route'] == 'itinerary/edit') {
-                            dynamic data = {
-                              "itinerary": {
-                                "name": trip['name'],
-                                "destination": destination['destination_id'],
-                                "destination_name":
-                                    destination['destination_name'],
-                                "destination_country_name":
-                                    destination['country_name'],
-                                "destination_country":
-                                    destination['country_id'],
-                                "location": destination['location'],
-                                "start_date": destination['start_date'],
-                                "end_date": destination['end_date'],
-                                "trip_id": trip['id']
-                              },
-                              "trip_destination_id": destination['id']
-                            };
-                            setState(() {
-                              this.loading = true;
-                            });
+          child: ListView(controller: scrollController, children: <Widget>[
+            ListView.separated(
+                shrinkWrap: true,
+                primary: false,
+                padding: EdgeInsets.all(0),
+                itemCount: fields.length,
+                separatorBuilder: (BuildContext context, int index) =>
+                    new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    onTap: () async {
+                      dynamic destination = fields[index]['destination'];
+                      if (fields[index]['id'] != null) {
+                        onPush({
+                          'color': this.color,
+                          'id': fields[index]['id'].toString(),
+                          'level': fields[index]['level'].toString()
+                        });
+                      } else if (destination != null &&
+                          destination['itinerary_id'].isEmpty &&
+                          fields[index]['route'] == 'itinerary/edit') {
+                        dynamic data = {
+                          "itinerary": {
+                            "name": trip['name'],
+                            "destination": destination['destination_id'],
+                            "destination_name": destination['destination_name'],
+                            "destination_country_name":
+                                destination['country_name'],
+                            "destination_country": destination['country_id'],
+                            "location": destination['location'],
+                            "start_date": destination['start_date'],
+                            "end_date": destination['end_date'],
+                            "trip_id": trip['id']
+                          },
+                          "trip_destination_id": destination['id']
+                        };
+                        setState(() {
+                          this.loading = true;
+                        });
 
-                            var response =
-                                await postCreateItinerary(store, data);
-                            setState(() {
-                              this.loading = false;
-                              destination['itinerary_id'] = response.id;
-                            });
-                            onPush({
-                              'color': this.color,
-                              'id': response.id,
-                              'level': fields[index]['level'].toString()
-                            });
-                          } else if (destination != null &&
-                              !destination['itinerary_id'].isEmpty) {
-                            store.itineraryStore
-                                .setItineraryBuilderLoading(true);
-                            onPush({
-                              'color': this.color,
-                              'id': destination['itinerary_id'].toString(),
-                              'level': fields[index]['level'].toString()
-                            });
-                          } else if (fields[index]['level'] == 'travelinfo') {
-                            var res = await onPush({
-                              'color': this.color,
-                              'tripId': this.tripId,
-                              'currentUserId': store.currentUser.uid,
-                              "level": "travelinfo",
-                              "is_past": isPast
-                            });
-                            print(res);
-                            if (res["refresh"] == true) {
+                        var response = await postCreateItinerary(store, data);
+                        setState(() {
+                          this.loading = false;
+                          destination['itinerary_id'] = response.id;
+                        });
+                        onPush({
+                          'color': this.color,
+                          'id': response.id,
+                          'level': fields[index]['level'].toString()
+                        });
+                      } else if (destination != null &&
+                          !destination['itinerary_id'].isEmpty) {
+                        store.itineraryStore.setItineraryBuilderLoading(true);
+                        onPush({
+                          'color': this.color,
+                          'id': destination['itinerary_id'].toString(),
+                          'level': fields[index]['level'].toString()
+                        });
+                      } else if (fields[index]['level'] == 'travelinfo') {
+                        var res = await onPush({
+                          'color': this.color,
+                          'tripId': this.tripId,
+                          'currentUserId': store.currentUser.uid,
+                          "level": "travelinfo",
+                          "is_past": isPast
+                        });
+                        print(res);
+                        if (res["refresh"] == true) {
+                          setState(() {
+                            this.loading = true;
+                            data = fetchTrip(this.tripId, store);
+                            data.then((response) {
                               setState(() {
-                                this.loading = true;
-                                data = fetchTrip(this.tripId, store);
-                                data.then((response) {
-                                  setState(() {
-                                    this.canView = response.travelers.any(
-                                        (traveler) =>
-                                            store.currentUser.uid ==
-                                            traveler['uid']);
-                                    this.loading = false;
-                                  });
-                                });
+                                this.canView = response.travelers.any(
+                                    (traveler) =>
+                                        store.currentUser.uid ==
+                                        traveler['uid']);
+                                this.loading = false;
                               });
-                            }
-                          } else if (fields[index]['level'] ==
-                              'travelers-modal') {
-                            await openTravelersModal(ctxt, store);
-                          }
-                        },
-                        trailing: fields[index]['icon'],
-                        title: AutoSizeText(
-                          fields[index]['label'],
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w300),
-                        ),
-                      );
-                    })
-              ])),
+                            });
+                          });
+                        }
+                      } else if (fields[index]['level'] == 'travelers-modal') {
+                        await openTravelersModal(ctxt, store);
+                      }
+                    },
+                    trailing: fields[index]['icon'],
+                    title: AutoSizeText(
+                      fields[index]['label'],
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
+                    ),
+                  );
+                })
+          ])),
       this.loading == true
           ? Center(
               child: RefreshProgressIndicator(),
@@ -1405,67 +1626,50 @@ class TripState extends State<Trip> {
   }
 
   // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
+  Widget _buildLoadingBody(
+      BuildContext ctxt, ScrollController scrollController) {
     return Container(
         padding: EdgeInsets.only(top: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
-        child: ListView(
-            controller: _sc,
-            physics: NeverScrollableScrollPhysics(),
-            children: <Widget>[
-              Center(
-                  child: Container(
-                width: 30,
-                height: 5,
-                decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
-              )),
-              Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(top: 10, bottom: 20),
-                child: AutoSizeText(
-                  'Get Organized',
-                  style: TextStyle(fontSize: 25),
-                ),
-              ),
-              ListView.separated(
-                  shrinkWrap: true,
-                  primary: false,
-                  padding: EdgeInsets.all(0),
-                  itemCount: 4,
-                  separatorBuilder: (BuildContext context, int index) =>
-                      new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                  itemBuilder: (BuildContext context, int index) {
-                    double width = 300;
-                    if (index == 0) {
-                      width = 240;
-                    }
-                    if (index == 1) {
-                      width = 280;
-                    }
-                    return ListTile(
-                        trailing: Shimmer.fromColors(
-                            baseColor: Color.fromRGBO(220, 220, 220, 0.8),
-                            highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
-                            child: Container(
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                  color: Color.fromRGBO(240, 240, 240, 1),
-                                  borderRadius: BorderRadius.circular(100)),
-                            )),
-                        title: Shimmer.fromColors(
-                          baseColor: Color.fromRGBO(220, 220, 220, 0.8),
-                          highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
-                          child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                  color: Color.fromRGBO(240, 240, 240, 1),
-                                  height: 25,
-                                  width: width)),
-                        ));
-                  })
-            ]));
+        child: ListView(controller: scrollController, children: <Widget>[
+          ListView.separated(
+              shrinkWrap: true,
+              primary: false,
+              physics: NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.all(0),
+              itemCount: 4,
+              separatorBuilder: (BuildContext context, int index) =>
+                  new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+              itemBuilder: (BuildContext context, int index) {
+                double width = 300;
+                if (index == 0) {
+                  width = 240;
+                }
+                if (index == 1) {
+                  width = 280;
+                }
+                return ListTile(
+                    trailing: Shimmer.fromColors(
+                        baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+                        highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+                        child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                              color: Color.fromRGBO(240, 240, 240, 1),
+                              borderRadius: BorderRadius.circular(100)),
+                        )),
+                    title: Shimmer.fromColors(
+                      baseColor: Color.fromRGBO(220, 220, 220, 0.8),
+                      highlightColor: Color.fromRGBO(240, 240, 240, 0.8),
+                      child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                              color: Color.fromRGBO(240, 240, 240, 1),
+                              height: 25,
+                              width: width)),
+                    ));
+              })
+        ]));
   }
 }

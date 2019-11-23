@@ -10,6 +10,7 @@ import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
+import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -26,8 +27,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:showcaseview/showcaseview.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 Future<HomeData> fetchHome([bool refresh]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -153,18 +153,11 @@ class HomeState extends State<Home> {
   List<dynamic> thingsToDo;
   int totalPublic = 0;
   final Color color = Color.fromRGBO(216, 167, 177, 1);
-  GlobalKey _one = GlobalKey();
   bool isLoading = false;
+  bool shadow = false;
 
   @override
   void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
     super.initState();
   }
 
@@ -222,7 +215,6 @@ class HomeState extends State<Home> {
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     final store = Provider.of<TrotterStore>(context);
     //print(this.thingsToDo);
 
@@ -263,47 +255,75 @@ class HomeState extends State<Home> {
             }
         });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: 1,
-        onPanelOpened: () async {
-          setState(() {
-            disableScroll = false;
-          });
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          final String cacheData = prefs.getString('homeShowcase') ?? null;
-          if (cacheData == null) {
-            ShowCaseWidget.of(context).startShowCase([_one]);
-            await prefs.setString('homeShowcase', "true");
-          }
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: FutureBuilder(
+      SlidingPanel(
+        autoSizing: PanelAutoSizing(),
+        parallaxSlideAmount: .5,
+        backdropConfig: BackdropConfig(
+            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
+        decoration: PanelDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+        panelController: _pc,
+        content: PanelContent(
+          headerWidget: PanelHeaderWidget(
+            headerContent: Container(
+                decoration: BoxDecoration(
+                    boxShadow: this.shadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                                color: Colors.black.withOpacity(.2),
+                                blurRadius: 10.0,
+                                offset: Offset(0.0, 0.75))
+                          ]
+                        : [],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30))),
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10, bottom: 20),
+                      child: AutoSizeText(
+                        'Explore',
+                        style: TextStyle(fontSize: 25),
+                      ),
+                    ),
+                  ],
+                )),
+          ),
+          panelContent: (context, scrollController) {
+            if (scrollController.hasListeners == false) {
+              scrollController.addListener(() {
+                if (scrollController.offset > 0) {
+                  setState(() {
+                    this.shadow = true;
+                  });
+                } else {
+                  setState(() {
+                    this.shadow = false;
+                  });
+                }
+              });
+            }
+            return FutureBuilder(
                 future: data,
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data.error != null) {
                     return ListView(
-                        controller: _sc,
-                        physics: disableScroll
-                            ? NeverScrollableScrollPhysics()
-                            : ClampingScrollPhysics(),
+                        controller: scrollController,
                         shrinkWrap: true,
                         children: <Widget>[
                           Container(
@@ -322,28 +342,31 @@ class HomeState extends State<Home> {
                               ))
                         ]);
                   }
-                  return _buildLoadedBody(context, snapshot);
-                })),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
+                  return _buildLoadedBody(context, snapshot, scrollController);
+                });
+          },
+          bodyContent: Container(
+              height: _bodyHeight,
+              child: Stack(children: <Widget>[
+                Positioned(
+                    width: MediaQuery.of(context).size.width,
+                    height: _bodyHeight,
+                    top: 0,
+                    left: 0,
+                    child: Image.asset(
+                      "images/home_bg.jpeg",
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                    )),
+                Positioned.fill(
                   top: 0,
                   left: 0,
-                  child: Image.asset(
-                    "images/home_bg.jpeg",
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  )),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(color: color.withOpacity(.3)),
-              ),
-            ])),
-      )),
+                  child: Container(color: color.withOpacity(.3)),
+                ),
+              ])),
+        ),
+        size: PanelSize(closedHeight: .45),
+      ),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -575,7 +598,8 @@ class HomeState extends State<Home> {
   }
 
   // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot,
+      ScrollController scrollController) {
     var popularCities = snapshot.hasData ? snapshot.data.popularCities : [];
     //var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
     final store = Provider.of<TrotterStore>(context);
@@ -599,27 +623,11 @@ class HomeState extends State<Home> {
             return true;
           },
           child: ListView(
-            controller: _sc,
-            physics: disableScroll
-                ? NeverScrollableScrollPhysics()
-                : ClampingScrollPhysics(),
+            controller: scrollController,
+            // physics: disableScroll
+            //     ? NeverScrollableScrollPhysics()
+            //     : ClampingScrollPhysics(),
             children: <Widget>[
-              Center(
-                  child: Container(
-                width: 30,
-                height: 5,
-                decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
-              )),
-              Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(top: 10, bottom: 20),
-                child: AutoSizeText(
-                  'Explore',
-                  style: TextStyle(fontSize: 25),
-                ),
-              ),
               snapshot.connectionState == ConnectionState.waiting
                   ? Container(
                       width: double.infinity,
@@ -627,28 +635,7 @@ class HomeState extends State<Home> {
                       child: TopListLoading(
                         enableMini: true,
                       ))
-                  : Showcase.withWidget(
-                      width: 250,
-                      height: 50,
-                      container: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          TopList().buildThumbnailItem(
-                              0, popularCities[0], Colors.white, true),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Container(
-                              width: 250,
-                              margin: EdgeInsets.only(top: 35),
-                              child: Text(
-                                'Tap to navigate to destination page.\n Press and hold to show a menu for adding to a trip or creating a trip',
-                                style: TextStyle(color: Colors.white),
-                                maxLines: 3,
-                              ))
-                        ],
-                      ),
-                      key: _one,
+                  : Container(
                       child: TopList(
                           items: popularCities,
                           enableMini: true,

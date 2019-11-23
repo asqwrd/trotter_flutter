@@ -112,7 +112,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                     panelContent: (context, scrollController) {
                       if (scrollController.hasListeners == false) {
                         scrollController.addListener(() {
-                          print('hi');
                           if (scrollController.offset > 0) {
                             setState(() {
                               this.shadow = true;

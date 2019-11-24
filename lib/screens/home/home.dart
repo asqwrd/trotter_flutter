@@ -624,9 +624,6 @@ class HomeState extends State<Home> {
           },
           child: ListView(
             controller: scrollController,
-            // physics: disableScroll
-            //     ? NeverScrollableScrollPhysics()
-            //     : ClampingScrollPhysics(),
             children: <Widget>[
               snapshot.connectionState == ConnectionState.waiting
                   ? Container(

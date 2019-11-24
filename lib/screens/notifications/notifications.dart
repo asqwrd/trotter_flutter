@@ -4,9 +4,10 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
@@ -31,6 +32,7 @@ class NotificationsState extends State<Notifications> {
   TrotterStore store;
   var data;
   final Color color = Color.fromRGBO(29, 198, 144, 1);
+  bool shadow = false;
 
   @override
   void initState() {
@@ -40,7 +42,6 @@ class NotificationsState extends State<Notifications> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -51,42 +52,49 @@ class NotificationsState extends State<Notifications> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     store = Provider.of<TrotterStore>(context);
     if (store.currentUser != null && data == null) {
       data = fetchNotifications(store);
-      // store.eventBus.on<FocusChangeEvent>().listen((event) {
-      //   // All events are of type UserLoggedInEvent (or subtypes of it).
-      //   if (event.tab == TabItem.notifications) {
-      //     onPush({'level': 'createtrip'});
-      //   }
-      // });
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        isDraggable: false,
-        backdropTapClosesPanel: false,
-        backdropOpacity: .8,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: Stack(children: <Widget>[
-          _buildContent(context, store),
-          store.notificationsLoading == true
-              ? Center(child: RefreshProgressIndicator())
-              : Container()
-        ])),
-        body: Container(color: color),
-      )),
+          child: SlidingPanel(
+              initialState: InitialPanelState.expanded,
+              isDraggable: false,
+              size: PanelSize(expandedHeight: .85),
+              autoSizing: PanelAutoSizing(),
+              decoration: PanelDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30))),
+              parallaxSlideAmount: .5,
+              panelController: _pc,
+              content: PanelContent(
+                panelContent: (context, _sc) {
+                  if (_sc.hasListeners == false) {
+                    _sc.addListener(() {
+                      if (_sc.offset > 0) {
+                        setState(() {
+                          this.shadow = true;
+                        });
+                      } else {
+                        setState(() {
+                          this.shadow = false;
+                        });
+                      }
+                    });
+                  }
+                  return Center(
+                      child: Stack(children: <Widget>[
+                    _buildContent(context, store, _sc),
+                    store.notificationsLoading == true
+                        ? Center(child: RefreshProgressIndicator())
+                        : Container()
+                  ]));
+                },
+                bodyContent: Container(color: color),
+              ))),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -173,7 +181,6 @@ class NotificationsState extends State<Notifications> {
                           );
                         },
                       );
-                      print(response);
                       if (response['clear'] == true) {
                         store.setNotificationsLoading(true);
                         await clearNotifications(store);
@@ -194,7 +201,8 @@ class NotificationsState extends State<Notifications> {
     //return _buildContent(context, store);
   }
 
-  Widget _buildContent(BuildContext context, TrotterStore store) {
+  Widget _buildContent(
+      BuildContext context, TrotterStore store, ScrollController _sc) {
     var notifications = store.notifications.notifications;
     if (notifications.length == 0) {
       return Center(
@@ -247,6 +255,7 @@ class NotificationsState extends State<Notifications> {
     }
     return Container(
         child: ListView.separated(
+            controller: _sc,
             separatorBuilder: (BuildContext context, int index) =>
                 new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
             itemCount: notifications.length,

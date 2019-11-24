@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:http/http.dart' as http;
@@ -102,7 +103,6 @@ class CountryState extends State<Country> {
   final String countryId;
   final String userId;
   final ValueChanged<dynamic> onPush;
-  ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
@@ -111,19 +111,13 @@ class CountryState extends State<Country> {
   Color color = Colors.black.withOpacity(.3);
   String countryName;
   bool imageLoading = true;
+  bool shadow = false;
 
   Future<CountryData> data;
   var kExpandedHeight = 280;
 
   @override
   void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
     super.initState();
     data = fetchCountry(this.countryId, this.userId);
     data.then((res) {
@@ -135,7 +129,6 @@ class CountryState extends State<Country> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -148,7 +141,6 @@ class CountryState extends State<Country> {
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     data.then((data) => {
           if (data.error != null)
             {
@@ -169,116 +161,174 @@ class CountryState extends State<Country> {
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: _panelHeightClosed,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: 1,
-        onPanelOpened: () {
-          setState(() {
-            disableScroll = false;
-          });
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: FutureBuilder(
-            future: data,
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data.error != null) {
-                return ListView(
-                    controller: _sc,
-                    physics: disableScroll
-                        ? NeverScrollableScrollPhysics()
-                        : ClampingScrollPhysics(),
-                    shrinkWrap: true,
-                    children: <Widget>[
-                      Container(
-                          height: _panelHeightOpen - 80,
+          child: SlidingPanel(
+              initialState: this.errorUi == true
+                  ? InitialPanelState.expanded
+                  : InitialPanelState.closed,
+              size: PanelSize(closedHeight: .45),
+              isDraggable: this.errorUi == true ? false : true,
+              autoSizing: PanelAutoSizing(),
+              decoration: PanelDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30))),
+              parallaxSlideAmount: .5,
+              backdropConfig: BackdropConfig(
+                  dragFromBody: true,
+                  shadowColor: color,
+                  opacity: 1,
+                  enabled: true),
+              panelController: _pc,
+              content: PanelContent(
+                headerWidget: PanelHeaderWidget(
+                  headerContent: Container(
+                      decoration: BoxDecoration(
+                          boxShadow: this.shadow
+                              ? <BoxShadow>[
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(.2),
+                                      blurRadius: 10.0,
+                                      offset: Offset(0.0, 0.75))
+                                ]
+                              : [],
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30))),
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Center(
+                              child: Container(
+                            width: 30,
+                            height: 5,
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(12.0))),
+                          )),
+                          this.loading
+                              ? Container(
+                                  alignment: Alignment.center,
+                                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                                  child: AutoSizeText(
+                                    'Getting tips & requirements...',
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                )
+                              : Container(
+                                  alignment: Alignment.center,
+                                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                                  child: AutoSizeText(
+                                    'Tips & Requirements',
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                ),
+                        ],
+                      )),
+                ),
+                panelContent: (context, _sc) {
+                  if (_sc.hasListeners == false) {
+                    _sc.addListener(() {
+                      if (_sc.offset > 0) {
+                        setState(() {
+                          this.shadow = true;
+                        });
+                      } else {
+                        setState(() {
+                          this.shadow = false;
+                        });
+                      }
+                    });
+                  }
+                  return FutureBuilder(
+                      future: data,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data.error != null) {
+                          return ListView(
+                              controller: _sc,
+                              physics: disableScroll
+                                  ? NeverScrollableScrollPhysics()
+                                  : ClampingScrollPhysics(),
+                              shrinkWrap: true,
+                              children: <Widget>[
+                                Container(
+                                    height: _panelHeightOpen - 80,
+                                    width: MediaQuery.of(context).size.width,
+                                    child: ErrorContainer(
+                                      onRetry: () {
+                                        setState(() {
+                                          data = fetchCountry(
+                                              this.countryId, this.userId);
+                                        });
+                                      },
+                                    ))
+                              ]);
+                        }
+                        return _buildLoadedBody(context, snapshot, _sc);
+                      });
+                },
+                bodyContent: Container(
+                    height: _bodyHeight,
+                    child: Stack(children: <Widget>[
+                      Positioned(
                           width: MediaQuery.of(context).size.width,
-                          child: ErrorContainer(
-                            onRetry: () {
-                              setState(() {
-                                data =
-                                    fetchCountry(this.countryId, this.userId);
-                              });
-                            },
-                          ))
-                    ]);
-              }
-              return _buildLoadedBody(context, snapshot);
-            }),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
-                  top: 0,
-                  left: 0,
-                  child: this.image != null
-                      ? TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            this.image,
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
-                                  Container(),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
-                          blendMode: BlendMode.overlay,
-                          loadedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                          loadFailedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                        )
-                      : Container()),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(
-                    color: this.imageLoading
-                        ? this.color
-                        : this.color.withOpacity(.3)),
-              ),
-              this.image == null || this.imageLoading == true
-                  ? Positioned.fill(
-                      top: -((_bodyHeight / 2) + 100),
-                      // left: -50,
-                      child: Center(
-                          child: Container(
-                              width: 250,
-                              child: TrotterLoading(
-                                  file: 'assets/globe.flr',
-                                  animation: 'flight',
-                                  color: Colors.transparent))))
-                  : Container()
-            ])),
-      )),
+                          height: _bodyHeight,
+                          top: 0,
+                          left: 0,
+                          child: this.image != null
+                              ? TransitionToImage(
+                                  image: AdvancedNetworkImage(
+                                    this.image,
+                                    useDiskCache: true,
+                                    cacheRule: CacheRule(
+                                        maxAge: const Duration(days: 7)),
+                                  ),
+                                  loadingWidgetBuilder: (BuildContext context,
+                                          double progress, test) =>
+                                      Container(),
+                                  fit: BoxFit.cover,
+                                  alignment: Alignment.center,
+                                  placeholder: const Icon(Icons.refresh),
+                                  enableRefresh: true,
+                                  blendMode: BlendMode.overlay,
+                                  loadedCallback: () async {
+                                    await Future.delayed(Duration(seconds: 2));
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  },
+                                  loadFailedCallback: () async {
+                                    await Future.delayed(Duration(seconds: 2));
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  },
+                                )
+                              : Container()),
+                      Positioned.fill(
+                        top: 0,
+                        left: 0,
+                        child: Container(
+                            color: this.imageLoading
+                                ? this.color
+                                : this.color.withOpacity(.3)),
+                      ),
+                      this.image == null || this.imageLoading == true
+                          ? Positioned.fill(
+                              top: -((_bodyHeight / 2) + 100),
+                              // left: -50,
+                              child: Center(
+                                  child: Container(
+                                      width: 250,
+                                      child: TrotterLoading(
+                                          file: 'assets/globe.flr',
+                                          animation: 'flight',
+                                          color: Colors.transparent))))
+                          : Container()
+                    ])),
+              ))),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -293,9 +343,10 @@ class CountryState extends State<Country> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(
+      BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
     if (snapshot.connectionState != ConnectionState.done) {
-      return _buildLoadingBody(ctxt);
+      return _buildLoadingBody(ctxt, _sc);
     }
     bool _showVisaTextual = false;
     bool _showVisaAllowedStay = false;
@@ -365,26 +416,7 @@ class CountryState extends State<Country> {
         height: MediaQuery.of(context).size.height,
         child: ListView(
           controller: _sc,
-          physics: disableScroll
-              ? NeverScrollableScrollPhysics()
-              : ClampingScrollPhysics(),
           children: <Widget>[
-            Center(
-                child: Container(
-              width: 30,
-              height: 5,
-              decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.all(Radius.circular(12.0))),
-            )),
-            Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.only(top: 10, bottom: 20),
-              child: AutoSizeText(
-                'Tips & Requirements',
-                style: TextStyle(fontSize: 25),
-              ),
-            ),
             Padding(
                 padding: EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0),
                 child: AutoSizeText(descriptionShort,
@@ -732,24 +764,8 @@ class CountryState extends State<Country> {
   }
 
   // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
+  Widget _buildLoadingBody(BuildContext ctxt, ScrollController _sc) {
     var children2 = <Widget>[
-      Center(
-          child: Container(
-        width: 30,
-        height: 5,
-        decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.all(Radius.circular(12.0))),
-      )),
-      Container(
-        alignment: Alignment.center,
-        padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: AutoSizeText(
-          'Getting tips & requirements...',
-          style: TextStyle(fontSize: 25),
-        ),
-      ),
       Align(
           alignment: Alignment.topLeft,
           child: Container(
@@ -789,9 +805,6 @@ class CountryState extends State<Country> {
       decoration: BoxDecoration(color: Colors.transparent),
       child: ListView(
         controller: _sc,
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
         children: children2,
       ),
     );

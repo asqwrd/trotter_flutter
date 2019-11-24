@@ -70,7 +70,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -417,14 +416,10 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     var dayBuilder = days;
     return ListView.separated(
       controller: scrollController,
-      // physics: disableScroll
-      //     ? NeverScrollableScrollPhysics()
-      //     : ClampingScrollPhysics(),
       separatorBuilder: (BuildContext serperatorContext, int index) =>
           new Container(
               margin: EdgeInsets.only(bottom: 40, top: 40),
               child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
-
       padding: EdgeInsets.all(20.0),
       itemCount: dayBuilder.length,
       shrinkWrap: true,

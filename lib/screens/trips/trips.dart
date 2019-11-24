@@ -238,52 +238,6 @@ class TripsState extends State<Trips> {
         ),
         size: PanelSize(closedHeight: .45),
       ),
-      // Positioned(
-      //     child: SlidingUpPanel(
-      //   parallaxEnabled: true,
-      //   parallaxOffset: .5,
-      //   minHeight: _panelHeightClosed,
-      //   controller: _pc,
-      //   backdropEnabled: true,
-      //   backdropColor: color,
-      //   backdropTapClosesPanel: false,
-      //   backdropOpacity: 1,
-      //   onPanelOpened: () {
-      //     setState(() {
-      //       disableScroll = false;
-      //     });
-      //   },
-      //   onPanelClosed: () {
-      //     if (disableScroll == false) {
-      //       setState(() {
-      //         disableScroll = true;
-      //       });
-      //     }
-      //   },
-      //   borderRadius: BorderRadius.only(
-      //       topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-      //   maxHeight: _panelHeightOpen,
-      //   panel: Center(child: buildScaffold(color, store, context)),
-      //   body: Container(
-      //       height: _bodyHeight,
-      //       child: Stack(children: <Widget>[
-      //         Positioned(
-      //             width: MediaQuery.of(context).size.width,
-      //             height: _bodyHeight,
-      //             top: 0,
-      //             left: 0,
-      //             child: Image.asset(
-      //               "images/trips2.jpg",
-      //               fit: BoxFit.cover,
-      //               alignment: Alignment.center,
-      //             )),
-      //         Positioned.fill(
-      //           top: 0,
-      //           left: 0,
-      //           child: Container(color: color.withOpacity(.3)),
-      //         ),
-      //       ])),
-      // )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,

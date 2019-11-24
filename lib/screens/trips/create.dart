@@ -1,8 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:sliding_panel/sliding_panel.dart';
 import 'dart:core';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
@@ -43,6 +44,7 @@ class CreateTripState extends State<CreateTrip> {
   bool disableScroll = true;
   bool errorUi = false;
   Color color = Colors.blueGrey;
+  bool shadow = false;
 
   @override
   void dispose() {
@@ -51,20 +53,12 @@ class CreateTripState extends State<CreateTrip> {
     datesControllers.forEach((controller) {
       controller.dispose();
     });
-    _sc.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
     loading = false;
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
     this.destFields = [
       _buildDestField(0, this.param, false),
     ];
@@ -166,8 +160,8 @@ class CreateTripState extends State<CreateTrip> {
               width: double.infinity,
               child: FlatButton(
                 shape: RoundedRectangleBorder(
-                    borderRadius: new BorderRadius.circular(5.0)),
-                padding: EdgeInsets.symmetric(vertical: 15),
+                    borderRadius: new BorderRadius.circular(100.0)),
+                padding: EdgeInsets.symmetric(vertical: 20),
                 color: Colors.blueGrey,
                 onPressed: () async {
                   final store = Provider.of<TrotterStore>(context);
@@ -177,7 +171,6 @@ class CreateTripState extends State<CreateTrip> {
                   if (this._formKey.currentState.validate()) {
                     // If the form is valid, display a snackbar. In the real world, you'd
                     // often want to call a server or save the information in a database
-                    print(this._destinations[0]["image"]);
                     var data = {
                       "trip": {
                         "image": this._destinations[0]["image"],
@@ -228,67 +221,113 @@ class CreateTripState extends State<CreateTrip> {
                         color: Colors.white)),
               )))
     ];
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) + 200;
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: _panelHeightClosed,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: .8,
-        onPanelOpened: () {
-          setState(() {
-            disableScroll = false;
-          });
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: new Scaffold(
-                resizeToAvoidBottomPadding: false,
-                backgroundColor: Colors.transparent,
-                body: Stack(children: <Widget>[
-                  Positioned.fill(
-                      child: IgnorePointer(
-                          ignoring: this.loading, child: _buildForm(context))),
-                  this.loading
-                      ? Center(child: RefreshProgressIndicator())
-                      : Container()
-                ]))),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
-                  top: 0,
-                  left: 0,
-                  child: Image.asset(
-                    "images/home_bg.jpeg",
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  )),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(color: color.withOpacity(.65)),
-              ),
-            ])),
-      )),
+          child: SlidingPanel(
+              initialState: InitialPanelState.expanded,
+              isDraggable: false,
+              size: PanelSize(closedHeight: .7),
+              autoSizing: PanelAutoSizing(),
+              decoration: PanelDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30))),
+              parallaxSlideAmount: .5,
+              backdropConfig: BackdropConfig(
+                  dragFromBody: true,
+                  shadowColor: color,
+                  opacity: 1,
+                  enabled: true),
+              panelController: _pc,
+              content: PanelContent(
+                headerWidget: PanelHeaderWidget(
+                  headerContent: Container(
+                      decoration: BoxDecoration(
+                          boxShadow: this.shadow
+                              ? <BoxShadow>[
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(.2),
+                                      blurRadius: 10.0,
+                                      offset: Offset(0.0, 0.75))
+                                ]
+                              : [],
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30))),
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Center(
+                              child: Container(
+                            width: 30,
+                            height: 5,
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(12.0))),
+                          )),
+                          Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.only(top: 10, bottom: 20),
+                            child: AutoSizeText(
+                              'Where to?',
+                              style: TextStyle(fontSize: 25),
+                            ),
+                          )
+                        ],
+                      )),
+                ),
+                panelContent: (context, _sc) {
+                  if (_sc.hasListeners == false) {
+                    _sc.addListener(() {
+                      if (_sc.offset > 0) {
+                        setState(() {
+                          this.shadow = true;
+                        });
+                      } else {
+                        setState(() {
+                          this.shadow = false;
+                        });
+                      }
+                    });
+                  }
+                  return Center(
+                      child: new Scaffold(
+                          resizeToAvoidBottomPadding: false,
+                          backgroundColor: Colors.transparent,
+                          body: Stack(children: <Widget>[
+                            Positioned.fill(
+                                child: IgnorePointer(
+                                    ignoring: this.loading,
+                                    child: _buildForm(context, _sc))),
+                            this.loading
+                                ? Center(child: RefreshProgressIndicator())
+                                : Container()
+                          ])));
+                },
+                bodyContent: Container(
+                    height: _bodyHeight,
+                    child: Stack(children: <Widget>[
+                      Positioned(
+                          width: MediaQuery.of(context).size.width,
+                          height: _bodyHeight,
+                          top: 0,
+                          left: 0,
+                          child: Image.asset(
+                            "images/home_bg.jpeg",
+                            fit: BoxFit.cover,
+                            alignment: Alignment.center,
+                          )),
+                      Positioned.fill(
+                        top: 0,
+                        left: 0,
+                        child: Container(color: color.withOpacity(.65)),
+                      ),
+                    ])),
+              ))),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -522,8 +561,8 @@ class CreateTripState extends State<CreateTrip> {
   }
 
 // function for rendering view after data is loaded
-  Widget _buildForm(BuildContext ctxt) {
-    var formFields = ['', '', ...this.fields];
+  Widget _buildForm(BuildContext ctxt, ScrollController _sc) {
+    var formFields = this.fields;
     return Form(
         key: this._formKey,
         child: Container(
@@ -531,34 +570,9 @@ class CreateTripState extends State<CreateTrip> {
             padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 0),
             child: ListView.builder(
                 controller: _sc,
-                physics: disableScroll
-                    ? NeverScrollableScrollPhysics()
-                    : ClampingScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: formFields.length,
                 itemBuilder: (_, int index) {
-                  if (index == 0) {
-                    return Center(
-                        child: Container(
-                      width: 30,
-                      height: 5,
-                      decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(12.0))),
-                    ));
-                  }
-
-                  if (index == 1) {
-                    return Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 10, bottom: 40),
-                      child: AutoSizeText(
-                        'Where to?',
-                        style: TextStyle(fontSize: 25),
-                      ),
-                    );
-                  }
                   return formFields[index];
                 })));
   }

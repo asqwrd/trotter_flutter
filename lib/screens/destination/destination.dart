@@ -2,7 +2,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -158,7 +159,6 @@ class DestinationState extends State<Destination>
   Future<DestinationData> data;
   Future<DestinationItinerariesData> dataItineraries;
   final Future2VoidFunc onPush;
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
@@ -171,18 +171,12 @@ class DestinationState extends State<Destination>
   dynamic articles = [];
   dynamic itineraries = [];
   int totalPublic = 0;
+  bool shadow = false;
 
   bool imageLoading = true;
 
   @override
   void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
     super.initState();
     data = fetchDestination(this.destinationId, this.destinationType);
     dataItineraries = fetchDestinationItineraries(this.destinationId);
@@ -192,7 +186,6 @@ class DestinationState extends State<Destination>
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -203,7 +196,6 @@ class DestinationState extends State<Destination>
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     data.then((data) => {
           if (data.error != null)
             {
@@ -238,122 +230,204 @@ class DestinationState extends State<Destination>
         });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-        child: SlidingUpPanel(
-            parallaxEnabled: true,
-            parallaxOffset: .5,
-            minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
-            controller: _pc,
-            backdropEnabled: true,
-            backdropColor: color,
-            backdropTapClosesPanel: false,
-            backdropOpacity: .8,
-            onPanelOpened: () {
-              setState(() {
-                disableScroll = false;
-              });
-            },
-            onPanelClosed: () {
-              if (disableScroll == false) {
-                setState(() {
-                  disableScroll = true;
-                });
-              }
-            },
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-            maxHeight: _panelHeightOpen,
-            panel: Center(
-                child: FutureBuilder(
-                    future: data,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return _buildLoadedBody(context, snapshot);
-                      } else if (snapshot.hasData &&
-                          snapshot.data.error == null) {
-                        return _buildLoadedBody(context, snapshot);
-                      } else if (snapshot.hasData &&
-                          snapshot.data.error != null) {
-                        return ListView(
-                            controller: _sc,
-                            physics: disableScroll
-                                ? NeverScrollableScrollPhysics()
-                                : ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            children: <Widget>[
-                              Container(
-                                  height: _panelHeightOpen - 80,
-                                  width: MediaQuery.of(context).size.width,
-                                  child: ErrorContainer(
-                                    onRetry: () {
-                                      setState(() {
-                                        data = fetchDestination(
-                                            this.destinationId,
-                                            this.destinationType);
-                                      });
-                                    },
-                                  ))
-                            ]);
-                      }
-                      return Container();
-                    })),
-            body: Container(
-                height: _bodyHeight,
-                child: Stack(children: <Widget>[
-                  Positioned(
-                      width: MediaQuery.of(context).size.width,
-                      height: _bodyHeight,
-                      top: 0,
-                      left: 0,
-                      child: this.image != null
-                          ? TransitionToImage(
-                              image: AdvancedNetworkImage(
-                                this.image,
-                                useDiskCache: true,
-                                cacheRule:
-                                    CacheRule(maxAge: const Duration(days: 7)),
-                              ),
-                              loadingWidgetBuilder: (BuildContext context,
-                                      double progress, test) =>
-                                  Container(),
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
-                              placeholder: const Icon(Icons.refresh),
-                              enableRefresh: true,
-                              loadedCallback: () async {
-                                await Future.delayed(Duration(seconds: 2));
-                                setState(() {
-                                  this.imageLoading = false;
-                                });
-                              },
-                              loadFailedCallback: () async {
-                                await Future.delayed(Duration(seconds: 2));
-                                setState(() {
-                                  this.imageLoading = false;
-                                });
-                              },
-                            )
-                          : Container()),
-                  Positioned.fill(
-                    top: 0,
-                    left: 0,
-                    child: Container(
-                        color: this.imageLoading
-                            ? this.color
-                            : this.color.withOpacity(.3)),
-                  ),
-                  this.image == null || this.imageLoading == true
-                      ? Positioned.fill(
-                          top: -((_bodyHeight / 2) + 100),
-                          // left: -50,
-                          child: Center(
+        child: SlidingPanel(
+            initialState: this.errorUi == true
+                ? InitialPanelState.expanded
+                : InitialPanelState.closed,
+            size: PanelSize(closedHeight: .45),
+            isDraggable: this.errorUi == true ? false : true,
+            autoSizing: PanelAutoSizing(),
+            decoration: PanelDecoration(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30))),
+            parallaxSlideAmount: .5,
+            backdropConfig: BackdropConfig(
+                dragFromBody: true,
+                shadowColor: color,
+                opacity: 1,
+                enabled: true),
+            panelController: _pc,
+            content: PanelContent(
+                headerWidget: PanelHeaderWidget(
+                  headerContent: Container(
+                      decoration: BoxDecoration(
+                          boxShadow: this.shadow
+                              ? <BoxShadow>[
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(.2),
+                                      blurRadius: 10.0,
+                                      offset: Offset(0.0, 0.75))
+                                ]
+                              : [],
+                          color: Colors.white,
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              topRight: Radius.circular(30))),
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Center(
                               child: Container(
-                                  width: 250,
-                                  child: TrotterLoading(
-                                      file: 'assets/globe.flr',
-                                      animation: 'flight',
-                                      color: Colors.transparent))))
-                      : Container()
-                ]))),
+                            width: 30,
+                            height: 5,
+                            decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(12.0))),
+                          )),
+                          GestureDetector(
+                            onTap: () {
+                              onPush({
+                                'id': destination['country_id'].toString(),
+                                'level': 'country'
+                              });
+                            },
+                            child: this.loading
+                                ? Container(
+                                    alignment: Alignment.center,
+                                    padding:
+                                        EdgeInsets.only(top: 10, bottom: 20),
+                                    child: AutoSizeText(
+                                      ' Loading...',
+                                      style: TextStyle(fontSize: 25),
+                                    ),
+                                  )
+                                : Container(
+                                    margin: EdgeInsets.only(top: 10),
+                                    padding: EdgeInsets.only(
+                                        right: 20, left: 20, bottom: 20),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        AutoSizeText(
+                                            'Info on ${destination['country_name']}',
+                                            style: TextStyle(
+                                                fontSize: 25, color: color)),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          size: 25,
+                                          color: color,
+                                        )
+                                      ],
+                                    )),
+                          ),
+                        ],
+                      )),
+                ),
+                panelContent: (context, _sc) {
+                  if (_sc.hasListeners == false) {
+                    _sc.addListener(() {
+                      if (_sc.offset > 0) {
+                        setState(() {
+                          this.shadow = true;
+                        });
+                      } else {
+                        setState(() {
+                          this.shadow = false;
+                        });
+                      }
+                    });
+                  }
+                  return Center(
+                      child: FutureBuilder(
+                          future: data,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return _buildLoadedBody(context, snapshot, _sc);
+                            } else if (snapshot.hasData &&
+                                snapshot.data.error == null) {
+                              return _buildLoadedBody(context, snapshot, _sc);
+                            } else if (snapshot.hasData &&
+                                snapshot.data.error != null) {
+                              return ListView(
+                                  controller: _sc,
+                                  physics: disableScroll
+                                      ? NeverScrollableScrollPhysics()
+                                      : ClampingScrollPhysics(),
+                                  shrinkWrap: true,
+                                  children: <Widget>[
+                                    Container(
+                                        height: _panelHeightOpen - 80,
+                                        width:
+                                            MediaQuery.of(context).size.width,
+                                        child: ErrorContainer(
+                                          onRetry: () {
+                                            setState(() {
+                                              data = fetchDestination(
+                                                  this.destinationId,
+                                                  this.destinationType);
+                                            });
+                                          },
+                                        ))
+                                  ]);
+                            }
+                            return Container();
+                          }));
+                },
+                bodyContent: Container(
+                    height: _bodyHeight,
+                    child: Stack(children: <Widget>[
+                      Positioned(
+                          width: MediaQuery.of(context).size.width,
+                          height: _bodyHeight,
+                          top: 0,
+                          left: 0,
+                          child: this.image != null
+                              ? TransitionToImage(
+                                  image: AdvancedNetworkImage(
+                                    this.image,
+                                    useDiskCache: true,
+                                    cacheRule: CacheRule(
+                                        maxAge: const Duration(days: 7)),
+                                  ),
+                                  loadingWidgetBuilder: (BuildContext context,
+                                          double progress, test) =>
+                                      Container(),
+                                  fit: BoxFit.cover,
+                                  alignment: Alignment.center,
+                                  placeholder: const Icon(Icons.refresh),
+                                  enableRefresh: true,
+                                  loadedCallback: () async {
+                                    await Future.delayed(Duration(seconds: 2));
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  },
+                                  loadFailedCallback: () async {
+                                    await Future.delayed(Duration(seconds: 2));
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  },
+                                )
+                              : Container()),
+                      Positioned.fill(
+                        top: 0,
+                        left: 0,
+                        child: Container(
+                            color: this.imageLoading
+                                ? this.color
+                                : this.color.withOpacity(.3)),
+                      ),
+                      this.image == null || this.imageLoading == true
+                          ? Positioned.fill(
+                              top: -((_bodyHeight / 2) + 100),
+                              // left: -50,
+                              child: Center(
+                                  child: Container(
+                                      width: 250,
+                                      child: TrotterLoading(
+                                          file: 'assets/globe.flr',
+                                          animation: 'flight',
+                                          color: Colors.transparent))))
+                          : Container()
+                    ])))),
       ),
       Positioned(
           top: 0,
@@ -389,9 +463,10 @@ class DestinationState extends State<Destination>
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(
+      BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return _buildLoadingBody(ctxt);
+      return _buildLoadingBody(ctxt, _sc);
     }
     var destination = snapshot.data.destination;
     var descriptionShort = snapshot.data.destination['description_short'];
@@ -401,58 +476,24 @@ class DestinationState extends State<Destination>
         height: MediaQuery.of(ctxt).size.height,
         color: Colors.transparent,
         child: _buildContent(
-          _buildUIComponent(
-              ctxt, this.articles, descriptionShort, color, destination),
-        ));
+            _buildUIComponent(
+                ctxt, this.articles, descriptionShort, color, destination),
+            _sc));
   }
 
-  _buildContent(List<Widget> widgets) {
+  _buildContent(List<Widget> widgets, ScrollController _sc) {
     return Container(
         width: MediaQuery.of(context).size.width,
         margin: EdgeInsets.only(top: 0.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
-        child: ListView(
-            controller: _sc,
-            physics: disableScroll
-                ? NeverScrollableScrollPhysics()
-                : ClampingScrollPhysics(),
-            children: widgets));
+        child: ListView(controller: _sc, children: widgets));
   }
 
   _buildUIComponent(BuildContext context, List<dynamic> articles,
       String description, Color color, dynamic destination) {
     var widgets = <Widget>[
-      Center(
-          child: Container(
-        width: 30,
-        height: 5,
-        decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.all(Radius.circular(12.0))),
-      )),
-      GestureDetector(
-        onTap: () {
-          onPush(
-              {'id': destination['country_id'].toString(), 'level': 'country'});
-        },
-        child: Container(
-            margin: EdgeInsets.only(top: 30),
-            padding: EdgeInsets.only(right: 20, left: 20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                AutoSizeText('Info on ${destination['country_name']}',
-                    style: TextStyle(fontSize: 19, color: color)),
-                Icon(
-                  Icons.chevron_right,
-                  size: 19,
-                  color: color,
-                )
-              ],
-            )),
-      ),
       Container(
-          padding: EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 10),
+          padding: EdgeInsets.only(left: 20, right: 20, bottom: 0, top: 0),
           child: AutoSizeText(
             parseHtmlString(
                 destination['structured_content']['sections'][0]['body']),
@@ -742,7 +783,7 @@ class DestinationState extends State<Destination>
   }
 
   // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
+  Widget _buildLoadingBody(BuildContext ctxt, ScrollController _sc) {
     var children2 = <Widget>[
       Container(
           height: 220.0,
@@ -765,9 +806,6 @@ class DestinationState extends State<Destination>
       decoration: BoxDecoration(color: Colors.transparent),
       child: ListView(
         controller: _sc,
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
         children: children2,
       ),
     );

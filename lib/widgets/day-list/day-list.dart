@@ -166,39 +166,6 @@ class DayList extends StatelessWidget {
                   child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3))),
           itemCount: itineraryItems.length,
           itemBuilder: (BuildContext context, int index) {
-            // if (index == 0 && this.tabs != true) {
-            //   return Center(
-            //       child: Container(
-            //     width: 30,
-            //     height: 5,
-            //     decoration: BoxDecoration(
-            //         color: Colors.grey[300],
-            //         borderRadius: BorderRadius.all(Radius.circular(12.0))),
-            //   ));
-            // } else if (index == 0 && this.tabs == true) {
-            //   return Container();
-            // }
-
-            // if (index == 1) {
-            //   return Container(
-            //     alignment: Alignment.center,
-            //     padding: EdgeInsets.only(top: 10, bottom: 40),
-            //     child: Column(children: <Widget>[
-            //       AutoSizeText(
-            //         '${this.header}',
-            //         style: TextStyle(fontSize: 25),
-            //       ),
-            //       this.subHeader != null
-            //           ? AutoSizeText(
-            //               '${this.subHeader}',
-            //               style: TextStyle(
-            //                   fontSize: 25, fontWeight: FontWeight.w300),
-            //             )
-            //           : Container()
-            //     ]),
-            //   );
-            // }
-
             if (linkItineraryPosition == 'bottom' &&
                 index == itineraryItems.length - 1) {
               final destination = this.linkedItinerary['destination'];

@@ -5,7 +5,7 @@ import 'package:trotter_flutter/screens/home/index.dart';
 import 'package:trotter_flutter/screens/country/index.dart';
 import 'package:trotter_flutter/screens/destination/index.dart';
 import 'package:trotter_flutter/screens/poi/index.dart';
-import 'package:trotter_flutter/screens/park/index.dart';
+// import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/screens/notifications/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
@@ -23,7 +23,7 @@ class TabNavigatorRoutes {
   static const String search = '/search';
   static const String cityState = '/city_state';
   static const String island = '/island';
-  static const String park = '/park';
+  // static const String park = '/park';
   static const String trip = '/trip';
   static const String itinerary = '/itinerary';
   static const String itinerary_builder = '/itinerary/edit';
@@ -80,9 +80,9 @@ class TabNavigator extends StatelessWidget {
       case 'city_state':
         goTo = TabNavigatorRoutes.cityState;
         break;
-      case 'national_park':
-        goTo = TabNavigatorRoutes.park;
-        break;
+      // case 'national_park':
+      //   goTo = TabNavigatorRoutes.park;
+      //   break;
       case 'trip':
         goTo = TabNavigatorRoutes.trip;
         break;
@@ -171,8 +171,8 @@ class TabNavigator extends StatelessWidget {
           locationId: data['locationId'],
           googlePlace: data['google_place'],
           onPush: (data) => push(context, data)),
-      TabNavigatorRoutes.park: (context) =>
-          Park(parkId: data['id'], onPush: (data) => push(context, data)),
+      // TabNavigatorRoutes.park: (context) =>
+      //     Park(parkId: data['id'], onPush: (data) => push(context, data)),
       TabNavigatorRoutes.trip: (context) => Trip(
           tripId: data['id'],
           isPast: data['is_past'],

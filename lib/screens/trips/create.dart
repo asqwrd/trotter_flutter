@@ -16,6 +16,7 @@ class CreateTrip extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
   final dynamic param;
   CreateTrip({Key key, this.onPush, this.param}) : super(key: key);
+
   @override
   CreateTripState createState() =>
       new CreateTripState(onPush: this.onPush, param: this.param);
@@ -29,7 +30,7 @@ class CreateTripState extends State<CreateTrip> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   //final TextEditingController _typeAheadController = TextEditingController();
 
-  List<dynamic> _destinations = [];
+  List<dynamic> _destinations = [{}];
   String name;
   var destinationsCount = 0;
   List<Widget> fields;
@@ -39,19 +40,20 @@ class CreateTripState extends State<CreateTrip> {
     TextEditingController()
   ];
   bool loading;
-  ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
   Color color = Colors.blueGrey;
   bool shadow = false;
+  dynamic useDays = {'0': false};
+  bool setDatesLater = false;
 
   @override
   void dispose() {
     // Clean up the controller when the Widget is removed from the Widget tree
     nameController.dispose();
     datesControllers.forEach((controller) {
-      controller.dispose();
+      if (controller != null) controller.dispose();
     });
     super.dispose();
   }
@@ -59,9 +61,6 @@ class CreateTripState extends State<CreateTrip> {
   @override
   void initState() {
     loading = false;
-    this.destFields = [
-      _buildDestField(0, this.param, false),
-    ];
 
     if (this.param != null) {
       var destination = {
@@ -78,7 +77,7 @@ class CreateTripState extends State<CreateTrip> {
       this._destinations.add(destination);
       //this._destinationImages.add(this.param['image']);
     }
-    this.destinationsCount = this.destFields.length;
+    this.destinationsCount = 1;
     super.initState();
   }
 
@@ -89,6 +88,17 @@ class CreateTripState extends State<CreateTrip> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
+    final TextEditingController _destinationTextController =
+        TextEditingController();
+    var dateFormat = DateFormat("EEE, MMM d, yyyy");
+    if (this.destFields == null) {
+      if (param != null)
+        _destinationTextController.text = param['country_id'] == 'United_States'
+            ? '${param['name']}, United States'
+            : '${param['name']}, ${param['country_name']}';
+      this.destFields = [_buildDestField(0, this.param, false)];
+      //this.destFields[0].setDatesLater =true;
+    }
     this.fields = [
       Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
@@ -129,7 +139,7 @@ class CreateTripState extends State<CreateTrip> {
               return null;
             },
           )),
-      ...this.destFields,
+      ...destFields,
       Align(
           alignment: Alignment.center,
           child: Container(
@@ -147,8 +157,9 @@ class CreateTripState extends State<CreateTrip> {
                   setState(() {
                     this.destinationsCount = this.destinationsCount + 1;
                     datesControllers.add(TextEditingController());
-                    this.destFields.add(
-                        _buildDestField(this.destFields.length, null, true));
+                    this.destFields.add(this
+                        ._buildDestField(this.destFields.length, null, true));
+                    this._destinations.add({});
                   });
                 },
               ))),
@@ -176,7 +187,10 @@ class CreateTripState extends State<CreateTrip> {
                         "image": this._destinations[0]["image"],
                         "name": nameController.text
                       },
-                      "destinations": this._destinations,
+                      "destinations": this
+                          ._destinations
+                          .where((destination) => destination != null)
+                          .toList(),
                       "user": {
                         "displayName": store.currentUser.displayName,
                         "photoUrl": store.currentUser.photoUrl,
@@ -340,7 +354,8 @@ class CreateTripState extends State<CreateTrip> {
     ]);
   }
 
-  _buildDestField(int index, [dynamic param, bool addRemove = false]) {
+  Widget _buildDestField(int index, [dynamic param, bool addRemove = false]) {
+    print("dest");
     final TextEditingController _destinationTextController =
         TextEditingController();
     var dateFormat = DateFormat("EEE, MMM d, yyyy");
@@ -348,6 +363,204 @@ class CreateTripState extends State<CreateTrip> {
       _destinationTextController.text = param['country_id'] == 'United_States'
           ? '${param['name']}, United States'
           : '${param['name']}, ${param['country_name']}';
+    return DestinationField(
+        //index: index,
+        addRemove: addRemove,
+        onToggle: (value) {
+          setState(() {
+            this.useDays['$index'] = value;
+            print(useDays);
+          });
+        },
+        onDestinationSelected: (dynamic suggestion) {
+          if (suggestion != null) {
+            _destinationTextController.text =
+                suggestion['country_id'] == 'United_States' &&
+                        suggestion['type'] != 'region'
+                    ? '${suggestion['name']}, ${suggestion['parent_name']}'
+                    : '${suggestion['name']}, ${suggestion['country_name']}';
+
+            if (this._destinations.length == (index + 1)) {
+              this._destinations.replaceRange(index, index + 1, [
+                {
+                  "location": suggestion['location'],
+                  "destination_id": suggestion['id'],
+                  "destination_name": suggestion['name'],
+                  "parent_name": suggestion['parent_name'],
+                  "level": suggestion['level'],
+                  "country_id": suggestion['country_id'],
+                  "country_name": suggestion["country_name"],
+                  "start_date": this._destinations[index]['start_date'] != null
+                      ? this._destinations[index]['start_date']
+                      : null,
+                  "end_date": this._destinations[index]['end_date'] != null
+                      ? this._destinations[index]['end_date']
+                      : null,
+                  "image": suggestion["image_hd"]
+                }
+              ]);
+            } else {
+              this._destinations.insert(index, {
+                "location": suggestion['location'],
+                "destination_id": suggestion['id'],
+                "destination_name": suggestion['name'],
+                "parent_name": suggestion['parent_name'],
+                "level": suggestion['level'],
+                "country_id": suggestion['country_id'],
+                "country_name": suggestion["country_name"],
+                "start_date": null,
+                "end_date": null,
+                "image": suggestion["image_hd"]
+              });
+            }
+            //this._destinationImages.insert(index, suggestion["image"]);
+          }
+        },
+        onDateSelected: (dynamic picked) {
+          if (picked != null && picked.length == 2) {
+            setState(() {
+              datesControllers[index].text =
+                  '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
+              if (this._destinations.length > 0 && picked != null) {
+                var startDate = picked[0].millisecondsSinceEpoch / 1000;
+                this._destinations[index]['start_date'] = startDate.toInt();
+                var endDate = picked[1].millisecondsSinceEpoch / 1000;
+                this._destinations[index]['end_date'] = endDate.toInt();
+              } else if (picked != null) {
+                var startDate = picked[0].millisecondsSinceEpoch / 1000;
+                var endDate = picked[1].millisecondsSinceEpoch / 1000;
+                this._destinations.insert(index, {
+                  "start_date": startDate.toInt(),
+                  "end_date": endDate.toInt(),
+                });
+              }
+            });
+          }
+        },
+        destinationTextController: _destinationTextController,
+        context: context,
+        destinations: _destinations,
+        dateController: datesControllers[index],
+        dateFormat: dateFormat,
+        onRemoved: (res) {
+          setState(() {
+            this.destinationsCount = this.destFields.length;
+            datesControllers[index] = null;
+            this.destFields[index] = Container();
+            this._destinations[index] = null;
+          });
+        },
+        destFields: destFields);
+  }
+
+  _buildDivider() {
+    return Container(
+        margin: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
+        child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)));
+  }
+
+// function for rendering view after data is loaded
+  Widget _buildForm(BuildContext ctxt, ScrollController _sc) {
+    var formFields = this.fields;
+    return Form(
+        key: this._formKey,
+        child: Container(
+            color: Colors.transparent,
+            padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 0),
+            child: ListView.builder(
+                controller: _sc,
+                shrinkWrap: true,
+                itemCount: formFields.length,
+                itemBuilder: (_, int index) {
+                  return formFields[index];
+                })));
+  }
+}
+
+class DestinationField extends StatefulWidget {
+  final ValueChanged<dynamic> onToggle;
+  final ValueChanged<dynamic> onRemoved;
+  final ValueChanged<dynamic> onDestinationSelected;
+  final ValueChanged<dynamic> onDateSelected;
+  final bool addRemove;
+  final TextEditingController destinationTextController;
+  final BuildContext context;
+  final List destinations;
+  // final bool setDatesLater;
+  final TextEditingController dateController;
+  final DateFormat dateFormat;
+  final List<Widget> destFields;
+
+  DestinationField({
+    Key key,
+    @required this.destinationTextController,
+    @required this.onDestinationSelected,
+    @required this.onDateSelected,
+    @required this.context,
+    @required this.destinations,
+    @required this.dateController,
+    @required this.dateFormat,
+    @required this.destFields,
+    @required this.addRemove,
+    this.onToggle,
+    this.onRemoved,
+  }) : super(key: key);
+  @override
+  DestinationFieldState createState() => new DestinationFieldState(
+      onToggle: this.onToggle,
+      context: this.context,
+      dateController: dateController,
+      dateFormat: dateFormat,
+      addRemove: addRemove,
+      destinationTextController: destinationTextController,
+      destFields: destFields,
+      onDestinationSelected: onDestinationSelected,
+      onDateSelected: onDateSelected,
+      onRemoved: onRemoved,
+      destinations: destinations);
+}
+
+class DestinationFieldState extends State<DestinationField> {
+  final ValueChanged<dynamic> onToggle;
+  final ValueChanged<dynamic> onRemoved;
+  final ValueChanged<dynamic> onDestinationSelected;
+  final ValueChanged<dynamic> onDateSelected;
+  final bool addRemove;
+  final TextEditingController destinationTextController;
+  final BuildContext context;
+  final List destinations;
+  // final bool setDatesLater;
+  final TextEditingController dateController;
+  final DateFormat dateFormat;
+  final List<Widget> destFields;
+  bool setDatesLater = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  DestinationFieldState({
+    @required this.destinationTextController,
+    @required this.context,
+    @required this.destinations,
+    @required this.dateController,
+    @required this.dateFormat,
+    @required this.destFields,
+    @required this.addRemove,
+    @required this.onToggle,
+    @required this.onDestinationSelected,
+    @required this.onDateSelected,
+    this.onRemoved,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(children: <Widget>[
       Container(
           margin: EdgeInsets.symmetric(horizontal: 20),
@@ -386,7 +599,7 @@ class CreateTripState extends State<CreateTrip> {
                       hintText: 'Destination',
                       hintStyle: TextStyle(fontSize: 13),
                     ),
-                    controller: _destinationTextController,
+                    controller: this.destinationTextController,
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'Please select a destination';
@@ -401,50 +614,7 @@ class CreateTripState extends State<CreateTrip> {
                       fullscreenDialog: true,
                       builder: (context) => SearchModal(query: '')),
                 );
-                if (suggestion != null) {
-                  _destinationTextController.text = suggestion['country_id'] ==
-                              'United_States' &&
-                          suggestion['type'] != 'region'
-                      ? '${suggestion['name']}, ${suggestion['parent_name']}'
-                      : '${suggestion['name']}, ${suggestion['country_name']}';
-
-                  if (this._destinations.length == (index + 1)) {
-                    this._destinations.replaceRange(index, index + 1, [
-                      {
-                        "location": suggestion['location'],
-                        "destination_id": suggestion['id'],
-                        "destination_name": suggestion['name'],
-                        "parent_name": suggestion['parent_name'],
-                        "level": suggestion['level'],
-                        "country_id": suggestion['country_id'],
-                        "country_name": suggestion["country_name"],
-                        "start_date":
-                            this._destinations[index]['start_date'] != null
-                                ? this._destinations[index]['start_date']
-                                : null,
-                        "end_date":
-                            this._destinations[index]['end_date'] != null
-                                ? this._destinations[index]['end_date']
-                                : null,
-                        "image": suggestion["image_hd"]
-                      }
-                    ]);
-                  } else {
-                    this._destinations.insert(index, {
-                      "location": suggestion['location'],
-                      "destination_id": suggestion['id'],
-                      "destination_name": suggestion['name'],
-                      "parent_name": suggestion['parent_name'],
-                      "level": suggestion['level'],
-                      "country_id": suggestion['country_id'],
-                      "country_name": suggestion["country_name"],
-                      "start_date": null,
-                      "end_date": null,
-                      "image": suggestion["image_hd"]
-                    });
-                  }
-                  //this._destinationImages.insert(index, suggestion["image"]);
-                }
+                onDestinationSelected(suggestion);
               })),
       InkWell(
           onTap: () async {
@@ -456,27 +626,7 @@ class CreateTripState extends State<CreateTrip> {
                 firstDate: new DateTime(DateTime.now().year,
                     DateTime.now().month, DateTime.now().day, 0, 0, 0, 0),
                 lastDate: new DateTime(2021));
-            if (picked != null && picked.length == 2) {
-              print(picked);
-
-              setState(() {
-                datesControllers[index].text =
-                    '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
-                if (this._destinations.length > 0 && picked != null) {
-                  var startDate = picked[0].millisecondsSinceEpoch / 1000;
-                  this._destinations[index]['start_date'] = startDate.toInt();
-                  var endDate = picked[1].millisecondsSinceEpoch / 1000;
-                  this._destinations[index]['end_date'] = endDate.toInt();
-                } else if (picked != null) {
-                  var startDate = picked[0].millisecondsSinceEpoch / 1000;
-                  var endDate = picked[1].millisecondsSinceEpoch / 1000;
-                  this._destinations.insert(index, {
-                    "start_date": startDate.toInt(),
-                    "end_date": endDate.toInt(),
-                  });
-                }
-              });
-            }
+            onDateSelected(picked);
           },
           child: Container(
               margin: EdgeInsets.only(left: 20, right: 20, top: 20),
@@ -512,7 +662,7 @@ class CreateTripState extends State<CreateTrip> {
                       hintText: 'When are you traveling',
                       hintStyle: TextStyle(fontSize: 13),
                     ),
-                    controller: datesControllers[index],
+                    controller: this.dateController,
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'Please select travel dates.';
@@ -520,6 +670,17 @@ class CreateTripState extends State<CreateTrip> {
                       return null;
                     },
                   )))),
+      SwitchListTile(
+        contentPadding: EdgeInsets.only(left: 20, right: 20, top: 0),
+        title: Text('Set travel dates later?'),
+        value: this.setDatesLater,
+        onChanged: (bool newVal) {
+          setState(() {
+            this.setDatesLater = newVal;
+            onToggle(newVal);
+          });
+        },
+      ),
       addRemove == true
           ? Container(
               width: double.infinity,
@@ -537,43 +698,14 @@ class CreateTripState extends State<CreateTrip> {
                       fontWeight: FontWeight.w300),
                 ),
                 onPressed: () {
-                  print(index);
-                  print("index");
-
-                  setState(() {
-                    this.destinationsCount = this.destFields.length;
-                    //datesControllers[index].dispose();
-                    datesControllers.removeAt(index);
-                    this.destFields.removeAt(index);
-                    this._destinations.removeAt(index);
-                  });
+                  this.onRemoved({});
                 },
               ))
           : Container(),
-      _buildDivider()
+      Container(
+          margin: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
+          child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)))
+      //this.parent._buildDivider()
     ]);
-  }
-
-  _buildDivider() {
-    return Container(
-        margin: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
-        child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)));
-  }
-
-// function for rendering view after data is loaded
-  Widget _buildForm(BuildContext ctxt, ScrollController _sc) {
-    var formFields = this.fields;
-    return Form(
-        key: this._formKey,
-        child: Container(
-            color: Colors.transparent,
-            padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 0),
-            child: ListView.builder(
-                controller: _sc,
-                shrinkWrap: true,
-                itemCount: formFields.length,
-                itemBuilder: (_, int index) {
-                  return formFields[index];
-                })));
   }
 }

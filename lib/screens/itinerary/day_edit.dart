@@ -884,6 +884,58 @@ class DayEditState extends State<DayEdit> {
                         }
                       }
                     }),
+                new ListTile(
+                    leading: new Icon(EvilIcons.external_link),
+                    title: new AutoSizeText('Copy to a different day'),
+                    onTap: () async {
+                      var result = await showDayBottomSheet(
+                          store,
+                          context,
+                          this.itineraryId,
+                          data['poi'],
+                          this.destinationId,
+                          this.color,
+                          this.destination,
+                          data['added_by'],
+                          force: true,
+                          startDate: this.startDate,
+                          isSelecting: false,
+                          movedByUid: store.currentUser.uid,
+                          movingFromId: this.dayId,
+                          onPush: onPush);
+                      if (result != null &&
+                          result['selected'] != null &&
+                          result['dayId'] != null &&
+                          result['toIndex'] != null &&
+                          result['itinerary'] != null &&
+                          result['poi'] != null &&
+                          result['dayIndex'] != null &&
+                          result['movedPlaceId'] != null) {
+                        Navigator.of(context).pop();
+
+                        setState(() {
+                          showSuccessSnackbar(this.context,
+                              onPush: onPush,
+                              toIndex: result['toIndex'],
+                              dayId: result['dayId'],
+                              dayIndex: result['dayIndex'],
+                              itinerary: result['itinerary'],
+                              poi: result['poi'],
+                              action: 'copied');
+
+                          this.loading = false;
+                        });
+                      } else {
+                        setState(() {
+                          Scaffold.of(this.context).showSnackBar(SnackBar(
+                            content: AutoSizeText('Unable to copy',
+                                style: TextStyle(fontSize: 18)),
+                            duration: Duration(seconds: 2),
+                          ));
+                          this.loading = false;
+                        });
+                      }
+                    }),
                 this.ownerId == store.currentUser.uid ||
                         store.currentUser.uid == data['added_by']
                     ? new ListTile(

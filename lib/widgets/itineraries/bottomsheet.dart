@@ -292,7 +292,7 @@ Future<DayData> responseFromDayBottomSheet(BuildContext context, dynamic item,
     "added_by": addedBy
   };
   var response = await addToDay(
-      store, item['id'], dayId, destinationId, data, true, movedByUid);
+      store, item['id'], dayId, destinationId, data, true, movedByUid, true);
 
   return response;
 }
@@ -492,12 +492,13 @@ Future<ScaffoldFeatureController<SnackBar, SnackBarClosedReason>>
         String dayId,
         Future2VoidFunc onPush,
         int dayIndex,
-        int toIndex}) async {
+        int toIndex,
+        String action = 'added'}) async {
   return Scaffold.of(context).showSnackBar(SnackBar(
     content: AutoSizeText(
         toIndex != null
-            ? '${poi['name']} added to day $toIndex'
-            : '${poi['name']} added to ${itinerary['name']}',
+            ? '${poi['name']} $action to day $toIndex'
+            : '${poi['name']} $action to ${itinerary['name']}',
         style: TextStyle(fontSize: 18)),
     duration: Duration(seconds: 2),
     action: onPush != null

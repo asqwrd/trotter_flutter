@@ -26,7 +26,6 @@ class Notifications extends StatefulWidget {
 class NotificationsState extends State<Notifications> {
   final ValueChanged<dynamic> onPush;
   bool errorUi = false;
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   var kExpandedHeight = 280;
   TrotterStore store;
@@ -209,8 +208,9 @@ class NotificationsState extends State<Notifications> {
           child: Container(
               color: Colors.transparent,
               padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: ListView(
+                shrinkWrap: true,
+                controller: _sc,
                 children: <Widget>[
                   Container(
                       width: MediaQuery.of(context).size.width / 2,

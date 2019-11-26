@@ -117,7 +117,8 @@ class ProfileState extends State<Profile> {
       fit: StackFit.expand,
       children: <Widget>[
         Center(
-            child: ListView(shrinkWrap: true, children: <Widget>[
+            child:
+                ListView(shrinkWrap: true, controller: _sc, children: <Widget>[
           Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,

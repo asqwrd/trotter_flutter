@@ -71,8 +71,10 @@ _buildDatesModal(
   var arrival = destination['start_date'];
   var departure = destination['end_date'];
   final datesController = TextEditingController();
-  datesController.text =
-      '${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['start_date'] * 1000))} to ${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['end_date'] * 1000))}';
+  if (destination['start_date'] > 0 && destination['end_date'] > 0) {
+    datesController.text =
+        '${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['start_date'] * 1000))} to ${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['end_date'] * 1000))}';
+  }
 
   return Form(
       key: _formKey,
@@ -81,18 +83,21 @@ _buildDatesModal(
             onTap: () async {
               final List<DateTime> picked = await DateRagePicker.showDatePicker(
                   context: context,
-                  initialFirstDate: DateTime.fromMillisecondsSinceEpoch(
-                      destination['start_date'] * 1000),
-                  initialLastDate: DateTime.fromMillisecondsSinceEpoch(
-                      destination['end_date'] * 1000),
+                  initialFirstDate: destination['start_date'] > 0
+                      ? DateTime.fromMillisecondsSinceEpoch(
+                          destination['start_date'] * 1000)
+                      : DateTime.now(),
+                  initialLastDate: destination['end_date'] > 0
+                      ? DateTime.fromMillisecondsSinceEpoch(
+                          destination['end_date'] * 1000)
+                      : DateTime.now(),
                   firstDate: new DateTime(DateTime.now().year,
                       DateTime.now().month, DateTime.now().day, 0, 0, 0, 0),
                   lastDate: new DateTime(2021));
               if (picked != null && picked.length == 2) {
-                print(picked);
-
                 datesController.text =
                     '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
+
                 if (picked != null) {
                   var startDate = picked[0].millisecondsSinceEpoch / 1000;
                   arrival = startDate.toInt();
@@ -1109,11 +1114,23 @@ class TripState extends State<Trip> {
                                                     fontSize: 23,
                                                     fontWeight:
                                                         FontWeight.w300))),
-                                        AutoSizeText('$startDate - $endDate',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w300))
+                                        destinations[index]['start_date'] ==
+                                                    null &&
+                                                destinations[index]['end_date']
+                                            ? AutoSizeText(
+                                                '$startDate - $endDate',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.w300))
+                                            : AutoSizeText(
+                                                '${destinations[index]['num_of_days']} day${destinations[index]['num_of_days'] != 1 ? 's' : ''}',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                        FontWeight.w300))
                                       ])),
                             ]);
                           },
@@ -1159,7 +1176,6 @@ class TripState extends State<Trip> {
         ),
         size: PanelSize(closedHeight: .45),
       ),
-      
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,

@@ -39,6 +39,9 @@ class CreateTripState extends State<CreateTrip> {
   final List<TextEditingController> datesControllers = [
     TextEditingController()
   ];
+  final List<TextEditingController> numDaysControllers = [
+    TextEditingController()
+  ];
   bool loading;
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -53,6 +56,9 @@ class CreateTripState extends State<CreateTrip> {
     // Clean up the controller when the Widget is removed from the Widget tree
     nameController.dispose();
     datesControllers.forEach((controller) {
+      if (controller != null) controller.dispose();
+    });
+    numDaysControllers.forEach((controller) {
       if (controller != null) controller.dispose();
     });
     super.dispose();
@@ -157,6 +163,7 @@ class CreateTripState extends State<CreateTrip> {
                   setState(() {
                     this.destinationsCount = this.destinationsCount + 1;
                     datesControllers.add(TextEditingController());
+                    numDaysControllers.add(TextEditingController());
                     this.destFields.add(this
                         ._buildDestField(this.destFields.length, null, true));
                     this._destinations.add({});
@@ -199,7 +206,7 @@ class CreateTripState extends State<CreateTrip> {
                         "uid": store.currentUser.uid,
                       }
                     };
-                    // print(data);
+                    //print(data['destinations']);
                     setState(() {
                       this.loading = true;
                     });
@@ -218,6 +225,13 @@ class CreateTripState extends State<CreateTrip> {
                         "level": "trip",
                         'from': 'createtrip'
                       });
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                        backgroundColor: Colors.red,
+                        content: AutoSizeText('Trip failed to get created!',
+                            style: TextStyle(fontSize: 15)),
+                        duration: Duration(seconds: 2),
+                      ));
                     }
                   } else {
                     Scaffold.of(context).showSnackBar(SnackBar(
@@ -372,6 +386,19 @@ class CreateTripState extends State<CreateTrip> {
             print(useDays);
           });
         },
+        onNumDaysChanged: (String value) {
+          if (value != null && value.isNotEmpty) {
+            setState(() {
+              if (this._destinations.length > 0 && value.isNotEmpty) {
+                this._destinations[index]['num_of_days'] = int.parse(value);
+              } else if (value.isNotEmpty) {
+                this._destinations.insert(index, {
+                  "num_of_days": int.parse(value),
+                });
+              }
+            });
+          }
+        },
         onDestinationSelected: (dynamic suggestion) {
           if (suggestion != null) {
             _destinationTextController.text =
@@ -441,11 +468,13 @@ class CreateTripState extends State<CreateTrip> {
         context: context,
         destinations: _destinations,
         dateController: datesControllers[index],
+        numOfDaysController: numDaysControllers[index],
         dateFormat: dateFormat,
         onRemoved: (res) {
           setState(() {
             this.destinationsCount = this.destFields.length;
             datesControllers[index] = null;
+            numDaysControllers[index] = null;
             this.destFields[index] = Container();
             this._destinations[index] = null;
           });
@@ -479,6 +508,7 @@ class CreateTripState extends State<CreateTrip> {
 
 class DestinationField extends StatefulWidget {
   final ValueChanged<dynamic> onToggle;
+  final ValueChanged<String> onNumDaysChanged;
   final ValueChanged<dynamic> onRemoved;
   final ValueChanged<dynamic> onDestinationSelected;
   final ValueChanged<dynamic> onDateSelected;
@@ -488,6 +518,7 @@ class DestinationField extends StatefulWidget {
   final List destinations;
   // final bool setDatesLater;
   final TextEditingController dateController;
+  final TextEditingController numOfDaysController;
   final DateFormat dateFormat;
   final List<Widget> destFields;
 
@@ -499,17 +530,20 @@ class DestinationField extends StatefulWidget {
     @required this.context,
     @required this.destinations,
     @required this.dateController,
+    @required this.numOfDaysController,
     @required this.dateFormat,
     @required this.destFields,
     @required this.addRemove,
     this.onToggle,
     this.onRemoved,
+    this.onNumDaysChanged,
   }) : super(key: key);
   @override
   DestinationFieldState createState() => new DestinationFieldState(
       onToggle: this.onToggle,
       context: this.context,
       dateController: dateController,
+      numOfDaysController: numOfDaysController,
       dateFormat: dateFormat,
       addRemove: addRemove,
       destinationTextController: destinationTextController,
@@ -517,12 +551,14 @@ class DestinationField extends StatefulWidget {
       onDestinationSelected: onDestinationSelected,
       onDateSelected: onDateSelected,
       onRemoved: onRemoved,
+      onNumDaysChanged: onNumDaysChanged,
       destinations: destinations);
 }
 
 class DestinationFieldState extends State<DestinationField> {
   final ValueChanged<dynamic> onToggle;
   final ValueChanged<dynamic> onRemoved;
+  final ValueChanged<String> onNumDaysChanged;
   final ValueChanged<dynamic> onDestinationSelected;
   final ValueChanged<dynamic> onDateSelected;
   final bool addRemove;
@@ -531,12 +567,14 @@ class DestinationFieldState extends State<DestinationField> {
   final List destinations;
   // final bool setDatesLater;
   final TextEditingController dateController;
+  final TextEditingController numOfDaysController;
   final DateFormat dateFormat;
   final List<Widget> destFields;
-  bool setDatesLater = false;
+  bool setDatesLater;
 
   @override
   void initState() {
+    this.setDatesLater = false;
     super.initState();
   }
 
@@ -550,10 +588,12 @@ class DestinationFieldState extends State<DestinationField> {
     @required this.context,
     @required this.destinations,
     @required this.dateController,
+    @required this.numOfDaysController,
     @required this.dateFormat,
     @required this.destFields,
     @required this.addRemove,
     @required this.onToggle,
+    @required this.onNumDaysChanged,
     @required this.onDestinationSelected,
     @required this.onDateSelected,
     this.onRemoved,
@@ -616,60 +656,114 @@ class DestinationFieldState extends State<DestinationField> {
                 );
                 onDestinationSelected(suggestion);
               })),
-      InkWell(
-          onTap: () async {
-            final List<DateTime> picked = await DateRagePicker.showDatePicker(
-                context: context,
-                initialFirstDate: new DateTime.now(),
-                initialLastDate:
-                    (new DateTime.now()).add(new Duration(days: 7)),
-                firstDate: new DateTime(DateTime.now().year,
-                    DateTime.now().month, DateTime.now().day, 0, 0, 0, 0),
-                lastDate: new DateTime(2021));
-            onDateSelected(picked);
-          },
-          child: Container(
+      this.setDatesLater == true
+          ? Container(
               margin: EdgeInsets.only(left: 20, right: 20, top: 20),
-              child: IgnorePointer(
-                  ignoring: true,
-                  child: TextFormField(
-                    maxLengthEnforced: true,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                      prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                          child: Icon(
-                            Icons.calendar_today,
-                            size: 15,
-                          )),
-                      filled: true,
-                      errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide:
-                              BorderSide(width: 1.0, color: Colors.red)),
-                      focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide:
-                              BorderSide(width: 1.0, color: Colors.red)),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide: BorderSide(
-                              width: 0.0, color: Colors.transparent)),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide: BorderSide(
-                              width: 0.0, color: Colors.transparent)),
-                      hintText: 'When are you traveling',
-                      hintStyle: TextStyle(fontSize: 13),
-                    ),
-                    controller: this.dateController,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Please select travel dates.';
-                      }
-                      return null;
-                    },
-                  )))),
+              child: TextFormField(
+                onChanged: (value) {
+                  onNumDaysChanged(this.numOfDaysController.text);
+                },
+                keyboardType: TextInputType.number,
+                maxLengthEnforced: true,
+                decoration: InputDecoration(
+                  contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                  prefixIcon: Padding(
+                      padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                      child: Icon(
+                        Icons.calendar_today,
+                        size: 15,
+                      )),
+                  filled: true,
+                  errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      borderSide: BorderSide(width: 1.0, color: Colors.red)),
+                  focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      borderSide: BorderSide(width: 1.0, color: Colors.red)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      borderSide:
+                          BorderSide(width: 0.0, color: Colors.transparent)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      borderSide:
+                          BorderSide(width: 0.0, color: Colors.transparent)),
+                  hintText: 'How many days will you be here?',
+                  hintStyle: TextStyle(fontSize: 13),
+                ),
+                controller: this.numOfDaysController,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter number of days you will be here';
+                  }
+                  return null;
+                },
+              ))
+          : InkWell(
+              onTap: () async {
+                final List<DateTime> picked =
+                    await DateRagePicker.showDatePicker(
+                        context: context,
+                        initialFirstDate: new DateTime.now(),
+                        initialLastDate:
+                            (new DateTime.now()).add(new Duration(days: 7)),
+                        firstDate: new DateTime(
+                            DateTime.now().year,
+                            DateTime.now().month,
+                            DateTime.now().day,
+                            0,
+                            0,
+                            0,
+                            0),
+                        lastDate: new DateTime(2021));
+                onDateSelected(picked);
+              },
+              child: Container(
+                  margin: EdgeInsets.only(left: 20, right: 20, top: 20),
+                  child: IgnorePointer(
+                      ignoring: true,
+                      child: TextFormField(
+                        maxLengthEnforced: true,
+                        decoration: InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                          prefixIcon: Padding(
+                              padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                              child: Icon(
+                                Icons.calendar_today,
+                                size: 15,
+                              )),
+                          filled: true,
+                          errorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide:
+                                  BorderSide(width: 1.0, color: Colors.red)),
+                          focusedErrorBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide:
+                                  BorderSide(width: 1.0, color: Colors.red)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide: BorderSide(
+                                  width: 0.0, color: Colors.transparent)),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                              borderSide: BorderSide(
+                                  width: 0.0, color: Colors.transparent)),
+                          hintText: 'When are you traveling',
+                          hintStyle: TextStyle(fontSize: 13),
+                        ),
+                        controller: this.dateController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please select travel dates.';
+                          }
+                          return null;
+                        },
+                      )))),
       SwitchListTile(
         contentPadding: EdgeInsets.only(left: 20, right: 20, top: 0),
         title: Text('Set travel dates later?'),

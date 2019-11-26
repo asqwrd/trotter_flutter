@@ -220,7 +220,7 @@ class _AddDestinationModal extends State<AddDestinationModal> {
                         color: Colors.white))),
             onPressed: () async {
               if (formKey.currentState.validate()) {
-                Navigator.pop(context, destination);
+                Navigator.pop(context, {"destination": destination});
               }
             },
           )),

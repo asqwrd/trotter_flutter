@@ -1114,9 +1114,16 @@ class TripState extends State<Trip> {
                                                     fontSize: 23,
                                                     fontWeight:
                                                         FontWeight.w300))),
-                                        destinations[index]['start_date'] ==
+                                        destinations[index]['start_date'] > 0 &&
+                                                destinations[index]
+                                                        ['end_date'] >
+                                                    0 &&
+                                                destinations[index]
+                                                        ['start_date'] !=
                                                     null &&
-                                                destinations[index]['end_date']
+                                                destinations[index]
+                                                        ['end_date'] !=
+                                                    null
                                             ? AutoSizeText(
                                                 '$startDate - $endDate',
                                                 style: TextStyle(

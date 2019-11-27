@@ -443,7 +443,11 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
             currentTime.microsecond);
 
         return Opacity(
-            opacity: compareDay.isBefore(currentTime) ? 0.5 : 1,
+            opacity: this.startDate != null &&
+                    this.startDate > 0 &&
+                    compareDay.isBefore(currentTime)
+                ? 0.5
+                : 1,
             child: InkWell(
                 onTap: () => onPush({
                       'itineraryId': this.itineraryId,
@@ -463,18 +467,21 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.w400),
                         ))),
-                    Align(
-                        alignment: Alignment.topLeft,
-                        child: Container(
-                            child: AutoSizeText(
-                          formatter.format(DateTime.fromMillisecondsSinceEpoch(
-                                  this.startDate,
-                                  isUtc: true)
-                              .add(
-                                  Duration(days: dayBuilder[dayIndex]['day']))),
-                          style: TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w300),
-                        ))),
+                    this.startDate != null && this.startDate != 0
+                        ? Align(
+                            alignment: Alignment.topLeft,
+                            child: Container(
+                                child: AutoSizeText(
+                              formatter.format(
+                                  DateTime.fromMillisecondsSinceEpoch(
+                                          this.startDate,
+                                          isUtc: true)
+                                      .add(Duration(
+                                          days: dayBuilder[dayIndex]['day']))),
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.w300),
+                            )))
+                        : Container(),
                     Align(
                         alignment: Alignment.topLeft,
                         child: Container(

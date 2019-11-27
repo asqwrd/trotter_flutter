@@ -925,7 +925,7 @@ class DayEditState extends State<DayEdit> {
 
                           this.loading = false;
                         });
-                      } else {
+                      } else if (result != null && result['success'] == false) {
                         setState(() {
                           Scaffold.of(this.context).showSnackBar(SnackBar(
                             content: AutoSizeText('Unable to copy',

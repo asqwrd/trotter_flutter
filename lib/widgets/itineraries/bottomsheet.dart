@@ -427,6 +427,7 @@ showDayBottomSheet(
                                             context,
                                             onPush);
                                     Navigator.pop(listContext, {
+                                      'success': response.success,
                                       'selected': days[dayIndex],
                                       'toIndex': days[dayIndex]['day'] + 1,
                                       'poi': poi,
@@ -442,26 +443,22 @@ showDayBottomSheet(
                                       horizontal: 20, vertical: 5),
                                   title: Row(children: <Widget>[
                                     AutoSizeText(
-                                      'Day ${days[dayIndex]['day'] + 1} - ',
+                                      'Day ${days[dayIndex]['day'] + 1}',
                                       style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500),
                                     ),
-                                    Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Container(
-                                            child: AutoSizeText(
-                                          formatter.format(DateTime
-                                                  .fromMillisecondsSinceEpoch(
-                                                      startDate,
-                                                      isUtc: true)
-                                              .add(Duration(
-                                                  days: days[dayIndex]
-                                                      ['day']))),
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w300),
-                                        )))
+                                    startDate != null && startDate != 0
+                                        ? Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Container(
+                                                child: AutoSizeText(
+                                              ' - ${formatter.format(DateTime.fromMillisecondsSinceEpoch(startDate, isUtc: true).add(Duration(days: days[dayIndex]['day'])))}',
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w300),
+                                            )))
+                                        : Container()
                                   ]),
                                   subtitle: AutoSizeText(
                                     '${days[dayIndex]['itinerary_items'].length} ${days[dayIndex]['itinerary_items'].length == 1 ? "place" : "places"} to see',

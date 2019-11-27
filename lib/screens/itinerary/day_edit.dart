@@ -885,7 +885,10 @@ class DayEditState extends State<DayEdit> {
                       }
                     }),
                 new ListTile(
-                    leading: new Icon(EvilIcons.external_link),
+                    leading: new Icon(
+                      Ionicons.md_copy,
+                      size: 20,
+                    ),
                     title: new AutoSizeText('Copy to a different day'),
                     onTap: () async {
                       var result = await showDayBottomSheet(

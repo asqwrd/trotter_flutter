@@ -417,8 +417,9 @@ class FlightsAccomodationsList extends StatelessWidget {
           child: Container(
               color: Colors.transparent,
               padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: ListView(
+                shrinkWrap: true,
+                controller: controller,
                 children: <Widget>[
                   Container(
                       width: MediaQuery.of(context).size.width / 2,

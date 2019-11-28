@@ -96,7 +96,6 @@ class CreateTripState extends State<CreateTrip> {
     };
     final TextEditingController _destinationTextController =
         TextEditingController();
-    var dateFormat = DateFormat("EEE, MMM d, yyyy");
     if (this.destFields == null) {
       if (param != null)
         _destinationTextController.text = param['country_id'] == 'United_States'

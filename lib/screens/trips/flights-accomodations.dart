@@ -1,13 +1,17 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:sliding_panel/sliding_panel.dart';
 // import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
+import 'package:trotter_flutter/widgets/autocomplete/autocomplete.dart';
 import 'package:trotter_flutter/widgets/flights-accomodation-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/travelers/travelers-modal.dart';
@@ -43,7 +47,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   String destinationName = '';
   dynamic destination;
   List<dynamic> itineraryItems = [];
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
@@ -53,6 +56,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   List<dynamic> flightsAccomodations;
   bool refreshParent = false;
   bool shadow = false;
+  final GlobalKey<FormBuilderState> _fbKey = GlobalKey<FormBuilderState>();
 
   Future<FlightsAndAccomodationsData> data;
 
@@ -76,7 +80,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -220,8 +223,55 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                               height: 24.0,
                               color: fontContrast(color),
                               fit: BoxFit.contain),
+                        )),
+                    Container(
+                        width: 58,
+                        height: 58,
+                        margin: EdgeInsets.symmetric(horizontal: 0),
+                        child: FlatButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100)),
+                          onPressed: () async {
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return new Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        ListTile(
+                                            leading:
+                                                new Icon(Icons.flight_takeoff),
+                                            title: new AutoSizeText(
+                                                'Add flight detail'),
+                                            onTap: () async {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      fullscreenDialog: true,
+                                                      builder: (context) {
+                                                        return FlightsForm(
+                                                          fbKey: _fbKey,
+                                                        );
+                                                      }));
+                                            }),
+                                        ListTile(
+                                            leading: new Icon(Icons.hotel),
+                                            title: new AutoSizeText(
+                                                'Add accommodations'),
+                                            onTap: () async {}),
+                                      ]);
+                                });
+                          },
+                          child: SvgPicture.asset("images/add-icon.svg",
+                              width: 24.0,
+                              height: 24.0,
+                              color: fontContrast(color),
+                              fit: BoxFit.contain),
                         ))
                   ],
+                  showSearch: false,
                   back: () =>
                       Navigator.pop(context, {"refresh": this.refreshParent}))),
         ]));
@@ -401,6 +451,94 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
       indicator: BoxDecoration(
           border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
       tabs: tabs,
+    );
+  }
+}
+
+class FlightsForm extends StatelessWidget {
+  final GlobalKey<FormBuilderState> fbKey;
+
+  const FlightsForm({Key key, @required this.fbKey}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FormBuilder(
+        key: fbKey,
+        initialValue: {
+          'departure_datetime': DateTime.now(),
+          'arrival_datetime': DateTime.now(),
+          'airline': {'iata_code': null, 'name': null},
+          'flight_number': null,
+          'destination_airport': {
+            'destination': null,
+            'destination_name': null,
+            'destination_city_name': null,
+          },
+          'origin_airport': {
+            'origin': null,
+            'origin_name': null,
+            'origin_city_name': null,
+          },
+        },
+        onChanged: (value) {
+          print(value);
+        },
+        child: ListView(
+            physics: NeverScrollableScrollPhysics(),
+            primary: false,
+            children: <Widget>[
+              AutoCompleteAirport(),
+              AutoCompleteAirline(
+                attribute: 'airline',
+              ),
+              TrotterDateTime(
+                onDatePicked: (DateTime value) {
+                  print(value);
+                },
+              )
+            ]));
+  }
+}
+
+class TrotterDateTime extends StatelessWidget {
+  final ValueChanged<DateTime> onDatePicked;
+  const TrotterDateTime({Key key, @required this.onDatePicked})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20),
+      child: FormBuilderDateTimePicker(
+        attribute: "date",
+        inputType: InputType.both,
+        format: DateFormat("yyyy-MM-dd HH:mm"),
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+          prefixIcon: Padding(
+              padding: EdgeInsets.only(left: 20.0, right: 5.0),
+              child: Icon(Icons.label, size: 15)),
+          //fillColor: Colors.blueGrey.withOpacity(0.5),
+          filled: true,
+          errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(width: 1.0, color: Colors.red)),
+          focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(width: 1.0, color: Colors.red)),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(width: 0.0, color: Colors.transparent)),
+          disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(width: 0.0, color: Colors.transparent)),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              borderSide: BorderSide(width: 0.0, color: Colors.transparent)),
+          hintText: 'Departure time',
+          hintStyle: TextStyle(fontSize: 13),
+        ),
+      ),
     );
   }
 }

@@ -16,6 +16,7 @@ class TrotterAppBar extends StatelessWidget {
       this.title,
       this.id,
       this.destination,
+      this.brightness,
       this.location})
       : super(key: key);
 
@@ -29,6 +30,7 @@ class TrotterAppBar extends StatelessWidget {
   final bool showSearch;
   final bool loading;
   final dynamic destination;
+  final Brightness brightness;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,7 @@ class TrotterAppBar extends StatelessWidget {
             elevation: 0,
             backgroundColor: Colors.transparent,
             centerTitle: true,
+            brightness: this.brightness,
             leading: back == true || back != null
                 ? IconButton(
                     padding: EdgeInsets.all(0),

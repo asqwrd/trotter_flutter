@@ -251,9 +251,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                                                   MaterialPageRoute(
                                                       fullscreenDialog: true,
                                                       builder: (context) {
-                                                        return FlightsForm(
-                                                          fbKey: _fbKey,
-                                                        );
+                                                        return FlightsFormModal();
                                                       }));
                                             }),
                                         ListTile(
@@ -455,69 +453,391 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   }
 }
 
-class FlightsForm extends StatelessWidget {
-  final GlobalKey<FormBuilderState> fbKey;
+class FlightsFormModal extends StatefulWidget {
+  FlightsFormModal({
+    Key key,
+  }) : super(key: key);
+  @override
+  FlightsFormModalState createState() => new FlightsFormModalState();
+}
 
-  const FlightsForm({Key key, @required this.fbKey}) : super(key: key);
+class FlightsFormModalState extends State<FlightsFormModal> {
+  FlightsFormModalState();
+  GlobalKey<FormBuilderState> fbKey = new GlobalKey<FormBuilderState>();
+  bool showDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        color: Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+                //color: color,
+                height: 80,
+                child: TrotterAppBar(
+                    title: 'Flight details',
+                    back: true,
+                    onPush: () {},
+                    showSearch: false,
+                    brightness: Brightness.light,
+                    color: Colors.white)),
+            Flexible(child: FlightsForm())
+          ],
+        ));
+  }
+}
+
+class FlightsForm extends StatefulWidget {
+  FlightsForm();
+
+  @override
+  FlightsFormState createState() => new FlightsFormState();
+}
+
+class FlightsFormState extends State<FlightsForm> {
+  GlobalKey<FormBuilderState> fbKey = new GlobalKey<FormBuilderState>();
+  ValueChanged<dynamic> onAddReturn;
+  ValueChanged<dynamic> onSubmit;
+  bool showDone = false;
+  List<dynamic> segments = [];
+
+  FlightsFormState();
 
   @override
   Widget build(BuildContext context) {
     return FormBuilder(
         key: fbKey,
         initialValue: {
-          'departure_datetime': DateTime.now(),
-          'arrival_datetime': DateTime.now(),
-          'airline': {'iata_code': null, 'name': null},
-          'flight_number': null,
-          'destination_airport': {
-            'destination': null,
-            'destination_name': null,
-            'destination_city_name': null,
+          'departure_datetime': null,
+          'arrival_datetime': null,
+          'airline': {'iata_code': '', 'name': ''},
+          'flight_number': '',
+          'type': 'Air',
+          'destination': {
+            'alias': '',
+            'name': '',
+            'city': '',
+            'time_zone_id': '',
+            'lat': '',
+            'lon': '',
           },
-          'origin_airport': {
-            'origin': null,
-            'origin_name': null,
-            'origin_city_name': null,
+          'origin': {
+            'alias': '',
+            'name': '',
+            'city': '',
+            'time_zone_id': '',
+            'lat': '',
+            'lon': '',
           },
         },
-        onChanged: (value) {
-          print(value);
-        },
+        onChanged: (value) {},
         child: ListView(
-            physics: NeverScrollableScrollPhysics(),
-            primary: false,
+            //physics: NeverScrollableScrollPhysics(),
+            //primary: false,
+
             children: <Widget>[
-              AutoCompleteAirport(),
               AutoCompleteAirline(
                 attribute: 'airline',
               ),
+              Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: FormBuilderTextField(
+                    validators: [
+                      FormBuilderValidators.required(
+                          errorText: 'Flight number is required')
+                    ],
+                    maxLines: 1,
+                    attribute: 'flight_number',
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                      prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                          child: Icon(Icons.confirmation_number, size: 15)),
+                      //fillColor: Colors.blueGrey.withOpacity(0.5),
+                      filled: true,
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide:
+                              BorderSide(width: 1.0, color: Colors.red)),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide:
+                              BorderSide(width: 1.0, color: Colors.red)),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      hintText: 'Flight number',
+                      hintStyle: TextStyle(fontSize: 13),
+                    ),
+                  )),
+              AutoCompleteAirport(
+                attribute: 'origin',
+                hintText: 'Search departure airport',
+              ),
               TrotterDateTime(
-                onDatePicked: (DateTime value) {
-                  print(value);
-                },
-              )
+                attribute: 'departure_datetime',
+                hintText: 'Departure time',
+              ),
+              AutoCompleteAirport(
+                attribute: 'destination',
+                hintText: 'Search arrival airport',
+              ),
+              TrotterDateTime(
+                attribute: 'arrival_datetime',
+                hintText: 'Arrival time',
+              ),
+              this.showDone == false
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                          margin: EdgeInsets.symmetric(
+                              vertical: 25, horizontal: 20),
+                          width: double.infinity,
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(100.0)),
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            color: Colors.blueGrey,
+                            onPressed: () async {
+                              final store = Provider.of<TrotterStore>(context);
+
+                              // Validate will return true if the form is valid, or false if
+                              // the form is invalid.
+                              //print(fbKey.currentState.value);
+                              if (this.fbKey.currentState.validate()) {
+                                //print(fbKey.currentState.value);
+                                var segment = fbKey.currentState.value;
+                                segments.add({
+                                  "airline": segment['airline']['name'],
+                                  "arrival_datetime":
+                                      segment['arrival_datetime'],
+                                  "arrival_time_zone_id": segment['destination']
+                                      ['time_zone_id'],
+                                  "departure_datetime":
+                                      segment['departure_datetime'],
+                                  "departure_time_zone_id": segment['origin']
+                                      ['time_zone_id'],
+                                  "destination": segment['destination']['iata'],
+                                  "destination_city_name":
+                                      segment['destination']['city'],
+                                  "destination_country": segment['destination']
+                                      ['country'],
+                                  "destination_lat": segment['destination']
+                                      ['lat'],
+                                  "destination_lon": segment['destination']
+                                      ['lon'],
+                                  "destination_name": segment['destination']
+                                      ['name'],
+                                  "flight_number": segment['flight_number'],
+                                  "iata_code": segment['airline']["iata_code"],
+                                  "origin": segment['origin']['iata'],
+                                  "origin_city_name": segment['origin']['city'],
+                                  "origin_country": segment['origin']
+                                      ['country'],
+                                  "origin_lat": segment['origin']['lat'],
+                                  "origin_lon": segment['origin']['lon'],
+                                  "origin_name": segment['origin']['name'],
+                                  "type": 'Air'
+                                });
+
+                                print(segments);
+                                var data = {
+                                  "source": segment['airline'],
+                                  "segments": segments,
+                                  "travelers": [store.currentUser.uid],
+                                  "ownerId": store.currentUser.uid
+                                };
+                              }
+                            },
+                            child: AutoSizeText('Submit',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.white)),
+                          )))
+                  : Container(),
+              this.showDone == false
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                          margin: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20),
+                          width: double.infinity,
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: new BorderRadius.circular(100.0),
+                                side: BorderSide(
+                                    color: Colors.blueGrey, width: 1)),
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            color: Colors.transparent,
+                            onPressed: () async {
+                              final store = Provider.of<TrotterStore>(context);
+
+                              // Validate will return true if the form is valid, or false if
+                              // the form is invalid.
+                              print(fbKey.currentState.value);
+                              if (this.fbKey.currentState.validate()) {
+                                setState(() {
+                                  this.showDone = true;
+                                  var segment = fbKey.currentState.value;
+                                  segments.add({
+                                    "airline": segment['airline']['name'],
+                                    "arrival_datetime":
+                                        segment['arrival_datetime'],
+                                    "arrival_time_zone_id":
+                                        segment['destination']['time_zone_id'],
+                                    "departure_datetime":
+                                        segment['departure_datetime'],
+                                    "departure_time_zone_id": segment['origin']
+                                        ['time_zone_id'],
+                                    "destination": segment['destination']
+                                        ['iata'],
+                                    "destination_city_name":
+                                        segment['destination']['city'],
+                                    "destination_country":
+                                        segment['destination']['country'],
+                                    "destination_lat": segment['destination']
+                                        ['lat'],
+                                    "destination_lon": segment['destination']
+                                        ['lon'],
+                                    "destination_name": segment['destination']
+                                        ['name'],
+                                    "flight_number": segment['flight_number'],
+                                    "iata_code": segment['airline']
+                                        ["iata_code"],
+                                    "origin": segment['origin']['iata'],
+                                    "origin_city_name": segment['origin']
+                                        ['city'],
+                                    "origin_country": segment['origin']
+                                        ['country'],
+                                    "origin_lat": segment['origin']['lat'],
+                                    "origin_lon": segment['origin']['lon'],
+                                    "origin_name": segment['origin']['name'],
+                                    "type": 'Air'
+                                  });
+                                  fbKey.currentState.reset();
+                                });
+                              }
+                            },
+                            child: AutoSizeText('Add return flight',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.blueGrey)),
+                          )))
+                  : Align(
+                      alignment: Alignment.center,
+                      child: Container(
+                          margin: EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20),
+                          width: double.infinity,
+                          child: FlatButton(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: new BorderRadius.circular(100.0),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            color: Colors.blueGrey,
+                            onPressed: () async {
+                              final store = Provider.of<TrotterStore>(context);
+
+                              // Validate will return true if the form is valid, or false if
+                              // the form is invalid.
+                              if (this.fbKey.currentState.validate()) {
+                                var segment = fbKey.currentState.value;
+                                segments.add({
+                                  "airline": segment['airline']['name'],
+                                  "arrival_datetime":
+                                      segment['arrival_datetime'],
+                                  "arrival_time_zone_id": segment['destination']
+                                      ['time_zone_id'],
+                                  "departure_datetime":
+                                      segment['departure_datetime'],
+                                  "departure_time_zone_id": segment['origin']
+                                      ['time_zone_id'],
+                                  "destination": segment['destination']['iata'],
+                                  "destination_city_name":
+                                      segment['destination']['city'],
+                                  "destination_country": segment['destination']
+                                      ['country'],
+                                  "destination_lat": segment['destination']
+                                      ['lat'],
+                                  "destination_lon": segment['destination']
+                                      ['lon'],
+                                  "destination_name": segment['destination']
+                                      ['name'],
+                                  "flight_number": segment['flight_number'],
+                                  "iata_code": segment['airline']["iata_code"],
+                                  "origin": segment['origin']['iata'],
+                                  "origin_city_name": segment['origin']['city'],
+                                  "origin_country": segment['origin']
+                                      ['country'],
+                                  "origin_lat": segment['origin']['lat'],
+                                  "origin_lon": segment['origin']['lon'],
+                                  "origin_name": segment['origin']['name'],
+                                  "type": 'Air'
+                                });
+
+                                print(segments);
+                                var data = {
+                                  "source": segment['airline'],
+                                  "segments": segments,
+                                  "travelers": [store.currentUser.uid],
+                                  "ownerId": store.currentUser.uid
+                                };
+                                //this.onAddReturn(fbKey.currentState.value);
+                              }
+                            },
+                            child: AutoSizeText('Submit',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.white)),
+                          )))
             ]));
   }
 }
 
 class TrotterDateTime extends StatelessWidget {
   final ValueChanged<DateTime> onDatePicked;
-  const TrotterDateTime({Key key, @required this.onDatePicked})
+  final String attribute;
+  final String hintText;
+  const TrotterDateTime(
+      {Key key, this.onDatePicked, this.attribute, this.hintText})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: FormBuilderDateTimePicker(
-        attribute: "date",
+        attribute: attribute,
+        validators: [
+          FormBuilderValidators.required(
+              errorText: '$hintText field is required')
+        ],
         inputType: InputType.both,
         format: DateFormat("yyyy-MM-dd HH:mm"),
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(vertical: 20.0),
           prefixIcon: Padding(
               padding: EdgeInsets.only(left: 20.0, right: 5.0),
-              child: Icon(Icons.label, size: 15)),
+              child: Icon(Icons.calendar_today, size: 15)),
           //fillColor: Colors.blueGrey.withOpacity(0.5),
           filled: true,
           errorBorder: OutlineInputBorder(
@@ -535,7 +855,7 @@ class TrotterDateTime extends StatelessWidget {
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(5.0)),
               borderSide: BorderSide(width: 0.0, color: Colors.transparent)),
-          hintText: 'Departure time',
+          hintText: hintText,
           hintStyle: TextStyle(fontSize: 13),
         ),
       ),

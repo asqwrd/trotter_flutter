@@ -16,8 +16,9 @@ class AutoCompleteAirline extends StatefulWidget {
 
 class _AutoCompleteAirlineState extends State<AutoCompleteAirline> {
   GlobalKey<AutoCompleteTextFieldState<Airlines>> key = new GlobalKey();
+  dynamic value;
 
-  AutoCompleteTextField searchTextField;
+  FormBuilderTypeAhead searchTextField;
 
   TextEditingController controller = new TextEditingController();
   final String attribute;
@@ -25,111 +26,9 @@ class _AutoCompleteAirlineState extends State<AutoCompleteAirline> {
   _AutoCompleteAirlineState({this.attribute});
 
   void _loadData() async {
-    await AirlinesViewModel.loadAirlines();
-  }
-
-  @override
-  void initState() {
-    _loadData();
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FormBuilderCustomField(
-        attribute: attribute,
-        validators: [
-          FormBuilderValidators.required(),
-        ],
-        valueTransformer: (dynamic value) {
-          print(value);
-          var airline = value as Airlines;
-          return {
-            'iata_code': airline.iata.isNotEmpty ? airline.iata : airline.icao,
-            'name': airline.name
-          };
-        },
-        formField: FormField(
-            enabled: true,
-            builder: (FormFieldState<dynamic> field) {
-              return Container(
-                margin: EdgeInsets.symmetric(horizontal: 20),
-                child: searchTextField = AutoCompleteTextField<Airlines>(
-                    style: new TextStyle(color: Colors.black, fontSize: 16.0),
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                      prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                          child: Icon(
-                            Icons.label,
-                            size: 15,
-                          )),
-                      filled: true,
-                      errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide:
-                              BorderSide(width: 1.0, color: Colors.red)),
-                      focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide:
-                              BorderSide(width: 1.0, color: Colors.red)),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide: BorderSide(
-                              width: 0.0, color: Colors.transparent)),
-                      enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          borderSide: BorderSide(
-                              width: 0.0, color: Colors.transparent)),
-                      hintText: 'Search airlines',
-                      hintStyle: TextStyle(fontSize: 13),
-                    ),
-                    itemSubmitted: (item) {
-                      field.didChange(item);
-                      setState(() => searchTextField.textField.controller.text =
-                          item.name);
-                    },
-                    clearOnSubmit: false,
-                    key: key,
-                    suggestions: AirlinesViewModel.airlines,
-                    itemBuilder: (context, item) {
-                      return ListTile(
-                        title: AutoSizeText(item.name),
-                        trailing: AutoSizeText(item.country),
-                        subtitle: item.iata.isNotEmpty
-                            ? AutoSizeText(item.iata)
-                            : AutoSizeText(item.icao),
-                      );
-                    },
-                    itemSorter: (a, b) {
-                      return a.name.compareTo(b.name);
-                    },
-                    itemFilter: (item, query) {
-                      return item.name
-                          .toLowerCase()
-                          .contains(query.toLowerCase());
-                    }),
-              );
-            }));
-  }
-}
-
-class AutoCompleteAirport extends StatefulWidget {
-  @override
-  _AutoCompleteAirportState createState() => new _AutoCompleteAirportState();
-}
-
-class _AutoCompleteAirportState extends State<AutoCompleteAirport> {
-  GlobalKey<AutoCompleteTextFieldState<AirportsStations>> key = new GlobalKey();
-
-  AutoCompleteTextField searchTextField;
-
-  TextEditingController controller = new TextEditingController();
-
-  _AutoCompleteAirportState();
-
-  void _loadData() async {
-    await AirportsViewModel.loadAirports();
+    if (AirlinesViewModel.airlines == null) {
+      await AirlinesViewModel.loadAirlines();
+    }
   }
 
   @override
@@ -141,15 +40,49 @@ class _AutoCompleteAirportState extends State<AutoCompleteAirport> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
-      child: searchTextField = AutoCompleteTextField<AirportsStations>(
-          style: new TextStyle(color: Colors.black, fontSize: 16.0),
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: searchTextField = FormBuilderTypeAhead<Airlines>(
+          attribute: attribute,
+          validators: [
+            FormBuilderValidators.required(
+                errorText: 'The $attribute field is required'),
+          ],
+          initialValue: Airlines(),
+          valueTransformer: (value) {
+            return this.value;
+          },
+          selectionToTextTransformer: (airline) {
+            this.value = {
+              'iata_code': airline.iata != null && airline.iata.isNotEmpty
+                  ? airline.iata
+                  : airline.icao,
+              'name': airline.name
+            };
+            return airline.name;
+          },
+          suggestionsCallback: (query) {
+            if (AirlinesViewModel.airlines != null) {
+              return AirlinesViewModel.airlines.where((item) {
+                return item.name.toLowerCase().contains(query.toLowerCase());
+              }).toList();
+            }
+            return [];
+          },
+          itemBuilder: (context, item) {
+            return ListTile(
+              title: AutoSizeText(item.name),
+              trailing: AutoSizeText(item.country),
+              subtitle: item.iata.isNotEmpty && item.iata != '\\N'
+                  ? AutoSizeText(item.iata)
+                  : item.icao != '\\N' ? AutoSizeText(item.icao) : Container(),
+            );
+          },
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(vertical: 20.0),
             prefixIcon: Padding(
                 padding: EdgeInsets.only(left: 20.0, right: 5.0),
                 child: Icon(
-                  Icons.label,
+                  Icons.flight,
                   size: 15,
                 )),
             filled: true,
@@ -165,16 +98,85 @@ class _AutoCompleteAirportState extends State<AutoCompleteAirport> {
             enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(5.0)),
                 borderSide: BorderSide(width: 0.0, color: Colors.transparent)),
-            hintText: 'Search airports',
+            hintText: 'Search airlines',
             hintStyle: TextStyle(fontSize: 13),
           ),
-          itemSubmitted: (item) {
-            setState(
-                () => searchTextField.textField.controller.text = item.name);
+        ));
+  }
+}
+
+class AutoCompleteAirport extends StatefulWidget {
+  final String attribute;
+  final String hintText;
+  AutoCompleteAirport({this.attribute, this.hintText});
+  @override
+  _AutoCompleteAirportState createState() => new _AutoCompleteAirportState(
+        attribute: this.attribute,
+        hintText: this.hintText,
+      );
+}
+
+class _AutoCompleteAirportState extends State<AutoCompleteAirport> {
+  GlobalKey<AutoCompleteTextFieldState<AirportsStations>> key = new GlobalKey();
+  AutoCompleteTextField searchTextField;
+
+  TextEditingController controller = new TextEditingController();
+  final String attribute;
+  final String hintText;
+  dynamic value;
+
+  _AutoCompleteAirportState({this.attribute, this.hintText});
+
+  void _loadData() async {
+    if (AirportsViewModel.airports == null) {
+      await AirportsViewModel.loadAirports();
+    }
+  }
+
+  @override
+  void initState() {
+    _loadData();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: FormBuilderTypeAhead<AirportsStations>(
+          attribute: attribute,
+          initialValue: AirportsStations(),
+          selectionToTextTransformer: (airport) {
+            this.value = {
+              'alias': airport.alias,
+              'iata': airport.iata,
+              'icao': airport.icao,
+              'name': airport.name,
+              'city': airport.city,
+              'country': airport.country,
+              'time_zone_id': airport.timezoneName,
+              'lat': airport.lat,
+              'lon': airport.lon,
+            };
+            return airport.name;
           },
-          clearOnSubmit: false,
-          key: key,
-          suggestions: AirportsViewModel.airports,
+          valueTransformer: (value) {
+            return this.value;
+          },
+          validators: [
+            FormBuilderValidators.required(
+                errorText: '$hintText field is required'),
+          ],
+          suggestionsCallback: (query) {
+            if (AirportsViewModel.airports != null) {
+              return AirportsViewModel.airports.where((item) {
+                return item.name.toLowerCase().contains(query.toLowerCase()) ||
+                    item.iata.toLowerCase().contains(query.toLowerCase()) ||
+                    item.icao.toLowerCase().contains(query.toLowerCase());
+              }).toList();
+            }
+            return [];
+          },
           itemBuilder: (context, item) {
             return ListTile(
               title: AutoSizeText(item.name),
@@ -184,14 +186,30 @@ class _AutoCompleteAirportState extends State<AutoCompleteAirport> {
                   : item.icao != '\\N' ? AutoSizeText(item.icao) : Container(),
             );
           },
-          itemSorter: (a, b) {
-            return a.name.compareTo(b.name);
-          },
-          itemFilter: (item, query) {
-            return item.name.toLowerCase().contains(query.toLowerCase()) ||
-                item.iata.toLowerCase().contains(query.toLowerCase()) ||
-                item.icao.toLowerCase().contains(query.toLowerCase());
-          }),
-    );
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+            prefixIcon: Padding(
+                padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                child: Icon(
+                  Icons.flight_takeoff,
+                  size: 15,
+                )),
+            filled: true,
+            errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(width: 1.0, color: Colors.red)),
+            focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(width: 1.0, color: Colors.red)),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(width: 0.0, color: Colors.transparent)),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                borderSide: BorderSide(width: 0.0, color: Colors.transparent)),
+            hintText: hintText,
+            hintStyle: TextStyle(fontSize: 13),
+          ),
+        ));
   }
 }

@@ -2,14 +2,15 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_widgets/flutter_widgets.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/screens/itinerary/toggle-visited-modal.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/middleware.dart';
@@ -75,6 +76,7 @@ class DayEditState extends State<DayEdit> {
   dynamic currentPosition;
   int startDate;
   dynamic day;
+  List<dynamic> days;
   bool imageLoading = true;
 
   Future<DayData> data;
@@ -102,6 +104,7 @@ class DayEditState extends State<DayEdit> {
                 .any((traveler) => store.currentUser.uid == traveler);
             this.color = Color(hexStringToHexInt(data.color));
             this.itineraryName = data.itinerary['name'];
+            this.days = data.itinerary['days'];
             this.ownerId = data.itinerary['owner_id'];
             this.tripId = data.itinerary['trip_id'];
             this.startDate = data.itinerary['start_date'] * 1000;
@@ -150,10 +153,11 @@ class DayEditState extends State<DayEdit> {
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingPanel(
+        snapPanel: true,
         initialState: this.errorUi == true
             ? InitialPanelState.expanded
             : InitialPanelState.closed,
-        size: PanelSize(closedHeight: .45),
+        size: PanelSize(closedHeight: .45, expandedHeight: .835),
         isDraggable: this.errorUi == true ? false : true,
         autoSizing: PanelAutoSizing(),
         decoration: PanelDecoration(
@@ -229,6 +233,8 @@ class DayEditState extends State<DayEdit> {
                                                             data.color));
                                                     this.itineraryName =
                                                         data.itinerary['name'];
+                                                    this.days = data.itinerary[
+                                                        'itinerary']['days'];
                                                     this.ownerId = data
                                                         .itinerary['owner_id'];
                                                     this.startDate =
@@ -375,6 +381,7 @@ class DayEditState extends State<DayEdit> {
                               this.color = Color(hexStringToHexInt(data.color));
                               this.itineraryName = data.itinerary['name'];
                               this.ownerId = data.itinerary['owner_id'];
+                              this.days = data.itinerary['itinerary']['days'];
                               this.tripId = data.itinerary['trip_id'];
                               this.startDate =
                                   data.itinerary['start_date'] * 1000;
@@ -586,7 +593,13 @@ class DayEditState extends State<DayEdit> {
                           ]
                         : []),
                 alignment: Alignment.center,
-                child: _renderTabBar(this.color, Colors.black)),
+                child: Column(children: <Widget>[
+                  _renderTabBar(this.color, Colors.black),
+                  DayListTabs(
+                    days: this.days,
+                    startDate: this.startDate,
+                  )
+                ])),
             Flexible(
                 child: Container(
                     width: MediaQuery.of(ctxt).size.width,
@@ -1046,5 +1059,80 @@ class DayEditState extends State<DayEdit> {
             ),
           )
         ]));
+  }
+}
+
+class DayListTabs extends StatefulWidget {
+  final List<dynamic> days;
+  final int startDate;
+  DayListTabs({this.days, this.startDate});
+
+  @override
+  DayListTabsState createState() =>
+      DayListTabsState(days: this.days, startDate: this.startDate);
+}
+
+class DayListTabsState extends State<DayListTabs> {
+  final List<dynamic> days;
+  final int startDate;
+  ItemScrollController indexController = ItemScrollController();
+  final formatter = DateFormat.yMMMEd("en_US");
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  DayListTabsState({this.days, this.startDate});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        //width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 10),
+        decoration: BoxDecoration(
+            border: Border(
+                bottom: BorderSide(color: Colors.black.withOpacity(.3)),
+                top: BorderSide(color: Colors.black.withOpacity(.3)))),
+        height: 60,
+        child: ScrollablePositionedList.builder(
+          itemCount: this.days.length,
+          itemScrollController: indexController,
+          initialScrollIndex: 19,
+          //padding: EdgeInsets.symmetric(horizontal: 10),
+
+          //minItemCount: 0,
+          //shrinkWrap: true,
+          //controller: indexController,
+          scrollDirection: Axis.horizontal,
+
+          itemBuilder: (itemContext, index) {
+            return Container(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    border: Border(
+                        right:
+                            BorderSide(color: Colors.black.withOpacity(.3)))),
+                child:
+                    Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                  AutoSizeText(
+                    'Day ${index + 1}',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(top: 5),
+                      child: AutoSizeText(
+                        formatter.format(DateTime.fromMillisecondsSinceEpoch(
+                                this.startDate,
+                                isUtc: true)
+                            .add(Duration(days: this.days[index]['day']))),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w300,
+                            color: Colors.black.withOpacity(.5)),
+                      ))
+                ]));
+          },
+        ));
   }
 }

@@ -49,9 +49,10 @@ class ProfileState extends State<Profile> {
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingPanel(
+              snapPanel: true,
               initialState: InitialPanelState.expanded,
               isDraggable: false,
-              size: PanelSize(expandedHeight: .85),
+              size: PanelSize(expandedHeight: .835),
               autoSizing: PanelAutoSizing(),
               decoration: PanelDecoration(
                   borderRadius: BorderRadius.only(

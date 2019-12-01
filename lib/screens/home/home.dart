@@ -256,6 +256,7 @@ class HomeState extends State<Home> {
         });
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       SlidingPanel(
+        snapPanel: true,
         autoSizing: PanelAutoSizing(),
         parallaxSlideAmount: .5,
         backdropConfig: BackdropConfig(
@@ -365,7 +366,7 @@ class HomeState extends State<Home> {
                 ),
               ])),
         ),
-        size: PanelSize(closedHeight: .45),
+        size: PanelSize(closedHeight: .45, expandedHeight: .835),
       ),
       Positioned(
           top: 0,

@@ -137,6 +137,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                             (BuildContext segmentContext, int segIndex) {
                           final segment = segments[segIndex];
                           return Container(
+                              margin: EdgeInsets.only(bottom: 45),
                               child: renderSegment(segmentContext, segment,
                                   segIndex, travelers));
                         },
@@ -218,10 +219,12 @@ class FlightsAccomodationsList extends StatelessWidget {
                                       segment['departure_datetime'])),
                               style: substyle,
                             ),
-                            AutoSizeText(
-                              'Confirmation #: ${segment['confirmation_no']}',
-                              style: substyle,
-                            ),
+                            segment['confirmation_no'] != null
+                                ? AutoSizeText(
+                                    'Confirmation #: ${segment['confirmation_no']}',
+                                    style: substyle,
+                                  )
+                                : Container(),
                             Container(
                                 margin: EdgeInsets.only(top: 60),
                                 child: Row(
@@ -308,6 +311,11 @@ class FlightsAccomodationsList extends StatelessWidget {
           {"label": "Confirmation number", "value": segment['confirmation_no']},
           {'label': "Guests", "value": travelers}
         ];
+        String address = '';
+        if (segment['address1'] != null && segment['postal_code'] != null) {
+          address =
+              '${segment['address1']}${segment['address2'] != null ? ' ${segment['address2']}' : ''} ${segment['city_name']}, ${segment['country']} ${segment['postal_code']}';
+        }
         return Container(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <
@@ -322,16 +330,30 @@ class FlightsAccomodationsList extends StatelessWidget {
                     Container(
                         child: AutoSizeText(segment['hotel_name'],
                             style: topstyle)),
-                    Container(
-                        height: 200,
-                        width: MediaQuery.of(context).size.width,
-                        child: StaticMap(GOOGLE_API_KEY,
-                            width: MediaQuery.of(context).size.width,
+                    segment['lat'] != null && segment['lon'] != null
+                        ? Container(
                             height: 200,
-                            color: Colors.blueGrey,
-                            zoom: 18,
-                            lat: double.parse(segment['lat']),
-                            lng: double.parse(segment['lon']))),
+                            width: MediaQuery.of(context).size.width,
+                            child: StaticMap(GOOGLE_API_KEY,
+                                width: MediaQuery.of(context).size.width,
+                                height: 200,
+                                color: Colors.blueGrey,
+                                zoom: 18,
+                                lat: double.parse(segment['lat']),
+                                lng: double.parse(segment['lon'])))
+                        : address != null
+                            ? Container(
+                                height: 200,
+                                width: MediaQuery.of(context).size.width,
+                                child: StaticMap(
+                                  GOOGLE_API_KEY,
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 200,
+                                  color: Colors.blueGrey,
+                                  zoom: 18,
+                                  address: address,
+                                ))
+                            : Container(),
                     Container(
                         height: 170,
                         margin: EdgeInsets.only(top: 10),
@@ -355,7 +377,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                               );
                             }
                             if (hotelInfo[index]['label'] ==
-                                'Confirmation number') {
+                                    'Confirmation number' &&
+                                hotelInfo[index]['value'] != null) {
                               return Container(
                                   height: 35,
                                   child: Row(
@@ -380,11 +403,14 @@ class FlightsAccomodationsList extends StatelessWidget {
                                   children: <Widget>[
                                     AutoSizeText(hotelInfo[index]['label'],
                                         style: substyle),
-                                    AutoSizeText(
-                                        DateFormat("MMMM d, y").format(
-                                            DateTime.parse(
-                                                hotelInfo[index]['value'])),
-                                        style: substyle)
+                                    hotelInfo[index]['value'] != null
+                                        ? AutoSizeText(
+                                            DateFormat("MMMM d, y").format(
+                                                DateTime.parse(
+                                                    hotelInfo[index]['value'])),
+                                            style: substyle)
+                                        : AutoSizeText("Not given",
+                                            style: substyle)
                                   ],
                                 ));
                           },
@@ -451,7 +477,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   AutoSizeText(
-                    'Forward your travel confirmation emails to trips@ajibade.me',
+                    'Forward your travel confirmation emails to trips@ajibade.me or manually add them',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 15,

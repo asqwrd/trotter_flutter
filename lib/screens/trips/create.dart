@@ -252,6 +252,7 @@ class CreateTripState extends State<CreateTrip> {
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingPanel(
+              snapPanel: true,
               initialState: InitialPanelState.expanded,
               isDraggable: false,
               size: PanelSize(closedHeight: .7),

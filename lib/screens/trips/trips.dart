@@ -133,6 +133,7 @@ class TripsState extends State<Trips> {
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       SlidingPanel(
+        snapPanel: true,
         autoSizing: PanelAutoSizing(),
         parallaxSlideAmount: .5,
         backdropConfig: BackdropConfig(
@@ -236,7 +237,7 @@ class TripsState extends State<Trips> {
                 ),
               ])),
         ),
-        size: PanelSize(closedHeight: .45),
+        size: PanelSize(closedHeight: .45, expandedHeight: .835),
       ),
       Positioned(
           top: 0,
@@ -727,90 +728,87 @@ class TripsState extends State<Trips> {
             semanticContainer: true,
             color: Colors.transparent,
             clipBehavior: Clip.antiAliasWithSaveLayer,
-            child: Column(children: <Widget>[
-              Container(
-                  height: 230.0,
-                  width: double.infinity,
-                  color: Colors.transparent,
-                  child: Stack(
-                    children: <Widget>[
-                      Positioned.fill(
-                          top: 0,
-                          left: 0,
-                          child: TransitionToImage(
-                            image: AdvancedNetworkImage(
-                              trip['image'],
-                              useDiskCache: true,
-                              cacheRule:
-                                  CacheRule(maxAge: const Duration(days: 7)),
-                            ),
-                            loadingWidgetBuilder:
-                                (BuildContext context, double progress, test) =>
-                                    Center(
-                                        child: RefreshProgressIndicator(
-                              backgroundColor: Colors.white,
-                            )),
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
-                            placeholder: const Icon(Icons.refresh),
-                            enableRefresh: true,
+            child: Container(
+                height: 250.0,
+                width: double.infinity,
+                color: Colors.transparent,
+                child: Stack(
+                  children: <Widget>[
+                    Positioned.fill(
+                        top: 0,
+                        left: 0,
+                        child: TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            trip['image'],
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Center(
+                                      child: RefreshProgressIndicator(
+                            backgroundColor: Colors.white,
                           )),
-                      Positioned.fill(
-                          top: 0,
-                          left: 0,
-                          child: Container(
-                              decoration: BoxDecoration(
-                            color: color.withOpacity(.7),
-                          ))),
-                      Positioned.fill(
-                        top: 30,
-                        left: 20,
-                        child: ListView(
-                            shrinkWrap: true,
-                            primary: false,
-                            children: <Widget>[
-                              Padding(
-                                  padding: EdgeInsets.only(
-                                    top: 0.0,
-                                    bottom: 10,
-                                    left: 20,
-                                  ),
-                                  child: AutoSizeText(
-                                    trip['name'],
-                                    overflow: TextOverflow.fade,
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                        color: fontContrast(color),
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.w400),
-                                  )),
-                            ]),
-                      ),
-                      Positioned(
-                          left: 10,
-                          bottom: 0,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              _buildDestinationInfo(
-                                  trip['destinations'], color),
-                            ],
-                          )),
-                      Positioned(
-                          right: 20,
-                          bottom: 100,
-                          width: 220,
-                          height: 40,
-                          child: buildTravelers(trip['travelers']))
-                    ],
-                  )),
-            ]),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
+                        )),
+                    Positioned.fill(
+                        top: 0,
+                        left: 0,
+                        child: Container(
+                            decoration: BoxDecoration(
+                          color: color.withOpacity(.7),
+                        ))),
+                    Positioned.fill(
+                      top: 30,
+                      left: 10,
+                      child: ListView(
+                          shrinkWrap: true,
+                          primary: false,
+                          children: <Widget>[
+                            Padding(
+                                padding: EdgeInsets.only(
+                                  top: 0.0,
+                                  bottom: 10,
+                                  left: 20,
+                                ),
+                                child: AutoSizeText(
+                                  trip['name'],
+                                  overflow: TextOverflow.fade,
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                      color: fontContrast(color),
+                                      fontSize: 15.0,
+                                      fontWeight: FontWeight.w400),
+                                )),
+                          ]),
+                    ),
+                    Positioned(
+                        left: 0,
+                        bottom: 0,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            _buildDestinationInfo(trip['destinations'], color),
+                          ],
+                        )),
+                    Positioned(
+                        right: 20,
+                        bottom: 80,
+                        width: 220,
+                        height: 40,
+                        child: buildTravelers(trip['travelers']))
+                  ],
+                )),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
             ),
             elevation: 1,
-            margin: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
+            margin: EdgeInsets.only(top: 20, left: 15, right: 15, bottom: 20),
           )));
     }
     return Container(

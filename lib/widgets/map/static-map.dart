@@ -15,6 +15,7 @@ class StaticMap extends StatefulWidget {
   final int zoom;
   final Color color;
   final String placeId;
+  final String address;
 
   StaticMap(this.googleMapsApiKey,
       {this.width,
@@ -23,6 +24,7 @@ class StaticMap extends StatefulWidget {
       this.lng,
       this.zoom,
       this.color,
+      this.address,
       this.placeId});
 
   @override
@@ -33,6 +35,7 @@ class StaticMap extends StatefulWidget {
       lng: this.lng,
       color: this.color,
       placeId: this.placeId,
+      address: this.address,
       zoom: this.zoom);
 }
 
@@ -43,6 +46,7 @@ class _StaticMapState extends State<StaticMap> {
 
   final double lat;
   final double lng;
+  final String address;
   final int zoom;
   final Color color;
   final String placeId;
@@ -55,8 +59,8 @@ class _StaticMapState extends State<StaticMap> {
         path: '/maps/api/staticmap',
         queryParameters: {
           'size': '${width.round()}x${height.round()}',
-          'center': '$lat,$lng',
-          'markers': '$lat,$lng',
+          'center': address != null ? address : '$lat,$lng',
+          'markers': address != null ? address : '$lat,$lng',
           'zoom': '$zoom',
           'scale': '2',
           'key': '${widget.googleMapsApiKey}'
@@ -80,6 +84,7 @@ class _StaticMapState extends State<StaticMap> {
       this.height,
       this.zoom,
       this.color,
+      this.address,
       this.placeId});
 
   @override
@@ -110,35 +115,44 @@ class _StaticMapState extends State<StaticMap> {
                     placeholder: const Icon(Icons.refresh),
                     enableRefresh: true,
                   ))),
-          Positioned(
-              right: 15,
-              top: 10,
-              child: Container(
-                  child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100)),
-                onPressed: () async {
-                  var url =
-                      'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
-                  if (this.placeId != null) {
-                    url += '&query_place_id=${this.placeId}';
-                  }
-                  if (await canLaunch(url)) {
-                    await launch(url);
-                  } else {
-                    print('Could not launch $url');
-                  }
-                },
-                color: this.color != null ? this.color : Colors.blue,
-                child: AutoSizeText(
-                  'View in maps',
-                  style: TextStyle(
-                      color: this.color != null
-                          ? fontContrast(this.color)
-                          : Colors.white,
-                      fontWeight: FontWeight.w300),
-                ),
-              )))
+          lat == null && lng == null && address == null
+              ? Container()
+              : Positioned(
+                  right: 15,
+                  top: 10,
+                  child: Container(
+                      child: RaisedButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100)),
+                    onPressed: () async {
+                      var query = '';
+                      if (lat != null && lng != null) {
+                        query = '$lat,$lng';
+                      } else if (this.address != null) {
+                        query = address;
+                      }
+
+                      var url =
+                          'https://www.google.com/maps/search/?api=1&query=$query';
+                      if (this.placeId != null) {
+                        url += '&query_place_id=${this.placeId}';
+                      }
+                      if (await canLaunch(url)) {
+                        await launch(url);
+                      } else {
+                        print('Could not launch $url');
+                      }
+                    },
+                    color: this.color != null ? this.color : Colors.blue,
+                    child: AutoSizeText(
+                      'View in maps',
+                      style: TextStyle(
+                          color: this.color != null
+                              ? fontContrast(this.color)
+                              : Colors.white,
+                          fontWeight: FontWeight.w300),
+                    ),
+                  )))
         ]));
   }
 }

@@ -109,6 +109,7 @@ class AutoCompleteAirport extends StatefulWidget {
   final String attribute;
   final String hintText;
   AutoCompleteAirport({this.attribute, this.hintText});
+
   @override
   _AutoCompleteAirportState createState() => new _AutoCompleteAirportState(
         attribute: this.attribute,
@@ -118,9 +119,8 @@ class AutoCompleteAirport extends StatefulWidget {
 
 class _AutoCompleteAirportState extends State<AutoCompleteAirport> {
   GlobalKey<AutoCompleteTextFieldState<AirportsStations>> key = new GlobalKey();
-  AutoCompleteTextField searchTextField;
+  FormBuilderTypeAhead searchTextField;
 
-  TextEditingController controller = new TextEditingController();
   final String attribute;
   final String hintText;
   dynamic value;
@@ -143,7 +143,7 @@ class _AutoCompleteAirportState extends State<AutoCompleteAirport> {
   Widget build(BuildContext context) {
     return Container(
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: FormBuilderTypeAhead<AirportsStations>(
+        child: searchTextField = FormBuilderTypeAhead<AirportsStations>(
           attribute: attribute,
           initialValue: AirportsStations(),
           selectionToTextTransformer: (airport) {

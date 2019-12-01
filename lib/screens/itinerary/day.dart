@@ -99,10 +99,11 @@ class DayState extends State<Day> {
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingPanel(
+              snapPanel: true,
               initialState: this.errorUi == true
                   ? InitialPanelState.expanded
                   : InitialPanelState.closed,
-              size: PanelSize(closedHeight: .45),
+              size: PanelSize(closedHeight: .45, expandedHeight: .835),
               isDraggable: this.errorUi == true ? false : true,
               autoSizing: PanelAutoSizing(),
               decoration: PanelDecoration(

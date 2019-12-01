@@ -310,6 +310,7 @@ Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
       return AddFlightsAndAccomodationsData(success: false);
     }
   } catch (error) {
+    print(error);
     return AddFlightsAndAccomodationsData(success: false);
   }
 }

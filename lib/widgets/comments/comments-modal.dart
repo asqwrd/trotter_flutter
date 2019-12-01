@@ -356,14 +356,16 @@ class CommentsModalState extends State<CommentsModal> {
                       iconSize: 25,
                       color: Colors.black,
                     ),
-                    AutoSizeText(
-                      this.title,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 19),
-                    )
+                    Container(
+                        width: MediaQuery.of(context).size.width - 50,
+                        child: AutoSizeText(
+                          this.title,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w300,
+                              fontSize: 19),
+                        ))
                   ]),
                 ]),
           ],

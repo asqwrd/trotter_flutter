@@ -634,6 +634,7 @@ class HomeState extends State<Home> {
             return true;
           },
           child: ListView(
+            cacheExtent: MediaQuery.of(context).size.height,
             controller: scrollController,
             children: <Widget>[
               snapshot.connectionState == ConnectionState.waiting

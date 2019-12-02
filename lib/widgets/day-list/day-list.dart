@@ -141,13 +141,13 @@ class DayList extends StatelessWidget {
         this.day + 1 <
             (this.linkedItinerary['number_of_days'] +
                 this.linkedItinerary['start_day'])) {
-      itineraryItems = ['', '', ...items, this.linkedItinerary];
+      itineraryItems = [...items, this.linkedItinerary];
       linkItineraryPosition = 'bottom';
     } else if (this.linkedItinerary != null &&
         this.day + 1 ==
             (this.linkedItinerary['number_of_days'] +
                 this.linkedItinerary['start_day'])) {
-      itineraryItems = ['', '', this.linkedItinerary, ...items];
+      itineraryItems = [this.linkedItinerary, ...items];
       linkItineraryPosition = 'top';
     } else {
       itineraryItems = items;

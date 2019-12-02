@@ -162,7 +162,7 @@ class CountryState extends State<Country> {
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingPanel(
-            snapPanel: true,
+              snapPanel: true,
               initialState: this.errorUi == true
                   ? InitialPanelState.expanded
                   : InitialPanelState.closed,
@@ -230,19 +230,6 @@ class CountryState extends State<Country> {
                       )),
                 ),
                 panelContent: (context, _sc) {
-                  if (_sc.hasListeners == false) {
-                    _sc.addListener(() {
-                      if (_sc.offset > 0) {
-                        setState(() {
-                          this.shadow = true;
-                        });
-                      } else {
-                        setState(() {
-                          this.shadow = false;
-                        });
-                      }
-                    });
-                  }
                   return FutureBuilder(
                       future: data,
                       builder: (context, snapshot) {
@@ -267,7 +254,16 @@ class CountryState extends State<Country> {
                                     ))
                               ]);
                         }
-                        return _buildLoadedBody(context, snapshot, _sc);
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          return RenderWidget(
+                              onScroll: onScroll,
+                              scrollController: _sc,
+                              asyncSnapshot: snapshot,
+                              builder: (context, scrollController, snapshot) =>
+                                  _buildLoadedBody(
+                                      context, snapshot, scrollController));
+                        }
+                        return _buildLoadingBody(context, _sc);
                       });
                 },
                 bodyContent: Container(
@@ -343,12 +339,21 @@ class CountryState extends State<Country> {
     ]);
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
-    if (snapshot.connectionState != ConnectionState.done) {
-      return _buildLoadingBody(ctxt, _sc);
-    }
     bool _showVisaTextual = false;
     bool _showVisaAllowedStay = false;
     bool _showVisa = false;

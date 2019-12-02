@@ -7,8 +7,6 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_widgets/flutter_widgets.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/screens/itinerary/toggle-visited-modal.dart';
@@ -169,19 +167,6 @@ class DayEditState extends State<DayEdit> {
         panelController: _pc,
         content: PanelContent(
             panelContent: (context, _sc) {
-              if (_sc.hasListeners == false) {
-                _sc.addListener(() {
-                  if (_sc.offset > 0) {
-                    setState(() {
-                      this.shadow = true;
-                    });
-                  } else {
-                    setState(() {
-                      this.shadow = false;
-                    });
-                  }
-                });
-              }
               return Center(
                   child: Scaffold(
                       backgroundColor: Colors.transparent,
@@ -565,6 +550,18 @@ class DayEditState extends State<DayEdit> {
     ]);
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
@@ -598,14 +595,37 @@ class DayEditState extends State<DayEdit> {
                   DayListTabs(
                     days: this.days,
                     startDate: this.startDate,
+                    activeDay: this.dayId,
+                    activeColor: color,
+                    onSelected: (day, index) {
+                      print(startLocation);
+                      onPush({
+                        'itineraryId': this.itineraryId,
+                        'dayId': day['id'].toString(),
+                        "linkedItinerary": this.days[index]['linked_itinerary'],
+                        "startLocation": startLocation['location'],
+                        'level': 'itinerary/day/edit'
+                      });
+                    },
                   )
                 ])),
             Flexible(
                 child: Container(
                     width: MediaQuery.of(ctxt).size.width,
                     child: TabBarView(children: <Widget>[
-                      renderItinerary(day, formatter, color, ctxt, _sc),
-                      renderVisited(day, formatter, color, ctxt, _sc),
+                      RenderWidget(
+                          onScroll: onScroll,
+                          scrollController: _sc,
+                          builder: (context, scrollController, asyncSnapshot) =>
+                              renderItinerary(day, formatter, color, context,
+                                  scrollController)),
+                      RenderWidget(
+                        onScroll: onScroll,
+                        scrollController: _sc,
+                        builder: (context, scrollController, asyncSnapshot) =>
+                            renderVisited(day, formatter, color, context,
+                                scrollController),
+                      )
                     ])))
           ],
         ));
@@ -615,7 +635,7 @@ class DayEditState extends State<DayEdit> {
     return AutoSizeText(label,
         style: TextStyle(
           fontSize: 15,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
         ));
   }
 
@@ -626,7 +646,11 @@ class DayEditState extends State<DayEdit> {
       isScrollable: true,
       unselectedLabelColor: Colors.black.withOpacity(0.6),
       indicator: BoxDecoration(
-          border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
+          border: Border(
+              top: BorderSide(
+        color: mainColor,
+        width: 4.0,
+      ))),
       tabs: <Widget>[
         _renderTab('Itinerary'),
         _renderTab('Visited'),
@@ -674,8 +698,8 @@ class DayEditState extends State<DayEdit> {
     );
   }
 
-  renderItinerary(day, DateFormat formatter, Color color, BuildContext ctxt,
-      ScrollController _sc) {
+  Widget renderItinerary(day, DateFormat formatter, Color color,
+      BuildContext ctxt, ScrollController _sc) {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
         controller: _sc,
@@ -702,10 +726,6 @@ class DayEditState extends State<DayEdit> {
             ? this.currentPosition
             : this.startLocation,
         onLongPressed: (data) {
-          //final store = Provider.of<TrotterStore>(ctxt);
-          //print(data['group']);
-          //if (this.ownerId == store.currentUser.uid ||
-          //store.currentUser.uid == data['added_by'])
           bottomSheetModal(context, day['day'] + 1, data);
         },
         onPressed: (data) {
@@ -1059,80 +1079,5 @@ class DayEditState extends State<DayEdit> {
             ),
           )
         ]));
-  }
-}
-
-class DayListTabs extends StatefulWidget {
-  final List<dynamic> days;
-  final int startDate;
-  DayListTabs({this.days, this.startDate});
-
-  @override
-  DayListTabsState createState() =>
-      DayListTabsState(days: this.days, startDate: this.startDate);
-}
-
-class DayListTabsState extends State<DayListTabs> {
-  final List<dynamic> days;
-  final int startDate;
-  ItemScrollController indexController = ItemScrollController();
-  final formatter = DateFormat.yMMMEd("en_US");
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  DayListTabsState({this.days, this.startDate});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        //width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.only(top: 10),
-        decoration: BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: Colors.black.withOpacity(.3)),
-                top: BorderSide(color: Colors.black.withOpacity(.3)))),
-        height: 60,
-        child: ScrollablePositionedList.builder(
-          itemCount: this.days.length,
-          itemScrollController: indexController,
-          initialScrollIndex: 19,
-          //padding: EdgeInsets.symmetric(horizontal: 10),
-
-          //minItemCount: 0,
-          //shrinkWrap: true,
-          //controller: indexController,
-          scrollDirection: Axis.horizontal,
-
-          itemBuilder: (itemContext, index) {
-            return Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    border: Border(
-                        right:
-                            BorderSide(color: Colors.black.withOpacity(.3)))),
-                child:
-                    Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                  AutoSizeText(
-                    'Day ${index + 1}',
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                  Container(
-                      margin: EdgeInsets.only(top: 5),
-                      child: AutoSizeText(
-                        formatter.format(DateTime.fromMillisecondsSinceEpoch(
-                                this.startDate,
-                                isUtc: true)
-                            .add(Duration(days: this.days[index]['day']))),
-                        style: TextStyle(
-                            fontWeight: FontWeight.w300,
-                            color: Colors.black.withOpacity(.5)),
-                      ))
-                ]));
-          },
-        ));
   }
 }

@@ -113,19 +113,6 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                   panelController: _pc,
                   content: PanelContent(
                     panelContent: (context, scrollController) {
-                      if (scrollController.hasListeners == false) {
-                        scrollController.addListener(() {
-                          if (scrollController.offset > 0) {
-                            setState(() {
-                              this.shadow = true;
-                            });
-                          } else {
-                            setState(() {
-                              this.shadow = false;
-                            });
-                          }
-                        });
-                      }
                       return Center(
                           child: Scaffold(
                               backgroundColor: Colors.transparent,
@@ -134,13 +121,27 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return Center(
-                                          child: RefreshProgressIndicator());
+                                      return ListView(
+                                          shrinkWrap: true,
+                                          controller: scrollController,
+                                          children: <Widget>[
+                                            Center(
+                                                child:
+                                                    RefreshProgressIndicator())
+                                          ]);
                                     }
                                     if (snapshot.hasData &&
+                                        snapshot.connectionState ==
+                                            ConnectionState.done &&
                                         snapshot.data.error == null) {
-                                      return _buildLoadedBody(
-                                          context, snapshot, scrollController);
+                                      return RenderWidget(
+                                          scrollController: scrollController,
+                                          asyncSnapshot: snapshot,
+                                          onScroll: onScroll,
+                                          builder: (context, scrollController,
+                                                  snapshot) =>
+                                              _buildLoadedBody(context,
+                                                  snapshot, scrollController));
                                     } else if (snapshot.hasData &&
                                         snapshot.data.error != null) {
                                       return ListView(
@@ -176,8 +177,13 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                                                 ))
                                           ]);
                                     }
-                                    return Center(
-                                        child: RefreshProgressIndicator());
+                                    return ListView(
+                                        shrinkWrap: true,
+                                        controller: scrollController,
+                                        children: <Widget>[
+                                          Center(
+                                              child: RefreshProgressIndicator())
+                                        ]);
                                   })));
                     },
                     bodyContent: Container(
@@ -231,6 +237,18 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
         ]));
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot,
       ScrollController scrollController) {
@@ -240,6 +258,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
       var destination = this.flightsAccomodations[i];
       tabContents.add(
         Scaffold(
+            backgroundColor: Colors.transparent,
             floatingActionButton: FloatingActionButton(
               backgroundColor: Colors.blueGrey,
               child: Icon(Icons.add),
@@ -420,12 +439,13 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     return Container(
         height: _panelHeightOpen,
         width: MediaQuery.of(ctxt).size.width,
-        child: Stack(fit: StackFit.expand, children: <Widget>[
+        child: Stack(children: <Widget>[
           DefaultTabController(
               length: this.flightsAccomodations.length,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+                // crossAxisAlignment: CrossAxisAlignment.center,
+                // mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Container(
                       decoration: BoxDecoration(
@@ -442,7 +462,9 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                                 ]
                               : []),
                       alignment: Alignment.center,
-                      child: _renderTabBar(Colors.blueGrey, Colors.black)),
+                      child: RenderWidget(
+                          builder: (context, scrollController, snapshot) =>
+                              _renderTabBar(Colors.blueGrey, Colors.black))),
                   Flexible(
                       child: Container(
                           width: MediaQuery.of(ctxt).size.width,
@@ -470,7 +492,10 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
 
     for (var section in this.flightsAccomodations) {
       tabs.add(
-        Tab(child: _renderTab(section['destination']['destination_name'])),
+        Tab(
+            child: RenderWidget(
+                builder: (context, scrollController, snapshot) =>
+                    _renderTab(section['destination']['destination_name']))),
       );
     }
 
@@ -480,7 +505,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
       labelPadding: EdgeInsets.only(top: 20, right: 20, left: 20),
       unselectedLabelColor: Colors.black.withOpacity(0.6),
       indicator: BoxDecoration(
-          border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
+          border: Border(top: BorderSide(color: mainColor, width: 4.0))),
       tabs: tabs,
     );
   }

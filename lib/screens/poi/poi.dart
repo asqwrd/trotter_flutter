@@ -126,6 +126,7 @@ class PoiState extends State<Poi> {
   @override
   void initState() {
     super.initState();
+
     data = fetchPoi(this.poiId, this.googlePlace, this.locationId);
   }
 
@@ -148,30 +149,27 @@ class PoiState extends State<Poi> {
     };
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    data.then((data) => {
-          if (data.error != null)
-            {
-              setState(() {
-                this.errorUi = true;
-                this.loading = false;
-              })
-            }
-          else if (data.error == null)
-            {
-              setState(() {
-                this.errorUi = false;
-                this.images = data.poi['images'];
-                this.image = data.poi['image'];
-                this.loading = false;
-                if (this.image == null) {
-                  this.image = '';
-                }
-                this.poiName = data.poi['name'];
-                this.poi = data.poi;
-                this.color = Color(hexStringToHexInt(data.color));
-              })
-            }
+    data.then((data) {
+      if (data.error != null) {
+        setState(() {
+          this.errorUi = true;
+          this.loading = false;
         });
+      } else if (data.error == null) {
+        setState(() {
+          this.errorUi = false;
+          this.images = data.poi['images'];
+          this.image = data.poi['image'];
+          this.loading = false;
+          if (this.image == null) {
+            this.image = '';
+          }
+          this.poiName = data.poi['name'];
+          this.poi = data.poi;
+          this.color = Color(hexStringToHexInt(data.color));
+        });
+      }
+    });
 
     return WillPopScope(
         onWillPop: () {
@@ -180,13 +178,12 @@ class PoiState extends State<Poi> {
         },
         child: Stack(alignment: Alignment.topCenter, children: <Widget>[
           Positioned(
-              child: SlidingPanel(
+              child: new SlidingPanel(
                   snapPanel: true,
                   initialState: this.errorUi == true
                       ? InitialPanelState.expanded
                       : InitialPanelState.closed,
                   size: PanelSize(closedHeight: .45, expandedHeight: .835),
-                  isDraggable: this.errorUi == true ? false : true,
                   autoSizing: PanelAutoSizing(),
                   decoration: PanelDecoration(
                       borderRadius: BorderRadius.only(
@@ -257,34 +254,28 @@ class PoiState extends State<Poi> {
                           )),
                     ),
                     panelContent: (context, _sc) {
-                      if (_sc.hasListeners == false) {
-                        _sc.addListener(() {
-                          if (_sc.offset > 0) {
-                            setState(() {
-                              this.shadow = true;
-                            });
-                          } else {
-                            setState(() {
-                              this.shadow = false;
-                            });
-                          }
-                        });
-                      }
                       return Center(
                           child: FutureBuilder(
                               future: data,
                               builder: (context, snapshot) {
                                 if (snapshot.hasData &&
+                                    snapshot.connectionState ==
+                                        ConnectionState.done &&
                                     snapshot.data.error == null) {
-                                  return _buildLoadedBody(
-                                      context, snapshot, _sc);
+                                  return RenderWidget(
+                                      onScroll: onScroll,
+                                      scrollController: _sc,
+                                      asyncSnapshot: snapshot,
+                                      builder: (context, scrollController,
+                                              snapshot) =>
+                                          _buildLoadedBody(context, snapshot,
+                                              scrollController));
                                 } else if (snapshot.hasData &&
+                                    snapshot.connectionState ==
+                                        ConnectionState.done &&
                                     snapshot.data.error != null) {
                                   return ListView(
                                       controller: _sc,
-                                      physics: disableScroll
-                                          ? NeverScrollableScrollPhysics()
-                                          : ClampingScrollPhysics(),
                                       shrinkWrap: true,
                                       children: <Widget>[
                                         Container(
@@ -425,6 +416,18 @@ class PoiState extends State<Poi> {
                 ],
               )),
         ]));
+  }
+
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
   }
 
 // function for rendering view after data is loaded

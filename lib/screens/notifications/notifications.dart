@@ -72,22 +72,13 @@ class NotificationsState extends State<Notifications> {
               panelController: _pc,
               content: PanelContent(
                 panelContent: (context, _sc) {
-                  if (_sc.hasListeners == false) {
-                    _sc.addListener(() {
-                      if (_sc.offset > 0) {
-                        setState(() {
-                          this.shadow = true;
-                        });
-                      } else {
-                        setState(() {
-                          this.shadow = false;
-                        });
-                      }
-                    });
-                  }
                   return Center(
                       child: Stack(children: <Widget>[
-                    _buildContent(context, store, _sc),
+                    RenderWidget(
+                        onScroll: onScroll,
+                        scrollController: _sc,
+                        builder: (context, scrollController, snapshot) =>
+                            _buildContent(context, store, scrollController)),
                     store.notificationsLoading == true
                         ? Center(child: RefreshProgressIndicator())
                         : Container()
@@ -199,6 +190,18 @@ class NotificationsState extends State<Notifications> {
     ]);
 
     //return _buildContent(context, store);
+  }
+
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
   }
 
   Widget _buildContent(

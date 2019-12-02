@@ -52,6 +52,7 @@ class DayState extends State<Day> {
   String itineraryName;
   dynamic day;
   bool shadow = false;
+  List<dynamic> days;
 
   Future<DayData> data;
 
@@ -71,6 +72,7 @@ class DayState extends State<Day> {
           this.image = data.destination['image'];
           this.loading = false;
           this.day = data.day;
+          this.days = data.itinerary['days'];
         });
       } else {
         setState(() {
@@ -149,39 +151,44 @@ class DayState extends State<Day> {
                           this.loading
                               ? Container(
                                   alignment: Alignment.center,
-                                  margin: EdgeInsets.only(top: 10, bottom: 20),
+                                  margin: EdgeInsets.only(top: 10, bottom: 0),
                                   child: AutoSizeText(
                                     'Loading day...',
-                                    style: TextStyle(fontSize: 25),
+                                    style: TextStyle(fontSize: 20),
                                   ),
                                 )
                               : Container(
                                   alignment: Alignment.center,
-                                  padding: EdgeInsets.only(top: 10, bottom: 20),
+                                  padding: EdgeInsets.only(top: 10, bottom: 0),
                                   child: Column(children: <Widget>[
                                     AutoSizeText(
                                       '${ordinalNumber(day['day'] + 1)} day',
-                                      style: TextStyle(fontSize: 25),
+                                      style: TextStyle(fontSize: 20),
                                     )
                                   ]),
-                                )
+                                ),
+                          this.loading == false
+                              ? Center(
+                                  child: DayListTabs(
+                                  days: this.days,
+                                  activeDay: this.dayId,
+                                  activeColor: color,
+                                  onSelected: (day, index) {
+                                    print(day);
+                                    onPush({
+                                      'itineraryId': this.itineraryId,
+                                      'dayId': day['id'].toString(),
+                                      "linkedItinerary": this.days[index]
+                                          ['linked_itinerary'],
+                                      'level': 'itinerary/day'
+                                    });
+                                  },
+                                ))
+                              : Container()
                         ],
                       )),
                 ),
                 panelContent: (context, _sc) {
-                  if (_sc.hasListeners == false) {
-                    _sc.addListener(() {
-                      if (_sc.offset > 0) {
-                        setState(() {
-                          this.shadow = true;
-                        });
-                      } else {
-                        setState(() {
-                          this.shadow = false;
-                        });
-                      }
-                    });
-                  }
                   return Center(
                       child: Scaffold(
                           backgroundColor: Colors.transparent,
@@ -194,8 +201,13 @@ class DayState extends State<Day> {
                                 }
                                 if (snapshot.hasData &&
                                     snapshot.data.error == null) {
-                                  return _buildLoadedBody(
-                                      context, snapshot, _sc);
+                                  return RenderWidget(
+                                      onScroll: onScroll,
+                                      scrollController: _sc,
+                                      builder: (context, scrollController,
+                                              asynSnapshot) =>
+                                          _buildLoadedBody(context, snapshot,
+                                              scrollController));
                                 } else if (snapshot.hasData &&
                                     snapshot.data.error != null) {
                                   return ListView(
@@ -224,6 +236,9 @@ class DayState extends State<Day> {
                                                         this.destinationName =
                                                             data.destination[
                                                                 'name'];
+                                                        this.days = data
+                                                            .itinerary['days'];
+                                                        this.day = data.day;
                                                         this.destination =
                                                             data.destination;
                                                         this.destinationId =
@@ -328,6 +343,18 @@ class DayState extends State<Day> {
               title: this.itineraryName,
               back: true)),
     ]);
+  }
+
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
   }
 
 // function for rendering view after data is loaded

@@ -231,7 +231,7 @@ class DestinationState extends State<Destination>
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
         child: SlidingPanel(
-          snapPanel: true,
+            snapPanel: true,
             initialState: this.errorUi == true
                 ? InitialPanelState.expanded
                 : InitialPanelState.closed,
@@ -321,30 +321,25 @@ class DestinationState extends State<Destination>
                       )),
                 ),
                 panelContent: (context, _sc) {
-                  if (_sc.hasListeners == false) {
-                    _sc.addListener(() {
-                      if (_sc.offset > 0) {
-                        setState(() {
-                          this.shadow = true;
-                        });
-                      } else {
-                        setState(() {
-                          this.shadow = false;
-                        });
-                      }
-                    });
-                  }
                   return Center(
                       child: FutureBuilder(
                           future: data,
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return _buildLoadedBody(context, snapshot, _sc);
-                            } else if (snapshot.hasData &&
+                            if (snapshot.hasData &&
+                                snapshot.connectionState ==
+                                    ConnectionState.done &&
                                 snapshot.data.error == null) {
-                              return _buildLoadedBody(context, snapshot, _sc);
+                              return RenderWidget(
+                                  onScroll: onScroll,
+                                  scrollController: _sc,
+                                  asyncSnapshot: snapshot,
+                                  builder: (context, scrollController,
+                                          snapshot) =>
+                                      _buildLoadedBody(
+                                          context, snapshot, scrollController));
                             } else if (snapshot.hasData &&
+                                snapshot.connectionState ==
+                                    ConnectionState.done &&
                                 snapshot.data.error != null) {
                               return ListView(
                                   controller: _sc,
@@ -368,7 +363,7 @@ class DestinationState extends State<Destination>
                                         ))
                                   ]);
                             }
-                            return Container();
+                            return _buildLoadingBody(context, _sc);
                           }));
                 },
                 bodyContent: Container(
@@ -463,15 +458,27 @@ class DestinationState extends State<Destination>
     ]);
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return _buildLoadingBody(ctxt, _sc);
-    }
     var destination = snapshot.data.destination;
     var descriptionShort = snapshot.data.destination['description_short'];
     var color = Color(hexStringToHexInt(snapshot.data.color));
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return _buildLoadingBody(ctxt, _sc);
+    }
 
     return Container(
         height: MediaQuery.of(ctxt).size.height,

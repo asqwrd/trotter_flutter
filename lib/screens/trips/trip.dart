@@ -969,19 +969,6 @@ class TripState extends State<Trip> {
                 )),
           ),
           panelContent: (context, scrollController) {
-            if (scrollController.hasListeners == false) {
-              scrollController.addListener(() {
-                if (scrollController.offset > 0) {
-                  setState(() {
-                    this.shadow = true;
-                  });
-                } else {
-                  setState(() {
-                    this.shadow = false;
-                  });
-                }
-              });
-            }
             return Center(
                 child: Scaffold(
                     resizeToAvoidBottomPadding: false,
@@ -989,10 +976,19 @@ class TripState extends State<Trip> {
                     body: FutureBuilder(
                         future: data,
                         builder: (context, snapshot) {
-                          if (snapshot.hasData && snapshot.data.error == null) {
+                          if (snapshot.hasData &&
+                              snapshot.data.error == null &&
+                              snapshot.connectionState ==
+                                  ConnectionState.done) {
                             if (this.canView) {
-                              return _buildLoadedBody(
-                                  context, snapshot, store, scrollController);
+                              return RenderWidget(
+                                  onScroll: onScroll,
+                                  scrollController: scrollController,
+                                  asyncSnapshot: snapshot,
+                                  builder:
+                                      (context, scrollController, snapshot) =>
+                                          _buildLoadedBody(context, snapshot,
+                                              store, scrollController));
                             } else {
                               return CannotView();
                             }
@@ -1217,6 +1213,18 @@ class TripState extends State<Trip> {
                     ]
                   : null)),
     ]);
+  }
+
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
   }
 
 // function for rendering view after data is loaded

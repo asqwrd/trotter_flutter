@@ -45,8 +45,8 @@ class Trips extends StatefulWidget {
   TripsState createState() => new TripsState(onPush: this.onPush);
 
   static TripsState of(BuildContext context) {
-    return (context.inheritFromWidgetOfExactType(_MyInheritedTrips)
-            as _MyInheritedTrips)
+    return (context.dependOnInheritedWidgetOfExactType(
+            aspect: _MyInheritedTrips) as _MyInheritedTrips)
         .data;
   }
 }
@@ -67,14 +67,6 @@ class TripsState extends State<Trips> {
 
   @override
   void initState() {
-    // _sc.addListener(() {
-    //   // setState(() {
-    //   //   if (_pc.isPanelOpen()) {
-    //   //     disableScroll = _sc.offset <= 0;
-    //   //   }
-    //   // });
-    // });
-
     super.initState();
   }
 
@@ -202,20 +194,11 @@ class TripsState extends State<Trips> {
                 )),
           ),
           panelContent: (context, scrollController) {
-            if (scrollController.hasListeners == false) {
-              scrollController.addListener(() {
-                if (scrollController.offset > 10) {
-                  setState(() {
-                    this.shadow = true;
-                  });
-                } else {
-                  setState(() {
-                    this.shadow = false;
-                  });
-                }
-              });
-            }
-            return buildScaffold(color, store, context, scrollController);
+            return RenderWidget(
+                scrollController: scrollController,
+                onScroll: onScroll,
+                builder: (context, scrollController, snapshot) =>
+                    buildScaffold(color, store, context, scrollController));
           },
           bodyContent: Container(
               height: _bodyHeight,
@@ -271,6 +254,18 @@ class TripsState extends State<Trips> {
     ]);
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
   Scaffold buildScaffold(Color color, TrotterStore store, BuildContext context,
       ScrollController scrollController) {
     var currentUser = store.currentUser;
@@ -294,7 +289,11 @@ class TripsState extends State<Trips> {
                     elevation: 5.0,
                   )
                 : Container(),
-        body: _buildLoadedBody(context, store, color, scrollController));
+        body: RenderWidget(
+            scrollController: scrollController,
+            onScroll: onScroll,
+            builder: (context, scrollController, snapshot) =>
+                _buildLoadedBody(context, store, color, scrollController)));
   }
 
 // function for rendering view after data is loaded

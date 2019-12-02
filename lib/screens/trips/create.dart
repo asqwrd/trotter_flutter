@@ -169,7 +169,8 @@ class CreateTripState extends State<CreateTrip> {
                   });
                 },
               ))),
-      _buildDivider(),
+      RenderWidget(
+          builder: (context, scrollController, snapshot) => _buildDivider()),
       Align(
           alignment: Alignment.center,
           child: Container(
@@ -255,7 +256,7 @@ class CreateTripState extends State<CreateTrip> {
               snapPanel: true,
               initialState: InitialPanelState.expanded,
               isDraggable: false,
-              size: PanelSize(closedHeight: .7),
+              size: PanelSize(closedHeight: .7, expandedHeight: .835),
               autoSizing: PanelAutoSizing(),
               decoration: PanelDecoration(
                   borderRadius: BorderRadius.only(
@@ -309,19 +310,6 @@ class CreateTripState extends State<CreateTrip> {
                       )),
                 ),
                 panelContent: (context, _sc) {
-                  if (_sc.hasListeners == false) {
-                    _sc.addListener(() {
-                      if (_sc.offset > 0) {
-                        setState(() {
-                          this.shadow = true;
-                        });
-                      } else {
-                        setState(() {
-                          this.shadow = false;
-                        });
-                      }
-                    });
-                  }
                   return Center(
                       child: new Scaffold(
                           resizeToAvoidBottomPadding: false,
@@ -330,7 +318,13 @@ class CreateTripState extends State<CreateTrip> {
                             Positioned.fill(
                                 child: IgnorePointer(
                                     ignoring: this.loading,
-                                    child: _buildForm(context, _sc))),
+                                    child: RenderWidget(
+                                        scrollController: _sc,
+                                        onScroll: onScroll,
+                                        builder: (context, scrollController,
+                                                snapshot) =>
+                                            _buildForm(
+                                                context, scrollController)))),
                             this.loading
                                 ? Center(child: RefreshProgressIndicator())
                                 : Container()
@@ -366,6 +360,18 @@ class CreateTripState extends State<CreateTrip> {
             back: true,
           )),
     ]);
+  }
+
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
   }
 
   Widget _buildDestField(int index, [dynamic param, bool addRemove = false]) {
@@ -799,7 +805,6 @@ class DestinationFieldState extends State<DestinationField> {
       Container(
           margin: EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
           child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)))
-      //this.parent._buildDivider()
     ]);
   }
 }

@@ -114,7 +114,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
           child: SlidingPanel(
-            snapPanel: true,
+              snapPanel: true,
               initialState: this.errorUi == true
                   ? InitialPanelState.expanded
                   : InitialPanelState.closed,
@@ -182,25 +182,18 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                       )),
                 ),
                 panelContent: (context, scrollController) {
-                  if (scrollController.hasListeners == false) {
-                    scrollController.addListener(() {
-                      if (scrollController.offset > 0) {
-                        setState(() {
-                          this.shadow = true;
-                        });
-                      } else {
-                        setState(() {
-                          this.shadow = false;
-                        });
-                      }
-                    });
-                  }
                   return Center(
                       child: FutureBuilder(
                           future: data,
                           builder: (context, snapshot) {
-                            return _buildLoadedBody(
-                                context, store, scrollController);
+                            return RenderWidget(
+                                scrollController: scrollController,
+                                onScroll: onScroll,
+                                asyncSnapshot: snapshot,
+                                builder:
+                                    (context, scrollController, snapshot) =>
+                                        _buildLoadedBody(
+                                            context, store, scrollController));
                           }));
                 },
                 bodyContent: Container(
@@ -360,6 +353,18 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     ]);
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store,
       ScrollController scrollController) {
@@ -387,7 +392,11 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         store.itineraryStore.itineraryBuilder.loading == true ||
         store.itineraryStore.itineraryBuilder.itinerary['id'] !=
             this.itineraryId) {
-      return _buildLoadingBody(ctxt, scrollController);
+      return RenderWidget(
+          scrollController: scrollController,
+          onScroll: onScroll,
+          builder: (ctxt, scrollController, snapshot) =>
+              _buildLoadingBody(ctxt, scrollController));
     }
 
     var itinerary = store.itineraryStore.itineraryBuilder.itinerary;
@@ -402,8 +411,17 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 
     return Container(
         height: MediaQuery.of(context).size.height,
-        child: _buildDay(days, destinationName, destinationCountryName,
-            itinerary['destination'], color, startLocation, scrollController));
+        child: RenderWidget(
+            onScroll: onScroll,
+            scrollController: scrollController,
+            builder: (context, scrollController, snapshot) => _buildDay(
+                days,
+                destinationName,
+                destinationCountryName,
+                itinerary['destination'],
+                color,
+                startLocation,
+                scrollController)));
   }
 
   _buildDay(
@@ -571,9 +589,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       child: ListView(
         shrinkWrap: true,
         controller: scrollController,
-        // physics: disableScroll
-        //     ? NeverScrollableScrollPhysics()
-        //     : ClampingScrollPhysics(),
         children: children2,
       ),
     );

@@ -151,24 +151,24 @@ class ItineraryState extends State<Itinerary> {
                   )),
             ),
             panelContent: (context, _sc) {
-              if (_sc.hasListeners == false) {
-                _sc.addListener(() {
-                  if (_sc.offset > 0) {
-                    setState(() {
-                      this.shadow = true;
-                    });
-                  } else {
-                    setState(() {
-                      this.shadow = false;
-                    });
-                  }
-                });
-              }
               return Center(
                   child: FutureBuilder(
                       future: data,
                       builder: (context, snapshot) {
-                        return _buildLoadedBody(context, store, _sc);
+                        if (store.itineraryStore.itinerary.itinerary == null ||
+                            store.itineraryStore.itinerary.loading ||
+                            store.itineraryStore.itinerary.itinerary['id'] !=
+                                this.itineraryId ||
+                            snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                          return _buildLoadingBody(context, _sc);
+                        }
+                        return RenderWidget(
+                            scrollController: _sc,
+                            onScroll: onScroll,
+                            builder: (context, scrollController, snapshot) =>
+                                _buildLoadedBody(
+                                    context, store, scrollController));
                       }));
             },
             bodyContent: Container(
@@ -242,14 +242,21 @@ class ItineraryState extends State<Itinerary> {
     ]);
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, TrotterStore store, ScrollController _sc) {
-    if (store.itineraryStore.itinerary.itinerary == null ||
-        store.itineraryStore.itinerary.loading ||
-        store.itineraryStore.itinerary.itinerary['id'] != this.itineraryId) {
-      return _buildLoadingBody(ctxt, _sc);
-    }
     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     if (store.itineraryStore.itinerary.error != null) {
       return ListView(controller: _sc, shrinkWrap: true, children: <Widget>[
@@ -273,8 +280,16 @@ class ItineraryState extends State<Itinerary> {
 
     return Container(
         height: MediaQuery.of(context).size.height,
-        child: _buildDay(days, destinationName, destinationCountryName,
-            itinerary['destination'], color, _sc));
+        child: RenderWidget(
+            onScroll: onScroll,
+            scrollController: _sc,
+            builder: (context, scrollController, snapshot) => _buildDay(
+                days,
+                destinationName,
+                destinationCountryName,
+                itinerary['destination'],
+                color,
+                scrollController)));
   }
 
   _buildDay(
@@ -360,10 +375,10 @@ class ItineraryState extends State<Itinerary> {
   // function for rendering while data is loading
   Widget _buildLoadingBody(BuildContext ctxt, ScrollController _sc) {
     var children2 = <Widget>[
-      Center(heightFactor: 12, child: RefreshProgressIndicator()),
+      Container(child: ItineraryListLoading()),
     ];
     return Container(
-      padding: EdgeInsets.only(top: 0.0),
+      padding: EdgeInsets.only(top: 0.0, left: 20, right: 20),
       decoration: BoxDecoration(color: Colors.transparent),
       child: ListView(
         controller: _sc,

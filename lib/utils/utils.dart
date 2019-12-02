@@ -310,3 +310,44 @@ class TrotterLoading extends StatelessWidget {
         )));
   }
 }
+
+class RenderWidget extends StatefulWidget {
+  final Widget Function(BuildContext, ScrollController, AsyncSnapshot) builder;
+  final ValueChanged<double> onScroll;
+  final ScrollController scrollController;
+  final AsyncSnapshot asyncSnapshot;
+
+  RenderWidget(
+      {this.builder, this.onScroll, this.scrollController, this.asyncSnapshot});
+
+  @override
+  RenderWidgetState createState() => RenderWidgetState(
+      builder: this.builder,
+      onScroll: this.onScroll,
+      asyncSnapshot: this.asyncSnapshot,
+      scrollController: this.scrollController);
+}
+
+class RenderWidgetState extends State<RenderWidget> {
+  final Widget Function(BuildContext, ScrollController, AsyncSnapshot) builder;
+  final ValueChanged<double> onScroll;
+  ScrollController scrollController;
+  final AsyncSnapshot asyncSnapshot;
+
+  @override
+  void initState() {
+    if (scrollController != null) {
+      scrollController.addListener(() {
+        onScroll(scrollController.offset);
+      });
+    }
+    super.initState();
+  }
+
+  RenderWidgetState(
+      {this.builder, this.onScroll, this.scrollController, this.asyncSnapshot});
+
+  Widget build(context) {
+    return this.builder(context, scrollController, asyncSnapshot);
+  }
+}

@@ -306,19 +306,6 @@ class HomeState extends State<Home> {
                 )),
           ),
           panelContent: (context, scrollController) {
-            if (scrollController.hasListeners == false) {
-              scrollController.addListener(() {
-                if (scrollController.offset > 0) {
-                  setState(() {
-                    this.shadow = true;
-                  });
-                } else {
-                  setState(() {
-                    this.shadow = false;
-                  });
-                }
-              });
-            }
             return FutureBuilder(
                 future: data,
                 builder: (context, snapshot) {
@@ -343,6 +330,17 @@ class HomeState extends State<Home> {
                               ))
                         ]);
                   }
+                  if (snapshot.hasData &&
+                      snapshot.connectionState == ConnectionState.done) {
+                    return RenderWidget(
+                        onScroll: onScroll,
+                        asyncSnapshot: snapshot,
+                        scrollController: scrollController,
+                        builder: (context, scrollController, snapshot) =>
+                            _buildLoadedBody(
+                                context, snapshot, scrollController));
+                  }
+
                   return _buildLoadedBody(context, snapshot, scrollController);
                 });
           },
@@ -399,6 +397,18 @@ class HomeState extends State<Home> {
             ],
           )),
     ]);
+  }
+
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
   }
 
   bottomSheetModal(BuildContext context, dynamic data) {

@@ -62,7 +62,10 @@ class ProfileState extends State<Profile> {
               panelController: _pc,
               content: PanelContent(
                 panelContent: (context, _sc) {
-                  return Center(child: _buildContent(context, store, _sc));
+                  return Center(
+                      child: RenderWidget(
+                          builder: (context, scrollController, snapshot) =>
+                              _buildContent(context, store, _sc)));
                 },
                 bodyContent: Container(color: color),
               ))),
@@ -84,6 +87,33 @@ class ProfileState extends State<Profile> {
       store.currentUser != null
           ? ListTile(
               title: CountryCodePicker(
+                searchDecoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                    prefixIcon: Padding(
+                        padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                        child: Icon(Icons.home, size: 15)),
+                    //fillColor: Colors.blueGrey.withOpacity(0.5),
+                    filled: true,
+                    errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide: BorderSide(width: 1.0, color: Colors.red)),
+                    focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide: BorderSide(width: 1.0, color: Colors.red)),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide:
+                            BorderSide(width: 0.0, color: Colors.transparent)),
+                    disabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide:
+                            BorderSide(width: 0.0, color: Colors.transparent)),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide:
+                            BorderSide(width: 0.0, color: Colors.transparent)),
+                    hintText: 'Search country',
+                    hintStyle: TextStyle(fontSize: 13)),
                 onChanged: (CountryCode data) {
                   print(data.code);
                   setState(() {

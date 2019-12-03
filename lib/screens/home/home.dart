@@ -15,6 +15,7 @@ import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
+import 'package:trotter_flutter/widgets/poi/poi-modal.dart';
 import 'package:trotter_flutter/widgets/recommendations/category-list.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -136,14 +137,14 @@ class HomeItinerariesData {
 }
 
 class Home extends StatefulWidget {
-  final String2VoidFunc onPush;
+  final ValueChanged<dynamic> onPush;
   Home({Key key, @required this.onPush}) : super(key: key);
   @override
   HomeState createState() => new HomeState(onPush: this.onPush);
 }
 
 class HomeState extends State<Home> {
-  final String2VoidFunc onPush;
+  final ValueChanged<dynamic> onPush;
   ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -524,7 +525,18 @@ class HomeState extends State<Home> {
               child: CategoryList(
                   destination: destination,
                   onPressed: (data) {
-                    print(data);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            fullscreenDialog: true,
+                            builder: (context) {
+                              return PoiModal(
+                                  query: data['query'],
+                                  onPush: onPush,
+                                  title:
+                                      '${destination['destination_name']} - ${data['destination']['name']}',
+                                  destination: destination);
+                            }));
                   },
                   onLongPressed: (data) {},
                   subText:

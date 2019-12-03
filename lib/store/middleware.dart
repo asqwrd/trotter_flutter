@@ -45,6 +45,17 @@ class ThingsToDoData {
   }
 }
 
+class CategoryData {
+  final List<dynamic> places;
+  final bool success;
+
+  CategoryData({this.places, this.success});
+
+  factory CategoryData.fromJson(Map<String, dynamic> json) {
+    return CategoryData(places: json['places'], success: true);
+  }
+}
+
 class NearByData {
   final List<dynamic> places;
   final bool success;
@@ -60,38 +71,63 @@ class NearByData {
 Future<ThingsToDoData> fetchThingsToDo(String userId,
     [bool refresh = false]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String cacheData = prefs.getString('thingsToDo') ?? null;
-  final int cacheDataExpire = prefs.getInt('thingsToDo-expiration') ?? null;
+  try {
+    final response = await http.get('$ApiDomain/api/explore/do?user_id=$userId',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      await prefs.setString('thingsToDo', response.body);
+      await prefs.setInt('thingsToDo-expiration',
+          DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
+      var data = json.decode(response.body);
+      return ThingsToDoData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      print(msg);
+      return ThingsToDoData(success: false);
+    }
+  } catch (error) {
+    print('Response> $error');
+    return ThingsToDoData(success: false);
+  }
+}
+
+Future<CategoryData> fetchCategoryPlaces(
+    String destinationId, String query, String type) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  final String cacheData =
+      prefs.getString('category_$destinationId-$query') ?? null;
+  final int cacheDataExpire =
+      prefs.getInt('category_$destinationId-$query-expiration') ?? null;
   final currentTime = DateTime.now().millisecondsSinceEpoch;
   if (cacheData != null &&
       cacheDataExpire != null &&
-      refresh != true &&
       (currentTime < cacheDataExpire)) {
-    var doData = json.decode(cacheData);
-
-    return ThingsToDoData.fromJson(doData);
-  } else {
-    try {
-      final response = await http.get(
-          '$ApiDomain/api/explore/do?user_id=$userId',
-          headers: {'Authorization': 'security'});
-      if (response.statusCode == 200) {
-        // If server returns an OK response, parse the JSON
-        await prefs.setString('thingsToDo', response.body);
-        await prefs.setInt('thingsToDo-expiration',
-            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
-        var data = json.decode(response.body);
-        return ThingsToDoData.fromJson(data);
-      } else {
-        // If that response was not OK, throw an error.
-        var msg = response.statusCode;
-        print(msg);
-        return ThingsToDoData(success: false);
-      }
-    } catch (error) {
-      print('Response> $error');
-      return ThingsToDoData(success: false);
+    // If server returns an OK response, parse the JSON
+    var categoryData = json.decode(cacheData);
+    return CategoryData.fromJson(categoryData);
+  }
+  try {
+    final response = await http.get(
+        '$ApiDomain/api/explore/destinations/$destinationId/category?query=$query&type=$type',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      await prefs.setString('category_$destinationId-$query', response.body);
+      await prefs.setInt('category_$destinationId-$query-expiration',
+          DateTime.now().add(Duration(days: 4)).millisecondsSinceEpoch);
+      var data = json.decode(response.body);
+      return CategoryData.fromJson(data);
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      print(msg);
+      return CategoryData(success: false);
     }
+  } catch (error) {
+    print('Response> $error');
+    return CategoryData(success: false);
   }
 }
 
@@ -135,7 +171,6 @@ Future<NearByData> fetchNearbyPlaces(String type, String keywords) async {
       return NearByData(denied: true);
     }
   }
-  print(ApiDomain);
   try {
     final response = await http.get(
         '$ApiDomain/api/explore/nearby?type=$type&lat=${position.latitude}&lng=${position.longitude}&keywords=$keywords',

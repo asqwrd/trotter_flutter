@@ -69,7 +69,7 @@ class CategoryList extends StatelessWidget {
       }
     ];
     for (var index = 0; index < items.length; index++) {
-      widgets.add(Flexible(child: buildBody(context, items[index], index)));
+      widgets.add(buildBody(context, items[index], index));
     }
     return Container(
         margin: EdgeInsets.symmetric(vertical: 0.0),
@@ -118,6 +118,7 @@ class CategoryList extends StatelessWidget {
 
   Container buildThumbnailItem(
       BuildContext context, int index, item, Color fontColor) {
+    final size = (MediaQuery.of(context).size.width / 4) - 17.5;
     return Container(
         //height:210.0,
         margin: EdgeInsets.only(left: 0.0),
@@ -131,8 +132,8 @@ class CategoryList extends StatelessWidget {
                       : EdgeInsets.only(right: 0),
                   child: Center(
                       child: Container(
-                          width: 100,
-                          height: 100,
+                          width: size,
+                          height: size,
                           child: Stack(fit: StackFit.expand, children: <Widget>[
                             ClipPath(
                                 clipper: CornerRadiusClipper(10),
@@ -143,12 +144,13 @@ class CategoryList extends StatelessWidget {
                                     color: Colors.black.withOpacity(.3))),
                             Positioned(
                                 bottom: 0,
+                                left: 0,
                                 child: Container(
                                     padding:
                                         EdgeInsets.symmetric(vertical: 10.0),
                                     margin:
                                         EdgeInsets.symmetric(horizontal: 10),
-                                    width: 100.0,
+                                    width: size,
                                     child: AutoSizeText(
                                       item['name'],
                                       textAlign: TextAlign.center,

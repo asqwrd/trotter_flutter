@@ -10,6 +10,7 @@ import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/images/image-swiper.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card-loading.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card.dart';
+import 'package:trotter_flutter/widgets/poi/poi-modal.dart';
 import 'package:trotter_flutter/widgets/recommendations/category-list.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:http/http.dart' as http;
@@ -542,7 +543,25 @@ class DestinationState extends State<Destination>
           child: CategoryList(
               destination: destination,
               onPressed: (data) {
-                print(data);
+                final dest = {
+                  "destination_id": destinationId,
+                  "destination_name": destinationName,
+                  "type": destinationType,
+                  "location": {"lat": location['lat'], "lng": location['lng']},
+                  "level": destination['level']
+                };
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        fullscreenDialog: true,
+                        builder: (context) {
+                          return PoiModal(
+                              query: data['query'],
+                              onPush: onPush,
+                              title:
+                                  '${destination['name']} - ${data['destination']['name']}',
+                              destination: dest);
+                        }));
               },
               onLongPressed: (data) {},
               subText:

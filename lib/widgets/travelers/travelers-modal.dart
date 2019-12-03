@@ -302,10 +302,10 @@ class TravelersModalState extends State<TravelersModal> {
   Container renderTopBar() {
     return Container(
         padding: EdgeInsets.only(top: 30, bottom: 10),
-        decoration: BoxDecoration(
-            border: Border(
-                bottom:
-                    BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
+        // decoration: BoxDecoration(
+        //     border: Border(
+        //         bottom:
+        //             BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
         child: Column(
           children: <Widget>[
             Row(

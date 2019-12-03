@@ -477,9 +477,7 @@ class SearchModalState extends State<SearchModal> {
 
   ListView renderResults(results) {
     return ListView.builder(
-      //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
       itemCount: results.length,
-      //shrinkWrap: true,
       itemBuilder: (BuildContext context, int index) {
         return selectId == false
             ? InkWell(
@@ -558,15 +556,6 @@ class SearchModalState extends State<SearchModal> {
                                   filledIcon: Icons.star,
                                   emptyIcon: Icons.star_border,
                                 )),
-                            // results[index]['distance'] != null
-                            //     ? AutoSizeText(
-                            //         '${results[index]['distance']}',
-                            //         style: TextStyle(
-                            //             fontSize: 15,
-                            //             fontWeight: FontWeight.w300,
-                            //             color: Colors.blueAccent),
-                            //       )
-                            //     : Container()
                           ]),
                       trailing: this.near != null || this.location != null
                           ? IconButton(

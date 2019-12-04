@@ -363,19 +363,25 @@ Future<FlightsAndAccomodationsTravelersData>
 
 Future<dynamic> putUpdateTripDestination(
     String tripId, String destinationId, dynamic data) async {
-  final response = await http.put(
-      '$ApiDomain/api/trips/update/$tripId/destination/$destinationId',
-      body: json.encode(data),
-      headers: {
-        'Authorization': 'security',
-        "Content-Type": "application/json"
-      });
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return UpdateTripData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    return {"success": false};
+  try {
+    final response = await http.put(
+        '$ApiDomain/api/trips/update/$tripId/destination/$destinationId',
+        body: json.encode(data),
+        headers: {
+          'Authorization': 'security',
+          "Content-Type": "application/json"
+        });
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return UpdateTripData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      print(response.statusCode);
+      return UpdateTripData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    return UpdateTripData(success: false);
   }
 }
 

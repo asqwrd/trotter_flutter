@@ -80,7 +80,7 @@ class DayListTabsState extends State<DayListTabs> {
                                     ? Colors.blueGrey
                                     : Colors.black),
                       ),
-                      this.startDate != null
+                      this.startDate != null && this.startDate > 0
                           ? Container(
                               margin: EdgeInsets.only(top: 5),
                               child: AutoSizeText(

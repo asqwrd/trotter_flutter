@@ -134,6 +134,7 @@ class DayList extends StatelessWidget {
     if (items.length == 0 && this.linkedItinerary == null) {
       return buildEmptyUI(context);
     }
+    var noLinklength = items.length;
     var itineraryItems;
     var linkItineraryPosition = '';
     if (this.linkedItinerary != null &&
@@ -175,7 +176,14 @@ class DayList extends StatelessWidget {
               final destination = this.linkedItinerary['destination'];
               return buildLinkedItinerary(context, destination, index);
             }
-            var color = itineraryItems[index]['color'].isEmpty == false
+
+            if (noLinklength == 0) {
+              final destination = this.linkedItinerary['destination'];
+              return buildLinkedItinerary(context, destination, index);
+            }
+
+            var color = itineraryItems[index]['color'] != null &&
+                    itineraryItems[index]['color'].isEmpty == false
                 ? Color(hexStringToHexInt(itineraryItems[index]['color']))
                 : this.color;
             var poi = itineraryItems[index]['poi'];

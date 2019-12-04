@@ -45,7 +45,8 @@ showDateModal(
               )),
           Padding(
               padding: EdgeInsets.only(bottom: 20),
-              child: _buildDatesModal(buildContext, destination, color, tripId))
+              child: DatesModal(
+                  destination: destination, color: color, tripId: tripId))
         ],
       ));
     },
@@ -63,14 +64,272 @@ showDateModal(
   );
 }
 
+class DatesModal extends StatefulWidget {
+  final dynamic destination;
+  final Color color;
+  final String tripId;
+
+  DatesModal({this.destination, this.color, this.tripId});
+
+  DatesModalState createState() => DatesModalState(
+      tripId: this.tripId, color: this.color, destination: this.destination);
+}
+
+class DatesModalState extends State<DatesModal> {
+  final dynamic destination;
+  final Color color;
+  final String tripId;
+
+  DatesModalState({this.destination, this.color, this.tripId});
+
+  DateFormat dateFormat = DateFormat("EEE, MMM d, yyyy");
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  dynamic arrival;
+  dynamic departure;
+  TextEditingController datesController = TextEditingController();
+  TextEditingController numOfDaysController = new TextEditingController();
+  bool setDatesLater = false;
+
+  @override
+  void initState() {
+    arrival = destination['start_date'];
+    departure = destination['end_date'];
+    if (destination['start_date'] > 0 && destination['end_date'] > 0) {
+      datesController.text =
+          '${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['start_date'] * 1000))} to ${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['end_date'] * 1000))}';
+    }
+
+    if (destination['num_of_days'] != null &&
+        (destination['start_date'] == 0 && destination['end_date'] == 0)) {
+      setDatesLater = true;
+      numOfDaysController.text = destination['num_of_days'].toString();
+    }
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    datesController.dispose();
+    numOfDaysController.dispose();
+    super.dispose();
+  }
+
+  Widget build(BuildContext context) {
+    final store = Provider.of<TrotterStore>(context);
+
+    return Form(
+        key: _formKey,
+        child: Column(children: <Widget>[
+          this.setDatesLater == true
+              ? Container(
+                  margin: EdgeInsets.only(
+                      left: 20.0, right: 20, top: 20.0, bottom: 0),
+                  child: TextFormField(
+                    onChanged: (value) {
+                      this.destination['num_of_days'] =
+                          int.parse(numOfDaysController.text);
+                    },
+                    keyboardType: TextInputType.number,
+                    maxLengthEnforced: true,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                      prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                          child: Icon(
+                            Icons.calendar_today,
+                            size: 15,
+                          )),
+                      filled: true,
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide:
+                              BorderSide(width: 1.0, color: Colors.red)),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide:
+                              BorderSide(width: 1.0, color: Colors.red)),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      hintText: 'How many days will you be here?',
+                      hintStyle: TextStyle(fontSize: 13),
+                    ),
+                    controller: this.numOfDaysController,
+                    validator: (value) {
+                      if (value.isEmpty || int.parse(value) <= 0) {
+                        return 'Please enter number of days you will be here';
+                      }
+                      return null;
+                    },
+                  ))
+              : InkWell(
+                  onTap: () async {
+                    final List<DateTime> picked =
+                        await DateRagePicker.showDatePicker(
+                            context: context,
+                            initialFirstDate: destination['start_date'] > 0
+                                ? DateTime.fromMillisecondsSinceEpoch(
+                                    destination['start_date'] * 1000)
+                                : DateTime.now(),
+                            initialLastDate: destination['end_date'] > 0
+                                ? DateTime.fromMillisecondsSinceEpoch(
+                                    destination['end_date'] * 1000)
+                                : DateTime.now(),
+                            firstDate: new DateTime(
+                                DateTime.now().year,
+                                DateTime.now().month,
+                                DateTime.now().day,
+                                0,
+                                0,
+                                0,
+                                0),
+                            lastDate: new DateTime(2021));
+                    if (picked != null && picked.length == 2) {
+                      datesController.text =
+                          '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
+
+                      if (picked != null) {
+                        var startDate = picked[0].millisecondsSinceEpoch / 1000;
+                        arrival = startDate.toInt();
+                        var endDate = picked[1].millisecondsSinceEpoch / 1000;
+                        departure = endDate.toInt();
+                      }
+                    }
+                  },
+                  child: Container(
+                      margin: EdgeInsets.only(left: 20, right: 20, top: 20),
+                      child: IgnorePointer(
+                          ignoring: true,
+                          child: TextFormField(
+                            maxLengthEnforced: true,
+                            decoration: InputDecoration(
+                              contentPadding:
+                                  EdgeInsets.symmetric(vertical: 20.0),
+                              prefixIcon: Padding(
+                                  padding:
+                                      EdgeInsets.only(left: 20.0, right: 5.0),
+                                  child: Icon(
+                                    Icons.calendar_today,
+                                    size: 15,
+                                  )),
+                              filled: true,
+                              errorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5.0)),
+                                  borderSide: BorderSide(
+                                      width: 1.0, color: Colors.red)),
+                              focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5.0)),
+                                  borderSide: BorderSide(
+                                      width: 1.0, color: Colors.red)),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5.0)),
+                                  borderSide: BorderSide(
+                                      width: 0.0, color: Colors.transparent)),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5.0)),
+                                  borderSide: BorderSide(
+                                      width: 0.0, color: Colors.transparent)),
+                              hintText: 'When are you traveling',
+                              hintStyle: TextStyle(fontSize: 13),
+                            ),
+                            controller: datesController,
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return 'Please select travel dates.';
+                              }
+                              return null;
+                            },
+                          )))),
+          SwitchListTile(
+            contentPadding: EdgeInsets.only(left: 20, right: 20, top: 0),
+            title: Text('Set travel dates later?'),
+            value: this.setDatesLater,
+            onChanged: (bool newVal) {
+              setState(() {
+                this.setDatesLater = newVal;
+              });
+            },
+          ),
+          Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),
+              child: FlatButton(
+                color: color.withOpacity(0.8),
+                shape: RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(5.0)),
+                child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    child: AutoSizeText('Change dates',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white))),
+                onPressed: () async {
+                  if (_formKey.currentState.validate() &&
+                      store.tripStore.tripLoading == false) {
+                    if (arrival > 0 && departure > 0) {
+                      destination["start_date"] = arrival;
+                      destination["end_date"] = departure;
+                    }
+                    if (this.setDatesLater) {
+                      destination['num_of_days'] =
+                          int.parse(numOfDaysController.text);
+                    }
+                    store.tripStore.setTripsLoading(true);
+                    var response = await putUpdateTripDestination(
+                        tripId, destination['id'], destination);
+                    if (response.success == true) {
+                      destination["start_date"] = arrival;
+                      destination["end_date"] = departure;
+                      Navigator.pop(context, {
+                        "arrival": arrival,
+                        "departure": departure,
+                        "num_of_days": int.parse(numOfDaysController.text)
+                      });
+                    }
+                    store.tripStore.setTripsLoading(false);
+                  }
+                },
+              )),
+          Container(
+              width: double.infinity,
+              margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+              child: FlatButton(
+                child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    child: AutoSizeText('Close',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w300))),
+                onPressed: () {
+                  Navigator.pop(context, {
+                    "arrival": arrival,
+                    "departure": departure,
+                    "closed": true
+                  });
+                },
+              ))
+        ]));
+  }
+}
+
 _buildDatesModal(
-    BuildContext context, dynamic destination, Color color, tripId) {
+    BuildContext context, dynamic destination, Color color, String tripId) {
   var dateFormat = DateFormat("EEE, MMM d, yyyy");
   final store = Provider.of<TrotterStore>(context);
   GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var arrival = destination['start_date'];
   var departure = destination['end_date'];
   final datesController = TextEditingController();
+  var setDatesLater = false;
   if (destination['start_date'] > 0 && destination['end_date'] > 0) {
     datesController.text =
         '${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['start_date'] * 1000))} to ${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['end_date'] * 1000))}';
@@ -152,6 +411,16 @@ _buildDatesModal(
                         return null;
                       },
                     )))),
+        SwitchListTile(
+          contentPadding: EdgeInsets.only(left: 20, right: 20, top: 0),
+          title: Text('Set travel dates later?'),
+          value: setDatesLater,
+          onChanged: (bool newVal) {
+            // setState(() {
+            //   this.setDatesLater = newVal;
+            // });
+          },
+        ),
         Container(
             width: double.infinity,
             margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),
@@ -592,7 +861,9 @@ class _TripDestinationDialogContentState
                                             this.color,
                                             this.tripId);
                                         setState(() {
-                                          if (update['closed'] == null) {
+                                          if (update['closed'] == null &&
+                                              arrival > 0 &&
+                                              departure > 0) {
                                             startDate = new DateFormat.yMMMMd(
                                                     "en_US")
                                                 .format(new DateTime

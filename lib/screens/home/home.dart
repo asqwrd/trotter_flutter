@@ -493,7 +493,7 @@ class HomeState extends State<Home> {
               margin: EdgeInsets.symmetric(horizontal: 20),
               alignment: Alignment.topLeft,
               child: AutoSizeText(
-                'Check out these places for your upcoming trip to ${item['destination_name']}',
+                'Check out these places for your upcoming trip to ${destination['destination_name']}',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
               )),
           Container(
@@ -541,7 +541,7 @@ class HomeState extends State<Home> {
                   onLongPressed: (data) {},
                   subText:
                       "See some recommendations for sights, food, shopping and nightlife",
-                  header: "Categories of exploring")),
+                  header: "Categories to explore")),
         ],
       ));
     }

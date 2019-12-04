@@ -237,7 +237,7 @@ class DestinationState extends State<Destination>
                 ? InitialPanelState.expanded
                 : InitialPanelState.closed,
             size: PanelSize(closedHeight: .45, expandedHeight: .835),
-            isDraggable: this.errorUi == true ? false : true,
+            isDraggable: true,
             autoSizing: PanelAutoSizing(),
             decoration: PanelDecoration(
                 borderRadius: BorderRadius.only(

@@ -87,6 +87,20 @@ class ItineraryList extends StatelessWidget {
       width = (MediaQuery.of(context).size.width - 60) * .5;
     }
 
+    var timeUnit = time['unit'].toString();
+    var timeValue = time['value'].toString();
+    var unit = timeUnit;
+
+    if (timeValue.isNotEmpty &&
+        double.parse(timeValue) == 1 &&
+        timeUnit.endsWith('s')) {
+      unit = timeUnit.substring(0, timeUnit.length - 1);
+    } else if (timeValue.isNotEmpty &&
+        double.parse(timeValue) != 1 &&
+        timeUnit.endsWith('s') == false) {
+      unit = '${timeUnit}s';
+    }
+
     return new InkWell(
         onTap: () {
           var id = item['poi']['id'];
@@ -151,7 +165,7 @@ class ItineraryList extends StatelessWidget {
                                 fontSize: 15, fontWeight: FontWeight.w400)),
                         AutoSizeText(
                             time['unit'].toString().isEmpty == false
-                                ? 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} ${time['value']} ${time['unit']}${double.parse(time['value']) != 1 ? 's' : ''}'
+                                ? 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} ${time['value']} $unit'
                                 : 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} Not given',
                             textAlign: TextAlign.left,
                             style: TextStyle(

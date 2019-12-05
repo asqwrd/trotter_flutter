@@ -368,25 +368,15 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(BuildContext ctxt, TrotterStore store,
       ScrollController scrollController) {
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     if (this.errorUi == true) {
-      return ListView(
+      return SingleChildScrollView(
           controller: scrollController,
-          // physics: disableScroll
-          //     ? NeverScrollableScrollPhysics()
-          //     : ClampingScrollPhysics(),
-          shrinkWrap: true,
-          children: <Widget>[
-            Container(
-                height: _panelHeightOpen - 80,
-                width: MediaQuery.of(context).size.width,
-                child: ErrorContainer(
-                  onRetry: () {
-                    store.itineraryStore.setItineraryBuilderLoading(true);
-                    data = fetchItineraryBuilder(this.itineraryId, store);
-                  },
-                ))
-          ]);
+          child: ErrorContainer(
+            onRetry: () {
+              store.itineraryStore.setItineraryBuilderLoading(true);
+              data = fetchItineraryBuilder(this.itineraryId, store);
+            },
+          ));
     }
     if (store.itineraryStore.itineraryBuilder.itinerary == null ||
         store.itineraryStore.itineraryBuilder.loading == true ||

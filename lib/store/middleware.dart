@@ -83,8 +83,7 @@ Future<ThingsToDoData> fetchThingsToDo(String userId,
       return ThingsToDoData.fromJson(data);
     } else {
       // If that response was not OK, throw an error.
-      var msg = response.statusCode;
-      print(msg);
+      //var msg = response.statusCode;
       return ThingsToDoData(success: false);
     }
   } catch (error) {

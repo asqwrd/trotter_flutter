@@ -95,7 +95,6 @@ class DayState extends State<Day> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
@@ -210,52 +209,39 @@ class DayState extends State<Day> {
                                               scrollController));
                                 } else if (snapshot.hasData &&
                                     snapshot.data.error != null) {
-                                  return ListView(
+                                  return SingleChildScrollView(
                                       controller: _sc,
-                                      shrinkWrap: true,
-                                      children: <Widget>[
-                                        Container(
-                                            height: _panelHeightOpen - 80,
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: ErrorContainer(
-                                              color: Color.fromRGBO(
-                                                  106, 154, 168, 1),
-                                              onRetry: () {
+                                      child: ErrorContainer(
+                                        color: Color.fromRGBO(106, 154, 168, 1),
+                                        onRetry: () {
+                                          setState(() {
+                                            data = fetchDay(
+                                                this.itineraryId, this.dayId);
+                                            data.then((data) {
+                                              if (data.error == null) {
                                                 setState(() {
-                                                  data = fetchDay(
-                                                      this.itineraryId,
-                                                      this.dayId);
-                                                  data.then((data) {
-                                                    if (data.error == null) {
-                                                      setState(() {
-                                                        this.color = Color(
-                                                            hexStringToHexInt(
-                                                                data.color));
-                                                        this.destinationName =
-                                                            data.destination[
-                                                                'name'];
-                                                        this.days = data
-                                                            .itinerary['days'];
-                                                        this.day = data.day;
-                                                        this.destination =
-                                                            data.destination;
-                                                        this.destinationId =
-                                                            data.destination[
-                                                                    'id']
-                                                                .toString();
-                                                        this.itineraryItems = data
-                                                            .day[
-                                                                'itinerary_items']
-                                                            .sublist(1);
-                                                      });
-                                                    }
-                                                  });
+                                                  this.color = Color(
+                                                      hexStringToHexInt(
+                                                          data.color));
+                                                  this.destinationName =
+                                                      data.destination['name'];
+                                                  this.days =
+                                                      data.itinerary['days'];
+                                                  this.day = data.day;
+                                                  this.destination =
+                                                      data.destination;
+                                                  this.destinationId = data
+                                                      .destination['id']
+                                                      .toString();
+                                                  this.itineraryItems = data
+                                                      .day['itinerary_items']
+                                                      .sublist(1);
                                                 });
-                                              },
-                                            ))
-                                      ]);
+                                              }
+                                            });
+                                          });
+                                        },
+                                      ));
                                 }
                                 return _buildLoadingBody(context, _sc);
                               })));

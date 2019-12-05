@@ -321,158 +321,6 @@ class DatesModalState extends State<DatesModal> {
   }
 }
 
-_buildDatesModal(
-    BuildContext context, dynamic destination, Color color, String tripId) {
-  var dateFormat = DateFormat("EEE, MMM d, yyyy");
-  final store = Provider.of<TrotterStore>(context);
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  var arrival = destination['start_date'];
-  var departure = destination['end_date'];
-  final datesController = TextEditingController();
-  var setDatesLater = false;
-  if (destination['start_date'] > 0 && destination['end_date'] > 0) {
-    datesController.text =
-        '${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['start_date'] * 1000))} to ${dateFormat.format(DateTime.fromMillisecondsSinceEpoch(destination['end_date'] * 1000))}';
-  }
-
-  return Form(
-      key: _formKey,
-      child: Column(children: <Widget>[
-        InkWell(
-            onTap: () async {
-              final List<DateTime> picked = await DateRagePicker.showDatePicker(
-                  context: context,
-                  initialFirstDate: destination['start_date'] > 0
-                      ? DateTime.fromMillisecondsSinceEpoch(
-                          destination['start_date'] * 1000)
-                      : DateTime.now(),
-                  initialLastDate: destination['end_date'] > 0
-                      ? DateTime.fromMillisecondsSinceEpoch(
-                          destination['end_date'] * 1000)
-                      : DateTime.now(),
-                  firstDate: new DateTime(DateTime.now().year,
-                      DateTime.now().month, DateTime.now().day, 0, 0, 0, 0),
-                  lastDate: new DateTime(2021));
-              if (picked != null && picked.length == 2) {
-                datesController.text =
-                    '${dateFormat.format(picked[0])} to ${dateFormat.format(picked[1])}';
-
-                if (picked != null) {
-                  var startDate = picked[0].millisecondsSinceEpoch / 1000;
-                  arrival = startDate.toInt();
-                  var endDate = picked[1].millisecondsSinceEpoch / 1000;
-                  departure = endDate.toInt();
-                }
-              }
-            },
-            child: Container(
-                margin: EdgeInsets.only(left: 20, right: 20, top: 20),
-                child: IgnorePointer(
-                    ignoring: true,
-                    child: TextFormField(
-                      maxLengthEnforced: true,
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                        prefixIcon: Padding(
-                            padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                            child: Icon(
-                              Icons.calendar_today,
-                              size: 15,
-                            )),
-                        filled: true,
-                        errorBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(5.0)),
-                            borderSide:
-                                BorderSide(width: 1.0, color: Colors.red)),
-                        focusedErrorBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(5.0)),
-                            borderSide:
-                                BorderSide(width: 1.0, color: Colors.red)),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(5.0)),
-                            borderSide: BorderSide(
-                                width: 0.0, color: Colors.transparent)),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(5.0)),
-                            borderSide: BorderSide(
-                                width: 0.0, color: Colors.transparent)),
-                        hintText: 'When are you traveling',
-                        hintStyle: TextStyle(fontSize: 13),
-                      ),
-                      controller: datesController,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Please select travel dates.';
-                        }
-                        return null;
-                      },
-                    )))),
-        SwitchListTile(
-          contentPadding: EdgeInsets.only(left: 20, right: 20, top: 0),
-          title: Text('Set travel dates later?'),
-          value: setDatesLater,
-          onChanged: (bool newVal) {
-            // setState(() {
-            //   this.setDatesLater = newVal;
-            // });
-          },
-        ),
-        Container(
-            width: double.infinity,
-            margin: EdgeInsets.only(top: 40, left: 20, right: 20, bottom: 20),
-            child: FlatButton(
-              color: color.withOpacity(0.8),
-              shape: RoundedRectangleBorder(
-                  borderRadius: new BorderRadius.circular(5.0)),
-              child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                  child: AutoSizeText('Change dates',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white))),
-              onPressed: () async {
-                if (_formKey.currentState.validate() &&
-                    store.tripStore.tripLoading == false) {
-                  destination["start_date"] = arrival;
-                  destination["end_date"] = departure;
-                  store.tripStore.setTripsLoading(true);
-                  var response = await putUpdateTripDestination(
-                      tripId, destination['id'], destination);
-                  if (response.success == true) {
-                    destination["start_date"] = arrival;
-                    destination["end_date"] = departure;
-                    Navigator.pop(
-                        context, {"arrival": arrival, "departure": departure});
-                  }
-                  store.tripStore.setTripsLoading(false);
-                }
-              },
-            )),
-        Container(
-            width: double.infinity,
-            margin: EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-            child: FlatButton(
-              child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                  child: AutoSizeText('Close',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w300))),
-              onPressed: () {
-                Navigator.pop(context, {
-                  "arrival": arrival,
-                  "departure": departure,
-                  "closed": true
-                });
-              },
-            ))
-      ]));
-}
-
 Future<TripData> fetchTrip(String id, [TrotterStore store]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -1182,7 +1030,6 @@ class TripState extends State<Trip> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
@@ -1265,59 +1112,46 @@ class TripState extends State<Trip> {
                             }
                           } else if (snapshot.hasData &&
                               snapshot.data.error != null) {
-                            return ListView(
+                            return SingleChildScrollView(
                                 controller: scrollController,
-                                shrinkWrap: true,
-                                children: <Widget>[
-                                  Container(
-                                      height: _panelHeightOpen - 80,
-                                      width: MediaQuery.of(context).size.width,
-                                      child: ErrorContainer(
-                                        color: Color.fromRGBO(106, 154, 168, 1),
-                                        onRetry: () {
-                                          setState(() {
-                                            data =
-                                                fetchTrip(this.tripId, store);
-                                            data.then((data) {
-                                              setState(() {
-                                                this.canView = data.travelers
-                                                    .any((traveler) =>
-                                                        store.currentUser.uid ==
-                                                        traveler['uid']);
-                                                this.color = Color(
-                                                    hexStringToHexInt(
-                                                        data.trip['color']));
-                                                this.destinations =
-                                                    data.destinations;
-                                                this.travelers = data.travelers;
-                                                this.trip = data.trip;
-                                                this.trip['destinations'] =
-                                                    this.destinations;
-                                                this.tripName =
-                                                    data.trip['name'];
-                                                _nameControllerModal.text =
-                                                    this.tripName;
-                                                _nameDialog =
-                                                    TripNameDialogContent(
+                                child: ErrorContainer(
+                                  color: Color.fromRGBO(106, 154, 168, 1),
+                                  onRetry: () {
+                                    setState(() {
+                                      data = fetchTrip(this.tripId, store);
+                                      data.then((data) {
+                                        setState(() {
+                                          this.canView = data.travelers.any(
+                                              (traveler) =>
+                                                  store.currentUser.uid ==
+                                                  traveler['uid']);
+                                          this.color = Color(hexStringToHexInt(
+                                              data.trip['color']));
+                                          this.destinations = data.destinations;
+                                          this.travelers = data.travelers;
+                                          this.trip = data.trip;
+                                          this.trip['destinations'] =
+                                              this.destinations;
+                                          this.tripName = data.trip['name'];
+                                          _nameControllerModal.text =
+                                              this.tripName;
+                                          _nameDialog = TripNameDialogContent(
+                                            tripId: this.tripId,
+                                            trip: this.trip,
+                                            color: this.color,
+                                            travelers: this.travelers,
+                                            controller: _nameControllerModal,
+                                          );
+                                          this.destinationDialog =
+                                              TripDestinationDialogContent(
+                                                  color: color,
                                                   tripId: this.tripId,
-                                                  trip: this.trip,
-                                                  color: this.color,
-                                                  travelers: this.travelers,
-                                                  controller:
-                                                      _nameControllerModal,
-                                                );
-                                                this.destinationDialog =
-                                                    TripDestinationDialogContent(
-                                                        color: color,
-                                                        tripId: this.tripId,
-                                                        destinations:
-                                                            destinations);
-                                              });
-                                            });
-                                          });
-                                        },
-                                      ))
-                                ]);
+                                                  destinations: destinations);
+                                        });
+                                      });
+                                    });
+                                  },
+                                ));
                           }
                           return _buildLoadingBody(context, scrollController);
                         })));

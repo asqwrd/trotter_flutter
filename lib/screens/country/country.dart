@@ -139,7 +139,6 @@ class CountryState extends State<Country> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     data.then((data) => {
           if (data.error != null)
@@ -234,25 +233,16 @@ class CountryState extends State<Country> {
                       future: data,
                       builder: (context, snapshot) {
                         if (snapshot.hasData && snapshot.data.error != null) {
-                          return ListView(
+                          return SingleChildScrollView(
                               controller: _sc,
-                              physics: disableScroll
-                                  ? NeverScrollableScrollPhysics()
-                                  : ClampingScrollPhysics(),
-                              shrinkWrap: true,
-                              children: <Widget>[
-                                Container(
-                                    height: _panelHeightOpen - 80,
-                                    width: MediaQuery.of(context).size.width,
-                                    child: ErrorContainer(
-                                      onRetry: () {
-                                        setState(() {
-                                          data = fetchCountry(
-                                              this.countryId, this.userId);
-                                        });
-                                      },
-                                    ))
-                              ]);
+                              child: ErrorContainer(
+                                onRetry: () {
+                                  setState(() {
+                                    data = fetchCountry(
+                                        this.countryId, this.userId);
+                                  });
+                                },
+                              ));
                         }
                         if (snapshot.connectionState == ConnectionState.done) {
                           return RenderWidget(

@@ -30,7 +30,7 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:shimmer/shimmer.dart';
 // import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-Future<HomeData> fetchHome([bool refresh]) async {
+Future<PopularCitiesData> fetchPopularCities([bool refresh]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
   final int cacheDataExpire = prefs.getInt('home-expiration') ?? null;
@@ -41,7 +41,7 @@ Future<HomeData> fetchHome([bool refresh]) async {
       (currentTime < cacheDataExpire)) {
     // If server returns an OK response, parse the JSON
     var homeData = json.decode(cacheData);
-    return HomeData.fromJson(homeData);
+    return PopularCitiesData.fromJson(homeData);
   } else {
     try {
       var response = await http.get('$ApiDomain/api/explore/home/',
@@ -52,14 +52,15 @@ Future<HomeData> fetchHome([bool refresh]) async {
         await prefs.setInt('home-expiration',
             DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         var homeData = json.decode(response.body);
-        return HomeData.fromJson(homeData);
+        return PopularCitiesData.fromJson(homeData);
       } else {
         // If that response was not OK, throw an error.
-        var msg = response.statusCode;
-        return HomeData(error: "Api returned a $msg");
+        return PopularCitiesData(success: false);
       }
     } catch (error) {
-      return HomeData(error: "Server is down");
+      print("fetch");
+      print(error);
+      return PopularCitiesData(success: false);
     }
   }
 }
@@ -106,18 +107,15 @@ Future<HomeItinerariesData> fetchHomeItinerariesNext(lastId) async {
   }
 }
 
-class HomeData {
+class PopularCitiesData {
   final List<dynamic> popularCities;
-  final List<dynamic> popularIslands;
-  final String error;
+  final bool success;
 
-  HomeData({this.popularCities, this.popularIslands, this.error});
+  PopularCitiesData({this.popularCities, this.success});
 
-  factory HomeData.fromJson(Map<String, dynamic> json) {
-    return HomeData(
-        popularCities: json['popular_cities'],
-        popularIslands: json['popular_islands'],
-        error: null);
+  factory PopularCitiesData.fromJson(Map<String, dynamic> json) {
+    return PopularCitiesData(
+        popularCities: json['popular_cities'], success: true);
   }
 }
 
@@ -157,8 +155,23 @@ class HomeState extends State<Home> {
   bool isLoading = false;
   bool shadow = false;
 
+  Future<ThingsToDoData> doData;
+  //Future<NearByData> nearFoodData = fetchNearbyPlaces("restaurant", "");
+
+  Future<PopularCitiesData> data = fetchPopularCities();
+  Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
+
   @override
   void initState() {
+    () async {
+      await Future.delayed(Duration(seconds: 2));
+      final store = Provider.of<TrotterStore>(context);
+      if (store.currentUser != null) {
+        print(this.thingsToDo);
+        doData = fetchThingsToDo(store.currentUser.uid);
+      }
+    }();
+
     super.initState();
   }
 
@@ -168,11 +181,6 @@ class HomeState extends State<Home> {
     super.dispose();
   }
 
-  Future<ThingsToDoData> doData;
-  //Future<NearByData> nearFoodData = fetchNearbyPlaces("restaurant", "");
-
-  Future<HomeData> data = fetchHome();
-  Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
   HomeState({
     this.onPush,
   });
@@ -182,7 +190,7 @@ class HomeState extends State<Home> {
     final store = Provider.of<TrotterStore>(context);
 
     setState(() {
-      data = fetchHome(true);
+      data = fetchPopularCities(true);
       this.itineraries = [];
       dataItineraries = fetchHomeItineraries();
       if (store.currentUser != null) {
@@ -214,22 +222,18 @@ class HomeState extends State<Home> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    final store = Provider.of<TrotterStore>(context);
+    //final store = Provider.of<TrotterStore>(context);
     //print(this.thingsToDo);
-
-    if (store.currentUser != null && this.thingsToDo == null) {
-      doData = fetchThingsToDo(store.currentUser.uid);
-    }
     if (doData != null) {
       doData.then((response) {
-        setState(() {
-          this.thingsToDo = response.destinations;
-        });
+        if (response.success == true) {
+          setState(() {
+            this.thingsToDo = response.destinations;
+          });
+        }
       });
     }
-
     dataItineraries.then((data) => {
           if (data.error == null)
             {
@@ -239,15 +243,16 @@ class HomeState extends State<Home> {
               })
             }
         });
+
     data.then((data) => {
-          if (data.error != null)
+          if (data.success == false)
             {
               setState(() {
                 this.errorUi = true;
                 this.loading = false;
               })
             }
-          else if (data.error == null)
+          else if (data.success == true)
             {
               setState(() {
                 this.errorUi = false;
@@ -255,6 +260,7 @@ class HomeState extends State<Home> {
               })
             }
         });
+
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       SlidingPanel(
         snapPanel: true,
@@ -310,26 +316,32 @@ class HomeState extends State<Home> {
             return FutureBuilder(
                 future: data,
                 builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data.error != null) {
-                    return ListView(
-                        controller: scrollController,
-                        shrinkWrap: true,
-                        children: <Widget>[
-                          Container(
-                              height: _panelHeightOpen - 80,
-                              width: MediaQuery.of(context).size.width,
-                              child: ErrorContainer(
-                                color: color,
-                                onRetry: () {
-                                  setState(() {
-                                    this.loading = true;
-                                    this.errorUi = false;
-                                    data = fetchHome();
-                                    dataItineraries = fetchHomeItineraries();
-                                  });
-                                },
-                              ))
-                        ]);
+                  if (snapshot.hasData && snapshot.data.success == false) {
+                    return this.loading
+                        ? _buildLoadedBody(context, snapshot, scrollController)
+                        : SingleChildScrollView(
+                            controller: scrollController,
+                            child: ErrorContainer(
+                              color: color,
+                              onRetry: () async {
+                                final store =
+                                    Provider.of<TrotterStore>(context);
+                                setState(() {
+                                  this.loading = true;
+                                  this.errorUi = false;
+                                });
+                                await Future.delayed(Duration(seconds: 2));
+
+                                setState(() {
+                                  data = fetchPopularCities();
+                                  dataItineraries = fetchHomeItineraries();
+                                  if (store.currentUser != null) {
+                                    doData =
+                                        fetchThingsToDo(store.currentUser.uid);
+                                  }
+                                });
+                              },
+                            ));
                   }
                   if (snapshot.hasData &&
                       snapshot.connectionState == ConnectionState.done) {
@@ -649,50 +661,35 @@ class HomeState extends State<Home> {
             cacheExtent: MediaQuery.of(context).size.height,
             controller: scrollController,
             children: <Widget>[
-              snapshot.connectionState == ConnectionState.waiting
+              snapshot.connectionState == ConnectionState.waiting ||
+                      this.loading
                   ? Container(
                       width: double.infinity,
                       margin: EdgeInsets.only(bottom: 30.0),
                       child: TopListLoading(
                         enableMini: true,
                       ))
-                  : Container(
-                      child: TopList(
-                          items: popularCities,
-                          enableMini: true,
-                          onPressed: (data) {
-                            onPush({'id': data['id'], 'level': data['level']});
-                          },
-                          onLongPressed: (data) {
-                            var currentUser = store.currentUser;
-                            if (currentUser == null) {
-                              loginBottomSheet(context, data, color);
-                            } else {
-                              bottomSheetModal(context, data['poi']);
-                            }
-                          },
-                          subText:
-                              "Learn about popular cities and why so many people like to travel to them.",
-                          header: "Trending cities")),
-              // snapshot.connectionState == ConnectionState.waiting
-              //     ? Container(
-              //         width: double.infinity,
-              //         margin: EdgeInsets.only(bottom: 30.0),
-              //         child: TopListLoading())
-              //     : TopList(
-              //         items: popularIslands,
-              //         onPressed: (data) {
-              //           onPush({'id': data['id'], 'level': data['level']});
-              //         },
-              //         onLongPressed: (data) {
-              //           var currentUser = store.currentUser;
-              //           if (currentUser == null) {
-              //             loginBottomSheet(context, data, color);
-              //           } else {
-              //             bottomSheetModal(context, data['poi']);
-              //           }
-              //         },
-              //         header: "Explore these islands"),
+                  : popularCities.length > 0
+                      ? Container(
+                          child: TopList(
+                              items: popularCities,
+                              enableMini: true,
+                              onPressed: (data) {
+                                onPush(
+                                    {'id': data['id'], 'level': data['level']});
+                              },
+                              onLongPressed: (data) {
+                                var currentUser = store.currentUser;
+                                if (currentUser == null) {
+                                  loginBottomSheet(context, data, color);
+                                } else {
+                                  bottomSheetModal(context, data['poi']);
+                                }
+                              },
+                              subText:
+                                  "Learn about popular cities and why so many people like to travel to them.",
+                              header: "Trending cities"))
+                      : Container(),
               store.currentUser != null
                   ? Container(
                       margin: EdgeInsets.symmetric(vertical: 0),
@@ -706,7 +703,10 @@ class HomeState extends State<Home> {
                                 snapshot.data.success == true) {
                               return _buildThingsToDo(context, snapshot, color);
                             } else if (snapshot.hasData &&
-                                snapshot.data.success == false) {
+                                    snapshot.data.success == false ||
+                                (snapshot.connectionState ==
+                                        ConnectionState.done &&
+                                    snapshot.hasData == false)) {
                               return Container(
                                   margin: EdgeInsets.only(bottom: 20),
                                   child: Column(
@@ -736,7 +736,6 @@ class HomeState extends State<Home> {
                             return doLoadingWidget();
                           }))
                   : Container(),
-
               FutureBuilder(
                   future: dataItineraries,
                   builder: (context, snapshot) {

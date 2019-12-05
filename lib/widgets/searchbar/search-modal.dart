@@ -346,133 +346,135 @@ class SearchModalState extends State<SearchModal> {
           return;
         },
         child: Scaffold(
-          resizeToAvoidBottomPadding: false,
-          body: isLoading
-              ? Column(children: <Widget>[
-                  renderTopBar(timer, chips),
-                  Flexible(child: _buildLoadingBody())
-                ])
-              : results != null
-                  ? Column(children: <Widget>[
-                      renderTopBar(timer, chips),
-                      Flexible(
-                          child: this.location != null
-                              ? LazyLoadScrollView(
-                                  onEndOfPage: () async {
-                                    if (this.results != null &&
-                                        this.nextPageToken.isNotEmpty) {
-                                      setState(() {
-                                        this.isSearchLoading = true;
-                                      });
-                                      var location = this.nearId
-                                          ? this.near['location']
-                                          : this.location;
-                                      var res = await fetchSearchModalNext(
-                                          txt.text,
-                                          location['lat'],
-                                          location['lng'],
-                                          this.nextPageToken,
-                                          near: nearId);
-                                      setState(() {
-                                        this.results = this.results
-                                          ..addAll(res.results);
-                                        this.nextPageToken = res.nextPageToken;
-                                        this.isSearchLoading = false;
-                                      });
-                                    }
-                                    return true;
-                                  },
-                                  child: renderResults(results))
-                              : renderResults(results)),
-                      this.isSearchLoading
-                          ? AwesomeLoader(
-                              loaderType: AwesomeLoader.AwesomeLoader4,
-                              color: Colors.blueAccent,
-                            )
-                          : Container(),
-                    ])
-                  : error == null && recentSearchModal != null
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                              renderTopBar(timer, chips),
-                              Flexible(
-                                  child: ListView.builder(
-                                //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
-                                itemCount: recentSearchModal.length,
-                                //shrinkWrap: true,
-                                primary: false,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return InkWell(
-                                      onTap: () {
+            resizeToAvoidBottomPadding: false,
+            body: isLoading
+                ? Column(children: <Widget>[
+                    renderTopBar(timer, chips),
+                    Flexible(child: _buildLoadingBody())
+                  ])
+                : results != null
+                    ? Column(children: <Widget>[
+                        renderTopBar(timer, chips),
+                        Flexible(
+                            child: this.location != null
+                                ? LazyLoadScrollView(
+                                    onEndOfPage: () async {
+                                      if (this.results != null &&
+                                          this.nextPageToken.isNotEmpty) {
                                         setState(() {
-                                          txt.text =
-                                              recentSearchModal[index]['value'];
-                                          data = fetchSearchModal(
-                                              recentSearchModal[index]['value'],
-                                              this.near != null
-                                                  ? this.near['location']['lat']
-                                                  : this.location != null
-                                                      ? this.location['lat']
-                                                      : null,
-                                              this.near != null
-                                                  ? this.near['location']['lng']
-                                                  : this.location != null
-                                                      ? this.location['lng']
-                                                      : null,
-                                              selectId,
-                                              near: nearId);
-                                          data.then((res) {
-                                            setState(() {
-                                              this.nextPageToken =
-                                                  res.nextPageToken;
-                                              this.results = res.results;
+                                          this.isSearchLoading = true;
+                                        });
+                                        var location = this.nearId
+                                            ? this.near['location']
+                                            : this.location;
+                                        var res = await fetchSearchModalNext(
+                                            txt.text,
+                                            location['lat'],
+                                            location['lng'],
+                                            this.nextPageToken,
+                                            near: nearId);
+                                        setState(() {
+                                          this.results = this.results
+                                            ..addAll(res.results);
+                                          this.nextPageToken =
+                                              res.nextPageToken;
+                                          this.isSearchLoading = false;
+                                        });
+                                      }
+                                      return true;
+                                    },
+                                    child: renderResults(results))
+                                : renderResults(results)),
+                        this.isSearchLoading
+                            ? AwesomeLoader(
+                                loaderType: AwesomeLoader.AwesomeLoader4,
+                                color: Colors.blueAccent,
+                              )
+                            : Container(),
+                      ])
+                    : error == null && recentSearchModal != null
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                                renderTopBar(timer, chips),
+                                Flexible(
+                                    child: ListView.builder(
+                                  //separatorBuilder: (BuildContext context, int index) => new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
+                                  itemCount: recentSearchModal.length,
+                                  //shrinkWrap: true,
+                                  primary: false,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return InkWell(
+                                        onTap: () {
+                                          setState(() {
+                                            txt.text = recentSearchModal[index]
+                                                ['value'];
+                                            data = fetchSearchModal(
+                                                recentSearchModal[index]
+                                                    ['value'],
+                                                this.near != null
+                                                    ? this.near['location']
+                                                        ['lat']
+                                                    : this.location != null
+                                                        ? this.location['lat']
+                                                        : null,
+                                                this.near != null
+                                                    ? this.near['location']
+                                                        ['lng']
+                                                    : this.location != null
+                                                        ? this.location['lng']
+                                                        : null,
+                                                selectId,
+                                                near: nearId);
+                                            data.then((res) {
+                                              setState(() {
+                                                this.nextPageToken =
+                                                    res.nextPageToken;
+                                                this.results = res.results;
+                                              });
                                             });
                                           });
-                                        });
-                                      },
-                                      child: ListTile(
-                                          contentPadding: EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 20),
-                                          title: AutoSizeText(
-                                            recentSearchModal[index]['value'],
-                                          )));
-                                },
-                              ))
-                            ])
-                      : ListView(shrinkWrap: true, children: <Widget>[
-                          Container(
-                              width: MediaQuery.of(context).size.width,
-                              height: MediaQuery.of(context).size.height - 40,
-                              child: ErrorContainer(
-                                color: Color.fromRGBO(106, 154, 168, 1),
-                                onRetry: () {
+                                        },
+                                        child: ListTile(
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    vertical: 5,
+                                                    horizontal: 20),
+                                            title: AutoSizeText(
+                                              recentSearchModal[index]['value'],
+                                            )));
+                                  },
+                                ))
+                              ])
+                        : SingleChildScrollView(
+                            child: ErrorContainer(
+                            color: Color.fromRGBO(106, 154, 168, 1),
+                            onRetry: () {
+                              setState(() {
+                                data = fetchSearchModal(
+                                    txt.text,
+                                    this.near != null
+                                        ? this.near['location']['lat']
+                                        : this.location != null
+                                            ? this.location['lat']
+                                            : null,
+                                    this.near != null
+                                        ? this.near['location']['lng']
+                                        : this.location != null
+                                            ? this.location['lng']
+                                            : null,
+                                    selectId,
+                                    near: nearId);
+                                data.then((res) {
                                   setState(() {
-                                    data = fetchSearchModal(
-                                        txt.text,
-                                        this.near != null
-                                            ? this.near['location']['lat']
-                                            : this.location != null
-                                                ? this.location['lat']
-                                                : null,
-                                        this.near != null
-                                            ? this.near['location']['lng']
-                                            : this.location != null
-                                                ? this.location['lng']
-                                                : null,
-                                        selectId,
-                                        near: nearId);
-                                    data.then((res) {
-                                      setState(() {
-                                        this.nextPageToken = res.nextPageToken;
-                                        this.results = res.results;
-                                      });
-                                    });
+                                    this.nextPageToken = res.nextPageToken;
+                                    this.results = res.results;
                                   });
-                                },
-                              ))
-                        ]),
-        ));
+                                });
+                              });
+                            },
+                          ))));
   }
 
   ListView renderResults(results) {

@@ -195,7 +195,6 @@ class DestinationState extends State<Destination>
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
     data.then((data) => {
           if (data.error != null)
@@ -342,27 +341,17 @@ class DestinationState extends State<Destination>
                                 snapshot.connectionState ==
                                     ConnectionState.done &&
                                 snapshot.data.error != null) {
-                              return ListView(
+                              return SingleChildScrollView(
                                   controller: _sc,
-                                  physics: disableScroll
-                                      ? NeverScrollableScrollPhysics()
-                                      : ClampingScrollPhysics(),
-                                  shrinkWrap: true,
-                                  children: <Widget>[
-                                    Container(
-                                        height: _panelHeightOpen - 80,
-                                        width:
-                                            MediaQuery.of(context).size.width,
-                                        child: ErrorContainer(
-                                          onRetry: () {
-                                            setState(() {
-                                              data = fetchDestination(
-                                                  this.destinationId,
-                                                  this.destinationType);
-                                            });
-                                          },
-                                        ))
-                                  ]);
+                                  child: ErrorContainer(
+                                    onRetry: () {
+                                      setState(() {
+                                        data = fetchDestination(
+                                            this.destinationId,
+                                            this.destinationType);
+                                      });
+                                    },
+                                  ));
                             }
                             return _buildLoadingBody(context, _sc);
                           }));

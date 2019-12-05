@@ -67,6 +67,22 @@ class TripsState extends State<Trips> {
 
   @override
   void initState() {
+    () async {
+      await Future.delayed(Duration(seconds: 2));
+      final store = Provider.of<TrotterStore>(context);
+      if (store.currentUser != null) {
+        fetchTrips(store).then((res) {
+          print(res.error);
+          if (res.error == null) {
+            setState(() {
+              this.loggedIn = true;
+            });
+          } else {
+            store.tripStore.setTripsError("Error");
+          }
+        });
+      }
+    }();
     super.initState();
   }
 
@@ -307,13 +323,16 @@ class TripsState extends State<Trips> {
     var loading = store.tripsLoading;
 
     if (error != null && offline == false) {
-      return ErrorContainer(
-        color: color,
-        onRetry: () {
-          store.tripStore.setTripsLoading(true);
-          fetchTrips(store);
-        },
-      );
+      return Container(
+          child: SingleChildScrollView(
+              controller: scrollController,
+              child: ErrorContainer(
+                color: color,
+                onRetry: () {
+                  store.tripStore.setTripsLoading(true);
+                  fetchTrips(store);
+                },
+              )));
     }
 
     if (currentUser == null) {
@@ -375,11 +394,11 @@ class TripsState extends State<Trips> {
                 : Container()
           ]));
     } else if (currentUser != null && trips == null) {
-      fetchTrips(store).then((res) {
-        setState(() {
-          this.loggedIn = true;
-        });
-      });
+      // fetchTrips(store).then((res) {
+      //   setState(() {
+      //     this.loggedIn = true;
+      //   });
+      // });
     }
 
     if (loading == true || trips == null) {

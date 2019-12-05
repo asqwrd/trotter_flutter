@@ -29,6 +29,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      store?.setTripsLoading(false);
       return TripsData(error: "Response > $msg");
     }
   } catch (error) {

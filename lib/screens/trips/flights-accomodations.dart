@@ -103,7 +103,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                   snapPanel: true,
                   initialState: InitialPanelState.expanded,
                   isDraggable: false,
-                  size: PanelSize(expandedHeight: .835),
+                  size: PanelSize(expandedHeight: getPanelHeight(context)),
                   autoSizing: PanelAutoSizing(),
                   decoration: PanelDecoration(
                       borderRadius: BorderRadius.only(

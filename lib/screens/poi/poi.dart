@@ -182,7 +182,9 @@ class PoiState extends State<Poi> {
                   initialState: this.errorUi == true
                       ? InitialPanelState.expanded
                       : InitialPanelState.closed,
-                  size: PanelSize(closedHeight: .45, expandedHeight: .835),
+                  size: PanelSize(
+                      closedHeight: .45,
+                      expandedHeight: getPanelHeight(context)),
                   autoSizing: PanelAutoSizing(),
                   decoration: PanelDecoration(
                       borderRadius: BorderRadius.only(

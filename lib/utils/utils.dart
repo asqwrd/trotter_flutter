@@ -14,6 +14,11 @@ class PixelRatioDivider {
   }
 }
 
+double getPanelHeight(BuildContext context) {
+  final height = MediaQuery.of(context).size.height - 135;
+  return height / MediaQuery.of(context).size.height;
+}
+
 String ordinalNumber(final int n) {
   if (n >= 11 && n <= 13) {
     return "${n}th";

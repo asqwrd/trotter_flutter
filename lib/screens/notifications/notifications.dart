@@ -62,7 +62,7 @@ class NotificationsState extends State<Notifications> {
               snapPanel: true,
               initialState: InitialPanelState.expanded,
               isDraggable: false,
-              size: PanelSize(expandedHeight: .835),
+              size: PanelSize(expandedHeight: getPanelHeight(context)),
               autoSizing: PanelAutoSizing(),
               decoration: PanelDecoration(
                   borderRadius: BorderRadius.only(

@@ -381,7 +381,8 @@ class HomeState extends State<Home> {
                 ),
               ])),
         ),
-        size: PanelSize(closedHeight: .45, expandedHeight: .835),
+        size: PanelSize(
+            closedHeight: .45, expandedHeight: getPanelHeight(context)),
       ),
       Positioned(
           top: 0,

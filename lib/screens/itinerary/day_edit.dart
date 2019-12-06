@@ -154,7 +154,8 @@ class DayEditState extends State<DayEdit> {
         initialState: this.errorUi == true
             ? InitialPanelState.expanded
             : InitialPanelState.closed,
-        size: PanelSize(closedHeight: .45, expandedHeight: .835),
+        size: PanelSize(
+            closedHeight: .45, expandedHeight: getPanelHeight(context)),
         isDraggable: true,
         autoSizing: PanelAutoSizing(),
         decoration: PanelDecoration(

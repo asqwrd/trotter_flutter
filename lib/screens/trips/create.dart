@@ -256,7 +256,8 @@ class CreateTripState extends State<CreateTrip> {
               snapPanel: true,
               initialState: InitialPanelState.expanded,
               isDraggable: false,
-              size: PanelSize(closedHeight: .7, expandedHeight: .835),
+              size: PanelSize(
+                  closedHeight: .7, expandedHeight: getPanelHeight(context)),
               autoSizing: PanelAutoSizing(),
               decoration: PanelDecoration(
                   borderRadius: BorderRadius.only(

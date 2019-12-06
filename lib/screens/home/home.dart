@@ -164,12 +164,26 @@ class HomeState extends State<Home> {
   @override
   void initState() {
     () async {
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(Duration(seconds: 3));
       final store = Provider.of<TrotterStore>(context);
       if (store.currentUser != null) {
         print(this.thingsToDo);
-        doData = fetchThingsToDo(store.currentUser.uid);
+        setState(() {
+          doData = fetchThingsToDo(store.currentUser.uid);
+        });
       }
+
+      store.eventBus.on<RefreshHomeEvent>().listen((event) {
+        // All events are of type UserLoggedInEvent (or subtypes of it).
+        if (event.refresh == true) {
+          final store = Provider.of<TrotterStore>(context);
+          print("store.currentUser.uid");
+          print(store.currentUser.uid);
+          setState(() {
+            doData = fetchThingsToDo(store.currentUser.uid, true);
+          });
+        }
+      });
     }();
 
     super.initState();
@@ -205,16 +219,6 @@ class HomeState extends State<Home> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final store = Provider.of<TrotterStore>(context);
-
-    store.eventBus.on<RefreshHomeEvent>().listen((event) {
-      // All events are of type UserLoggedInEvent (or subtypes of it).
-      if (event.refresh == true) {
-        final store = Provider.of<TrotterStore>(context);
-        print(store.currentUser.uid);
-        doData = fetchThingsToDo(store.currentUser.uid, true);
-      }
-    });
   }
 
   @override

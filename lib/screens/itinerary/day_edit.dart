@@ -696,7 +696,6 @@ class DayEditState extends State<DayEdit> {
         onToggleVisited: (item) async {
           var time = await toggleDialog(ctxt);
           var data = item;
-          print(time);
           if (time != null) {
             data['time'] = time;
             onToggleVisited(context, data);
@@ -708,7 +707,8 @@ class DayEditState extends State<DayEdit> {
         ownerId: this.ownerId,
         day: day['day'],
         items: itineraryItems,
-        linkedItinerary: this.linkedItinerary,
+        linkedItinerary:
+            this.itineraryItems.length > 0 ? this.linkedItinerary : null,
         color: color,
         startLocation: this.currentPosition != null
             ? this.currentPosition
@@ -772,7 +772,8 @@ class DayEditState extends State<DayEdit> {
         day: day['day'],
         items: visited,
         color: color,
-        linkedItinerary: this.linkedItinerary,
+        linkedItinerary:
+            this.itineraryItems.length == 0 ? this.linkedItinerary : null,
         startLocation: this.currentPosition != null
             ? this.currentPosition
             : this.startLocation,

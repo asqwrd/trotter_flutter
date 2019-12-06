@@ -29,6 +29,8 @@ class GoogleAuthButtonContainer extends StatelessWidget {
           } else {
             await store.login();
             fetchNotifications(store);
+            store.eventBus.fire(RefreshHomeEvent(refresh: true));
+            store.eventBus.fire(RefreshTripEvent(refresh: true));
           }
           if (this.isModal == true) {
             Navigator.pop(context);

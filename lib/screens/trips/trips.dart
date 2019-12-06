@@ -60,7 +60,6 @@ class TripsState extends State<Trips> {
   bool loading = true;
 
   Future<TripsData> data;
-  ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool shadow = false;
@@ -68,11 +67,10 @@ class TripsState extends State<Trips> {
   @override
   void initState() {
     () async {
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(Duration(seconds: 3));
       final store = Provider.of<TrotterStore>(context);
       if (store.currentUser != null) {
         fetchTrips(store).then((res) {
-          print(res.error);
           if (res.error == null) {
             setState(() {
               this.loggedIn = true;
@@ -82,13 +80,29 @@ class TripsState extends State<Trips> {
           }
         });
       }
+      store.eventBus.on<RefreshTripEvent>().listen((event) {
+        // All events are of type UserLoggedInEvent (or subtypes of it).
+        if (event.refresh == true) {
+          final store = Provider.of<TrotterStore>(context);
+          if (store.currentUser != null) {
+            fetchTrips(store).then((res) {
+              if (res.error == null) {
+                setState(() {
+                  this.loggedIn = true;
+                });
+              } else {
+                store.tripStore.setTripsError("Error");
+              }
+            });
+          }
+        }
+      });
     }();
     super.initState();
   }
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 

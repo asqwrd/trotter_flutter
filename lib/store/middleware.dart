@@ -299,3 +299,9 @@ class RefreshHomeEvent {
 
   RefreshHomeEvent({this.refresh});
 }
+
+class RefreshTripEvent {
+  bool refresh;
+
+  RefreshTripEvent({this.refresh});
+}

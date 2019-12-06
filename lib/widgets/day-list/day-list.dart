@@ -171,13 +171,10 @@ class DayList extends StatelessWidget {
                 index == itineraryItems.length - 1) {
               final destination = this.linkedItinerary['destination'];
               return buildLinkedItinerary(context, destination, index);
-            }
-            if (linkItineraryPosition == 'top' && index == 2) {
+            } else if (linkItineraryPosition == 'top' && index == 0) {
               final destination = this.linkedItinerary['destination'];
               return buildLinkedItinerary(context, destination, index);
-            }
-
-            if (noLinklength == 0) {
+            } else if (noLinklength == 0) {
               final destination = this.linkedItinerary['destination'];
               return buildLinkedItinerary(context, destination, index);
             }
@@ -194,10 +191,10 @@ class DayList extends StatelessWidget {
             var from = this.startLocation != null
                 ? this.startLocation['name']
                 : 'City Center';
-            // value is 2 because first 2 values in the array are empty strings
-            if (prevIndex >= 2 && linkItineraryPosition != 'top') {
+
+            if (prevIndex >= 0 && linkItineraryPosition != 'top') {
               from = itineraryItems[prevIndex]['poi']['name'];
-            } else if (prevIndex >= 3 && linkItineraryPosition == 'top') {
+            } else if (prevIndex >= 1 && linkItineraryPosition == 'top') {
               from = itineraryItems[prevIndex]['poi']['name'];
             }
 

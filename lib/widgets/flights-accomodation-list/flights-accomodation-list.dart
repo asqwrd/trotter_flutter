@@ -86,7 +86,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                               style: TextStyle(fontSize: 17)),
                           subtitle: readWrite == true
                               ? Container(
-                                  margin: EdgeInsets.only(top: 20, left: 10),
+                                  margin: EdgeInsets.only(top: 20, left: 0),
                                   width: 250,
                                   child: InkWell(
                                       onTap: () {
@@ -105,7 +105,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                                               MainAxisAlignment.start,
                                           children: <Widget>[
                                             Container(
-                                              padding: EdgeInsets.all(5),
+                                              padding: EdgeInsets.all(0),
                                               margin: EdgeInsets.only(top: 0),
                                               decoration: BoxDecoration(
                                                   borderRadius:
@@ -174,7 +174,7 @@ class FlightsAccomodationsList extends StatelessWidget {
         return Center(
             child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 0),
                 margin: EdgeInsets.only(bottom: 40, top: index == 0 ? 0 : 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,10 +201,14 @@ class FlightsAccomodationsList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
-                            AutoSizeText(
-                              segment['origin_name'],
-                              style: topstyle,
-                            ),
+                            Container(
+                                width: MediaQuery.of(context).size.width / 1.4,
+                                child: AutoSizeText(
+                                  segment['origin_name'],
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: topstyle,
+                                )),
                             AutoSizeText(
                               segment['origin_city_name'],
                               style: style,
@@ -250,18 +254,21 @@ class FlightsAccomodationsList extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  AutoSizeText(
-                                      "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400)),
+                                  Container(
+                                      width: 130,
+                                      child: AutoSizeText(
+                                          "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w400))),
                                   Container(
                                       width: 30,
                                       height: 1,
                                       margin:
-                                          EdgeInsets.only(left: 5, right: 3),
+                                          EdgeInsets.only(left: 0, right: 15),
                                       color: Colors.black.withOpacity(0.3)),
                                   AutoSizeText("$timeInAir in air",
+                                      maxLines: 2,
                                       style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w300)),
@@ -283,10 +290,14 @@ class FlightsAccomodationsList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            AutoSizeText(
-                              segment['destination_name'],
-                              style: topstyle,
-                            ),
+                            Container(
+                                width: MediaQuery.of(context).size.width / 1.4,
+                                child: AutoSizeText(
+                                  segment['destination_name'],
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: topstyle,
+                                )),
                             AutoSizeText(segment['destination_city_name'],
                                 style: style),
                             AutoSizeText(

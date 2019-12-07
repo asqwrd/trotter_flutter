@@ -290,11 +290,16 @@ class DatesModalState extends State<DatesModal> {
                     if (response.success == true) {
                       destination["start_date"] = arrival;
                       destination["end_date"] = departure;
-                      Navigator.pop(context, {
+                      final popData = {
                         "arrival": arrival,
                         "departure": departure,
-                        "num_of_days": int.parse(numOfDaysController.text)
-                      });
+                      };
+                      if (numOfDaysController.text.isNotEmpty &&
+                          this.setDatesLater == true) {
+                        popData["num_of_days"] =
+                            int.parse(numOfDaysController.text);
+                      }
+                      Navigator.pop(context, popData);
                     }
                     store.tripStore.setTripsLoading(false);
                   }
@@ -310,11 +315,7 @@ class DatesModalState extends State<DatesModal> {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.w300))),
                 onPressed: () {
-                  Navigator.pop(context, {
-                    "arrival": arrival,
-                    "departure": departure,
-                    "closed": true
-                  });
+                  Navigator.pop(context, {"closed": true});
                 },
               ))
         ]));
@@ -678,12 +679,15 @@ class _TripDestinationDialogContentState
                       destinations[index]['end_date'] * 1000));
               var arrival = destinations[index]['start_date'];
               var departure = destinations[index]['end_date'];
+              var numOfDays = destinations[index]['num_of_days'];
               var name = destinations[index]['destination_name'];
               return ListTile(
                 subtitle: AutoSizeText(
-                  arrival == 0 || departure == 0
+                  arrival == 0 && departure == 0 && numOfDays == null
                       ? 'No dates given'
-                      : '$startDate - $endDate',
+                      : arrival > 0 && departure > 0
+                          ? '$startDate - $endDate'
+                          : 'Staying $numOfDays days',
                 ),
                 trailing: IconButton(
                     onPressed: () {
@@ -710,8 +714,8 @@ class _TripDestinationDialogContentState
                                             this.tripId);
                                         setState(() {
                                           if (update['closed'] == null &&
-                                              arrival > 0 &&
-                                              departure > 0) {
+                                              update['arrival'] > 0 &&
+                                              update['departure'] > 0) {
                                             startDate = new DateFormat.yMMMMd(
                                                     "en_US")
                                                 .format(new DateTime
@@ -727,6 +731,17 @@ class _TripDestinationDialogContentState
                                                 .showSnackBar(SnackBar(
                                                     content: AutoSizeText(
                                                         '${destinations[index]['destination_name']}\'s dates updated',
+                                                        style: TextStyle(
+                                                            fontSize: 18)),
+                                                    duration:
+                                                        Duration(seconds: 2)));
+                                          } else if (update['closed'] == null &&
+                                              update['num_of_days'] != null) {
+                                            numOfDays = update['num_of_days'];
+                                            Scaffold.of(listContext)
+                                                .showSnackBar(SnackBar(
+                                                    content: AutoSizeText(
+                                                        '${destinations[index]['destination_name']}\'s days updated',
                                                         style: TextStyle(
                                                             fontSize: 18)),
                                                     duration:

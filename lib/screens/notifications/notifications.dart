@@ -267,6 +267,7 @@ class NotificationsState extends State<Notifications> {
               final data = notifications[index]['data'];
               final createdAt = notifications[index]['created_at'];
               final type = notifications[index]['type'];
+              final status = data['status'];
               final id = notifications[index]['id'];
               return ListTile(
                 leading: icon(type, data['user']),
@@ -277,15 +278,15 @@ class NotificationsState extends State<Notifications> {
                   icon: Icon(Icons.more_horiz),
                   onPressed: () {
                     //print("object");
-                    bottomSheetModal(context, data, type, id);
+                    bottomSheetModal(context, data, type, status, id);
                   },
                 ),
               );
             }));
   }
 
-  bottomSheetModal(
-      BuildContext context, dynamic data, String type, String notificationId) {
+  bottomSheetModal(BuildContext context, dynamic data, String type,
+      String status, String notificationId) {
     store = Provider.of<TrotterStore>(context);
     return showModalBottomSheet(
         context: context,
@@ -299,7 +300,7 @@ class NotificationsState extends State<Notifications> {
                   await markNotificationRead(notificationId, store);
                   Navigator.pop(context);
                 }),
-            type == 'email'
+            type == 'email' && status == 'Processed'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.plus),
                     title: new AutoSizeText('Add to trip'),

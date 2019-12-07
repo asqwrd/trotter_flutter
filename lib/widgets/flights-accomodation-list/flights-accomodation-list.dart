@@ -450,14 +450,26 @@ class FlightsAccomodationsList extends StatelessWidget {
 
   renderEmpty(BuildContext context, dynamic destination) {
     return Stack(children: <Widget>[
-      Center(
+      SingleChildScrollView(
+          controller: controller,
           child: Container(
+              height: MediaQuery.of(context).size.height / 1.5,
+              alignment: Alignment.center,
               color: Colors.transparent,
               padding: EdgeInsets.symmetric(horizontal: 30),
-              child: ListView(
-                shrinkWrap: true,
-                controller: controller,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  AutoSizeText(
+                    'Forward your travel confirmation emails to trips@ajibade.me or manually add them',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.w300),
+                  ),
                   Container(
                       width: MediaQuery.of(context).size.width / 2,
                       height: MediaQuery.of(context).size.width / 2,
@@ -479,16 +491,16 @@ class FlightsAccomodationsList extends StatelessWidget {
                               fit: BoxFit.cover),
                           borderRadius: BorderRadius.circular(130))),
                   AutoSizeText(
-                    'You\'re missing details for ${destination["destination_name"]}',
+                    'Forwarded emails will appear in notifications. You can add them to your trip from notifications',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         color: Colors.blueGrey,
                         fontWeight: FontWeight.w300),
                   ),
                   SizedBox(height: 10),
                   AutoSizeText(
-                    'Forward your travel confirmation emails to trips@ajibade.me or manually add them',
+                    'Protip: Change the subject text before forwarding your email so you can find the correct notification for this destination. ie - Flight for ${destination["destination_name"]}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 15,

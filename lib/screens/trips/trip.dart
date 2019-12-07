@@ -268,7 +268,7 @@ class DatesModalState extends State<DatesModal> {
                     borderRadius: new BorderRadius.circular(5.0)),
                 child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 15),
-                    child: AutoSizeText('Change dates',
+                    child: AutoSizeText('Apply changes',
                         style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w300,

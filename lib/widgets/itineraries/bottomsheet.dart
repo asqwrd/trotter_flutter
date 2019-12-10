@@ -33,8 +33,9 @@ Future addToItinerary(
     }
     return result;
   } else {
+    var id = destination['destination_id'] != null ? destination['destination_id'] : destination['id'];
     await showItineraryBottomSheet(
-        store, context, destination['id'], poi, color, destination);
+        store, context, id, poi, color, destination);
   }
 }
 
@@ -501,11 +502,7 @@ Future<ScaffoldFeatureController<SnackBar, SnackBarClosedReason>>
     action: onPush != null
         ? SnackBarAction(
             label: 'Go to day',
-            // textColor: this.color,
             onPressed: () async {
-              //print(item['start_location']);
-              //print(item['days'][dayIndex]);
-              // Navigator.pop(mainContext);
               await onPush({
                 'itineraryId': itinerary['id'],
                 'dayId': dayId,

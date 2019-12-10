@@ -452,7 +452,7 @@ class TripsState extends State<Trips> {
                               fontSize: 24,
                             ),
                           ))
-                      : Container,
+                      : Container(),
                   renderPastTrips(pastTrips, store, currentUser)
                 ],
               )),

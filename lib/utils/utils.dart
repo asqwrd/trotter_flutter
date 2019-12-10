@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flare_loading/flare_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart' show parse;
+
 
 class PixelRatioDivider {
   double quantizedUnit;
@@ -15,8 +18,15 @@ class PixelRatioDivider {
 }
 
 double getPanelHeight(BuildContext context) {
-  final height = MediaQuery.of(context).size.height - 135;
-  return height / MediaQuery.of(context).size.height;
+  final relativeHeight = MediaQuery.of(context).size.height;
+  double offset = 135;
+  if (Platform.isIOS){
+    offset+= MediaQuery.of(context).padding.top;
+  }
+
+  final height = relativeHeight - offset;
+
+  return height / relativeHeight;
 }
 
 String ordinalNumber(final int n) {

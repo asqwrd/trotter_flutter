@@ -4,11 +4,23 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
-class TrotterAppBar extends StatelessWidget {
-  const TrotterAppBar(
+class TrotterAppBar extends StatefulWidget {
+  final onPush;
+  final Color color;
+  final dynamic back;
+  final List<Widget> actions;
+  final String title;
+  final dynamic location;
+  final String id;
+  final bool showSearch;
+  final bool loading;
+  final dynamic destination;
+  final Brightness brightness;
+
+  TrotterAppBar(
       {Key key,
-      @required this.onPush,
-      @required this.color,
+      this.onPush,
+      this.color,
       this.back,
       this.loading,
       this.showSearch,
@@ -17,8 +29,27 @@ class TrotterAppBar extends StatelessWidget {
       this.id,
       this.destination,
       this.brightness,
-      this.location})
-      : super(key: key);
+      this.location}) : super(key: key);
+
+      TrotterAppBarState createState() => TrotterAppBarState(onPush: this.onPush,color: this.color, back:this.back,loading: this.loading,showSearch: this.showSearch,actions: this.actions,title: this.title,id:this.id, destination: this.destination,brightness: this.brightness,location:this.location);
+
+
+}
+
+class TrotterAppBarState extends State<TrotterAppBar> {
+  TrotterAppBarState(
+      {
+      this.onPush,
+      this.color,
+      this.back,
+      this.loading,
+      this.showSearch,
+      this.actions,
+      this.title,
+      this.id,
+      this.destination,
+      this.brightness,
+      this.location});
 
   final onPush;
   final Color color;
@@ -50,8 +81,7 @@ class TrotterAppBar extends StatelessWidget {
     // }
     // print(actions[0]);
 
-    return Container(
-        child: AppBar(
+    return Container(child: AppBar(
             elevation: 0,
             backgroundColor: Colors.transparent,
             centerTitle: true,

@@ -65,7 +65,7 @@ class GoogleAuthButton extends StatelessWidget {
         // Contianer has many options you can pass it,
         // Most widgets do *not* allow you to explicitly set
         // width and height
-        width: 150.0,
+        width: 160.0,
         height: 50.0,
 
         alignment: Alignment.center,

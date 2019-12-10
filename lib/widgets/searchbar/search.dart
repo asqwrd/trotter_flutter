@@ -11,6 +11,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:trotter_flutter/globals.dart';
+import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
 Future<SearchData> fetchSearch(
   String query,
@@ -41,9 +42,11 @@ Future<SearchData> fetchSearch(
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      print(msg);
       return SearchData(error: "Response > $msg");
     }
   } catch (error) {
+    print(error);
     return SearchData(error: "Server is down");
   }
 }
@@ -279,31 +282,38 @@ class SearchState extends State<Search> {
             : results != null
                 ? Column(children: <Widget>[
                     renderTopBar(timer, chips),
-                    Flexible(
-                        child: this.location != null
-                            ? LazyLoadScrollView(
-                                onEndOfPage: () async {
-                                  if (this.results != null &&
-                                      this.nextPageToken.isNotEmpty) {
-                                    setState(() {
-                                      this.isSearchLoading = true;
-                                    });
-                                    var res = await fetchSearchNext(
-                                        txt.text,
-                                        this.location['lat'],
-                                        this.location['lng'],
-                                        this.nextPageToken);
-                                    setState(() {
-                                      this.results = this.results
-                                        ..addAll(res.results);
-                                      this.nextPageToken = res.nextPageToken;
-                                      this.isSearchLoading = false;
-                                    });
-                                  }
-                                  return true;
-                                },
-                                child: renderResults(results))
-                            : renderResults(results)),
+                    results.length == 0
+                        ? Flexible(
+                            child: EmptySearch(
+                              color: Color.fromRGBO(106, 154, 168, 1),
+                            ),
+                          )
+                        : Flexible(
+                            child: this.location != null
+                                ? LazyLoadScrollView(
+                                    onEndOfPage: () async {
+                                      if (this.results != null &&
+                                          this.nextPageToken.isNotEmpty) {
+                                        setState(() {
+                                          this.isSearchLoading = true;
+                                        });
+                                        var res = await fetchSearchNext(
+                                            txt.text,
+                                            this.location['lat'],
+                                            this.location['lng'],
+                                            this.nextPageToken);
+                                        setState(() {
+                                          this.results = this.results
+                                            ..addAll(res.results);
+                                          this.nextPageToken =
+                                              res.nextPageToken;
+                                          this.isSearchLoading = false;
+                                        });
+                                      }
+                                      return true;
+                                    },
+                                    child: renderResults(results))
+                                : renderResults(results)),
                     this.isSearchLoading
                         ? AwesomeLoader(
                             loaderType: AwesomeLoader.AwesomeLoader4,

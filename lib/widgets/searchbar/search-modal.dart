@@ -14,6 +14,8 @@ import 'dart:async';
 import 'package:trotter_flutter/globals.dart';
 import 'package:rating_bar/rating_bar.dart';
 
+import 'empty-search.dart';
+
 Future<SearchModalData> fetchSearchModal(
     String query, double lat, double lng, bool searchPoi,
     {near: false}) async {
@@ -355,36 +357,43 @@ class SearchModalState extends State<SearchModal> {
                 : results != null
                     ? Column(children: <Widget>[
                         renderTopBar(timer, chips),
-                        Flexible(
-                            child: this.location != null
-                                ? LazyLoadScrollView(
-                                    onEndOfPage: () async {
-                                      if (this.results != null &&
-                                          this.nextPageToken.isNotEmpty) {
-                                        setState(() {
-                                          this.isSearchLoading = true;
-                                        });
-                                        var location = this.nearId
-                                            ? this.near['location']
-                                            : this.location;
-                                        var res = await fetchSearchModalNext(
-                                            txt.text,
-                                            location['lat'],
-                                            location['lng'],
-                                            this.nextPageToken,
-                                            near: nearId);
-                                        setState(() {
-                                          this.results = this.results
-                                            ..addAll(res.results);
-                                          this.nextPageToken =
-                                              res.nextPageToken;
-                                          this.isSearchLoading = false;
-                                        });
-                                      }
-                                      return true;
-                                    },
-                                    child: renderResults(results))
-                                : renderResults(results)),
+                        results.length == 0
+                            ? Flexible(
+                                child: EmptySearch(
+                                  color: Color.fromRGBO(106, 154, 168, 1),
+                                ),
+                              )
+                            : Flexible(
+                                child: this.location != null
+                                    ? LazyLoadScrollView(
+                                        onEndOfPage: () async {
+                                          if (this.results != null &&
+                                              this.nextPageToken.isNotEmpty) {
+                                            setState(() {
+                                              this.isSearchLoading = true;
+                                            });
+                                            var location = this.nearId
+                                                ? this.near['location']
+                                                : this.location;
+                                            var res =
+                                                await fetchSearchModalNext(
+                                                    txt.text,
+                                                    location['lat'],
+                                                    location['lng'],
+                                                    this.nextPageToken,
+                                                    near: nearId);
+                                            setState(() {
+                                              this.results = this.results
+                                                ..addAll(res.results);
+                                              this.nextPageToken =
+                                                  res.nextPageToken;
+                                              this.isSearchLoading = false;
+                                            });
+                                          }
+                                          return true;
+                                        },
+                                        child: renderResults(results))
+                                    : renderResults(results)),
                         this.isSearchLoading
                             ? AwesomeLoader(
                                 loaderType: AwesomeLoader.AwesomeLoader4,

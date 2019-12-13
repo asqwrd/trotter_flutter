@@ -398,6 +398,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                                 currentUserId: this.currentUserId,
                                 tripId: this.tripId,
                                 travelers: data['travelers'],
+                                readWrite: !isPast,
                               )));
                   if (dialogData != null) {
                     final detailId = data['id'];

@@ -570,31 +570,6 @@ class HomeState extends State<Home> {
     ));
   }
 
-  // Widget _buildNearFood(
-  //     BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
-  //   var widgets = <Widget>[];
-  //   var items = snapshot.data.places;
-  //   widgets.add(TopList(
-  //     items: items,
-  //     header: 'Places to eat near you',
-  //     subText: 'Check out some of these food spots near you',
-  //     onLongPressed: (data) {},
-  //     onPressed: (data) {
-  //       onPush({
-  //         'id': data['id'].toString(),
-  //         'level': data['level'].toString(),
-  //         "google_place": true
-  //       });
-  //     },
-  //   ));
-
-  //   return Container(
-  //       child: Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: widgets,
-  //   ));
-  // }
-
   Widget _buildItineraryLoading(BuildContext ctxt) {
     var widgets = <Widget>[
       Shimmer.fromColors(
@@ -641,7 +616,6 @@ class HomeState extends State<Home> {
   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot,
       ScrollController scrollController) {
     var popularCities = snapshot.hasData ? snapshot.data.popularCities : [];
-    //var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
     final store = Provider.of<TrotterStore>(context);
 
     return Container(

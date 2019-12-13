@@ -69,17 +69,20 @@ class CreateTripState extends State<CreateTrip> {
     loading = false;
 
     if (this.param != null) {
-      var destination = {
-        "location": this.param['location'],
-        "destination_id": this.param['id'],
-        "destination_name": this.param['name'],
-        "level": this.param['level'],
-        "country_id": this.param['country_id'],
-        "country_name": this.param["country_name"],
-        "start_date": null,
-        "end_date": null,
-        "image": this.param['image_hd']
-      };
+      var destination = this.param;
+      if(destination['destination_id'] == null) {
+        destination = {
+          "location": this.param['location'],
+          "destination_id": this.param['id'],
+          "destination_name": this.param['name'],
+          "level": this.param['level'],
+          "country_id": this.param['country_id'],
+          "country_name": this.param["country_name"],
+          "start_date": null,
+          "end_date": null,
+          "image": this.param['image_hd']
+        };
+      }
       this._destinations.add(destination);
       //this._destinationImages.add(this.param['image']);
     }
@@ -158,7 +161,6 @@ class CreateTripState extends State<CreateTrip> {
                           TextStyle(fontSize: 15, fontWeight: FontWeight.w300))
                 ]),
                 onPressed: () {
-                  print('add');
                   setState(() {
                     this.destinationsCount = this.destinationsCount + 1;
                     datesControllers.add(TextEditingController());
@@ -206,7 +208,6 @@ class CreateTripState extends State<CreateTrip> {
                         "uid": store.currentUser.uid,
                       }
                     };
-                    //print(data['destinations']);
                     setState(() {
                       this.loading = true;
                     });
@@ -376,7 +377,6 @@ class CreateTripState extends State<CreateTrip> {
   }
 
   Widget _buildDestField(int index, [dynamic param, bool addRemove = false]) {
-    print("dest");
     final TextEditingController _destinationTextController =
         TextEditingController();
     var dateFormat = DateFormat("EEE, MMM d, yyyy");
@@ -390,7 +390,6 @@ class CreateTripState extends State<CreateTrip> {
         onToggle: (value) {
           setState(() {
             this.useDays['$index'] = value;
-            print(useDays);
           });
         },
         onNumDaysChanged: (String value) {

@@ -534,8 +534,11 @@ class DestinationState extends State<Destination>
               destination: destination,
               onPressed: (data) {
                 final dest = {
-                  "destination_id": destinationId,
-                  "destination_name": destinationName,
+                  "destination_id": this.destinationId,
+                  "destination_name": this.destinationName,
+                  "name": this.destinationName,
+                  "country_id": destination['country_id'],
+                  "country_name": destination['country_name'],
                   "type": destinationType,
                   "location": {"lat": location['lat'], "lng": location['lng']},
                   "level": destination['level']

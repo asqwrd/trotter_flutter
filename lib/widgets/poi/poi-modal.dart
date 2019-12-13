@@ -123,14 +123,12 @@ class Results extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         return InkWell(
             onTap: () {
-              //onSelect({'selected':results[index]});
               this.onPush({
                 'id': results[index]['id'],
                 'destination': this.destination,
                 'level': 'poi',
                 'google_place': results[index]['google_place']
               });
-              //Navigator.pop(context, results[index]);
             },
             child: Container(
                 margin: EdgeInsets.symmetric(vertical: 20),

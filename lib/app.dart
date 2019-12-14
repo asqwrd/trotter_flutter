@@ -7,6 +7,7 @@ import 'package:flutter_store/flutter_store.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
+import 'package:trotter_flutter/screens/trips/trips.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -32,6 +33,8 @@ class AppStateWidget extends State<App> {
     TabItem.notifications: GlobalKey<NavigatorState>(),
     TabItem.profile: GlobalKey<NavigatorState>(),
   };
+
+  Map<TabItem, TabNavigator> tabNavigators = {};
   BuildContext appContext;
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -263,23 +266,27 @@ class AppStateWidget extends State<App> {
           Focus(
               focusNode: store.explore,
               child: ShowCaseWidget(
-                  builder:Builder(
-                    builder : (context)=> _buildOffstageNavigator(TabItem.explore)))),
+                  builder: Builder(
+                      builder: (context) =>
+                          _buildOffstageNavigator(TabItem.explore)))),
           Focus(
               focusNode: store.trips,
               child: ShowCaseWidget(
-                  builder:Builder(
-                    builder : (context)=> _buildOffstageNavigator(TabItem.trips)))),
+                  builder: Builder(
+                      builder: (context) =>
+                          _buildOffstageNavigator(TabItem.trips)))),
           Focus(
               focusNode: store.notification,
               child: ShowCaseWidget(
-                  builder:Builder(
-                    builder : (context)=> _buildOffstageNavigator(TabItem.notifications)))),
+                  builder: Builder(
+                      builder: (context) =>
+                          _buildOffstageNavigator(TabItem.notifications)))),
           Focus(
               focusNode: store.profile,
               child: ShowCaseWidget(
-                  builder:Builder(
-                    builder : (context)=>_buildOffstageNavigator(TabItem.profile)))),
+                  builder: Builder(
+                      builder: (context) =>
+                          _buildOffstageNavigator(TabItem.profile)))),
         ]),
         bottomNavigationBar: BottomNavigation(
             currentTab: currentTab,
@@ -288,10 +295,10 @@ class AppStateWidget extends State<App> {
     );
   }
 
-  Widget _buildOffstageNavigator(TabItem tabItem) {
+  Offstage _buildOffstageNavigator(TabItem tabItem) {
     return Offstage(
       offstage: currentTab != tabItem,
-      child: TabNavigator(
+      child: tabNavigators[tabItem] = TabNavigator(
         navigatorKey: navigatorKeys[tabItem],
         tabItem: tabItem,
       ),

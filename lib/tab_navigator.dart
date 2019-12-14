@@ -141,7 +141,7 @@ class TabNavigator extends StatelessWidget {
   }
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context,
-      {Map<String, dynamic> data}) {
+      {Map<String, dynamic> data, TabItem tabItem}) {
     final store = Provider.of<TrotterStore>(context);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
@@ -252,7 +252,10 @@ class TabNavigator extends StatelessWidget {
         initialRoute: TabNavigatorRoutes.root,
         onGenerateRoute: (routeSettings) {
           return MaterialPageRoute(
-            builder: (context) => routeBuilders[routeSettings.name](context),
+            settings: RouteSettings(name: routeSettings.name),
+            builder: (context) {
+              return routeBuilders[routeSettings.name](context);
+            },
           );
         });
   }

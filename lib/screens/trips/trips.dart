@@ -148,6 +148,9 @@ class TripsState extends State<Trips> {
           }
         }
       });
+      store.eventBus.on<LogoutEvent>().listen((event) {
+        Navigator.popUntil(context, ModalRoute.withName("/"));
+      });
       setState(() {
         isSub = true;
       });
@@ -250,7 +253,8 @@ class TripsState extends State<Trips> {
                 ),
               ])),
         ),
-        size: PanelSize(closedHeight: .45, expandedHeight: getPanelHeight(context)),
+        size: PanelSize(
+            closedHeight: .45, expandedHeight: getPanelHeight(context)),
       ),
       Positioned(
           top: 0,

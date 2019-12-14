@@ -305,3 +305,7 @@ class RefreshTripEvent {
 
   RefreshTripEvent({this.refresh});
 }
+
+class LogoutEvent {
+  LogoutEvent();
+}

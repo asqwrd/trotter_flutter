@@ -1483,7 +1483,7 @@ class TripState extends State<Trip> {
                           "is_past": isPast
                         });
                         print(res);
-                        if (res["refresh"] == true) {
+                        if (res != null && res["refresh"] == true) {
                           setState(() {
                             this.loading = true;
                             data = fetchTrip(this.tripId, store);

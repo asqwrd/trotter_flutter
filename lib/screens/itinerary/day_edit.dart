@@ -7,6 +7,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/screens/itinerary/toggle-visited-modal.dart';
@@ -82,17 +83,21 @@ class DayEditState extends State<DayEdit> {
   bool canView = true;
 
   GlobalKey _one = GlobalKey();
-  GlobalKey _two = GlobalKey();
-  GlobalKey _three = GlobalKey();
-  GlobalKey _four = GlobalKey();
   bool shadow = false;
 
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   toggleDialog(context);
-    // });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String cacheData = prefs.getString('dayEditShowCase') ?? null;
+      if (cacheData == null) {
+        ShowCaseWidget.of(context).startShowCase([_one]);
+        await prefs.setString('dayEditShowCase', "true");
+      }
+    });
+
     getLocationPermission().then((res) {
       data = fetchDay(this.itineraryId, this.dayId, this.startLocation, "true");
       data.then((data) {
@@ -560,6 +565,9 @@ class DayEditState extends State<DayEdit> {
     final formatter = DateFormat.yMMMMEEEEd("en_US");
     return DefaultTabController(
         length: 2,
+        initialIndex: itineraryItems.length == 0 && visited.length == 0
+            ? 0
+            : itineraryItems.length == 0 && visited.length > 0 ? 1 : 0,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -692,6 +700,7 @@ class DayEditState extends State<DayEdit> {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
         controller: _sc,
+        panelController: _pc,
         header: '${ordinalNumber(day['day'] + 1)} day',
         tabs: true,
         onToggleVisited: (item) async {
@@ -729,7 +738,7 @@ class DayEditState extends State<DayEdit> {
           }
         },
         comments: true,
-        showCaseKeys: [_two, _three, _four],
+        showTutorial: true,
         onCommentPressed: (itineraryItem) async {
           final totalComments = await Navigator.push(
               context,
@@ -763,7 +772,9 @@ class DayEditState extends State<DayEdit> {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
         header: '${ordinalNumber(day['day'] + 1)} day',
+        panelController: _pc,
         tabs: true,
+        showTutorial: true,
         onToggleVisited: (item) => onToggleVisited(ctxt, item),
         subHeader: formatter.format(
             DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)

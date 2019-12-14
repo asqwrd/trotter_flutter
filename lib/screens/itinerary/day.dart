@@ -356,6 +356,7 @@ class DayState extends State<Day> {
         controller: _sc,
         items: itineraryItems,
         color: color,
+        showTutorial: false,
         onLongPressed: (data) {},
         onPressed: (data) {
           if (data['itinerary'] != null) {

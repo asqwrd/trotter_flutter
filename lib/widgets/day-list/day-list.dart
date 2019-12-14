@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
+import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
-class DayList extends StatelessWidget {
+class DayList extends StatefulWidget {
   final String2VoidFunc onPressed;
   final Function(dynamic) onLongPressed;
   final Function(dynamic) onCommentPressed;
@@ -25,9 +27,10 @@ class DayList extends StatelessWidget {
   final String subHeader;
   final bool comments;
   final dynamic linkedItinerary;
-  final List<GlobalKey> showCaseKeys;
+  final bool showTutorial;
   final bool tabs;
   final bool visited;
+  final PanelController panelController;
 
   //passing props in react style
   DayList(
@@ -46,17 +49,127 @@ class DayList extends StatelessWidget {
       this.header,
       this.subHeader,
       this.comments,
-      this.showCaseKeys,
+      this.showTutorial,
       this.tabs,
       this.visited,
       this.onToggleVisited,
+      this.panelController,
       this.startLocation});
+
+  DayListState createState() => DayListState(
+      onPressed: this.onPressed,
+      onLongPressed: this.onLongPressed,
+      onCommentPressed: this.onCommentPressed,
+      items: this.items,
+      day: this.day,
+      ownerId: this.ownerId,
+      callback: this.callback,
+      color: this.color,
+      linkedItinerary: this.linkedItinerary,
+      controller: this.controller,
+      physics: this.physics,
+      height: this.height,
+      header: this.header,
+      subHeader: this.subHeader,
+      comments: this.comments,
+      showTutorial: this.showTutorial,
+      tabs: this.tabs,
+      visited: this.visited,
+      onToggleVisited: this.onToggleVisited,
+      panelController: this.panelController,
+      startLocation: this.startLocation);
+}
+
+class DayListState extends State<DayList> {
+  final String2VoidFunc onPressed;
+  final Function(dynamic) onLongPressed;
+  final Function(dynamic) onCommentPressed;
+  final Function(dynamic) onToggleVisited;
+  final Color color;
+  final List<dynamic> items;
+  final Function(String) callback;
+  final double height;
+  final ScrollController controller;
+  final PanelController panelController;
+  final ScrollPhysics physics;
+  final dynamic startLocation;
+  final String ownerId;
+  @required
+  final String header;
+  final int day;
+  final String subHeader;
+  final bool comments;
+  final dynamic linkedItinerary;
+  final bool showTutorial;
+  final bool tabs;
+  final bool visited;
+  GlobalKey _one = GlobalKey();
+  GlobalKey _two = GlobalKey();
+  GlobalKey _three = GlobalKey();
+  GlobalKey _four = GlobalKey();
+  bool showLastTutrial = true;
+
+  //passing props in react style
+  DayListState(
+      {this.onPressed,
+      this.onLongPressed,
+      this.onCommentPressed,
+      this.items,
+      this.day,
+      this.ownerId,
+      this.callback,
+      this.color,
+      this.linkedItinerary,
+      this.controller,
+      this.physics,
+      this.height,
+      this.header,
+      this.subHeader,
+      this.comments,
+      this.showTutorial,
+      this.tabs,
+      this.visited,
+      this.onToggleVisited,
+      this.panelController,
+      this.startLocation});
+
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String cacheData = prefs.getString('dayListShowCaseFirst') ?? null;
+      if (cacheData == null && this.showTutorial == true) {
+        ShowCaseWidget.of(context).startShowCase([_one, _two]);
+        await prefs.setString('dayListShowCaseFirst', "true");
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String cacheData = prefs.getString('dayListShowCasePoi') ?? null;
+      final String cacheDataUncheck =
+          prefs.getString('dayListShowCaseVisited') ?? null;
+      if (cacheData == null &&
+          panelController != null &&
+          panelController.currentPosition ==
+              panelController.sizeData.expandedHeight &&
+          this.showTutorial == true) {
+        ShowCaseWidget.of(context).startShowCase([_three]);
+        await prefs.setString('dayListShowCasePoi', "true");
+      }
+
+      if (cacheDataUncheck == null && this.visited == true) {
+        ShowCaseWidget.of(context).startShowCase([_four]);
+        await prefs.setString('dayListShowCaseVisited', "true");
+      }
+    });
     return buildTimeLine(context, this.items);
   }
 
@@ -238,7 +351,9 @@ class DayList extends StatelessWidget {
                                 child: Align(
                                     alignment: Alignment.topCenter,
                                     child: Column(children: <Widget>[
-                                      this.showCaseKeys != null && index == 2
+                                      this.showTutorial == true &&
+                                              index == 0 &&
+                                              this.visited != true
                                           ? Showcase.withWidget(
                                               shapeBorder:
                                                   RoundedRectangleBorder(
@@ -265,25 +380,57 @@ class DayList extends StatelessWidget {
                                                       ))
                                                 ],
                                               ),
-                                              key: this.showCaseKeys[0],
-                                              child: Icon(
+                                              key: _one,
+                                              child: Icon(Icons.place,
+                                                  color: fontContrast(color),
+                                                  size: 20))
+                                          : this.showTutorial == true &&
+                                                  index == 0 &&
+                                                  this.visited == true
+                                              ? Showcase.withWidget(
+                                                  shapeBorder:
+                                                      RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      15)),
+                                                  width: 250,
+                                                  height: 50,
+                                                  container: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: <Widget>[
+                                                      SizedBox(
+                                                        height: 10,
+                                                      ),
+                                                      Container(
+                                                          width: 250,
+                                                          child: Text(
+                                                            'Tap this button to unmark a place as visited',
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white),
+                                                            maxLines: 3,
+                                                          ))
+                                                    ],
+                                                  ),
+                                                  key: _four,
+                                                  child: Icon(Icons.check,
+                                                      color:
+                                                          fontContrast(color),
+                                                      size: 20))
+                                              : Icon(
                                                   this.visited == false ||
                                                           this.visited == null
                                                       ? Icons.place
                                                       : Icons.check,
                                                   color: fontContrast(color),
-                                                  size: 20))
-                                          : Icon(
-                                              this.visited == false ||
-                                                      this.visited == null
-                                                  ? Icons.place
-                                                  : Icons.check,
-                                              color: fontContrast(color),
-                                              size: 20),
+                                                  size: 20),
                                     ])),
                               )),
                           this.comments != null && this.comments == true
-                              ? this.showCaseKeys != null && index == 2
+                              ? this.showTutorial == true && index == 0
                                   ? Showcase.withWidget(
                                       shapeBorder: RoundedRectangleBorder(
                                           borderRadius:
@@ -307,7 +454,7 @@ class DayList extends StatelessWidget {
                                               ))
                                         ],
                                       ),
-                                      key: this.showCaseKeys[1],
+                                      key: _two,
                                       child: renderCommentIcon(
                                           itineraryItems, index, totalComments))
                                   : renderCommentIcon(
@@ -451,7 +598,7 @@ class DayList extends StatelessWidget {
                                             )
                                           ])),
                                   item['image'].isEmpty == false
-                                      ? this.showCaseKeys != null && index == 2
+                                      ? this.showTutorial == true && index == 0
                                           ? Showcase.withWidget(
                                               shapeBorder:
                                                   RoundedRectangleBorder(
@@ -478,7 +625,7 @@ class DayList extends StatelessWidget {
                                                       ))
                                                 ],
                                               ),
-                                              key: this.showCaseKeys[2],
+                                              key: _three,
                                               child:
                                                   renderPoiImage(context, item))
                                           : renderPoiImage(context, item)
@@ -576,34 +723,7 @@ class DayList extends StatelessWidget {
                                     )
                                   ])),
                           destination['image'].isEmpty == false
-                              ? this.showCaseKeys != null && index == 2
-                                  ? Showcase.withWidget(
-                                      shapeBorder: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15)),
-                                      width: 250,
-                                      height: 50,
-                                      container: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Container(
-                                              width: 250,
-                                              child: Text(
-                                                'Tap to view details about itinerary item.\nPress and hold to bring up menu items',
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                                maxLines: 3,
-                                              ))
-                                        ],
-                                      ),
-                                      key: this.showCaseKeys[2],
-                                      child: renderDestinationImage(
-                                          context, destination))
-                                  : renderDestinationImage(context, destination)
+                              ? renderDestinationImage(context, destination)
                               : Container()
                         ])))
               ],

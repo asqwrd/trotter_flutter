@@ -7,7 +7,6 @@ import 'package:flutter_store/flutter_store.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
-import 'package:trotter_flutter/screens/trips/trips.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';

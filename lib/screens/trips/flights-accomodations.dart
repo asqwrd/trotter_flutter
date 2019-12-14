@@ -62,7 +62,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   @override
   void initState() {
     super.initState();
-    data = fetchFlightsAccomodations(this.tripId, this.currentUserId);
+    data = fetchFlightsAccomodations(this.tripId,this.currentUserId);
     data.then((data) {
       if (data.error == null) {
         setState(() {

@@ -327,6 +327,13 @@ class FlightsAccomodationsList extends StatelessWidget {
           address =
               '${segment['address1']}${segment['address2'] != null ? ' ${segment['address2']}' : ''} ${segment['city_name']}, ${segment['country']} ${segment['postal_code']}';
         }
+
+        final lat = segment['lat'] != null
+            ? double.tryParse(segment['lat']) ?? null
+            : null;
+        final lon = segment['lon'] != null
+            ? double.tryParse(segment['lon']) ?? null
+            : null;
         return Container(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <
@@ -341,7 +348,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                     Container(
                         child: AutoSizeText(segment['hotel_name'],
                             style: topstyle)),
-                    segment['lat'] != null && segment['lon'] != null
+                    lat != null && lon != null
                         ? Container(
                             height: 200,
                             width: MediaQuery.of(context).size.width,
@@ -350,8 +357,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                                 height: 200,
                                 color: Colors.blueGrey,
                                 zoom: 18,
-                                lat: double.parse(segment['lat']),
-                                lng: double.parse(segment['lon'])))
+                                lat: lat,
+                                lng: lon))
                         : address != null
                             ? Container(
                                 height: 200,

@@ -1123,7 +1123,7 @@ class TripState extends State<Trip> {
                                           _buildLoadedBody(context, snapshot,
                                               store, scrollController));
                             } else {
-                              return CannotView();
+                              return CannotView(controller: scrollController);
                             }
                           } else if (snapshot.hasData &&
                               snapshot.data.error != null) {

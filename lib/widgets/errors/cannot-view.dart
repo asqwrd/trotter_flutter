@@ -7,9 +7,10 @@ import 'package:trotter_flutter/utils/index.dart';
 class CannotView extends StatelessWidget {
   final VoidCallback onRetry;
   final Color color;
+  final ScrollController controller;
 
   //passing props in react style
-  CannotView({this.onRetry, this.color});
+  CannotView({this.onRetry, this.color, this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +26,8 @@ class CannotView extends StatelessWidget {
         ),
         body: Stack(fit: StackFit.expand, children: <Widget>[
           Center(
-              child: Container(
-                  color: Colors.transparent,
-                  padding: EdgeInsets.symmetric(horizontal: 30),
+              child: SingleChildScrollView(
+                  controller: this.controller,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[

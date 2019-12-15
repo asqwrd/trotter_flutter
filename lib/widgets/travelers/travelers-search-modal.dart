@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:share/share.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -250,23 +251,31 @@ class TravelersSearchModalState extends State<TravelersSearchModal> {
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Row(children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      iconSize: 25,
+                  IconButton(
+                    padding: EdgeInsets.only(left: 10),
+                    icon: SvgPicture.asset(
+                      'images/back-icon.svg',
+                      width: 30,
+                      height: 30,
                       color: Colors.black,
                     ),
-                    AutoSizeText(
-                      'Search for travelers',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 19),
-                    )
-                  ]),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    iconSize: 25,
+                    color: Colors.black,
+                  ),
+                  Expanded(
+                      child: Container(
+                          margin: EdgeInsets.only(left: 60),
+                          child: AutoSizeText(
+                            'Search travelers',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w300,
+                                fontSize: 19),
+                          ))),
                   Center(
                       child: Container(
                           margin: EdgeInsets.only(right: 20),

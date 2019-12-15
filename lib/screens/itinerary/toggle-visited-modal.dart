@@ -152,6 +152,7 @@ class _ToggleVisitedModalState extends State<ToggleVisitedModal> {
           ))
     ];
     return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: Form(
             key: _formKey,
             child: Container(

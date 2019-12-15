@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
@@ -269,7 +270,10 @@ class TravelersModalState extends State<TravelersModal> {
                                     ...this.deletedTravelers,
                                     results[index]['uid']
                                   ];
-                                  this.travelers.removeAt(index);
+                                  final idx = this.travelers.indexWhere(
+                                      (item) =>
+                                          item['uid'] == results[index]['uid']);
+                                  this.travelers.removeAt(idx);
                                   this.showSave = true;
                                 });
                               },
@@ -311,26 +315,35 @@ class TravelersModalState extends State<TravelersModal> {
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Row(children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      iconSize: 25,
+                  IconButton(
+                    padding: EdgeInsets.only(left: 10),
+                    icon: SvgPicture.asset(
+                      'images/back-icon.svg',
+                      width: 30,
+                      height: 30,
                       color: Colors.black,
                     ),
-                    AutoSizeText(
-                      'All travelers',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 19),
-                    )
-                  ]),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    iconSize: 25,
+                    color: Colors.black,
+                  ),
+                  Expanded(
+                      child: Container(
+                          margin: EdgeInsets.only(left: 60),
+                          child: AutoSizeText(
+                            'All travelers',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w300,
+                                fontSize: 19),
+                          ))),
                   this.showSave == true
                       ? Center(
                           child: Container(
+                              width: 100,
                               margin: EdgeInsets.only(right: 20),
                               child: FlatButton(
                                 shape: RoundedRectangleBorder(
@@ -351,7 +364,7 @@ class TravelersModalState extends State<TravelersModal> {
                                   });
                                 },
                               )))
-                      : Container()
+                      : Container(width: 100)
                 ]),
           ],
         ));

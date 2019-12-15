@@ -434,6 +434,7 @@ class _TripNameDialogContentState extends State<TripNameDialogContent> {
     return Form(
         key: _formKey,
         child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(100)),
             padding: EdgeInsets.symmetric(horizontal: 0.0, vertical: 10),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -643,20 +644,26 @@ class _TripDestinationDialogContentState
                   elevation: 5.0,
                 )),
         appBar: AppBar(
-          elevation: 1,
+          elevation: 0,
           backgroundColor: Colors.white,
           brightness: Brightness.light,
           title: AutoSizeText(
             'Destinations',
-            textAlign: TextAlign.left,
+            textAlign: TextAlign.center,
             style: TextStyle(
                 color: Colors.black, fontWeight: FontWeight.w300, fontSize: 19),
           ),
-          centerTitle: false,
+          centerTitle: true,
           leading: IconButton(
+            padding: EdgeInsets.only(left: 10),
             iconSize: 25,
             color: Colors.black,
-            icon: Icon(Icons.close),
+            icon: SvgPicture.asset(
+              'images/back-icon.svg',
+              width: 30,
+              height: 30,
+              color: Colors.black,
+            ),
             onPressed: () {
               Navigator.pop(context);
             },
@@ -961,7 +968,10 @@ class TripState extends State<Trip> {
                         pageBuilder: (BuildContext buildContext,
                             Animation<double> animation,
                             Animation<double> secondaryAnimation) {
-                          return Dialog(child: _nameDialog);
+                          return Dialog(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)),
+                              child: _nameDialog);
                         },
                         transitionBuilder: (BuildContext context,
                             Animation<double> animation,

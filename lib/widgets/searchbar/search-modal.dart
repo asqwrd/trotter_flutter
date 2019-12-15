@@ -3,6 +3,7 @@ import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -610,7 +611,7 @@ class SearchModalState extends State<SearchModal> {
 
   Container renderTopBar(timer, List<ChoiceChip> chips) {
     return Container(
-      padding: EdgeInsets.only(top: 20),
+      padding: EdgeInsets.only(top: 25),
       decoration: BoxDecoration(
           border: Border(
               bottom:
@@ -620,8 +621,13 @@ class SearchModalState extends State<SearchModal> {
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <
             Widget>[
           IconButton(
-            padding: EdgeInsets.all(0),
-            icon: Icon(Icons.close),
+            padding: EdgeInsets.only(left: 10),
+            icon: SvgPicture.asset(
+              'images/back-icon.svg',
+              width: 30,
+              height: 30,
+              color: Colors.black,
+            ),
             onPressed: () {
               Navigator.pop(context);
             },

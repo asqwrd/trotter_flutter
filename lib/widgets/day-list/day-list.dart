@@ -2,16 +2,21 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_panel/sliding_panel.dart';
+import 'package:trotter_flutter/store/auth.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
+import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 
 class DayList extends StatefulWidget {
   final String2VoidFunc onPressed;
   final Function(dynamic) onLongPressed;
   final Function(dynamic) onCommentPressed;
+  final Function(dynamic) onDescriptionAdded;
   final Function(dynamic) onToggleVisited;
   final Color color;
   final List<dynamic> items;
@@ -54,6 +59,7 @@ class DayList extends StatefulWidget {
       this.visited,
       this.onToggleVisited,
       this.panelController,
+      this.onDescriptionAdded,
       this.startLocation});
 
   DayListState createState() => DayListState(
@@ -75,6 +81,7 @@ class DayList extends StatefulWidget {
       showTutorial: this.showTutorial,
       tabs: this.tabs,
       visited: this.visited,
+      onDescriptionAdded: this.onDescriptionAdded,
       onToggleVisited: this.onToggleVisited,
       panelController: this.panelController,
       startLocation: this.startLocation);
@@ -84,6 +91,7 @@ class DayListState extends State<DayList> {
   final String2VoidFunc onPressed;
   final Function(dynamic) onLongPressed;
   final Function(dynamic) onCommentPressed;
+  final Function(dynamic) onDescriptionAdded;
   final Function(dynamic) onToggleVisited;
   final Color color;
   final List<dynamic> items;
@@ -114,6 +122,7 @@ class DayListState extends State<DayList> {
       {this.onPressed,
       this.onLongPressed,
       this.onCommentPressed,
+      this.onDescriptionAdded,
       this.items,
       this.day,
       this.ownerId,
@@ -170,7 +179,7 @@ class DayListState extends State<DayList> {
         await prefs.setString('dayListShowCaseVisited', "true");
       }
     });
-    return buildTimeLine(context, this.items);
+    return buildTimeLine(context, widget.items);
   }
 
   Widget buildEmptyUI(BuildContext context) {
@@ -291,6 +300,7 @@ class DayListState extends State<DayList> {
               final destination = this.linkedItinerary['destination'];
               return buildLinkedItinerary(context, destination, index);
             }
+            final store = Provider.of<TrotterStore>(context);
 
             var color = itineraryItems[index]['color'] != null &&
                     itineraryItems[index]['color'].isEmpty == false
@@ -298,6 +308,10 @@ class DayListState extends State<DayList> {
                 : this.color;
             var poi = itineraryItems[index]['poi'];
             var item = itineraryItems[index];
+            List<dynamic> travelerDescription = item['traveler_descriptions'];
+            var indexDes = travelerDescription.indexWhere((element) {
+              return element['user']['uid'] == store.currentUser.uid;
+            });
             var justAdded = itineraryItems[index]['justAdded'];
             var travelTime = itineraryItems[index]['travel'];
             var prevIndex = index - 1;
@@ -429,7 +443,7 @@ class DayListState extends State<DayList> {
                                                   size: 20),
                                     ])),
                               )),
-                          this.comments != null && this.comments == true
+                          widget.comments != null && widget.comments == true
                               ? this.showTutorial == true && index == 0
                                   ? Showcase.withWidget(
                                       shapeBorder: RoundedRectangleBorder(
@@ -593,7 +607,78 @@ class DayListState extends State<DayList> {
                                                                       .w300,
                                                               height: 1.3),
                                                         ))
-                                                    : Container()
+                                                    : Container(),
+                                                travelerDescription.length ==
+                                                            0 &&
+                                                        this.visited == true
+                                                    ? renderEditButton(
+                                                        context, poi, item)
+                                                    : this.visited == true
+                                                        ? Container(
+                                                            width: MediaQuery.of(
+                                                                        context)
+                                                                    .size
+                                                                    .width -
+                                                                95,
+                                                            child: Column(
+                                                                children: <
+                                                                    Widget>[
+                                                                  indexDes < 0
+                                                                      ? renderEditButton(
+                                                                          context,
+                                                                          poi,
+                                                                          item)
+                                                                      : Container(),
+                                                                  ListView
+                                                                      .builder(
+                                                                    shrinkWrap:
+                                                                        true,
+                                                                    physics:
+                                                                        NeverScrollableScrollPhysics(),
+                                                                    itemCount:
+                                                                        travelerDescription
+                                                                            .length,
+                                                                    itemBuilder:
+                                                                        (context,
+                                                                            index) {
+                                                                      final user =
+                                                                          TrotterUser.fromJson(travelerDescription[index]
+                                                                              [
+                                                                              'user']);
+                                                                      final description =
+                                                                          travelerDescription[index]
+                                                                              [
+                                                                              'description'];
+                                                                      return ListTile(
+                                                                          trailing: store.currentUser.uid ==
+                                                                                  user
+                                                                                      .uid
+                                                                              ? IconButton(
+                                                                                  iconSize: 20,
+                                                                                  onPressed: () async {
+                                                                                    await onDescriptionModal(context, poi, item);
+                                                                                  },
+                                                                                  icon: SvgPicture.asset('images/edit-icon.svg', color: Colors.black, width: 20, height: 20),
+                                                                                )
+                                                                              : Container(
+                                                                                  width: 20,
+                                                                                  height: 20,
+                                                                                ),
+                                                                          leading:
+                                                                              CircleAvatar(
+                                                                            backgroundImage: AdvancedNetworkImage(user.photoUrl,
+                                                                                useDiskCache: true,
+                                                                                cacheRule: CacheRule(maxAge: Duration(days: 1))),
+                                                                          ),
+                                                                          title: AutoSizeText(store.currentUser.uid == user.uid
+                                                                              ? "Your thoughts"
+                                                                              : '${user.displayName}\'s thoughts'),
+                                                                          subtitle:
+                                                                              AutoSizeText(description));
+                                                                    },
+                                                                  )
+                                                                ]))
+                                                        : Container()
                                               ],
                                             )
                                           ])),
@@ -635,6 +720,39 @@ class DayListState extends State<DayList> {
                     )));
           },
         ));
+  }
+
+  renderEditButton(BuildContext context, poi, item) {
+    return InkWell(
+        onTap: () async {
+          await onDescriptionModal(context, poi, item);
+        },
+        child: Container(
+            margin: EdgeInsets.only(top: 10),
+            width: MediaQuery.of(context).size.width - 105,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: Colors.black.withOpacity(0.05),
+            ),
+            child: ListTile(
+              title: AutoSizeText(
+                  "Tap here to describe your experience at ${poi['name']}",
+                  style: TextStyle(fontWeight: FontWeight.w300)),
+            )));
+  }
+
+  Future onDescriptionModal(BuildContext context, poi, item) async {
+    var res = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (context) {
+              return DescriptionModal(description: '', poiName: poi['name']);
+            }));
+    if (res != null && res["description"] != null) {
+      this.onDescriptionAdded(
+          {"item": item, "description": res['description']});
+    }
   }
 
   InkWell buildLinkedItinerary(BuildContext context, destination, int index) {
@@ -853,6 +971,115 @@ class DayListState extends State<DayList> {
                           image: AssetImage('images/placeholder.png'),
                           fit: BoxFit.cover),
                     ))),
+        ));
+  }
+}
+
+class DescriptionModal extends StatefulWidget {
+  final String description;
+  final String poiName;
+
+  DescriptionModal({this.description, this.poiName});
+
+  DescriptionModalState createState() => DescriptionModalState(
+      description: this.description, poiName: this.poiName);
+}
+
+class DescriptionModalState extends State<DescriptionModal> {
+  final String description;
+  final String poiName;
+  final TextEditingController controller = new TextEditingController();
+
+  DescriptionModalState({this.description, this.poiName});
+
+  Widget build(BuildContext context) {
+    return Container(
+        color: Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+                //color: color,
+                height: 80,
+                child: TrotterAppBar(
+                    title: 'About $poiName',
+                    back: true,
+                    onPush: () {},
+                    showSearch: false,
+                    brightness: Brightness.light,
+                    color: Colors.white)),
+            Flexible(
+                child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    margin: EdgeInsets.only(top: 40),
+                    child: Column(
+                      children: <Widget>[
+                        TextField(
+                          controller: controller,
+                          maxLines: 8,
+                          maxLength: 300,
+                          maxLengthEnforced: true,
+                          decoration: InputDecoration(
+                            contentPadding: EdgeInsets.all(20.0),
+                            //fillColor: Colors.blueGrey.withOpacity(0.5),
+                            filled: true,
+                            errorBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5.0)),
+                                borderSide:
+                                    BorderSide(width: 1.0, color: Colors.red)),
+                            focusedErrorBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5.0)),
+                                borderSide:
+                                    BorderSide(width: 1.0, color: Colors.red)),
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5.0)),
+                                borderSide: BorderSide(
+                                    width: 0.0, color: Colors.transparent)),
+                            disabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5.0)),
+                                borderSide: BorderSide(
+                                    width: 0.0, color: Colors.transparent)),
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5.0)),
+                                borderSide: BorderSide(
+                                    width: 0.0, color: Colors.transparent)),
+                            hintText: 'Write about your experience...',
+                            hintStyle: TextStyle(fontSize: 13),
+                          ),
+                        ),
+                        Align(
+                            alignment: Alignment.center,
+                            child: Container(
+                                margin: EdgeInsets.symmetric(
+                                    vertical: 30, horizontal: 20),
+                                width: double.infinity,
+                                child: FlatButton(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                        new BorderRadius.circular(100.0),
+                                  ),
+                                  padding: EdgeInsets.symmetric(vertical: 20),
+                                  color: Colors.blueGrey,
+                                  onPressed: () async {
+                                    // Validate will return true if the form is valid, or false if
+                                    // the form is invalid.
+                                    Navigator.pop(context,
+                                        {"description": this.controller.text});
+                                  },
+                                  child: AutoSizeText('Save',
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w300,
+                                          color: Colors.white)),
+                                ))),
+                      ],
+                    )))
+          ],
         ));
   }
 }

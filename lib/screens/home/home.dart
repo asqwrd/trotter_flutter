@@ -167,7 +167,6 @@ class HomeState extends State<Home> {
       await Future.delayed(Duration(seconds: 3));
       final store = Provider.of<TrotterStore>(context);
       if (store.currentUser != null) {
-        print(this.thingsToDo);
         setState(() {
           doData = fetchThingsToDo(store.currentUser.uid);
         });
@@ -177,8 +176,6 @@ class HomeState extends State<Home> {
         // All events are of type UserLoggedInEvent (or subtypes of it).
         if (event.refresh == true) {
           final store = Provider.of<TrotterStore>(context);
-          print("store.currentUser.uid");
-          print(store.currentUser.uid);
           setState(() {
             doData = fetchThingsToDo(store.currentUser.uid, true);
           });

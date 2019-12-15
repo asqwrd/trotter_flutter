@@ -266,6 +266,7 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
 
 Future<DayData> toggleVisited(
   TrotterStore store,
+  String tripId,
   String itineraryId,
   String dayId,
   String itineraryItemId,
@@ -273,7 +274,7 @@ Future<DayData> toggleVisited(
 ) async {
   try {
     final response = await http.put(
-        '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/toggle',
+        '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/toggle?tripId=$tripId&userId=${store.currentUser.uid}',
         body: json.encode(data),
         headers: {'Authorization': 'security'});
     if (response.statusCode == 200) {
@@ -306,6 +307,41 @@ Future<DayData> toggleVisited(
     store.itineraryStore.setItineraryError('Server is down');
     store.setOffline(true);
     return DayData(success: false);
+  }
+}
+
+Future<DescriptionData> addDescription(
+  TrotterStore store,
+  String tripId,
+  String itineraryId,
+  String dayId,
+  String itineraryItemId,
+  dynamic data,
+) async {
+  try {
+    final response = await http.post(
+        '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/description?tripId=$tripId',
+        body: json.encode(data),
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var res = DescriptionData.fromJson(json.decode(response.body));
+
+      store.itineraryStore.setItineraryError(null);
+      store.setOffline(false);
+
+      return res;
+    } else {
+      // If that response was not OK, throw an error.
+      store.itineraryStore.setItineraryError('Server is down');
+      store.setOffline(true);
+      return DescriptionData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    store.itineraryStore.setItineraryError('Server is down');
+    store.setOffline(true);
+    return DescriptionData(success: false);
   }
 }
 
@@ -494,5 +530,16 @@ class CreateItineraryData {
 
   factory CreateItineraryData.fromJson(Map<String, dynamic> json) {
     return CreateItineraryData(id: json['id'], success: true);
+  }
+}
+
+class DescriptionData {
+  final List<dynamic> descriptions;
+  final bool success;
+
+  DescriptionData({this.descriptions, this.success});
+
+  factory DescriptionData.fromJson(Map<String, dynamic> json) {
+    return DescriptionData(descriptions: json['descriptions'], success: true);
   }
 }

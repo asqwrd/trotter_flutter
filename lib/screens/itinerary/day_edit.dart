@@ -660,13 +660,10 @@ class DayEditState extends State<DayEdit> {
     setState(() {
       this.loading = true;
     });
-    final response =
-        await toggleVisited(store, itineraryId, dayId, item['id'], item);
+    final response = await toggleVisited(
+        store, tripId, itineraryId, dayId, item['id'], item);
     if (response.success == true) {
       setState(() {
-        //this.color = Color(hexStringToHexInt(response.color));
-        // this.destinationName = response.destination['name'];
-        //this.destinationId = response.destination['id'].toString();
         this.itineraryItems = response.day['itinerary_items'];
         this.visited = response.visited;
         this.loading = false;
@@ -716,7 +713,7 @@ class DayEditState extends State<DayEdit> {
                 .add(Duration(days: day['day']))),
         ownerId: this.ownerId,
         day: day['day'],
-        items: itineraryItems,
+        items: this.itineraryItems,
         linkedItinerary:
             this.itineraryItems.length > 0 ? this.linkedItinerary : null,
         color: color,
@@ -776,6 +773,41 @@ class DayEditState extends State<DayEdit> {
         tabs: true,
         showTutorial: true,
         onToggleVisited: (item) => onToggleVisited(ctxt, item),
+        onDescriptionAdded: (res) async {
+          final itineraryItemId = res["item"]["id"];
+          final data = {
+            "user": {
+              "uid": store.currentUser.uid,
+              "photoUrl": store.currentUser.photoUrl,
+              "email": store.currentUser.email,
+              "phoneNumber": store.currentUser.phoneNumber,
+              "displayName": store.currentUser.displayName
+            },
+            "description": res["description"],
+            "created_at": DateTime.now().millisecondsSinceEpoch,
+            "id": store.currentUser.uid
+          };
+          setState(() {
+            this.loading = true;
+          });
+          var response = await addDescription(
+              store, tripId, itineraryId, dayId, itineraryItemId, data);
+
+          if (response.success == true) {
+            final index = this.visited.indexWhere((item) {
+              return item["id"] == itineraryItemId;
+            });
+
+            setState(() {
+              this.visited[index]['traveler_descriptions'] =
+                  response.descriptions;
+            });
+          }
+
+          setState(() {
+            this.loading = false;
+          });
+        },
         subHeader: formatter.format(
             DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)
                 .add(Duration(days: day['day']))),

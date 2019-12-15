@@ -333,7 +333,9 @@ class NotificationsState extends State<Notifications> {
                       Navigator.pop(context);
                     })
                 : Container(),
-            type == 'user_day'
+            type == 'user_day' ||
+                    type == 'user_description' ||
+                    type == 'user_visited'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.arrow_right),
                     title: new AutoSizeText('Go to day'),
@@ -377,6 +379,8 @@ class NotificationsState extends State<Notifications> {
       case 'user_comment':
       case 'user_trip_updated':
       case 'user_trip_added':
+      case 'user_description':
+      case 'user_visited':
         return Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100),

@@ -619,7 +619,7 @@ class DayListState extends State<DayList> {
                                                                         context)
                                                                     .size
                                                                     .width -
-                                                                95,
+                                                                105,
                                                             child: Column(
                                                                 children: <
                                                                     Widget>[
@@ -650,20 +650,14 @@ class DayListState extends State<DayList> {
                                                                               [
                                                                               'description'];
                                                                       return ListTile(
-                                                                          trailing: store.currentUser.uid ==
-                                                                                  user
-                                                                                      .uid
-                                                                              ? IconButton(
-                                                                                  iconSize: 20,
-                                                                                  onPressed: () async {
-                                                                                    await onDescriptionModal(context, poi, item);
-                                                                                  },
-                                                                                  icon: SvgPicture.asset('images/edit-icon.svg', color: Colors.black, width: 20, height: 20),
-                                                                                )
-                                                                              : Container(
-                                                                                  width: 20,
-                                                                                  height: 20,
-                                                                                ),
+                                                                          onTap:
+                                                                              () async {
+                                                                            await onDescriptionModal(
+                                                                                context,
+                                                                                description,
+                                                                                poi,
+                                                                                item);
+                                                                          },
                                                                           leading:
                                                                               CircleAvatar(
                                                                             backgroundImage: AdvancedNetworkImage(user.photoUrl,
@@ -725,7 +719,7 @@ class DayListState extends State<DayList> {
   renderEditButton(BuildContext context, poi, item) {
     return InkWell(
         onTap: () async {
-          await onDescriptionModal(context, poi, item);
+          await onDescriptionModal(context, '', poi, item);
         },
         child: Container(
             margin: EdgeInsets.only(top: 10),
@@ -741,13 +735,15 @@ class DayListState extends State<DayList> {
             )));
   }
 
-  Future onDescriptionModal(BuildContext context, poi, item) async {
+  Future onDescriptionModal(
+      BuildContext context, String description, poi, item) async {
     var res = await Navigator.push(
         context,
         MaterialPageRoute(
             fullscreenDialog: true,
             builder: (context) {
-              return DescriptionModal(description: '', poiName: poi['name']);
+              return DescriptionModal(
+                  description: description, poiName: poi['name']);
             }));
     if (res != null && res["description"] != null) {
       this.onDescriptionAdded(
@@ -991,6 +987,11 @@ class DescriptionModalState extends State<DescriptionModal> {
   final TextEditingController controller = new TextEditingController();
 
   DescriptionModalState({this.description, this.poiName});
+
+  void initState() {
+    super.initState();
+    controller.text = description;
+  }
 
   Widget build(BuildContext context) {
     return Container(

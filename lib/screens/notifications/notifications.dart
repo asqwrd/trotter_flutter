@@ -77,7 +77,10 @@ class NotificationsState extends State<Notifications> {
                     RenderWidget(
                         onScroll: onScroll,
                         scrollController: _sc,
-                        builder: (context, scrollController, snapshot) =>
+                        builder: (context,
+                                {scrollController,
+                                asyncSnapshot,
+                                startLocation}) =>
                             _buildContent(context, store, scrollController)),
                     store.notificationsLoading == true
                         ? Center(child: RefreshProgressIndicator())

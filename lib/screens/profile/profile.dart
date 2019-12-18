@@ -64,8 +64,11 @@ class ProfileState extends State<Profile> {
                 panelContent: (context, _sc) {
                   return Center(
                       child: RenderWidget(
-                          builder: (context, scrollController, snapshot) =>
-                              _buildContent(context, store, _sc)));
+                          builder: (context,
+                                  {scrollController,
+                                  asyncSnapshot,
+                                  startLocation}) =>
+                              _buildContent(context, store, scrollController)));
                 },
                 bodyContent: Container(color: color),
               ))),

@@ -70,7 +70,7 @@ class CreateTripState extends State<CreateTrip> {
 
     if (this.param != null) {
       var destination = this.param;
-      if(destination['destination_id'] == null) {
+      if (destination['destination_id'] == null) {
         destination = {
           "location": this.param['location'],
           "destination_id": this.param['id'],
@@ -172,7 +172,9 @@ class CreateTripState extends State<CreateTrip> {
                 },
               ))),
       RenderWidget(
-          builder: (context, scrollController, snapshot) => _buildDivider()),
+          builder: (context,
+                  {scrollController, asyncSnapshot, startLocation}) =>
+              _buildDivider()),
       Align(
           alignment: Alignment.center,
           child: Container(
@@ -323,8 +325,10 @@ class CreateTripState extends State<CreateTrip> {
                                     child: RenderWidget(
                                         scrollController: _sc,
                                         onScroll: onScroll,
-                                        builder: (context, scrollController,
-                                                snapshot) =>
+                                        builder: (context,
+                                                {scrollController,
+                                                asyncSnapshot,
+                                                startLocation}) =>
                                             _buildForm(
                                                 context, scrollController)))),
                             this.loading

@@ -230,7 +230,8 @@ class TripsState extends State<Trips> {
             return RenderWidget(
                 scrollController: scrollController,
                 onScroll: onScroll,
-                builder: (context, scrollController, snapshot) =>
+                builder: (context,
+                        {scrollController, asyncSnapshot, startLocation}) =>
                     buildScaffold(color, store, context, scrollController));
           },
           bodyContent: Container(
@@ -326,7 +327,8 @@ class TripsState extends State<Trips> {
         body: RenderWidget(
             scrollController: scrollController,
             onScroll: onScroll,
-            builder: (context, scrollController, snapshot) =>
+            builder: (context,
+                    {scrollController, asyncSnapshot, startLocation}) =>
                 _buildLoadedBody(context, store, color, scrollController)));
   }
 

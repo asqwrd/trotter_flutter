@@ -334,10 +334,12 @@ class DestinationState extends State<Destination>
                                   onScroll: onScroll,
                                   scrollController: _sc,
                                   asyncSnapshot: snapshot,
-                                  builder: (context, scrollController,
-                                          snapshot) =>
-                                      _buildLoadedBody(
-                                          context, snapshot, scrollController));
+                                  builder: (context,
+                                          {scrollController,
+                                          asyncSnapshot,
+                                          startLocation}) =>
+                                      _buildLoadedBody(context, asyncSnapshot,
+                                          scrollController));
                             } else if (snapshot.hasData &&
                                 snapshot.connectionState ==
                                     ConnectionState.done &&

@@ -5,7 +5,6 @@ import 'package:flare_loading/flare_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart' show parse;
 
-
 class PixelRatioDivider {
   double quantizedUnit;
   double remainder;
@@ -20,8 +19,8 @@ class PixelRatioDivider {
 double getPanelHeight(BuildContext context) {
   final relativeHeight = MediaQuery.of(context).size.height;
   double offset = 135;
-  if (Platform.isIOS){
-    offset+= MediaQuery.of(context).padding.top;
+  if (Platform.isIOS) {
+    offset += MediaQuery.of(context).padding.top;
   }
 
   final height = relativeHeight - offset;
@@ -327,27 +326,40 @@ class TrotterLoading extends StatelessWidget {
 }
 
 class RenderWidget extends StatefulWidget {
-  final Widget Function(BuildContext, ScrollController, AsyncSnapshot) builder;
+  final Widget Function(BuildContext,
+      {ScrollController scrollController,
+      AsyncSnapshot asyncSnapshot,
+      dynamic startLocation}) builder;
   final ValueChanged<double> onScroll;
   final ScrollController scrollController;
   final AsyncSnapshot asyncSnapshot;
+  final dynamic startLocation;
 
   RenderWidget(
-      {this.builder, this.onScroll, this.scrollController, this.asyncSnapshot});
+      {this.builder,
+      this.onScroll,
+      this.scrollController,
+      this.asyncSnapshot,
+      this.startLocation});
 
   @override
   RenderWidgetState createState() => RenderWidgetState(
       builder: this.builder,
       onScroll: this.onScroll,
       asyncSnapshot: this.asyncSnapshot,
-      scrollController: this.scrollController);
+      scrollController: this.scrollController,
+      startLocation: this.startLocation);
 }
 
 class RenderWidgetState extends State<RenderWidget> {
-  final Widget Function(BuildContext, ScrollController, AsyncSnapshot) builder;
+  final Widget Function(BuildContext,
+      {ScrollController scrollController,
+      AsyncSnapshot asyncSnapshot,
+      dynamic startLocation}) builder;
   final ValueChanged<double> onScroll;
   ScrollController scrollController;
-  final AsyncSnapshot asyncSnapshot;
+  AsyncSnapshot asyncSnapshot;
+  dynamic startLocation;
 
   @override
   void initState() {
@@ -360,9 +372,16 @@ class RenderWidgetState extends State<RenderWidget> {
   }
 
   RenderWidgetState(
-      {this.builder, this.onScroll, this.scrollController, this.asyncSnapshot});
+      {this.builder,
+      this.onScroll,
+      this.scrollController,
+      this.asyncSnapshot,
+      this.startLocation});
 
   Widget build(context) {
-    return this.builder(context, scrollController, asyncSnapshot);
+    return this.builder(context,
+        scrollController: scrollController,
+        asyncSnapshot: widget.asyncSnapshot,
+        startLocation: widget.startLocation);
   }
 }

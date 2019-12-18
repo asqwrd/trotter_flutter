@@ -191,10 +191,12 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                 scrollController: scrollController,
                                 onScroll: onScroll,
                                 asyncSnapshot: snapshot,
-                                builder:
-                                    (context, scrollController, snapshot) =>
-                                        _buildLoadedBody(
-                                            context, store, scrollController));
+                                builder: (context,
+                                        {scrollController,
+                                        asyncSnapshot,
+                                        startLocation}) =>
+                                    _buildLoadedBody(
+                                        context, store, scrollController));
                           }));
                 },
                 bodyContent: Container(
@@ -386,7 +388,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       return RenderWidget(
           scrollController: scrollController,
           onScroll: onScroll,
-          builder: (ctxt, scrollController, snapshot) =>
+          builder: (ctxt, {scrollController, asyncSnapshot, startLocation}) =>
               _buildLoadingBody(ctxt, scrollController));
     }
 
@@ -394,6 +396,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
     var startLocation = itinerary['start_location'] != null
         ? itinerary['start_location']['location']
         : itinerary['location'];
+    //print(startLocation);
     var destinationName = itinerary['destination_name'];
     var destinationCountryName = itinerary['destination_country_name'];
     var days = itinerary['days'];
@@ -405,14 +408,18 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         child: RenderWidget(
             onScroll: onScroll,
             scrollController: scrollController,
-            builder: (context, scrollController, snapshot) => _buildDay(
-                days,
-                destinationName,
-                destinationCountryName,
-                itinerary['destination'],
-                color,
-                startLocation,
-                scrollController)));
+            startLocation: startLocation,
+            builder: (context,
+                {scrollController, asyncSnapshot, startLocation}) {
+              return _buildDay(
+                  days,
+                  destinationName,
+                  destinationCountryName,
+                  itinerary['destination'],
+                  color,
+                  startLocation,
+                  scrollController);
+            }));
   }
 
   _buildDay(
@@ -459,14 +466,15 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                 ? 0.5
                 : 1,
             child: InkWell(
-                onTap: () => onPush({
-                      'itineraryId': this.itineraryId,
-                      'dayId': dayId,
-                      "linkedItinerary": dayBuilder[dayIndex]
-                          ['linked_itinerary'],
-                      "startLocation": startLocation,
-                      'level': 'itinerary/day/edit'
-                    }),
+                onTap: () {
+                  onPush({
+                    'itineraryId': this.itineraryId,
+                    'dayId': dayId,
+                    "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
+                    "startLocation": startLocation,
+                    'level': 'itinerary/day/edit'
+                  });
+                },
                 child: Column(children: <Widget>[
                   Column(children: <Widget>[
                     Align(

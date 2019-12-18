@@ -613,13 +613,19 @@ class DayEditState extends State<DayEdit> {
                       RenderWidget(
                           onScroll: onScroll,
                           scrollController: _sc,
-                          builder: (context, scrollController, asyncSnapshot) =>
+                          builder: (context,
+                                  {scrollController,
+                                  asyncSnapshot,
+                                  startLocation}) =>
                               renderItinerary(day, formatter, color, context,
                                   scrollController)),
                       RenderWidget(
                         onScroll: onScroll,
                         scrollController: _sc,
-                        builder: (context, scrollController, asyncSnapshot) =>
+                        builder: (context,
+                                {scrollController,
+                                asyncSnapshot,
+                                startLocation}) =>
                             renderVisited(day, formatter, color, context,
                                 scrollController),
                       )

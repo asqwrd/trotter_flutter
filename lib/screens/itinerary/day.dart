@@ -204,10 +204,13 @@ class DayState extends State<Day> {
                                   return RenderWidget(
                                       onScroll: onScroll,
                                       scrollController: _sc,
-                                      builder: (context, scrollController,
-                                              asynSnapshot) =>
-                                          _buildLoadedBody(context, snapshot,
-                                              scrollController));
+                                      asyncSnapshot: snapshot,
+                                      builder: (context,
+                                              {scrollController,
+                                              asyncSnapshot,
+                                              startLocation}) =>
+                                          _buildLoadedBody(context,
+                                              asyncSnapshot, scrollController));
                                 } else if (snapshot.hasData &&
                                     snapshot.data.error != null) {
                                   return SingleChildScrollView(
@@ -356,6 +359,7 @@ class DayState extends State<Day> {
         controller: _sc,
         items: itineraryItems,
         color: color,
+        showTimeSpent: true,
         showTutorial: false,
         onLongPressed: (data) {},
         onPressed: (data) {

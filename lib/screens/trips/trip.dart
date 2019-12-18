@@ -1128,10 +1128,12 @@ class TripState extends State<Trip> {
                                   onScroll: onScroll,
                                   scrollController: scrollController,
                                   asyncSnapshot: snapshot,
-                                  builder:
-                                      (context, scrollController, snapshot) =>
-                                          _buildLoadedBody(context, snapshot,
-                                              store, scrollController));
+                                  builder: (context,
+                                          {scrollController,
+                                          asyncSnapshot,
+                                          startLocation}) =>
+                                      _buildLoadedBody(context, asyncSnapshot,
+                                          store, scrollController));
                             } else {
                               return CannotView(controller: scrollController);
                             }

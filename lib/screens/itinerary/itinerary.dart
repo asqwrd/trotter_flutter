@@ -167,7 +167,10 @@ class ItineraryState extends State<Itinerary> {
                         return RenderWidget(
                             scrollController: _sc,
                             onScroll: onScroll,
-                            builder: (context, scrollController, snapshot) =>
+                            builder: (context,
+                                    {scrollController,
+                                    asyncSnapshot,
+                                    startLocation}) =>
                                 _buildLoadedBody(
                                     context, store, scrollController));
                       }));
@@ -280,13 +283,10 @@ class ItineraryState extends State<Itinerary> {
         child: RenderWidget(
             onScroll: onScroll,
             scrollController: _sc,
-            builder: (context, scrollController, snapshot) => _buildDay(
-                days,
-                destinationName,
-                destinationCountryName,
-                itinerary['destination'],
-                color,
-                scrollController)));
+            builder: (context,
+                    {scrollController, asyncSnapshot, startLocation}) =>
+                _buildDay(days, destinationName, destinationCountryName,
+                    itinerary['destination'], color, scrollController)));
   }
 
   _buildDay(

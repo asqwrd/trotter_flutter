@@ -62,7 +62,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
   @override
   void initState() {
     super.initState();
-    data = fetchFlightsAccomodations(this.tripId,this.currentUserId);
+    data = fetchFlightsAccomodations(this.tripId, this.currentUserId);
     data.then((data) {
       if (data.error == null) {
         setState(() {
@@ -138,10 +138,14 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                                           scrollController: scrollController,
                                           asyncSnapshot: snapshot,
                                           onScroll: onScroll,
-                                          builder: (context, scrollController,
-                                                  snapshot) =>
-                                              _buildLoadedBody(context,
-                                                  snapshot, scrollController));
+                                          builder: (context,
+                                                  {scrollController,
+                                                  asyncSnapshot,
+                                                  startLocation}) =>
+                                              _buildLoadedBody(
+                                                  context,
+                                                  asyncSnapshot,
+                                                  scrollController));
                                     } else if (snapshot.hasData &&
                                         snapshot.data.error != null) {
                                       return SingleChildScrollView(
@@ -454,7 +458,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                               : []),
                       alignment: Alignment.center,
                       child: RenderWidget(
-                          builder: (context, scrollController, snapshot) =>
+                          builder: (context, {scrollController, asyncSnapshot, startLocation}) =>
                               _renderTabBar(Colors.blueGrey, Colors.black))),
                   Flexible(
                       child: Container(
@@ -485,7 +489,7 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
       tabs.add(
         Tab(
             child: RenderWidget(
-                builder: (context, scrollController, snapshot) =>
+                builder: (context, {scrollController, asyncSnapshot, startLocation}) =>
                     _renderTab(section['destination']['destination_name']))),
       );
     }

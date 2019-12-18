@@ -4,6 +4,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:html_unescape/html_unescape.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'package:sliding_panel/sliding_panel.dart';
@@ -35,6 +36,7 @@ class DayList extends StatefulWidget {
   final bool showTutorial;
   final bool tabs;
   final bool visited;
+  final bool showTimeSpent;
   final PanelController panelController;
 
   //passing props in react style
@@ -57,6 +59,7 @@ class DayList extends StatefulWidget {
       this.showTutorial,
       this.tabs,
       this.visited,
+      this.showTimeSpent,
       this.onToggleVisited,
       this.panelController,
       this.onDescriptionAdded,
@@ -81,6 +84,7 @@ class DayList extends StatefulWidget {
       showTutorial: this.showTutorial,
       tabs: this.tabs,
       visited: this.visited,
+      showTimeSpent: this.showTimeSpent,
       onDescriptionAdded: this.onDescriptionAdded,
       onToggleVisited: this.onToggleVisited,
       panelController: this.panelController,
@@ -111,6 +115,7 @@ class DayListState extends State<DayList> {
   final bool showTutorial;
   final bool tabs;
   final bool visited;
+  final bool showTimeSpent;
   GlobalKey _one = GlobalKey();
   GlobalKey _two = GlobalKey();
   GlobalKey _three = GlobalKey();
@@ -138,6 +143,7 @@ class DayListState extends State<DayList> {
       this.showTutorial,
       this.tabs,
       this.visited,
+      this.showTimeSpent,
       this.onToggleVisited,
       this.panelController,
       this.startLocation});
@@ -326,6 +332,20 @@ class DayListState extends State<DayList> {
             }
 
             var time = itineraryItems[index]['travel']['duration']['text'];
+            var timeSpent = item['time'];
+            var timeUnit = timeSpent['unit'].toString();
+            var timeValue = timeSpent['value'].toString();
+            var unit = timeUnit;
+            if (timeValue.isNotEmpty &&
+                double.parse(timeValue) == 1 &&
+                timeUnit.endsWith('s')) {
+              unit = timeUnit.substring(0, timeUnit.length - 1);
+            } else if (timeValue.isNotEmpty &&
+                double.parse(timeValue) != 1 &&
+                timeUnit.endsWith('s') == false) {
+              unit = '${timeUnit}s';
+            }
+
             var totalComments = itineraryItems[index]['total_comments'] == 0
                 ? ''
                 : itineraryItems[index]['total_comments'] < 10
@@ -558,6 +578,42 @@ class DayListState extends State<DayList> {
                                                                       ))
                                                                   : Container()
                                                             ])),
+                                                this.visited == true
+                                                    ? Container(
+                                                        margin: EdgeInsets.only(
+                                                            bottom: 3, top: 2),
+                                                        child: AutoSizeText(
+                                                            timeSpent['unit']
+                                                                        .toString()
+                                                                        .isEmpty ==
+                                                                    false
+                                                                ? 'You were here for ${timeSpent['value']} $unit'
+                                                                : '',
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: TextStyle(
+                                                                fontSize: 11,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w300)))
+                                                    : this.showTimeSpent == true ? Container(
+                                                        margin: EdgeInsets.only(
+                                                            bottom: 3, top: 2),
+                                                        child: AutoSizeText(
+                                                            timeSpent['unit']
+                                                                        .toString()
+                                                                        .isEmpty ==
+                                                                    false
+                                                                 ? 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} ${timeSpent['value']} $unit'
+                                : 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} Not given',
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: TextStyle(
+                                                                fontSize: 11,
+                                                                color: color,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400))): Container(),
                                                 poi == null
                                                     ? Container()
                                                     : poi['tags'] != null
@@ -1018,7 +1074,6 @@ class DescriptionModalState extends State<DescriptionModal> {
                         TextField(
                           controller: controller,
                           maxLines: 8,
-                          maxLength: 300,
                           maxLengthEnforced: true,
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.all(20.0),

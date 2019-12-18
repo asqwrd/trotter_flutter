@@ -318,44 +318,39 @@ class HomeState extends State<Home> {
                 future: data,
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data.success == false) {
-                    return this.loading
-                        ? _buildLoadedBody(context, snapshot, scrollController)
-                        : SingleChildScrollView(
-                            controller: scrollController,
-                            child: ErrorContainer(
-                              color: color,
-                              onRetry: () async {
-                                final store =
-                                    Provider.of<TrotterStore>(context);
-                                setState(() {
-                                  this.loading = true;
-                                  this.errorUi = false;
-                                });
-                                await Future.delayed(Duration(seconds: 2));
+                    return SingleChildScrollView(
+                        controller: scrollController,
+                        child: ErrorContainer(
+                          color: color,
+                          onRetry: () async {
+                            final store = Provider.of<TrotterStore>(context);
+                            setState(() {
+                              this.loading = true;
+                              this.errorUi = false;
+                            });
+                            await Future.delayed(Duration(seconds: 2));
 
-                                setState(() {
-                                  data = fetchPopularCities();
-                                  dataItineraries = fetchHomeItineraries();
-                                  if (store.currentUser != null) {
-                                    doData =
-                                        fetchThingsToDo(store.currentUser.uid);
-                                  }
-                                });
-                              },
-                            ));
-                  }
-                  if (snapshot.hasData &&
-                      snapshot.connectionState == ConnectionState.done) {
-                    return RenderWidget(
-                        onScroll: onScroll,
-                        asyncSnapshot: snapshot,
-                        scrollController: scrollController,
-                        builder: (context, scrollController, snapshot) =>
-                            _buildLoadedBody(
-                                context, snapshot, scrollController));
+                            setState(() {
+                              data = fetchPopularCities();
+                              dataItineraries = fetchHomeItineraries();
+                              if (store.currentUser != null) {
+                                doData = fetchThingsToDo(store.currentUser.uid);
+                              }
+                            });
+                          },
+                        ));
                   }
 
-                  return _buildLoadedBody(context, snapshot, scrollController);
+                  return RenderWidget(
+                      onScroll: onScroll,
+                      asyncSnapshot: snapshot,
+                      scrollController: scrollController,
+                      builder: (context,
+                              {scrollController,
+                              asyncSnapshot,
+                              startLocation}) =>
+                          _buildLoadedBody(
+                              context, asyncSnapshot, scrollController));
                 });
           },
           bodyContent: Container(

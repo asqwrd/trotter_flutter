@@ -250,9 +250,9 @@ class CountryState extends State<Country> {
                               onScroll: onScroll,
                               scrollController: _sc,
                               asyncSnapshot: snapshot,
-                              builder: (context, scrollController, snapshot) =>
+                              builder: (context, {scrollController, asyncSnapshot, startLocation}) =>
                                   _buildLoadedBody(
-                                      context, snapshot, scrollController));
+                                      context, asyncSnapshot, scrollController));
                         }
                         return _buildLoadingBody(context, _sc);
                       });

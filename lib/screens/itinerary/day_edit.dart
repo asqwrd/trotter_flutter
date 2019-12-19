@@ -56,7 +56,7 @@ class DayEditState extends State<DayEdit> {
   final String itineraryId;
   final dynamic linkedItinerary;
   final Future2VoidFunc onPush;
-  Color color = Colors.transparent;
+  Color color = Colors.blueGrey;
   String destinationName;
   String destinationId;
   dynamic destination;
@@ -600,7 +600,9 @@ class DayEditState extends State<DayEdit> {
                         'dayId': day['id'].toString(),
                         "linkedItinerary": this.days[index]['linked_itinerary'],
                         "startLocation": startLocation['location'],
-                        'level': 'itinerary/day/edit'
+                        'level': 'itinerary/day/edit',
+                        'replace': true,
+                        'color': color
                       });
                     },
                   )

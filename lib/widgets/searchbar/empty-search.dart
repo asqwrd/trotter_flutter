@@ -34,7 +34,7 @@ class EmptySearch extends StatelessWidget {
                                 fit: BoxFit.cover),
                             borderRadius: BorderRadius.circular(130)))),
                 AutoSizeText(
-                  'Sorry nothing came up from ypur search ',
+                  'Sorry nothing came up from your search ',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 25, color: color, fontWeight: FontWeight.w300),

@@ -114,7 +114,7 @@ class PoiState extends State<Poi> {
   bool loading = true;
   List<dynamic> images = [];
   String image;
-  Color color = Colors.transparent;
+  Color color = Colors.blueGrey;
   String poiName;
   dynamic poi;
   bool addedToItinerary = false;

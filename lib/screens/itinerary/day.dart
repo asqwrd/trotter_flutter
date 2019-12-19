@@ -18,18 +18,21 @@ class Day extends StatefulWidget {
   final String dayId;
   final String itineraryId;
   final String linkedItinerary;
+  final Color color;
   final ValueChanged<dynamic> onPush;
   Day(
       {Key key,
       @required this.dayId,
       this.itineraryId,
       this.linkedItinerary,
+      this.color,
       this.onPush})
       : super(key: key);
   @override
   DayState createState() => new DayState(
       dayId: this.dayId,
       itineraryId: this.itineraryId,
+      color: this.color,
       linkedItinerary: this.linkedItinerary,
       onPush: this.onPush);
 }
@@ -90,7 +93,12 @@ class DayState extends State<Day> {
     super.dispose();
   }
 
-  DayState({this.dayId, this.itineraryId, this.linkedItinerary, this.onPush});
+  DayState(
+      {this.dayId,
+      this.itineraryId,
+      this.linkedItinerary,
+      this.onPush,
+      this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +132,7 @@ class DayState extends State<Day> {
               content: PanelContent(
                 headerWidget: PanelHeaderWidget(
                   headerContent: Container(
+                      constraints: BoxConstraints(maxHeight: 131),
                       decoration: BoxDecoration(
                           boxShadow: this.shadow
                               ? <BoxShadow>[
@@ -161,7 +170,7 @@ class DayState extends State<Day> {
                                 )
                               : Container(
                                   alignment: Alignment.center,
-                                  padding: EdgeInsets.only(top: 10, bottom: 0),
+                                  margin: EdgeInsets.only(top: 10, bottom: 0),
                                   child: Column(children: <Widget>[
                                     AutoSizeText(
                                       '${ordinalNumber(day['day'] + 1)} day',
@@ -170,22 +179,24 @@ class DayState extends State<Day> {
                                   ]),
                                 ),
                           this.loading == false
-                              ? Center(
-                                  child: DayListTabs(
+                              ? Flexible(
+                                  child: Center(
+                                      child: DayListTabs(
                                   days: this.days,
                                   activeDay: this.dayId,
                                   activeColor: color,
                                   onSelected: (day, index) {
-                                    print(day);
                                     onPush({
                                       'itineraryId': this.itineraryId,
                                       'dayId': day['id'].toString(),
                                       "linkedItinerary": this.days[index]
                                           ['linked_itinerary'],
-                                      'level': 'itinerary/day'
+                                      'level': 'itinerary/day',
+                                      'color': color,
+                                      'replace': true
                                     });
                                   },
-                                ))
+                                )))
                               : Container()
                         ],
                       )),

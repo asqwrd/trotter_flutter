@@ -17,11 +17,12 @@ import 'package:trotter_flutter/utils/index.dart';
 class Itinerary extends StatefulWidget {
   final String itineraryId;
   final ValueChanged<dynamic> onPush;
-  Itinerary({Key key, @required this.itineraryId, this.onPush})
+  final Color color;
+  Itinerary({Key key, @required this.itineraryId, this.onPush, this.color})
       : super(key: key);
   @override
-  ItineraryState createState() =>
-      new ItineraryState(itineraryId: this.itineraryId, onPush: this.onPush);
+  ItineraryState createState() => new ItineraryState(
+      itineraryId: this.itineraryId, onPush: this.onPush, color: this.color);
 }
 
 class ItineraryState extends State<Itinerary> {
@@ -33,7 +34,7 @@ class ItineraryState extends State<Itinerary> {
   bool errorUi = false;
   bool loading = true;
   String image;
-  Color color = Colors.transparent;
+  Color color = Colors.blueGrey;
   String itineraryName;
   Future<ItineraryData> data;
   bool imageLoading = true;
@@ -50,7 +51,7 @@ class ItineraryState extends State<Itinerary> {
     super.dispose();
   }
 
-  ItineraryState({this.itineraryId, this.onPush});
+  ItineraryState({this.itineraryId, this.color, this.onPush});
 
   @override
   Widget build(BuildContext context) {
@@ -321,7 +322,8 @@ class ItineraryState extends State<Itinerary> {
                   'itineraryId': this.itineraryId,
                   'dayId': dayId,
                   "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
-                  'level': 'itinerary/day'
+                  'level': 'itinerary/day',
+                  'color': color
                 }),
             child: Column(children: <Widget>[
               Column(children: <Widget>[
@@ -373,7 +375,8 @@ class ItineraryState extends State<Itinerary> {
                             'dayId': dayId,
                             "linkedItinerary": dayBuilder[dayIndex]
                                 ['linked_itinerary'],
-                            'level': 'itinerary/day'
+                            'level': 'itinerary/day',
+                            'color': color
                           });
                         },
                         onLongPressed: (data) {},

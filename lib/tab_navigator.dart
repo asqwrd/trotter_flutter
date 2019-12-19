@@ -96,21 +96,24 @@ class TabNavigator extends StatelessWidget {
         break;
     }
 
-    if (data['from'] != null &&
-        (data['from'] == 'search' || data['from'] == 'createtrip')) {
+    if ((data['from'] != null &&
+            (data['from'] == 'search' || data['from'] == 'createtrip')) ||
+        data['replace'] == true) {
       return Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-            pageBuilder: (context, _, __) => routeBuilders[goTo](context),
-            transitionsBuilder: (BuildContext context,
-                Animation<double> animation,
-                Animation<double> secondaryAnimation,
-                Widget child) {
-              return new FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            }),
+          pageBuilder: (context, _, __) => routeBuilders[goTo](context),
+          transitionsBuilder: (BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child) {
+            return new FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       );
     } else {
       return goTo == TabNavigatorRoutes.search ||
@@ -178,15 +181,17 @@ class TabNavigator extends StatelessWidget {
           isPast: data['is_past'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary: (context) => Itinerary(
-          itineraryId: data['id'], onPush: (data) => push(context, data)),
+          itineraryId: data['id'],
+          color: data['color'] ?? Colors.blueGrey,
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary_builder: (context) => ItineraryBuilder(
           itineraryId: data['id'],
-          color: data['color'],
+          color: data['color'] ?? Colors.blueGrey,
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.day_edit: (context) => DayEdit(
           itineraryId: data['itineraryId'],
           dayId: data['dayId'],
-          color: data['color'],
+          color: data['color'] ?? Colors.blueGrey,
           linkedItinerary: data['linkedItinerary'],
           startLocation: data['startLocation'],
           onPush: (data) => push(context, data)),
@@ -194,6 +199,7 @@ class TabNavigator extends StatelessWidget {
           itineraryId: data['itineraryId'],
           linkedItinerary: data['linkedItinerary'],
           dayId: data['dayId'],
+          color: data['color'] ?? Colors.blueGrey,
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
           tripId: data['tripId'],

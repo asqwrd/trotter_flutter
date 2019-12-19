@@ -352,6 +352,21 @@ class ItineraryState extends State<Itinerary> {
                         linkedItinerary: dayBuilder[dayIndex]
                             ['linked_itinerary'],
                         color: color,
+                        onRefreshImage: (data) {
+                          final store = Provider.of<TrotterStore>(context);
+                          final itemIndex = data['index'];
+                          final poi = data['poi'];
+                          final itineraryItemId = data['itineraryItemId'];
+
+                          updatePoiImagePublic(
+                              itineraryId,
+                              dayId,
+                              itineraryItemId,
+                              poi['id'],
+                              itemIndex,
+                              dayIndex,
+                              store);
+                        },
                         onPressed: (data) {
                           onPush({
                             'itineraryId': this.itineraryId,

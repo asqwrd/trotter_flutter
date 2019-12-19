@@ -4,9 +4,11 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_panel/sliding_panel.dart';
 // import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
+import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/day-list/index.dart';
@@ -362,6 +364,23 @@ class DayState extends State<Day> {
         showTimeSpent: true,
         showTutorial: false,
         onLongPressed: (data) {},
+        onRefreshImage: (data) async {
+          final store = Provider.of<TrotterStore>(context);
+          final itemIndex = data['index'];
+          final poi = data['poi'];
+          final itineraryItemId = data['itineraryItemId'];
+
+          final res = await updatePoiImagePublic(this.itineraryId, this.dayId,
+              itineraryItemId, poi['id'], itemIndex, day['day'], store);
+
+          if (res.success == true) {
+            setState(() {
+              this.itineraryItems[itemIndex]['image'] = res.poi['image'];
+              this.itineraryItems[itemIndex]['color'] = res.color;
+              this.itineraryItems[itemIndex]['poi'] = res.poi;
+            });
+          }
+        },
         onPressed: (data) {
           if (data['itinerary'] != null) {
             onPush({'id': data['itinerary']['id'], 'level': 'itinerary'});

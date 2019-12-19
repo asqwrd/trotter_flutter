@@ -216,8 +216,7 @@ class DayEditState extends State<DayEdit> {
                                               this.itineraryName =
                                                   data.itinerary['name'];
                                               this.days =
-                                                  data.itinerary['itinerary']
-                                                      ['days'];
+                                                  data.itinerary['days'];
                                               this.ownerId =
                                                   data.itinerary['owner_id'];
                                               this.startDate =
@@ -360,7 +359,7 @@ class DayEditState extends State<DayEdit> {
                               this.color = Color(hexStringToHexInt(data.color));
                               this.itineraryName = data.itinerary['name'];
                               this.ownerId = data.itinerary['owner_id'];
-                              this.days = data.itinerary['itinerary']['days'];
+                              this.days = data.itinerary['days'];
                               this.tripId = data.itinerary['trip_id'];
                               this.startDate =
                                   data.itinerary['start_date'] * 1000;
@@ -382,6 +381,7 @@ class DayEditState extends State<DayEdit> {
                           } else {
                             setState(() {
                               this.errorUi = true;
+                              this.loading = false;
                             });
                           }
                         });
@@ -559,7 +559,7 @@ class DayEditState extends State<DayEdit> {
 // function for rendering view after data is loaded
   Widget _buildLoadedBody(
       BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
-    var day = snapshot.data.day;
+    var day = this.day;
     //var itinerary = snapshot.data.itinerary;
     var color = Color(hexStringToHexInt(snapshot.data.color));
     final formatter = DateFormat.yMMMMEEEEd("en_US");
@@ -595,7 +595,6 @@ class DayEditState extends State<DayEdit> {
                     activeDay: this.dayId,
                     activeColor: color,
                     onSelected: (day, index) {
-                      print(startLocation);
                       onPush({
                         'itineraryId': this.itineraryId,
                         'dayId': day['id'].toString(),
@@ -706,6 +705,22 @@ class DayEditState extends State<DayEdit> {
         panelController: _pc,
         header: '${ordinalNumber(day['day'] + 1)} day',
         tabs: true,
+        onRefreshImage: (data) async {
+          final store = Provider.of<TrotterStore>(context);
+          final itemIndex = data['index'];
+          final poi = data['poi'];
+          final itineraryItemId = data['itineraryItemId'];
+
+          final res = await updatePoiImageEdit(this.itineraryId, this.dayId,
+              itineraryItemId, poi['id'], itemIndex, day['day'], store);
+
+          if (res.success == true) {
+            setState(() {
+              this.itineraryItems[itemIndex]['image'] = poi['image'];
+              this.itineraryItems[itemIndex]['poi'] = poi;
+            });
+          }
+        },
         onToggleVisited: (item) async {
           var time = await toggleDialog(ctxt);
           var data = item;
@@ -779,6 +794,23 @@ class DayEditState extends State<DayEdit> {
         tabs: true,
         showTutorial: true,
         onToggleVisited: (item) => onToggleVisited(ctxt, item),
+        onRefreshImage: (data) async {
+          final store = Provider.of<TrotterStore>(context);
+          final itemIndex = data['index'];
+          final poi = data['poi'];
+          final itineraryItemId = data['itineraryItemId'];
+
+          final res = await updatePoiImageEdit(this.itineraryId, this.dayId,
+              itineraryItemId, poi['id'], itemIndex, day['day'], store);
+
+          if (res.success == true) {
+            setState(() {
+              this.visited[itemIndex]['image'] = res.poi['image'];
+              this.visited[itemIndex]['color'] = res.color;
+              this.visited[itemIndex]['poi'] = res.poi;
+            });
+          }
+        },
         onDescriptionAdded: (res) async {
           final itineraryItemId = res["item"]["id"];
           final data = {

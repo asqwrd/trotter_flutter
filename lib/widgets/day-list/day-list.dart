@@ -18,6 +18,7 @@ class DayList extends StatefulWidget {
   final Function(dynamic) onLongPressed;
   final Function(dynamic) onCommentPressed;
   final Function(dynamic) onDescriptionAdded;
+  final Function(dynamic) onRefreshImage;
   final Function(dynamic) onToggleVisited;
   final Color color;
   final List<dynamic> items;
@@ -44,6 +45,7 @@ class DayList extends StatefulWidget {
       {this.onPressed,
       this.onLongPressed,
       this.onCommentPressed,
+      this.onRefreshImage,
       this.items,
       this.day,
       this.ownerId,
@@ -69,6 +71,7 @@ class DayList extends StatefulWidget {
       onPressed: this.onPressed,
       onLongPressed: this.onLongPressed,
       onCommentPressed: this.onCommentPressed,
+      onRefreshImage: this.onRefreshImage,
       items: this.items,
       day: this.day,
       ownerId: this.ownerId,
@@ -97,6 +100,7 @@ class DayListState extends State<DayList> {
   final Function(dynamic) onCommentPressed;
   final Function(dynamic) onDescriptionAdded;
   final Function(dynamic) onToggleVisited;
+  final Function(dynamic) onRefreshImage;
   final Color color;
   final List<dynamic> items;
   final Function(String) callback;
@@ -128,6 +132,7 @@ class DayListState extends State<DayList> {
       this.onLongPressed,
       this.onCommentPressed,
       this.onDescriptionAdded,
+      this.onRefreshImage,
       this.items,
       this.day,
       this.ownerId,
@@ -762,8 +767,8 @@ class DayListState extends State<DayList> {
                                               ),
                                               key: _three,
                                               child:
-                                                  renderPoiImage(context, item))
-                                          : renderPoiImage(context, item)
+                                                  renderPoiImage(context, item,index))
+                                          : renderPoiImage(context, item,index)
                                       : Container()
                                 ])))
                       ],
@@ -922,7 +927,7 @@ class DayListState extends State<DayList> {
             ])));
   }
 
-  Card renderPoiImage(BuildContext context, item) {
+  Card renderPoiImage(BuildContext context, item,int index) {
     return Card(
         //opacity: 1,
         elevation: 1,
@@ -951,7 +956,16 @@ class DayListState extends State<DayList> {
                         )),
                         fit: BoxFit.cover,
                         alignment: Alignment.center,
-                        placeholder: const Icon(Icons.refresh),
+                        placeholder: Center(child:IconButton(
+                              icon: Icon(Icons.refresh),
+                              onPressed: () {
+                                this.onRefreshImage({
+                                  "index": index,
+                                  "poi": item['poi'],
+                                  "itineraryItemId": item['id']
+                                });
+                              },
+                        )),
                         enableRefresh: true,
                       ),
                       item['added_by_full'] != null

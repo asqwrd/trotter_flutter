@@ -91,6 +91,55 @@ Future<StartLocationData> updateStartLocation(String id, dynamic data,
   }
 }
 
+Future<PoiData> updatePoiImageEdit(String itineraryId, String dayId,
+    String itineraryItemId, String poiId, int itemIndex, int dayIndex,
+    [TrotterStore store]) async {
+  try {
+    final response = await http.put(
+        '$ApiDomain/api/itineraries/update/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/poi/$poiId',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = PoiData.fromJson(json.decode(response.body));
+      store?.itineraryStore
+          ?.updatePoiImageBuilder(itemIndex, dayIndex, results.poi);
+
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      print(msg);
+      return PoiData(success: false);
+    }
+  } catch (error) {
+    return PoiData(success: false);
+  }
+}
+
+Future<PoiData> updatePoiImagePublic(String itineraryId, String dayId,
+    String itineraryItemId, String poiId, int itemIndex, int dayIndex,
+    [TrotterStore store]) async {
+  try {
+    final response = await http.put(
+        '$ApiDomain/api/itineraries/update/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/poi/$poiId',
+        headers: {'Authorization': 'security'});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var results = PoiData.fromJson(json.decode(response.body));
+      store?.itineraryStore?.updatePoiImage(itemIndex, dayIndex, results.poi);
+
+      return results;
+    } else {
+      // If that response was not OK, throw an error.
+      var msg = response.statusCode;
+      print(msg);
+      return PoiData(success: false);
+    }
+  } catch (error) {
+    return PoiData(success: false);
+  }
+}
+
 Future<ItineraryData> fetchSelectedItinerary(
     TrotterStore store, String id) async {
   try {
@@ -541,5 +590,17 @@ class DescriptionData {
 
   factory DescriptionData.fromJson(Map<String, dynamic> json) {
     return DescriptionData(descriptions: json['descriptions'], success: true);
+  }
+}
+
+class PoiData {
+  final dynamic poi;
+  final String color;
+  final bool success;
+
+  PoiData({this.poi, this.success, this.color});
+
+  factory PoiData.fromJson(Map<String, dynamic> json) {
+    return PoiData(poi: json['poi'], success: true, color: json['color']);
   }
 }

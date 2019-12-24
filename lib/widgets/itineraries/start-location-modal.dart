@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:trotter_flutter/utils/utils.dart';
 
 class StartLocationModal extends StatefulWidget {
@@ -55,7 +56,7 @@ class StartLocationModalState extends State<StartLocationModal> {
           backgroundColor: Colors.white,
           brightness: Brightness.light,
           elevation: 0,
-          // centerTitle: true,
+          centerTitle: true,
           title: AutoSizeText(
             'Select starting point',
             style: TextStyle(
@@ -63,7 +64,12 @@ class StartLocationModalState extends State<StartLocationModal> {
           ),
           leading: IconButton(
             padding: EdgeInsets.all(0),
-            icon: Icon(Icons.close),
+            icon: SvgPicture.asset(
+              'images/back-icon.svg',
+              width: 30,
+              height: 30,
+              color: Colors.black,
+            ),
             onPressed: () {
               Navigator.pop(context);
             },

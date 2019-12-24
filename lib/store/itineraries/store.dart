@@ -38,6 +38,40 @@ class ItineraryStore extends Store {
     });
   }
 
+  updatePoiImageBuilder(int itemIndex, int dayIndex, dynamic newPoiData) {
+    var itinerary = _itineraryBuilder.itinerary;
+    itinerary['days'][dayIndex]['itinerary_items'][itemIndex]['poi'] =
+        newPoiData;
+    itinerary['days'][dayIndex]['itinerary_items'][itemIndex]['image'] =
+        newPoiData['image'];
+
+    setState(() {
+      _itineraryBuilder = ItineraryData(
+          itinerary: itinerary,
+          color: _itineraryBuilder.color,
+          destination: _itineraryBuilder.destination,
+          loading: false,
+          error: _itineraryBuilder.error);
+    });
+  }
+
+  updatePoiImage(int itemIndex, int dayIndex, dynamic newPoiData) {
+    var itinerary = _itinerary.itinerary;
+    itinerary['days'][dayIndex]['itinerary_items'][itemIndex]['poi'] =
+        newPoiData;
+    itinerary['days'][dayIndex]['itinerary_items'][itemIndex]['image'] =
+        newPoiData['image'];
+
+    setState(() {
+      _itinerary = ItineraryData(
+          itinerary: itinerary,
+          color: _itinerary.color,
+          destination: _itinerary.destination,
+          loading: false,
+          error: _itinerary.error);
+    });
+  }
+
   setItineraryBuilder(dynamic itinerary, dynamic destination, String color) {
     setState(() {
       _itineraryBuilder = ItineraryData(

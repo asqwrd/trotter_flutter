@@ -20,7 +20,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
         await prefs.setString('trips', response.body);
         store?.tripStore?.setTripsError(null);
         store?.setOffline(false);
-        store?.tripStore?.getTrips(results.trips);
+        store?.tripStore?.setTrips(results.trips, results.pastTrips);
       } else if (results.error != null) {
         store.tripStore.setTripsError(results.error);
       }
@@ -29,6 +29,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      store?.setTripsLoading(false);
       return TripsData(error: "Response > $msg");
     }
   } catch (error) {
@@ -36,7 +37,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
     if (cacheData != null) {
       var tripsData = json.decode(cacheData);
       var results = TripsData.fromJson(tripsData);
-      store?.tripStore?.getTrips(results.trips);
+      store?.tripStore?.setTrips(results.trips, results.pastTrips);
       store?.tripStore?.setTripsError(null);
       store?.setOffline(true);
       store?.tripStore?.setTripsError(null);
@@ -220,12 +221,16 @@ class AddTravelerData {
 
 class TripsData {
   final List<dynamic> trips;
+  final List<dynamic> pastTrips;
   final String error;
 
-  TripsData({this.trips, this.error});
+  TripsData({this.trips, this.pastTrips, this.error});
 
   factory TripsData.fromJson(Map<String, dynamic> json) {
-    return TripsData(trips: json['trips'], error: null);
+    return TripsData(
+        trips: json['upcomingTrips'],
+        pastTrips: json['pastTrips'],
+        error: null);
   }
 }
 
@@ -306,6 +311,7 @@ Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
       return AddFlightsAndAccomodationsData(success: false);
     }
   } catch (error) {
+    print(error);
     return AddFlightsAndAccomodationsData(success: false);
   }
 }
@@ -358,19 +364,25 @@ Future<FlightsAndAccomodationsTravelersData>
 
 Future<dynamic> putUpdateTripDestination(
     String tripId, String destinationId, dynamic data) async {
-  final response = await http.put(
-      '$ApiDomain/api/trips/update/$tripId/destination/$destinationId',
-      body: json.encode(data),
-      headers: {
-        'Authorization': 'security',
-        "Content-Type": "application/json"
-      });
-  if (response.statusCode == 200) {
-    // If server returns an OK response, parse the JSON
-    return UpdateTripData.fromJson(json.decode(response.body));
-  } else {
-    // If that response was not OK, throw an error.
-    return {"success": false};
+  try {
+    final response = await http.put(
+        '$ApiDomain/api/trips/update/$tripId/destination/$destinationId',
+        body: json.encode(data),
+        headers: {
+          'Authorization': 'security',
+          "Content-Type": "application/json"
+        });
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return UpdateTripData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      print(response.statusCode);
+      return UpdateTripData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    return UpdateTripData(success: false);
   }
 }
 

@@ -68,7 +68,7 @@ _buildLoadedList(BuildContext context, TrotterStore store,
                           ),
                           SizedBox(height: 10),
                           AutoSizeText(
-                            'Create a trip to start planning your next adventure!',
+                            'Create a trip and start planning your next adventure!',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 fontSize: 25,

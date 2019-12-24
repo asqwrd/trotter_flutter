@@ -6,9 +6,8 @@ import 'package:trotter_flutter/utils/index.dart';
 
 class TrotterAppBar extends StatelessWidget {
   const TrotterAppBar(
-      {Key key,
-      @required this.onPush,
-      @required this.color,
+      {this.onPush,
+      this.color,
       this.back,
       this.loading,
       this.showSearch,
@@ -16,8 +15,8 @@ class TrotterAppBar extends StatelessWidget {
       this.title,
       this.id,
       this.destination,
-      this.location})
-      : super(key: key);
+      this.brightness,
+      this.location});
 
   final onPush;
   final Color color;
@@ -29,6 +28,7 @@ class TrotterAppBar extends StatelessWidget {
   final bool showSearch;
   final bool loading;
   final dynamic destination;
+  final Brightness brightness;
 
   @override
   Widget build(BuildContext context) {
@@ -43,16 +43,13 @@ class TrotterAppBar extends StatelessWidget {
     if (this.loading == null) {
       loading = false;
     }
-    // for (var action in actions) {
-    //   action = IgnorePointer(ignoring: loading, child: action);
-    // }
-    // print(actions[0]);
 
     return Container(
         child: AppBar(
             elevation: 0,
             backgroundColor: Colors.transparent,
             centerTitle: true,
+            brightness: this.brightness,
             leading: back == true || back != null
                 ? IconButton(
                     padding: EdgeInsets.all(0),
@@ -87,7 +84,7 @@ class TrotterAppBar extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontWeight: FontWeight.w300,
-                        fontSize: 24,
+                        fontSize: 22,
                         color: fontContrast(color)),
                   )
                 : AutoSizeText(

@@ -4,9 +4,10 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
@@ -25,12 +26,12 @@ class Notifications extends StatefulWidget {
 class NotificationsState extends State<Notifications> {
   final ValueChanged<dynamic> onPush;
   bool errorUi = false;
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   var kExpandedHeight = 280;
   TrotterStore store;
   var data;
   final Color color = Color.fromRGBO(29, 198, 144, 1);
+  bool shadow = false;
 
   @override
   void initState() {
@@ -40,7 +41,6 @@ class NotificationsState extends State<Notifications> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -51,42 +51,44 @@ class NotificationsState extends State<Notifications> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     store = Provider.of<TrotterStore>(context);
     if (store.currentUser != null && data == null) {
       data = fetchNotifications(store);
-      // store.eventBus.on<FocusChangeEvent>().listen((event) {
-      //   // All events are of type UserLoggedInEvent (or subtypes of it).
-      //   if (event.tab == TabItem.notifications) {
-      //     onPush({'level': 'createtrip'});
-      //   }
-      // });
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        isDraggable: false,
-        backdropTapClosesPanel: false,
-        backdropOpacity: .8,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: Stack(children: <Widget>[
-          _buildContent(context, store),
-          store.notificationsLoading == true
-              ? Center(child: RefreshProgressIndicator())
-              : Container()
-        ])),
-        body: Container(color: color),
-      )),
+          child: SlidingPanel(
+              snapPanel: true,
+              initialState: InitialPanelState.expanded,
+              isDraggable: false,
+              size: PanelSize(expandedHeight: getPanelHeight(context)),
+              autoSizing: PanelAutoSizing(),
+              decoration: PanelDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30))),
+              parallaxSlideAmount: .5,
+              panelController: _pc,
+              content: PanelContent(
+                panelContent: (context, _sc) {
+                  return Center(
+                      child: Stack(children: <Widget>[
+                    RenderWidget(
+                        onScroll: onScroll,
+                        scrollController: _sc,
+                        builder: (context,
+                                {scrollController,
+                                asyncSnapshot,
+                                startLocation}) =>
+                            _buildContent(context, store, scrollController)),
+                    store.notificationsLoading == true
+                        ? Center(child: RefreshProgressIndicator())
+                        : Container()
+                  ]));
+                },
+                bodyContent: Container(color: color),
+              ))),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -173,7 +175,6 @@ class NotificationsState extends State<Notifications> {
                           );
                         },
                       );
-                      print(response);
                       if (response['clear'] == true) {
                         store.setNotificationsLoading(true);
                         await clearNotifications(store);
@@ -194,15 +195,29 @@ class NotificationsState extends State<Notifications> {
     //return _buildContent(context, store);
   }
 
-  Widget _buildContent(BuildContext context, TrotterStore store) {
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
+  Widget _buildContent(
+      BuildContext context, TrotterStore store, ScrollController _sc) {
     var notifications = store.notifications.notifications;
     if (notifications.length == 0) {
       return Center(
           child: Container(
               color: Colors.transparent,
               padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: ListView(
+                shrinkWrap: true,
+                controller: _sc,
                 children: <Widget>[
                   Container(
                       width: MediaQuery.of(context).size.width / 2,
@@ -247,6 +262,7 @@ class NotificationsState extends State<Notifications> {
     }
     return Container(
         child: ListView.separated(
+            controller: _sc,
             separatorBuilder: (BuildContext context, int index) =>
                 new Divider(color: Color.fromRGBO(0, 0, 0, 0.3)),
             itemCount: notifications.length,
@@ -254,6 +270,7 @@ class NotificationsState extends State<Notifications> {
               final data = notifications[index]['data'];
               final createdAt = notifications[index]['created_at'];
               final type = notifications[index]['type'];
+              final status = data['status'];
               final id = notifications[index]['id'];
               return ListTile(
                 leading: icon(type, data['user']),
@@ -264,15 +281,15 @@ class NotificationsState extends State<Notifications> {
                   icon: Icon(Icons.more_horiz),
                   onPressed: () {
                     //print("object");
-                    bottomSheetModal(context, data, type, id);
+                    bottomSheetModal(context, data, type, status, id);
                   },
                 ),
               );
             }));
   }
 
-  bottomSheetModal(
-      BuildContext context, dynamic data, String type, String notificationId) {
+  bottomSheetModal(BuildContext context, dynamic data, String type,
+      String status, String notificationId) {
     store = Provider.of<TrotterStore>(context);
     return showModalBottomSheet(
         context: context,
@@ -286,7 +303,7 @@ class NotificationsState extends State<Notifications> {
                   await markNotificationRead(notificationId, store);
                   Navigator.pop(context);
                 }),
-            type == 'email'
+            type == 'email' && status == 'Processed'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.plus),
                     title: new AutoSizeText('Add to trip'),
@@ -319,7 +336,9 @@ class NotificationsState extends State<Notifications> {
                       Navigator.pop(context);
                     })
                 : Container(),
-            type == 'user_day'
+            type == 'user_day' ||
+                    type == 'user_description' ||
+                    type == 'user_visited'
                 ? new ListTile(
                     leading: new Icon(EvilIcons.arrow_right),
                     title: new AutoSizeText('Go to day'),
@@ -363,6 +382,8 @@ class NotificationsState extends State<Notifications> {
       case 'user_comment':
       case 'user_trip_updated':
       case 'user_trip_added':
+      case 'user_description':
+      case 'user_visited':
         return Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(100),

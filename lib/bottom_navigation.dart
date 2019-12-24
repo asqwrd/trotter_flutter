@@ -141,11 +141,11 @@ class BottomNavigation extends StatelessWidget {
             child: _icon(context, item: tabItem)),
         backgroundColor: _colorTabMatching(item: tabItem),
         title: Container(
-            margin: EdgeInsets.only(right: 30),
+            margin: EdgeInsets.only(right: 15),
             child: AutoSizeText(
               text,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
               ),
             )),
       );
@@ -159,7 +159,7 @@ class BottomNavigation extends StatelessWidget {
           child: AutoSizeText(
             text,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: 11,
             ),
           )),
     );
@@ -185,13 +185,13 @@ class BottomNavigation extends StatelessWidget {
                 child: ClipPath(
                     clipper: CornerRadiusClipper(100),
                     child: Image.network(store.currentUser.photoUrl,
-                        width: 25.0, height: 25.0, fit: BoxFit.contain)))
+                        width: 23.0, height: 23.0, fit: BoxFit.contain)))
             : SvgPicture.asset(
                 TabHelper.icon(item),
                 color:
                     currentTab == item ? TabHelper.color(item) : Colors.black,
-                width: 25,
-                height: 25,
+                width: 23,
+                height: 23,
                 fit: BoxFit.contain,
                 alignment: Alignment.centerLeft,
               ));

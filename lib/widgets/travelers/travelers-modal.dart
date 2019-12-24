@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
@@ -49,12 +50,14 @@ class TravelersModal extends StatefulWidget {
   final String ownerId;
   final String currentUserId;
   final List<dynamic> travelers;
+  final bool readWrite;
 
   TravelersModal(
       {Key key,
       @required this.tripId,
       @required this.ownerId,
       @required this.currentUserId,
+      this.readWrite,
       this.travelers,
       this.onAdd})
       : super(key: key);
@@ -64,6 +67,7 @@ class TravelersModal extends StatefulWidget {
       ownerId: this.ownerId,
       currentUserId: this.currentUserId,
       travelers: this.travelers,
+      readWrite: this.readWrite,
       onAdd: this.onAdd);
 }
 
@@ -78,6 +82,7 @@ class TravelersModalState extends State<TravelersModal> {
   final ValueChanged<dynamic> onAdd;
   List<Widget> selectedUsers = [];
   List<String> selectedUsersUid = [];
+  bool readWrite = true;
 
   Future<TravelersModalData> data;
 
@@ -100,13 +105,13 @@ class TravelersModalState extends State<TravelersModal> {
     }
   }
 
-  TravelersModalState({
-    this.tripId,
-    this.travelers,
-    this.onAdd,
-    this.currentUserId,
-    this.ownerId,
-  });
+  TravelersModalState(
+      {this.tripId,
+      this.travelers,
+      this.onAdd,
+      this.currentUserId,
+      this.ownerId,
+      this.readWrite});
 
   @override
   Widget build(BuildContext context) {
@@ -174,7 +179,7 @@ class TravelersModalState extends State<TravelersModal> {
                     child: ListView.builder(
                   itemCount: results.length,
                   itemBuilder: (BuildContext context, int index) {
-                    if (index == 0) {
+                    if (index == 0 && readWrite == true) {
                       return ListTile(
                         contentPadding:
                             EdgeInsets.symmetric(vertical: 15, horizontal: 20),
@@ -214,6 +219,8 @@ class TravelersModalState extends State<TravelersModal> {
                           }
                         },
                       );
+                    } else if (index == 0) {
+                      return Container();
                     }
                     return ListTile(
                       contentPadding:
@@ -250,7 +257,8 @@ class TravelersModalState extends State<TravelersModal> {
                             fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                       trailing: results[index]['uid'] == this.currentUserId &&
-                              this.currentUserId != this.ownerId
+                              this.currentUserId != this.ownerId &&
+                              readWrite == true
                           ? FlatButton(
                               child: AutoSizeText(
                                 'Leave',
@@ -262,7 +270,10 @@ class TravelersModalState extends State<TravelersModal> {
                                     ...this.deletedTravelers,
                                     results[index]['uid']
                                   ];
-                                  this.travelers.removeAt(index);
+                                  final idx = this.travelers.indexWhere(
+                                      (item) =>
+                                          item['uid'] == results[index]['uid']);
+                                  this.travelers.removeAt(idx);
                                   this.showSave = true;
                                 });
                               },
@@ -270,7 +281,8 @@ class TravelersModalState extends State<TravelersModal> {
                           : this.currentUserId == this.ownerId &&
                                   results[index]['uid'] == this.currentUserId
                               ? AutoSizeText('Organizer')
-                              : this.currentUserId == this.ownerId
+                              : this.currentUserId == this.ownerId &&
+                                      readWrite == true
                                   ? IconButton(
                                       icon: Icon(Icons.close),
                                       onPressed: () {
@@ -294,35 +306,44 @@ class TravelersModalState extends State<TravelersModal> {
   Container renderTopBar() {
     return Container(
         padding: EdgeInsets.only(top: 30, bottom: 10),
-        decoration: BoxDecoration(
-            border: Border(
-                bottom:
-                    BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
+        // decoration: BoxDecoration(
+        //     border: Border(
+        //         bottom:
+        //             BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
         child: Column(
           children: <Widget>[
             Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Row(children: <Widget>[
-                    IconButton(
-                      icon: Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      iconSize: 25,
+                  IconButton(
+                    padding: EdgeInsets.only(left: 10),
+                    icon: SvgPicture.asset(
+                      'images/back-icon.svg',
+                      width: 30,
+                      height: 30,
                       color: Colors.black,
                     ),
-                    AutoSizeText(
-                      'All travelers',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 19),
-                    )
-                  ]),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    iconSize: 25,
+                    color: Colors.black,
+                  ),
+                  Expanded(
+                      child: Container(
+                          margin: EdgeInsets.only(left: 60),
+                          child: AutoSizeText(
+                            'All travelers',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w300,
+                                fontSize: 19),
+                          ))),
                   this.showSave == true
                       ? Center(
                           child: Container(
+                              width: 100,
                               margin: EdgeInsets.only(right: 20),
                               child: FlatButton(
                                 shape: RoundedRectangleBorder(
@@ -343,7 +364,7 @@ class TravelersModalState extends State<TravelersModal> {
                                   });
                                 },
                               )))
-                      : Container()
+                      : Container(width: 100)
                 ]),
           ],
         ));

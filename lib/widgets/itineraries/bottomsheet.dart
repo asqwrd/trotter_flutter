@@ -33,8 +33,9 @@ Future addToItinerary(
     }
     return result;
   } else {
+    var id = destination['destination_id'] != null ? destination['destination_id'] : destination['id'];
     await showItineraryBottomSheet(
-        store, context, destination['id'], poi, color, destination);
+        store, context, id, poi, color, destination);
   }
 }
 
@@ -110,7 +111,7 @@ _buildLoadedList(
                           ),
                           SizedBox(height: 10),
                           AutoSizeText(
-                            'Create a trip to start planning your next adventure!',
+                            'Create a trip and start planning your next adventure!',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                                 fontSize: 15,
@@ -292,7 +293,7 @@ Future<DayData> responseFromDayBottomSheet(BuildContext context, dynamic item,
     "added_by": addedBy
   };
   var response = await addToDay(
-      store, item['id'], dayId, destinationId, data, true, movedByUid);
+      store, item['id'], dayId, destinationId, data, true, movedByUid, true);
 
   return response;
 }
@@ -427,6 +428,7 @@ showDayBottomSheet(
                                             context,
                                             onPush);
                                     Navigator.pop(listContext, {
+                                      'success': response.success,
                                       'selected': days[dayIndex],
                                       'toIndex': days[dayIndex]['day'] + 1,
                                       'poi': poi,
@@ -442,26 +444,22 @@ showDayBottomSheet(
                                       horizontal: 20, vertical: 5),
                                   title: Row(children: <Widget>[
                                     AutoSizeText(
-                                      'Day ${days[dayIndex]['day'] + 1} - ',
+                                      'Day ${days[dayIndex]['day'] + 1}',
                                       style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w500),
                                     ),
-                                    Align(
-                                        alignment: Alignment.topLeft,
-                                        child: Container(
-                                            child: AutoSizeText(
-                                          formatter.format(DateTime
-                                                  .fromMillisecondsSinceEpoch(
-                                                      startDate,
-                                                      isUtc: true)
-                                              .add(Duration(
-                                                  days: days[dayIndex]
-                                                      ['day']))),
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w300),
-                                        )))
+                                    startDate != null && startDate != 0
+                                        ? Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Container(
+                                                child: AutoSizeText(
+                                              ' - ${formatter.format(DateTime.fromMillisecondsSinceEpoch(startDate, isUtc: true).add(Duration(days: days[dayIndex]['day'])))}',
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w300),
+                                            )))
+                                        : Container()
                                   ]),
                                   subtitle: AutoSizeText(
                                     '${days[dayIndex]['itinerary_items'].length} ${days[dayIndex]['itinerary_items'].length == 1 ? "place" : "places"} to see',
@@ -492,22 +490,19 @@ Future<ScaffoldFeatureController<SnackBar, SnackBarClosedReason>>
         String dayId,
         Future2VoidFunc onPush,
         int dayIndex,
-        int toIndex}) async {
+        int toIndex,
+        String action = 'added'}) async {
   return Scaffold.of(context).showSnackBar(SnackBar(
     content: AutoSizeText(
         toIndex != null
-            ? '${poi['name']} added to day $toIndex'
-            : '${poi['name']} added to ${itinerary['name']}',
+            ? '${poi['name']} $action to day $toIndex'
+            : '${poi['name']} $action to ${itinerary['name']}',
         style: TextStyle(fontSize: 18)),
     duration: Duration(seconds: 2),
     action: onPush != null
         ? SnackBarAction(
             label: 'Go to day',
-            // textColor: this.color,
             onPressed: () async {
-              //print(item['start_location']);
-              //print(item['days'][dayIndex]);
-              // Navigator.pop(mainContext);
               await onPush({
                 'itineraryId': itinerary['id'],
                 'dayId': dayId,

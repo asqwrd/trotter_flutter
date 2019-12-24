@@ -6,9 +6,10 @@ import 'package:trotter_flutter/utils/index.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:recase/recase.dart';
 
-class ItineraryList extends StatelessWidget {
+class ItineraryList extends StatefulWidget {
   final String2VoidFunc onPressed;
   final Function(dynamic) onLongPressed;
+  final Function(dynamic) onRefreshImage;
   final String name;
   final Color color;
   final List<dynamic> items;
@@ -23,6 +24,39 @@ class ItineraryList extends StatelessWidget {
       this.linkedItinerary,
       this.items,
       this.callback,
+      this.onRefreshImage,
+      this.color});
+
+  ItineraryListState createState() => ItineraryListState(
+      name: this.name,
+      onPressed: this.onPressed,
+      onLongPressed: this.onLongPressed,
+      linkedItinerary: this.linkedItinerary,
+      items: this.items,
+      callback: this.callback,
+      onRefreshImage: this.onRefreshImage,
+      color: this.color);
+}
+
+class ItineraryListState extends State<ItineraryList> {
+  final String2VoidFunc onPressed;
+  final Function(dynamic) onLongPressed;
+  final Function(dynamic) onRefreshImage;
+  final String name;
+  final Color color;
+  final List<dynamic> items;
+  final dynamic linkedItinerary;
+  final Function(String) callback;
+
+  //passing props in react style
+  ItineraryListState(
+      {this.name,
+      this.onPressed,
+      this.onLongPressed,
+      this.linkedItinerary,
+      this.items,
+      this.callback,
+      this.onRefreshImage,
       this.color});
 
   @override
@@ -32,7 +66,7 @@ class ItineraryList extends StatelessWidget {
     };
     return Container(
         margin: EdgeInsets.symmetric(vertical: 0.0),
-        child: buildRow(buildItems(context, this.items)));
+        child: buildRow(buildItems(context, widget.items)));
   }
 
   buildItems(BuildContext context, List<dynamic> items) {
@@ -52,7 +86,7 @@ class ItineraryList extends StatelessWidget {
     }
     if (this.linkedItinerary != null && length < 3) {
       widgets.add(buildBodyItinerary(context,
-          this.linkedItinerary['destination'], length + 1, totalLength));
+          widget.linkedItinerary['destination'], length + 1, totalLength));
     }
     return widgets;
   }
@@ -87,6 +121,20 @@ class ItineraryList extends StatelessWidget {
       width = (MediaQuery.of(context).size.width - 60) * .5;
     }
 
+    var timeUnit = time['unit'].toString();
+    var timeValue = time['value'].toString();
+    var unit = timeUnit;
+
+    if (timeValue.isNotEmpty &&
+        double.parse(timeValue) == 1 &&
+        timeUnit.endsWith('s')) {
+      unit = timeUnit.substring(0, timeUnit.length - 1);
+    } else if (timeValue.isNotEmpty &&
+        double.parse(timeValue) != 1 &&
+        timeUnit.endsWith('s') == false) {
+      unit = '${timeUnit}s';
+    }
+
     return new InkWell(
         onTap: () {
           var id = item['poi']['id'];
@@ -118,6 +166,7 @@ class ItineraryList extends StatelessWidget {
                               cacheRule:
                                   CacheRule(maxAge: const Duration(days: 7)),
                             ),
+                            loadFailedCallback: () {},
                             loadingWidgetBuilder:
                                 (BuildContext context, double progress, test) =>
                                     Center(
@@ -128,7 +177,17 @@ class ItineraryList extends StatelessWidget {
                             )),
                             fit: BoxFit.cover,
                             alignment: Alignment.center,
-                            placeholder: const Icon(Icons.refresh),
+                            placeholder: Center(
+                                child: IconButton(
+                              icon: Icon(Icons.refresh),
+                              onPressed: () {
+                                this.onRefreshImage({
+                                  "index": index,
+                                  "poi": item['poi'],
+                                  "itineraryItemId": item['id']
+                                });
+                              },
+                            )),
                             enableRefresh: true,
                           )
                         : Container(
@@ -151,7 +210,7 @@ class ItineraryList extends StatelessWidget {
                                 fontSize: 15, fontWeight: FontWeight.w400)),
                         AutoSizeText(
                             time['unit'].toString().isEmpty == false
-                                ? 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} ${time['value']} ${time['unit']}${double.parse(time['value']) != 1 ? 's' : ''}'
+                                ? 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} ${time['value']} $unit'
                                 : 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} Not given',
                             textAlign: TextAlign.left,
                             style: TextStyle(

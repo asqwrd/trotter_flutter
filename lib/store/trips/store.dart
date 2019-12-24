@@ -2,13 +2,16 @@ import 'package:flutter_store/flutter_store.dart';
 
 class TripsStore extends Store {
   List<dynamic> _trips;
+  List<dynamic> _pastTrips;
   get trips => _trips;
+  get pastTrips => _pastTrips;
   String tripsError;
   bool tripLoading = false;
 
-  getTrips(List<dynamic> trips) {
+  setTrips(List<dynamic> trips, List<dynamic> pastTrips) {
     setState(() {
       _trips = trips;
+      _pastTrips = pastTrips;
     });
   }
 

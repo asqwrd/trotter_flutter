@@ -29,6 +29,8 @@ class GoogleAuthButtonContainer extends StatelessWidget {
           } else {
             await store.login();
             fetchNotifications(store);
+            store.eventBus.fire(RefreshHomeEvent(refresh: true));
+            store.eventBus.fire(RefreshTripEvent(refresh: true));
           }
           if (this.isModal == true) {
             Navigator.pop(context);
@@ -63,7 +65,7 @@ class GoogleAuthButton extends StatelessWidget {
         // Contianer has many options you can pass it,
         // Most widgets do *not* allow you to explicitly set
         // width and height
-        width: 150.0,
+        width: 160.0,
         height: 50.0,
 
         alignment: Alignment.center,

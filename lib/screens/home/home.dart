@@ -1,16 +1,23 @@
 import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_advanced_networkimage/provider.dart';
+import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:loadmore/loadmore.dart';
+import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
+import 'package:trotter_flutter/widgets/poi/poi-modal.dart';
+import 'package:trotter_flutter/widgets/recommendations/category-list.dart';
 import 'package:trotter_flutter/widgets/top-list/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
@@ -22,10 +29,9 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:showcaseview/showcaseview.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-Future<HomeData> fetchHome([bool refresh]) async {
+Future<PopularCitiesData> fetchPopularCities([bool refresh]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   final String cacheData = prefs.getString('home') ?? null;
   final int cacheDataExpire = prefs.getInt('home-expiration') ?? null;
@@ -36,7 +42,7 @@ Future<HomeData> fetchHome([bool refresh]) async {
       (currentTime < cacheDataExpire)) {
     // If server returns an OK response, parse the JSON
     var homeData = json.decode(cacheData);
-    return HomeData.fromJson(homeData);
+    return PopularCitiesData.fromJson(homeData);
   } else {
     try {
       var response = await http.get('$ApiDomain/api/explore/home/',
@@ -47,14 +53,15 @@ Future<HomeData> fetchHome([bool refresh]) async {
         await prefs.setInt('home-expiration',
             DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
         var homeData = json.decode(response.body);
-        return HomeData.fromJson(homeData);
+        return PopularCitiesData.fromJson(homeData);
       } else {
         // If that response was not OK, throw an error.
-        var msg = response.statusCode;
-        return HomeData(error: "Api returned a $msg");
+        return PopularCitiesData(success: false);
       }
     } catch (error) {
-      return HomeData(error: "Server is down");
+      print("fetch");
+      print(error);
+      return PopularCitiesData(success: false);
     }
   }
 }
@@ -101,18 +108,15 @@ Future<HomeItinerariesData> fetchHomeItinerariesNext(lastId) async {
   }
 }
 
-class HomeData {
+class PopularCitiesData {
   final List<dynamic> popularCities;
-  final List<dynamic> popularIslands;
-  final String error;
+  final bool success;
 
-  HomeData({this.popularCities, this.popularIslands, this.error});
+  PopularCitiesData({this.popularCities, this.success});
 
-  factory HomeData.fromJson(Map<String, dynamic> json) {
-    return HomeData(
-        popularCities: json['popular_cities'],
-        popularIslands: json['popular_islands'],
-        error: null);
+  factory PopularCitiesData.fromJson(Map<String, dynamic> json) {
+    return PopularCitiesData(
+        popularCities: json['popular_cities'], success: true);
   }
 }
 
@@ -132,14 +136,14 @@ class HomeItinerariesData {
 }
 
 class Home extends StatefulWidget {
-  final String2VoidFunc onPush;
+  final ValueChanged<dynamic> onPush;
   Home({Key key, @required this.onPush}) : super(key: key);
   @override
   HomeState createState() => new HomeState(onPush: this.onPush);
 }
 
 class HomeState extends State<Home> {
-  final String2VoidFunc onPush;
+  final ValueChanged<dynamic> onPush;
   ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
@@ -149,17 +153,42 @@ class HomeState extends State<Home> {
   List<dynamic> thingsToDo;
   int totalPublic = 0;
   final Color color = Color.fromRGBO(216, 167, 177, 1);
-  GlobalKey _one = GlobalKey();
+  bool isLoading = false;
+  bool shadow = false;
+
+  Future<ThingsToDoData> doData;
+  //Future<NearByData> nearFoodData = fetchNearbyPlaces("restaurant", "");
+
+  Future<PopularCitiesData> data = fetchPopularCities();
+  Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
 
   @override
   void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
+    () async {
+      await Future.delayed(Duration(seconds: 3));
+      final store = Provider.of<TrotterStore>(context);
+      if (store.currentUser != null) {
+        setState(() {
+          doData = fetchThingsToDo(store.currentUser.uid);
+        });
+      }
+
+      store.eventBus.on<RefreshHomeEvent>().listen((event) {
+        // All events are of type UserLoggedInEvent (or subtypes of it).
+        if (event.refresh == true) {
+          final store = Provider.of<TrotterStore>(context);
+          setState(() {
+            doData = fetchThingsToDo(store.currentUser.uid, true);
+          });
         }
       });
-    });
+
+      store.eventBus.on<RootEvent>().listen((event) {
+        if (event.tab == TabItem.explore)
+          Navigator.popUntil(context, ModalRoute.withName("/"));
+      });
+    }();
+
     super.initState();
   }
 
@@ -169,24 +198,30 @@ class HomeState extends State<Home> {
     super.dispose();
   }
 
-  Future<ThingsToDoData> doData;
-
-  Future<HomeData> data = fetchHome();
-  Future<HomeItinerariesData> dataItineraries = fetchHomeItineraries();
   HomeState({
     this.onPush,
   });
 
   Future<Null> _refreshData() {
     //await new Future.delayed(new Duration(seconds: 2));
+    final store = Provider.of<TrotterStore>(context);
 
     setState(() {
-      data = fetchHome(true);
+      data = fetchPopularCities(true);
       this.itineraries = [];
       dataItineraries = fetchHomeItineraries();
+      if (store.currentUser != null) {
+        doData = fetchThingsToDo(store.currentUser.uid, true);
+      }
+      //nearFoodData = fetchNearbyPlaces("restaurant", "");
     });
 
     return null;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -194,19 +229,16 @@ class HomeState extends State<Home> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
-    final store = Provider.of<TrotterStore>(context);
+    //final store = Provider.of<TrotterStore>(context);
     //print(this.thingsToDo);
-    if (store.currentUser != null && this.thingsToDo == null) {
-      doData = fetchThingsToDo(store.currentUser.uid);
-    }
     if (doData != null) {
       doData.then((response) {
-        setState(() {
-          this.thingsToDo = response.destinations;
-        });
+        if (response.success == true) {
+          setState(() {
+            this.thingsToDo = response.destinations;
+          });
+        }
       });
     }
     dataItineraries.then((data) => {
@@ -218,15 +250,16 @@ class HomeState extends State<Home> {
               })
             }
         });
+
     data.then((data) => {
-          if (data.error != null)
+          if (data.success == false)
             {
               setState(() {
                 this.errorUi = true;
                 this.loading = false;
               })
             }
-          else if (data.error == null)
+          else if (data.success == true)
             {
               setState(() {
                 this.errorUi = false;
@@ -234,88 +267,121 @@ class HomeState extends State<Home> {
               })
             }
         });
+
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: errorUi == false ? _panelHeightClosed : _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: 1,
-        onPanelOpened: () async {
-          setState(() {
-            disableScroll = false;
-          });
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          final String cacheData = prefs.getString('homeShowcase') ?? null;
-          if (cacheData == null) {
-            ShowCaseWidget.of(context).startShowCase([_one]);
-            await prefs.setString('homeShowcase', "true");
-          }
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: FutureBuilder(
+      SlidingPanel(
+        snapPanel: true,
+        autoSizing: PanelAutoSizing(),
+        parallaxSlideAmount: .5,
+        backdropConfig: BackdropConfig(
+            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
+        decoration: PanelDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+        panelController: _pc,
+        content: PanelContent(
+          headerWidget: PanelHeaderWidget(
+            headerContent: Container(
+                decoration: BoxDecoration(
+                    boxShadow: this.shadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                                color: Colors.black.withOpacity(.2),
+                                blurRadius: 10.0,
+                                offset: Offset(0.0, 0.75))
+                          ]
+                        : [],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30))),
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Center(
+                        child: Container(
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 10, bottom: 20),
+                      child: AutoSizeText(
+                        'Explore',
+                        style: TextStyle(fontSize: 23),
+                      ),
+                    ),
+                  ],
+                )),
+          ),
+          panelContent: (context, scrollController) {
+            return FutureBuilder(
                 future: data,
                 builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data.error != null) {
-                    return ListView(
-                        controller: _sc,
-                        physics: disableScroll
-                            ? NeverScrollableScrollPhysics()
-                            : ClampingScrollPhysics(),
-                        shrinkWrap: true,
-                        children: <Widget>[
-                          Container(
-                              height: _panelHeightOpen - 80,
-                              width: MediaQuery.of(context).size.width,
-                              child: ErrorContainer(
-                                color: color,
-                                onRetry: () {
-                                  setState(() {
-                                    this.loading = true;
-                                    this.errorUi = false;
-                                    data = fetchHome();
-                                    dataItineraries = fetchHomeItineraries();
-                                  });
-                                },
-                              ))
-                        ]);
+                  if (snapshot.hasData && snapshot.data.success == false) {
+                    return SingleChildScrollView(
+                        controller: scrollController,
+                        child: ErrorContainer(
+                          color: color,
+                          onRetry: () async {
+                            final store = Provider.of<TrotterStore>(context);
+                            setState(() {
+                              this.loading = true;
+                              this.errorUi = false;
+                            });
+                            await Future.delayed(Duration(seconds: 2));
+
+                            setState(() {
+                              data = fetchPopularCities();
+                              dataItineraries = fetchHomeItineraries();
+                              if (store.currentUser != null) {
+                                doData = fetchThingsToDo(store.currentUser.uid);
+                              }
+                            });
+                          },
+                        ));
                   }
-                  return _buildLoadedBody(context, snapshot);
-                })),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
+
+                  return RenderWidget(
+                      onScroll: onScroll,
+                      asyncSnapshot: snapshot,
+                      scrollController: scrollController,
+                      builder: (context,
+                              {scrollController,
+                              asyncSnapshot,
+                              startLocation}) =>
+                          _buildLoadedBody(
+                              context, asyncSnapshot, scrollController));
+                });
+          },
+          bodyContent: Container(
+              height: _bodyHeight,
+              child: Stack(children: <Widget>[
+                Positioned(
+                    width: MediaQuery.of(context).size.width,
+                    height: _bodyHeight,
+                    top: 0,
+                    left: 0,
+                    child: Image.asset(
+                      "images/home_bg.jpeg",
+                      fit: BoxFit.cover,
+                      alignment: Alignment.center,
+                    )),
+                Positioned.fill(
                   top: 0,
                   left: 0,
-                  child: Image.asset(
-                    "images/home_bg.jpeg",
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                  )),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(color: color.withOpacity(.3)),
-              ),
-            ])),
-      )),
+                  child: Container(color: color.withOpacity(.3)),
+                ),
+              ])),
+        ),
+        size: PanelSize(
+            closedHeight: .45, expandedHeight: getPanelHeight(context)),
+      ),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -349,6 +415,18 @@ class HomeState extends State<Home> {
     ]);
   }
 
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
+    }
+  }
+
   bottomSheetModal(BuildContext context, dynamic data) {
     return showModalBottomSheet(
         context: context,
@@ -380,13 +458,13 @@ class HomeState extends State<Home> {
           child: AutoSizeText(
             'Get inspired by itineraries!',
             style: TextStyle(
-                fontSize: 20, color: color, fontWeight: FontWeight.w500),
+                fontSize: 18, color: color, fontWeight: FontWeight.w500),
           )),
       Padding(
           padding: EdgeInsets.only(bottom: 10, top: 0, left: 20, right: 20),
           child: AutoSizeText(
             'Trotter is for people who love to travel and those who need help planning. Itineraries are helpful in organizing your trips.',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
           ))
     ];
     for (var itinerary in itineraries) {
@@ -412,19 +490,74 @@ class HomeState extends State<Home> {
       BuildContext ctxt, AsyncSnapshot snapshot, Color color) {
     var widgets = <Widget>[];
     for (var item in thingsToDo) {
-      widgets.add(TopList(
-        items: item['places'],
-        header: 'Things to do in ${item['destination']['destination_name']}',
-        subText:
-            'Here are some popular places to visit for your trip to ${item['destination']['destination_name']}',
-        onLongPressed: (data) {},
-        onPressed: (data) {
-          onPush({
-            'id': data['id'].toString(),
-            'level': data['level'].toString(),
-            "google_place": true
-          });
-        },
+      var destination = item['destination'];
+      Color color = Color(hexStringToHexInt(item['color']));
+
+      widgets.add(Column(
+        children: <Widget>[
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              alignment: Alignment.topLeft,
+              child: AutoSizeText(
+                'Experience ${destination['destination_name']}',
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w500, color: color),
+              )),
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 20),
+              alignment: Alignment.topLeft,
+              child: AutoSizeText(
+                'Check out these places for your upcoming trip to ${destination['destination_name']}',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
+              )),
+          Container(
+              margin: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              height: 220,
+              width: double.infinity,
+              child: ClipPath(
+                  clipper: ShapeBorderClipper(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8))),
+                  child: TransitionToImage(
+                    image: AdvancedNetworkImage(
+                      destination['image'],
+                      useDiskCache: true,
+                      cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                    ),
+                    loadingWidgetBuilder:
+                        (BuildContext context, double progress, test) => Center(
+                            child: RefreshProgressIndicator(
+                      backgroundColor: Colors.white,
+                    )),
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                    placeholder: const Icon(Icons.refresh),
+                    enableRefresh: true,
+                  ))),
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 20),
+              child: CategoryList(
+                  destination: destination,
+                  onPressed: (data) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            fullscreenDialog: true,
+                            builder: (context) {
+                              return PoiModal(
+                                  query: data['query'],
+                                  onPush: onPush,
+                                  title:
+                                      '${destination['destination_name']} - ${data['destination']['name']}',
+                                  destination: destination);
+                            }));
+                  },
+                  onLongPressed: (data) {},
+                  subText:
+                      "See some recommendations for sights, food, shopping and nightlife",
+                  header: "Categories to explore")),
+        ],
       ));
     }
 
@@ -478,149 +611,108 @@ class HomeState extends State<Home> {
   }
 
   // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot,
+      ScrollController scrollController) {
     var popularCities = snapshot.hasData ? snapshot.data.popularCities : [];
-    //var popularIslands = snapshot.hasData ? snapshot.data.popularIslands : [];
     final store = Provider.of<TrotterStore>(context);
 
     return Container(
-      child: LoadMore(
-          delegate: TrotterLoadMoreDelegate(this.color),
-          isFinish: this.itineraries.length >= this.totalPublic ||
-              this.errorUi == true,
-          onLoadMore: () async {
-            if (this.itineraries.length > 0) {
+      child: LazyLoadScrollView(
+          isLoading: this.isLoading,
+          onEndOfPage: () async {
+            if (this.itineraries.length > 0 &&
+                this.itineraries.length < this.totalPublic) {
+              setState(() {
+                this.isLoading = true;
+              });
               var lastId = this.itineraries[this.itineraries.length - 1]['id'];
               var res = await fetchHomeItinerariesNext(lastId);
               setState(() {
                 this.itineraries = this.itineraries..addAll(res.itineraries);
+                this.isLoading = false;
               });
             }
             return true;
           },
           child: ListView(
-            controller: _sc,
-            physics: disableScroll
-                ? NeverScrollableScrollPhysics()
-                : ClampingScrollPhysics(),
+            cacheExtent: MediaQuery.of(context).size.height,
+            controller: scrollController,
             children: <Widget>[
-              Center(
-                  child: Container(
-                width: 30,
-                height: 5,
-                decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
-              )),
-              Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(top: 10, bottom: 20),
-                child: AutoSizeText(
-                  'Explore',
-                  style: TextStyle(fontSize: 25),
-                ),
-              ),
-              snapshot.connectionState == ConnectionState.waiting
+              snapshot.connectionState == ConnectionState.waiting ||
+                      this.loading
                   ? Container(
                       width: double.infinity,
                       margin: EdgeInsets.only(bottom: 30.0),
-                      child: TopListLoading())
-                  : Showcase.withWidget(
-                      width: 250,
-                      height: 50,
-                      container: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          TopList().buildThumbnailItem(
-                              0, popularCities[0], Colors.white),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Container(
-                              width: 250,
-                              margin: EdgeInsets.only(top: 35),
-                              child: Text(
-                                'Tap to navigate to destination page.\n Press and hold to show a menu for adding to a trip or creating a trip',
-                                style: TextStyle(color: Colors.white),
-                                maxLines: 3,
-                              ))
-                        ],
-                      ),
-                      key: _one,
-                      child: TopList(
-                          items: popularCities,
-                          enableMini: true,
-                          onPressed: (data) {
-                            onPush({'id': data['id'], 'level': data['level']});
-                          },
-                          onLongPressed: (data) {
-                            var currentUser = store.currentUser;
-                            if (currentUser == null) {
-                              loginBottomSheet(context, data, color);
-                            } else {
-                              bottomSheetModal(context, data['poi']);
-                            }
-                          },
-                          subText:
-                              "Learn about popular cities and why so many people like to travel to them.",
-                          header: "Trending cities")),
-              // snapshot.connectionState == ConnectionState.waiting
-              //     ? Container(
-              //         width: double.infinity,
-              //         margin: EdgeInsets.only(bottom: 30.0),
-              //         child: TopListLoading())
-              //     : TopList(
-              //         items: popularIslands,
-              //         onPressed: (data) {
-              //           onPush({'id': data['id'], 'level': data['level']});
-              //         },
-              //         onLongPressed: (data) {
-              //           var currentUser = store.currentUser;
-              //           if (currentUser == null) {
-              //             loginBottomSheet(context, data, color);
-              //           } else {
-              //             bottomSheetModal(context, data['poi']);
-              //           }
-              //         },
-              //         header: "Explore these islands"),
-              FutureBuilder(
-                  future: doData,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return _buildItineraryLoading(context);
-                    } else if (snapshot.hasData &&
-                        snapshot.data.success == true) {
-                      return _buildThingsToDo(context, snapshot, color);
-                    } else if (snapshot.hasData &&
-                        snapshot.data.success == false) {
-                      return Container(
-                          margin: EdgeInsets.only(bottom: 20),
-                          child: Column(
-                            children: <Widget>[
-                              Container(
+                      child: TopListLoading(
+                        enableMini: true,
+                      ))
+                  : popularCities.length > 0
+                      ? Container(
+                          child: TopList(
+                              items: popularCities,
+                              enableMini: true,
+                              onPressed: (data) {
+                                onPush(
+                                    {'id': data['id'], 'level': data['level']});
+                              },
+                              onLongPressed: (data) {
+                                var currentUser = store.currentUser;
+                                if (currentUser == null) {
+                                  loginBottomSheet(context, data, color);
+                                } else {
+                                  bottomSheetModal(context, data['poi']);
+                                }
+                              },
+                              subText:
+                                  "Learn about popular cities and why so many people like to travel to them.",
+                              header: "Trending cities"))
+                      : Container(),
+              store.currentUser != null
+                  ? Container(
+                      margin: EdgeInsets.symmetric(vertical: 0),
+                      child: FutureBuilder(
+                          future: doData,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return doLoadingWidget();
+                            } else if (snapshot.hasData &&
+                                snapshot.data.success == true) {
+                              return _buildThingsToDo(context, snapshot, color);
+                            } else if (snapshot.hasData &&
+                                    snapshot.data.success == false ||
+                                (snapshot.connectionState ==
+                                        ConnectionState.done &&
+                                    snapshot.hasData == false)) {
+                              return Container(
                                   margin: EdgeInsets.only(bottom: 20),
-                                  child: AutoSizeText(
-                                    'Failed to get itineraries.',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w300),
-                                  )),
-                              RetryButton(
-                                color: color,
-                                width: 100,
-                                height: 50,
-                                onPressed: () {
-                                  setState(() {
-                                    doData =
-                                        fetchThingsToDo(store.currentUser.uid);
-                                  });
-                                },
-                              )
-                            ],
-                          ));
-                    }
-                    return _buildItineraryLoading(context);
-                  }),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Container(
+                                          margin: EdgeInsets.only(bottom: 20),
+                                          child: AutoSizeText(
+                                            'Failed to get things to do.',
+                                            style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w300),
+                                          )),
+                                      RetryButton(
+                                        color: color,
+                                        width: 100,
+                                        height: 50,
+                                        onPressed: () {
+                                          setState(() {
+                                            doData = fetchThingsToDo(
+                                                store.currentUser.uid);
+                                          });
+                                        },
+                                      )
+                                    ],
+                                  ));
+                            }
+                            return doLoadingWidget();
+                          }))
+                  : Container(),
               FutureBuilder(
                   future: dataItineraries,
                   builder: (context, snapshot) {
@@ -657,9 +749,22 @@ class HomeState extends State<Home> {
                           ));
                     }
                     return _buildItineraryLoading(context);
-                  })
+                  }),
+              this.isLoading
+                  ? AwesomeLoader(
+                      loaderType: AwesomeLoader.AwesomeLoader4,
+                      color: this.color,
+                    )
+                  : Container()
             ],
           )),
     );
+  }
+
+  Container doLoadingWidget() {
+    return Container(
+        width: double.infinity,
+        margin: EdgeInsets.only(bottom: 30.0),
+        child: TopListLoading());
   }
 }

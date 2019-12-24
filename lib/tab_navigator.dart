@@ -5,7 +5,7 @@ import 'package:trotter_flutter/screens/home/index.dart';
 import 'package:trotter_flutter/screens/country/index.dart';
 import 'package:trotter_flutter/screens/destination/index.dart';
 import 'package:trotter_flutter/screens/poi/index.dart';
-import 'package:trotter_flutter/screens/park/index.dart';
+// import 'package:trotter_flutter/screens/park/index.dart';
 import 'package:trotter_flutter/screens/trips/index.dart';
 import 'package:trotter_flutter/screens/notifications/index.dart';
 import 'package:trotter_flutter/screens/itinerary/index.dart';
@@ -23,7 +23,7 @@ class TabNavigatorRoutes {
   static const String search = '/search';
   static const String cityState = '/city_state';
   static const String island = '/island';
-  static const String park = '/park';
+  // static const String park = '/park';
   static const String trip = '/trip';
   static const String itinerary = '/itinerary';
   static const String itinerary_builder = '/itinerary/edit';
@@ -80,9 +80,9 @@ class TabNavigator extends StatelessWidget {
       case 'city_state':
         goTo = TabNavigatorRoutes.cityState;
         break;
-      case 'national_park':
-        goTo = TabNavigatorRoutes.park;
-        break;
+      // case 'national_park':
+      //   goTo = TabNavigatorRoutes.park;
+      //   break;
       case 'trip':
         goTo = TabNavigatorRoutes.trip;
         break;
@@ -96,21 +96,24 @@ class TabNavigator extends StatelessWidget {
         break;
     }
 
-    if (data['from'] != null &&
-        (data['from'] == 'search' || data['from'] == 'createtrip')) {
+    if ((data['from'] != null &&
+            (data['from'] == 'search' || data['from'] == 'createtrip')) ||
+        data['replace'] == true) {
       return Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-            pageBuilder: (context, _, __) => routeBuilders[goTo](context),
-            transitionsBuilder: (BuildContext context,
-                Animation<double> animation,
-                Animation<double> secondaryAnimation,
-                Widget child) {
-              return new FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            }),
+          pageBuilder: (context, _, __) => routeBuilders[goTo](context),
+          transitionsBuilder: (BuildContext context,
+              Animation<double> animation,
+              Animation<double> secondaryAnimation,
+              Widget child) {
+            return new FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       );
     } else {
       return goTo == TabNavigatorRoutes.search ||
@@ -141,7 +144,7 @@ class TabNavigator extends StatelessWidget {
   }
 
   Map<String, WidgetBuilder> _routeBuilders(BuildContext context,
-      {Map<String, dynamic> data}) {
+      {Map<String, dynamic> data, TabItem tabItem}) {
     final store = Provider.of<TrotterStore>(context);
     var routes = {
       TabNavigatorRoutes.country: (context) => Country(
@@ -171,20 +174,24 @@ class TabNavigator extends StatelessWidget {
           locationId: data['locationId'],
           googlePlace: data['google_place'],
           onPush: (data) => push(context, data)),
-      TabNavigatorRoutes.park: (context) =>
-          Park(parkId: data['id'], onPush: (data) => push(context, data)),
-      TabNavigatorRoutes.trip: (context) =>
-          Trip(tripId: data['id'], onPush: (data) => push(context, data)),
+      // TabNavigatorRoutes.park: (context) =>
+      //     Park(parkId: data['id'], onPush: (data) => push(context, data)),
+      TabNavigatorRoutes.trip: (context) => Trip(
+          tripId: data['id'],
+          isPast: data['is_past'],
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary: (context) => Itinerary(
-          itineraryId: data['id'], onPush: (data) => push(context, data)),
+          itineraryId: data['id'],
+          color: data['color'] ?? Colors.blueGrey,
+          onPush: (data) => push(context, data)),
       TabNavigatorRoutes.itinerary_builder: (context) => ItineraryBuilder(
           itineraryId: data['id'],
-          color: data['color'],
+          color: data['color'] ?? Colors.blueGrey,
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.day_edit: (context) => DayEdit(
           itineraryId: data['itineraryId'],
           dayId: data['dayId'],
-          color: data['color'],
+          color: data['color'] ?? Colors.blueGrey,
           linkedItinerary: data['linkedItinerary'],
           startLocation: data['startLocation'],
           onPush: (data) => push(context, data)),
@@ -192,9 +199,11 @@ class TabNavigator extends StatelessWidget {
           itineraryId: data['itineraryId'],
           linkedItinerary: data['linkedItinerary'],
           dayId: data['dayId'],
+          color: data['color'] ?? Colors.blueGrey,
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.travelinfo: (context) => FlightsAccomodations(
           tripId: data['tripId'],
+          isPast: data['is_past'],
           currentUserId: data['currentUserId'],
           onPush: (data) => push(context, data)),
       TabNavigatorRoutes.createtrip: (context) => CreateTrip(
@@ -249,7 +258,10 @@ class TabNavigator extends StatelessWidget {
         initialRoute: TabNavigatorRoutes.root,
         onGenerateRoute: (routeSettings) {
           return MaterialPageRoute(
-            builder: (context) => routeBuilders[routeSettings.name](context),
+            settings: RouteSettings(name: routeSettings.name),
+            builder: (context) {
+              return routeBuilders[routeSettings.name](context);
+            },
           );
         });
   }

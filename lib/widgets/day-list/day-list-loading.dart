@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:shimmer/shimmer.dart';
@@ -9,6 +8,7 @@ class DayListLoading extends StatelessWidget {
   final Color color;
   final List<dynamic> items;
   final Function(String) callback;
+  final ScrollController controller;
 
   //passing props in react style
   DayListLoading(
@@ -16,6 +16,7 @@ class DayListLoading extends StatelessWidget {
       this.onLongPressed,
       this.items,
       this.callback,
+      this.controller,
       this.color});
 
   @override
@@ -31,36 +32,17 @@ class DayListLoading extends StatelessWidget {
         margin: EdgeInsets.only(top: 10.0, left: 0.0, right: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
         child: ListView.separated(
-          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          controller: this.controller,
+          //physics: NeverScrollableScrollPhysics(),
           separatorBuilder: (BuildContext serperatorContext, int index) =>
               index > 1
                   ? new Container(
                       margin: EdgeInsets.only(left: 80, bottom: 20, top: 0),
                       child: Divider(color: Color.fromRGBO(0, 0, 0, 0.3)))
                   : Container(),
-          itemCount: 3,
+          itemCount: 1,
           itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return Center(
-                  child: Container(
-                width: 30,
-                height: 5,
-                decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.all(Radius.circular(12.0))),
-              ));
-            }
-
-            if (index == 1) {
-              return Container(
-                alignment: Alignment.center,
-                padding: EdgeInsets.only(top: 10, bottom: 40),
-                child: AutoSizeText(
-                  'Loading day...',
-                  style: TextStyle(fontSize: 30),
-                ),
-              );
-            }
             return Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: IntrinsicHeight(

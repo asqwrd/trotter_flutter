@@ -112,7 +112,7 @@ class ItineraryCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                           style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 13,
                               fontWeight: FontWeight.w400,
                               color: this.color),
                         )),
@@ -144,7 +144,7 @@ class ItineraryCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w300),
+                                  fontSize: 13, fontWeight: FontWeight.w300),
                             )),
                       ]))
             ]));

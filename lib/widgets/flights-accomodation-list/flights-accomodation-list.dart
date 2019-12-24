@@ -19,16 +19,17 @@ class FlightsAccomodationsList extends StatelessWidget {
   final double height;
   final ScrollController controller;
   final ScrollPhysics physics;
+  final bool readWrite;
 
   //passing props in react style
-  FlightsAccomodationsList({
-    this.destination,
-    this.onAddPressed,
-    this.onDeletePressed,
-    this.controller,
-    this.physics,
-    this.height,
-  });
+  FlightsAccomodationsList(
+      {this.destination,
+      this.onAddPressed,
+      this.onDeletePressed,
+      this.controller,
+      this.physics,
+      this.height,
+      this.readWrite});
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +51,7 @@ class FlightsAccomodationsList extends StatelessWidget {
         margin: EdgeInsets.only(top: 0.0),
         decoration: BoxDecoration(color: Colors.transparent),
         child: ListView.builder(
+          controller: this.controller != null ? this.controller : null,
           shrinkWrap: true,
           primary: false,
           itemCount: details.length,
@@ -64,60 +66,65 @@ class FlightsAccomodationsList extends StatelessWidget {
                   Container(
                       margin: EdgeInsets.only(bottom: 20),
                       child: ListTile(
-                          trailing:
-                              store.currentUser.uid == details[index]['ownerId']
-                                  ? IconButton(
-                                      icon: Icon(EvilIcons.trash),
-                                      iconSize: 27,
-                                      onPressed: () {
-                                        this.onDeletePressed({
-                                          "id": details[index]['id'],
-                                          "destinationId": destination['id'],
-                                          'undoData': details[index]
-                                        });
-                                      },
-                                    )
-                                  : Container(width: 20, height: 20),
+                          trailing: store.currentUser.uid ==
+                                      details[index]['ownerId'] &&
+                                  readWrite == true
+                              ? IconButton(
+                                  icon: Icon(EvilIcons.trash),
+                                  iconSize: 27,
+                                  onPressed: () {
+                                    this.onDeletePressed({
+                                      "id": details[index]['id'],
+                                      "destinationId": destination['id'],
+                                      'undoData': details[index]
+                                    });
+                                  },
+                                )
+                              : Container(width: 20, height: 20),
                           title: AutoSizeText(
                               '${details[index]['source'].length > 0 ? details[index]['source'] : "Travel itinerary"}',
                               style: TextStyle(fontSize: 17)),
-                          subtitle: Container(
-                            margin: EdgeInsets.only(top: 20, left: 10),
-                            width: 250,
-                            child: InkWell(
-                                onTap: () {
-                                  this.onAddPressed({
-                                    "id": details[index]['id'],
-                                    "destinationId": destination['id'],
-                                    "travelers": travelers,
-                                    "index": index,
-                                    "ownerId": details[index]['ownerId']
-                                  });
-                                },
-                                child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Container(
-                                        padding: EdgeInsets.all(5),
-                                        margin: EdgeInsets.only(top: 0),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(100),
-                                            color: Colors.transparent),
-                                        child: SvgPicture.asset(
-                                            'images/edit-icon.svg',
-                                            color: Colors.blueAccent,
-                                            width: 20,
-                                            height: 20),
-                                      ),
-                                      AutoSizeText('Edit travelers',
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              color: Colors.blueAccent))
-                                    ])),
-                          ))),
+                          subtitle: readWrite == true
+                              ? Container(
+                                  margin: EdgeInsets.only(top: 20, left: 0),
+                                  width: 250,
+                                  child: InkWell(
+                                      onTap: () {
+                                        this.onAddPressed({
+                                          "id": details[index]['id'],
+                                          "destinationId": destination['id'],
+                                          "travelers": travelers,
+                                          "index": index,
+                                          "ownerId": details[index]['ownerId']
+                                        });
+                                      },
+                                      child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: <Widget>[
+                                            Container(
+                                              padding: EdgeInsets.all(0),
+                                              margin: EdgeInsets.only(top: 0),
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          100),
+                                                  color: Colors.transparent),
+                                              child: SvgPicture.asset(
+                                                  'images/edit-icon.svg',
+                                                  color: Colors.blueAccent,
+                                                  width: 20,
+                                                  height: 20),
+                                            ),
+                                            AutoSizeText('Edit travelers',
+                                                style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.blueAccent))
+                                          ])),
+                                )
+                              : Container())),
                   Container(
                       margin: EdgeInsets.symmetric(horizontal: 10),
                       child: ListView.separated(
@@ -130,6 +137,7 @@ class FlightsAccomodationsList extends StatelessWidget {
                             (BuildContext segmentContext, int segIndex) {
                           final segment = segments[segIndex];
                           return Container(
+                              margin: EdgeInsets.only(bottom: 45),
                               child: renderSegment(segmentContext, segment,
                                   segIndex, travelers));
                         },
@@ -166,7 +174,7 @@ class FlightsAccomodationsList extends StatelessWidget {
         return Center(
             child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 0),
                 margin: EdgeInsets.only(bottom: 40, top: index == 0 ? 0 : 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,10 +201,14 @@ class FlightsAccomodationsList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: <Widget>[
-                            AutoSizeText(
-                              segment['origin_name'],
-                              style: topstyle,
-                            ),
+                            Container(
+                                width: MediaQuery.of(context).size.width / 1.4,
+                                child: AutoSizeText(
+                                  segment['origin_name'],
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: topstyle,
+                                )),
                             AutoSizeText(
                               segment['origin_city_name'],
                               style: style,
@@ -211,10 +223,12 @@ class FlightsAccomodationsList extends StatelessWidget {
                                       segment['departure_datetime'])),
                               style: substyle,
                             ),
-                            AutoSizeText(
-                              'Confirmation #: ${segment['confirmation_no']}',
-                              style: substyle,
-                            ),
+                            segment['confirmation_no'] != null
+                                ? AutoSizeText(
+                                    'Confirmation #: ${segment['confirmation_no']}',
+                                    style: substyle,
+                                  )
+                                : Container(),
                             Container(
                                 margin: EdgeInsets.only(top: 60),
                                 child: Row(
@@ -240,18 +254,21 @@ class FlightsAccomodationsList extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
-                                  AutoSizeText(
-                                      "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400)),
+                                  Container(
+                                      width: 130,
+                                      child: AutoSizeText(
+                                          "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w400))),
                                   Container(
                                       width: 30,
                                       height: 1,
                                       margin:
-                                          EdgeInsets.only(left: 5, right: 3),
+                                          EdgeInsets.only(left: 0, right: 15),
                                       color: Colors.black.withOpacity(0.3)),
                                   AutoSizeText("$timeInAir in air",
+                                      maxLines: 2,
                                       style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w300)),
@@ -273,10 +290,14 @@ class FlightsAccomodationsList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
-                            AutoSizeText(
-                              segment['destination_name'],
-                              style: topstyle,
-                            ),
+                            Container(
+                                width: MediaQuery.of(context).size.width / 1.4,
+                                child: AutoSizeText(
+                                  segment['destination_name'],
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: topstyle,
+                                )),
                             AutoSizeText(segment['destination_city_name'],
                                 style: style),
                             AutoSizeText(
@@ -301,6 +322,18 @@ class FlightsAccomodationsList extends StatelessWidget {
           {"label": "Confirmation number", "value": segment['confirmation_no']},
           {'label': "Guests", "value": travelers}
         ];
+        String address = '';
+        if (segment['address1'] != null && segment['postal_code'] != null) {
+          address =
+              '${segment['address1']}${segment['address2'] != null ? ' ${segment['address2']}' : ''} ${segment['city_name']}, ${segment['country']} ${segment['postal_code']}';
+        }
+
+        final lat = segment['lat'] != null
+            ? double.tryParse(segment['lat']) ?? null
+            : null;
+        final lon = segment['lon'] != null
+            ? double.tryParse(segment['lon']) ?? null
+            : null;
         return Container(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <
@@ -315,34 +348,30 @@ class FlightsAccomodationsList extends StatelessWidget {
                     Container(
                         child: AutoSizeText(segment['hotel_name'],
                             style: topstyle)),
-                    Container(
-                        height: 200,
-                        width: MediaQuery.of(context).size.width,
-                        child: StaticMap(GOOGLE_API_KEY,
-                            width: MediaQuery.of(context).size.width,
+                    lat != null && lon != null
+                        ? Container(
                             height: 200,
-                            color: Colors.blueGrey,
-                            zoom: 18,
-                            lat: double.parse(segment['lat']),
-                            lng: double.parse(segment['lon']))
-                        // GoogleMap(
-                        //   markers: <Marker>[
-                        //     Marker(
-                        //         markerId:
-                        //             MarkerId(segment['confirmation_no']),
-                        //         position: LatLng(
-                        //             double.parse(segment['lat']),
-                        //             double.parse(segment['lon'])))
-                        //   ].toSet(),
-                        //   initialCameraPosition: CameraPosition(
-                        //     bearing: 0.0,
-                        //     target: LatLng(double.parse(segment['lat']),
-                        //         double.parse(segment['lon'])),
-                        //     tilt: 30.0,
-                        //     zoom: 17.0,
-                        //   ),
-                        // )
-                        ),
+                            width: MediaQuery.of(context).size.width,
+                            child: StaticMap(GOOGLE_API_KEY,
+                                width: MediaQuery.of(context).size.width,
+                                height: 200,
+                                color: Colors.blueGrey,
+                                zoom: 18,
+                                lat: lat,
+                                lng: lon))
+                        : address != null
+                            ? Container(
+                                height: 200,
+                                width: MediaQuery.of(context).size.width,
+                                child: StaticMap(
+                                  GOOGLE_API_KEY,
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 200,
+                                  color: Colors.blueGrey,
+                                  zoom: 18,
+                                  address: address,
+                                ))
+                            : Container(),
                     Container(
                         height: 170,
                         margin: EdgeInsets.only(top: 10),
@@ -366,7 +395,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                               );
                             }
                             if (hotelInfo[index]['label'] ==
-                                'Confirmation number') {
+                                    'Confirmation number' &&
+                                hotelInfo[index]['value'] != null) {
                               return Container(
                                   height: 35,
                                   child: Row(
@@ -391,11 +421,14 @@ class FlightsAccomodationsList extends StatelessWidget {
                                   children: <Widget>[
                                     AutoSizeText(hotelInfo[index]['label'],
                                         style: substyle),
-                                    AutoSizeText(
-                                        DateFormat("MMMM d, y").format(
-                                            DateTime.parse(
-                                                hotelInfo[index]['value'])),
-                                        style: substyle)
+                                    hotelInfo[index]['value'] != null
+                                        ? AutoSizeText(
+                                            DateFormat("MMMM d, y").format(
+                                                DateTime.parse(
+                                                    hotelInfo[index]['value'])),
+                                            style: substyle)
+                                        : AutoSizeText("Not given",
+                                            style: substyle)
                                   ],
                                 ));
                           },
@@ -424,13 +457,26 @@ class FlightsAccomodationsList extends StatelessWidget {
 
   renderEmpty(BuildContext context, dynamic destination) {
     return Stack(children: <Widget>[
-      Center(
+      SingleChildScrollView(
+          controller: controller,
           child: Container(
+              height: MediaQuery.of(context).size.height / 1.5,
+              alignment: Alignment.center,
               color: Colors.transparent,
               padding: EdgeInsets.symmetric(horizontal: 30),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  AutoSizeText(
+                    'Forward your travel confirmation emails to trips@ajibade.me or manually add them',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.w300),
+                  ),
                   Container(
                       width: MediaQuery.of(context).size.width / 2,
                       height: MediaQuery.of(context).size.width / 2,
@@ -452,16 +498,16 @@ class FlightsAccomodationsList extends StatelessWidget {
                               fit: BoxFit.cover),
                           borderRadius: BorderRadius.circular(130))),
                   AutoSizeText(
-                    'Your missing details for ${destination["destination_name"]}',
+                    'Forwarded emails will appear in notifications. You can add them to your trip from notifications',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        fontSize: 25,
+                        fontSize: 20,
                         color: Colors.blueGrey,
                         fontWeight: FontWeight.w300),
                   ),
                   SizedBox(height: 10),
                   AutoSizeText(
-                    'Forward your travel confirmation emails to trips@ajibade.me',
+                    'Protip: Change the subject text before forwarding your email so you can find the correct notification for this destination. ie - Flight for ${destination["destination_name"]}',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 15,

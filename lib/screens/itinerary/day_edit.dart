@@ -2,16 +2,17 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/screens/itinerary/toggle-visited-modal.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
+import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/comments/index.dart';
@@ -55,7 +56,7 @@ class DayEditState extends State<DayEdit> {
   final String itineraryId;
   final dynamic linkedItinerary;
   final Future2VoidFunc onPush;
-  Color color = Colors.transparent;
+  Color color = Colors.blueGrey;
   String destinationName;
   String destinationId;
   dynamic destination;
@@ -63,7 +64,6 @@ class DayEditState extends State<DayEdit> {
   dynamic location;
   List<dynamic> itineraryItems = [];
   List<dynamic> visited = [];
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
@@ -75,6 +75,7 @@ class DayEditState extends State<DayEdit> {
   dynamic currentPosition;
   int startDate;
   dynamic day;
+  List<dynamic> days;
   bool imageLoading = true;
 
   Future<DayData> data;
@@ -82,25 +83,22 @@ class DayEditState extends State<DayEdit> {
   bool canView = true;
 
   GlobalKey _one = GlobalKey();
-  GlobalKey _two = GlobalKey();
-  GlobalKey _three = GlobalKey();
-  GlobalKey _four = GlobalKey();
+  bool shadow = false;
 
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   toggleDialog(context);
-    // });
-    getLocationPermission().then((res) {
-      _sc.addListener(() {
-        setState(() {
-          if (_pc.isPanelOpen()) {
-            disableScroll = _sc.offset <= 0;
-          }
-        });
-      });
 
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String cacheData = prefs.getString('dayEditShowCase') ?? null;
+      if (cacheData == null) {
+        ShowCaseWidget.of(context).startShowCase([_one]);
+        await prefs.setString('dayEditShowCase', "true");
+      }
+    });
+
+    getLocationPermission().then((res) {
       data = fetchDay(this.itineraryId, this.dayId, this.startLocation, "true");
       data.then((data) {
         if (data.error == null) {
@@ -109,6 +107,7 @@ class DayEditState extends State<DayEdit> {
                 .any((traveler) => store.currentUser.uid == traveler);
             this.color = Color(hexStringToHexInt(data.color));
             this.itineraryName = data.itinerary['name'];
+            this.days = data.itinerary['days'];
             this.ownerId = data.itinerary['owner_id'];
             this.tripId = data.itinerary['trip_id'];
             this.startDate = data.itinerary['start_date'] * 1000;
@@ -135,7 +134,6 @@ class DayEditState extends State<DayEdit> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -149,80 +147,57 @@ class DayEditState extends State<DayEdit> {
 
   @override
   Widget build(BuildContext context) {
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
     }
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: errorUi == false && canView == true
-            ? _panelHeightClosed
-            : _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        backdropTapClosesPanel: false,
-        backdropOpacity: 1,
-        onPanelOpened: () async {
-          setState(() {
-            disableScroll = false;
-          });
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          final String cacheData = prefs.getString('dayEditShowcase') ?? null;
-          if (cacheData == null) {
-            ShowCaseWidget.of(context)
-                .startShowCase([_one, _two, _three, _four]);
-            await prefs.setString('dayEditShowcase', "true");
-          }
-        },
-        onPanelClosed: () {
-          if (disableScroll == false) {
-            setState(() {
-              disableScroll = true;
-            });
-          }
-        },
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(
-            child: Scaffold(
-                backgroundColor: Colors.transparent,
-                body: FutureBuilder(
-                    future: data,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return _buildLoadingBody(context);
-                      }
-                      if (snapshot.hasData && snapshot.data.error == null) {
-                        if (this.itineraryItems.length == 0 &&
-                            this.linkedItinerary == null &&
-                            _pc.isPanelClosed() == true) {
-                          _pc.open();
-                        }
-                        if (this.canView) {
-                          return _buildLoadedBody(context, snapshot);
-                        } else {
-                          return CannotView();
-                        }
-                      } else if (snapshot.hasData &&
-                          snapshot.data.error != null) {
-                        return ListView(
-                            controller: _sc,
-                            physics: disableScroll
-                                ? NeverScrollableScrollPhysics()
-                                : ClampingScrollPhysics(),
-                            shrinkWrap: true,
-                            children: <Widget>[
-                              Container(
-                                  height: _panelHeightOpen - 80,
-                                  width: MediaQuery.of(context).size.width,
+          child: SlidingPanel(
+        snapPanel: true,
+        initialState: this.errorUi == true
+            ? InitialPanelState.expanded
+            : InitialPanelState.closed,
+        size: PanelSize(
+            closedHeight: .45, expandedHeight: getPanelHeight(context)),
+        isDraggable: true,
+        autoSizing: PanelAutoSizing(),
+        decoration: PanelDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
+        parallaxSlideAmount: .5,
+        backdropConfig: BackdropConfig(
+            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
+        panelController: _pc,
+        content: PanelContent(
+            panelContent: (context, _sc) {
+              return Center(
+                  child: Scaffold(
+                      backgroundColor: Colors.transparent,
+                      body: FutureBuilder(
+                          future: data,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return _buildLoadingBody(context, _sc);
+                            }
+                            if (snapshot.hasData &&
+                                snapshot.data.error == null) {
+                              if (this.itineraryItems.length == 0 &&
+                                  this.linkedItinerary == null &&
+                                  _pc.currentState == PanelState.expanded) {
+                                _pc.expand();
+                              }
+                              if (this.canView) {
+                                return _buildLoadedBody(context, snapshot, _sc);
+                              } else {
+                                return CannotView();
+                              }
+                            } else if (snapshot.hasData &&
+                                snapshot.data.error != null) {
+                              return SingleChildScrollView(
+                                  controller: _sc,
                                   child: ErrorContainer(
                                     color: Color.fromRGBO(106, 154, 168, 1),
                                     onRetry: () {
@@ -240,6 +215,8 @@ class DayEditState extends State<DayEdit> {
                                                       data.color));
                                               this.itineraryName =
                                                   data.itinerary['name'];
+                                              this.days =
+                                                  data.itinerary['days'];
                                               this.ownerId =
                                                   data.itinerary['owner_id'];
                                               this.startDate =
@@ -270,85 +247,85 @@ class DayEditState extends State<DayEdit> {
                                         });
                                       });
                                     },
-                                  ))
-                            ]);
-                      }
-                      return _buildLoadingBody(context);
-                    }))),
-        body: Container(
-            height: _bodyHeight,
-            child: Stack(children: <Widget>[
-              Positioned(
-                  width: MediaQuery.of(context).size.width,
-                  height: _bodyHeight,
-                  top: 0,
-                  left: 0,
-                  child: this.image != null
-                      ? TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            this.image,
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
+                                  ));
+                            }
+                            return _buildLoadingBody(context, _sc);
+                          })));
+            },
+            bodyContent: Container(
+                height: _bodyHeight,
+                child: Stack(children: <Widget>[
+                  Positioned(
+                      width: MediaQuery.of(context).size.width,
+                      height: _bodyHeight,
+                      top: 0,
+                      left: 0,
+                      child: this.image != null
+                          ? TransitionToImage(
+                              image: AdvancedNetworkImage(
+                                this.image,
+                                useDiskCache: true,
+                                cacheRule:
+                                    CacheRule(maxAge: const Duration(days: 7)),
+                              ),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
                                   Center(),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
-                          loadedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                          loadFailedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
-                          },
-                        )
-                      : Container()),
-              Positioned.fill(
-                top: 0,
-                left: 0,
-                child: Container(
-                    color: this.imageLoading
-                        ? this.color
-                        : this.color.withOpacity(.3)),
-              ),
-              Positioned(
-                  left: 0,
-                  top: (MediaQuery.of(context).size.height / 2) - 110,
-                  width: MediaQuery.of(context).size.width,
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        destinationName != null
-                            ? AutoSizeText('$destinationName',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w300))
-                            : Container(),
-                      ])),
-              this.image == null || this.imageLoading
-                  ? Positioned.fill(
-                      top: -((_bodyHeight / 2) + 100),
-                      // left: -50,
-                      child: Center(
-                          child: Container(
-                              width: 250,
-                              child: TrotterLoading(
-                                  file: 'assets/globe.flr',
-                                  animation: 'flight',
-                                  color: Colors.transparent))))
-                  : Container()
-            ])),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: const Icon(Icons.refresh),
+                              enableRefresh: true,
+                              loadedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                              loadFailedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                            )
+                          : Container()),
+                  Positioned.fill(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                        color: this.imageLoading
+                            ? this.color
+                            : this.color.withOpacity(.3)),
+                  ),
+                  Positioned(
+                      left: 0,
+                      top: (_bodyHeight / 2),
+                      width: MediaQuery.of(context).size.width,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            destinationName != null
+                                ? AutoSizeText('$destinationName',
+                                    style: TextStyle(
+                                        color: fontContrast(color),
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w300))
+                                : Container(),
+                          ])),
+                  this.image == null || this.imageLoading
+                      ? Positioned.fill(
+                          top: -((_bodyHeight / 2) + 100),
+                          // left: -50,
+                          child: Center(
+                              child: Container(
+                                  width: 250,
+                                  child: TrotterLoading(
+                                      file: 'assets/globe.flr',
+                                      animation: 'flight',
+                                      color: Colors.transparent))))
+                      : Container()
+                ]))),
       )),
       Positioned(
           top: 0,
@@ -382,6 +359,7 @@ class DayEditState extends State<DayEdit> {
                               this.color = Color(hexStringToHexInt(data.color));
                               this.itineraryName = data.itinerary['name'];
                               this.ownerId = data.itinerary['owner_id'];
+                              this.days = data.itinerary['days'];
                               this.tripId = data.itinerary['trip_id'];
                               this.startDate =
                                   data.itinerary['start_date'] * 1000;
@@ -403,6 +381,7 @@ class DayEditState extends State<DayEdit> {
                           } else {
                             setState(() {
                               this.errorUi = true;
+                              this.loading = false;
                             });
                           }
                         });
@@ -565,47 +544,92 @@ class DayEditState extends State<DayEdit> {
     ]);
   }
 
-  Future getLocationPermission() async {
-    var location = Location();
-
-// Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      var permission = await location.hasPermission();
-      if (permission == false) {
-        await location.requestPermission();
-        return;
-      }
-    } catch (e) {
-      if (e.code == 'PERMISSION_DENIED') {
-        var error = 'Permission denied';
-        print(error);
-      }
-      return;
+  void onScroll(offset) {
+    if (offset > 0) {
+      setState(() {
+        this.shadow = true;
+      });
+    } else {
+      setState(() {
+        this.shadow = false;
+      });
     }
   }
 
 // function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    var day = snapshot.data.day;
+  Widget _buildLoadedBody(
+      BuildContext ctxt, AsyncSnapshot snapshot, ScrollController _sc) {
+    var day = this.day;
     //var itinerary = snapshot.data.itinerary;
     var color = Color(hexStringToHexInt(snapshot.data.color));
     final formatter = DateFormat.yMMMMEEEEd("en_US");
     return DefaultTabController(
         length: 2,
+        initialIndex: itineraryItems.length == 0 && visited.length == 0
+            ? 0
+            : itineraryItems.length == 0 && visited.length > 0 ? 1 : 0,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Container(
-                color: Colors.transparent,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30)),
+                    boxShadow: this.shadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                                color: Colors.black.withOpacity(.2),
+                                blurRadius: 10.0,
+                                offset: Offset(0.0, 0.75))
+                          ]
+                        : []),
                 alignment: Alignment.center,
-                child: _renderTabBar(this.color, Colors.black)),
+                child: Column(children: <Widget>[
+                  _renderTabBar(this.color, Colors.black),
+                  DayListTabs(
+                    days: this.days,
+                    startDate: this.startDate,
+                    activeDay: this.dayId,
+                    activeColor: color,
+                    onSelected: (day, index) {
+                      onPush({
+                        'itineraryId': this.itineraryId,
+                        'dayId': day['id'].toString(),
+                        "linkedItinerary": this.days[index]['linked_itinerary'],
+                        "startLocation": startLocation['location'],
+                        'level': 'itinerary/day/edit',
+                        'replace': true,
+                        'color': color
+                      });
+                    },
+                  )
+                ])),
             Flexible(
                 child: Container(
                     width: MediaQuery.of(ctxt).size.width,
                     child: TabBarView(children: <Widget>[
-                      renderItinerary(day, formatter, color, ctxt),
-                      renderVisited(day, formatter, color, ctxt),
+                      RenderWidget(
+                          onScroll: onScroll,
+                          scrollController: _sc,
+                          builder: (context,
+                                  {scrollController,
+                                  asyncSnapshot,
+                                  startLocation}) =>
+                              renderItinerary(day, formatter, color, context,
+                                  scrollController)),
+                      RenderWidget(
+                        onScroll: onScroll,
+                        scrollController: _sc,
+                        builder: (context,
+                                {scrollController,
+                                asyncSnapshot,
+                                startLocation}) =>
+                            renderVisited(day, formatter, color, context,
+                                scrollController),
+                      )
                     ])))
           ],
         ));
@@ -615,7 +639,7 @@ class DayEditState extends State<DayEdit> {
     return AutoSizeText(label,
         style: TextStyle(
           fontSize: 15,
-          fontWeight: FontWeight.w300,
+          fontWeight: FontWeight.w400,
         ));
   }
 
@@ -626,7 +650,11 @@ class DayEditState extends State<DayEdit> {
       isScrollable: true,
       unselectedLabelColor: Colors.black.withOpacity(0.6),
       indicator: BoxDecoration(
-          border: Border(bottom: BorderSide(color: mainColor, width: 2.0))),
+          border: Border(
+              top: BorderSide(
+        color: mainColor,
+        width: 4.0,
+      ))),
       tabs: <Widget>[
         _renderTab('Itinerary'),
         _renderTab('Visited'),
@@ -639,13 +667,10 @@ class DayEditState extends State<DayEdit> {
     setState(() {
       this.loading = true;
     });
-    final response =
-        await toggleVisited(store, itineraryId, dayId, item['id'], item);
+    final response = await toggleVisited(
+        store, tripId, itineraryId, dayId, item['id'], item);
     if (response.success == true) {
       setState(() {
-        //this.color = Color(hexStringToHexInt(response.color));
-        // this.destinationName = response.destination['name'];
-        //this.destinationId = response.destination['id'].toString();
         this.itineraryItems = response.day['itinerary_items'];
         this.visited = response.visited;
         this.loading = false;
@@ -674,15 +699,33 @@ class DayEditState extends State<DayEdit> {
     );
   }
 
-  renderItinerary(day, DateFormat formatter, Color color, BuildContext ctxt) {
+  Widget renderItinerary(day, DateFormat formatter, Color color,
+      BuildContext ctxt, ScrollController _sc) {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
+        controller: _sc,
+        panelController: _pc,
         header: '${ordinalNumber(day['day'] + 1)} day',
         tabs: true,
+        onRefreshImage: (data) async {
+          final store = Provider.of<TrotterStore>(context);
+          final itemIndex = data['index'];
+          final poi = data['poi'];
+          final itineraryItemId = data['itineraryItemId'];
+
+          final res = await updatePoiImageEdit(this.itineraryId, this.dayId,
+              itineraryItemId, poi['id'], itemIndex, day['day'], store);
+
+          if (res.success == true) {
+            setState(() {
+              this.itineraryItems[itemIndex]['image'] = poi['image'];
+              this.itineraryItems[itemIndex]['poi'] = poi;
+            });
+          }
+        },
         onToggleVisited: (item) async {
           var time = await toggleDialog(ctxt);
           var data = item;
-          print(time);
           if (time != null) {
             data['time'] = time;
             onToggleVisited(context, data);
@@ -692,22 +735,16 @@ class DayEditState extends State<DayEdit> {
             DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)
                 .add(Duration(days: day['day']))),
         ownerId: this.ownerId,
-        controller: _sc,
         day: day['day'],
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
-        items: itineraryItems,
-        linkedItinerary: this.linkedItinerary,
+        items: this.itineraryItems,
+        linkedItinerary:
+            this.itineraryItems.length > 0 ? this.linkedItinerary : null,
         color: color,
         startLocation: this.currentPosition != null
             ? this.currentPosition
             : this.startLocation,
         onLongPressed: (data) {
-          final store = Provider.of<TrotterStore>(ctxt);
-          if (this.ownerId == store.currentUser.uid ||
-              store.currentUser.uid == data['added_by'])
-            bottomSheetModal(context, day['day'] + 1, data);
+          bottomSheetModal(context, day['day'] + 1, data);
         },
         onPressed: (data) {
           if (data['itinerary'] != null) {
@@ -721,7 +758,7 @@ class DayEditState extends State<DayEdit> {
           }
         },
         comments: true,
-        showCaseKeys: [_two, _three, _four],
+        showTutorial: true,
         onCommentPressed: (itineraryItem) async {
           final totalComments = await Navigator.push(
               context,
@@ -750,24 +787,77 @@ class DayEditState extends State<DayEdit> {
     ]);
   }
 
-  renderVisited(day, DateFormat formatter, Color color, BuildContext ctxt) {
+  renderVisited(day, DateFormat formatter, Color color, BuildContext ctxt,
+      ScrollController _sc) {
     return Stack(fit: StackFit.expand, children: <Widget>[
       DayList(
         header: '${ordinalNumber(day['day'] + 1)} day',
+        panelController: _pc,
         tabs: true,
+        showTutorial: true,
         onToggleVisited: (item) => onToggleVisited(ctxt, item),
+        onRefreshImage: (data) async {
+          final store = Provider.of<TrotterStore>(context);
+          final itemIndex = data['index'];
+          final poi = data['poi'];
+          final itineraryItemId = data['itineraryItemId'];
+
+          final res = await updatePoiImageEdit(this.itineraryId, this.dayId,
+              itineraryItemId, poi['id'], itemIndex, day['day'], store);
+
+          if (res.success == true) {
+            setState(() {
+              this.visited[itemIndex]['image'] = res.poi['image'];
+              this.visited[itemIndex]['color'] = res.color;
+              this.visited[itemIndex]['poi'] = res.poi;
+            });
+          }
+        },
+        onDescriptionAdded: (res) async {
+          final itineraryItemId = res["item"]["id"];
+          final data = {
+            "user": {
+              "uid": store.currentUser.uid,
+              "photoUrl": store.currentUser.photoUrl,
+              "email": store.currentUser.email,
+              "phoneNumber": store.currentUser.phoneNumber,
+              "displayName": store.currentUser.displayName
+            },
+            "description": res["description"],
+            "created_at": DateTime.now().millisecondsSinceEpoch,
+            "id": store.currentUser.uid
+          };
+          setState(() {
+            this.loading = true;
+          });
+          var response = await addDescription(
+              store, tripId, itineraryId, dayId, itineraryItemId, data);
+
+          if (response.success == true) {
+            final index = this.visited.indexWhere((item) {
+              return item["id"] == itineraryItemId;
+            });
+
+            setState(() {
+              this.visited[index]['traveler_descriptions'] =
+                  response.descriptions;
+            });
+          }
+
+          setState(() {
+            this.loading = false;
+          });
+        },
         subHeader: formatter.format(
             DateTime.fromMillisecondsSinceEpoch(this.startDate, isUtc: true)
                 .add(Duration(days: day['day']))),
         ownerId: this.ownerId,
         controller: _sc,
         day: day['day'],
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
         items: visited,
         color: color,
-        linkedItinerary: this.linkedItinerary,
+        linkedItinerary:
+            this.itineraryItems.length == 0 ? this.linkedItinerary : null,
         startLocation: this.currentPosition != null
             ? this.currentPosition
             : this.startLocation,
@@ -902,97 +992,165 @@ class DayEditState extends State<DayEdit> {
                     }),
                 new ListTile(
                     leading: new Icon(
-                      EvilIcons.trash,
+                      Ionicons.md_copy,
+                      size: 20,
                     ),
-                    title: new AutoSizeText('Delete from itnerary'),
+                    title: new AutoSizeText('Copy to a different day'),
                     onTap: () async {
-                      this.loading = true;
-                      var response = await deleteFromDay(this.itineraryId,
-                          this.dayId, id, store.currentUser.uid);
-                      if (response.success == true) {
+                      var result = await showDayBottomSheet(
+                          store,
+                          context,
+                          this.itineraryId,
+                          data['poi'],
+                          this.destinationId,
+                          this.color,
+                          this.destination,
+                          data['added_by'],
+                          force: true,
+                          startDate: this.startDate,
+                          isSelecting: false,
+                          movedByUid: store.currentUser.uid,
+                          movingFromId: this.dayId,
+                          onPush: onPush);
+                      if (result != null &&
+                          result['selected'] != null &&
+                          result['dayId'] != null &&
+                          result['toIndex'] != null &&
+                          result['itinerary'] != null &&
+                          result['poi'] != null &&
+                          result['dayIndex'] != null &&
+                          result['movedPlaceId'] != null) {
+                        Navigator.of(context).pop();
+
                         setState(() {
-                          this
-                              .itineraryItems
-                              .removeWhere((item) => item['id'] == id);
-                          this.visited.removeWhere((item) => item['id'] == id);
-                          store.itineraryStore
-                              .updateItineraryBuilderDelete(this.dayId, id);
+                          showSuccessSnackbar(this.context,
+                              onPush: onPush,
+                              toIndex: result['toIndex'],
+                              dayId: result['dayId'],
+                              dayIndex: result['dayIndex'],
+                              itinerary: result['itinerary'],
+                              poi: result['poi'],
+                              action: 'copied');
+
                           this.loading = false;
                         });
-                        Scaffold.of(ctxt).showSnackBar(SnackBar(
-                          content: AutoSizeText('$name was removed.',
-                              style: TextStyle(fontSize: 18)),
-                          duration: Duration(seconds: 5),
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            textColor: color,
-                            onPressed: () async {
-                              setState(() {
-                                this.loading = true;
-                              });
-                              var response = await addToDay(
-                                  store,
-                                  this.itineraryId,
-                                  this.dayId,
-                                  this.destinationId,
-                                  undoData,
-                                  false);
-                              if (response.success == true) {
-                                setState(() {
-                                  this.color =
-                                      Color(hexStringToHexInt(response.color));
-                                  this.destinationName =
-                                      response.destination['name'];
-                                  this.destinationId =
-                                      response.destination['id'].toString();
-                                  this.itineraryItems =
-                                      response.day['itinerary_items'];
-                                  this.visited = response.visited;
-                                  this.loading = false;
-                                  Scaffold.of(ctxt).removeCurrentSnackBar();
-                                  Scaffold.of(ctxt).showSnackBar(SnackBar(
-                                    content: AutoSizeText('Undo successful!',
-                                        style: TextStyle(fontSize: 18)),
-                                    duration: Duration(seconds: 2),
-                                  ));
-                                });
-                              } else {
-                                Scaffold.of(ctxt).removeCurrentSnackBar();
-                                Scaffold.of(ctxt).showSnackBar(SnackBar(
-                                    content: AutoSizeText(
-                                        'Sorry the undo failed!',
-                                        style: TextStyle(fontSize: 18)),
-                                    duration: Duration(seconds: 2)));
-                              }
-                            },
-                          ),
-                        ));
-                      } else {
+                      } else if (result != null && result['success'] == false) {
                         setState(() {
                           Scaffold.of(this.context).showSnackBar(SnackBar(
-                            content: AutoSizeText(
-                                'Unable to delete from itinerary',
+                            content: AutoSizeText('Unable to copy',
                                 style: TextStyle(fontSize: 18)),
                             duration: Duration(seconds: 2),
                           ));
                           this.loading = false;
                         });
                       }
-                      Navigator.of(context).pop();
                     }),
+                this.ownerId == store.currentUser.uid ||
+                        store.currentUser.uid == data['added_by']
+                    ? new ListTile(
+                        leading: new Icon(
+                          EvilIcons.trash,
+                        ),
+                        title: new AutoSizeText('Delete from itnerary'),
+                        onTap: () async {
+                          this.loading = true;
+                          var response = await deleteFromDay(this.itineraryId,
+                              this.dayId, id, store.currentUser.uid);
+                          if (response.success == true) {
+                            setState(() {
+                              this
+                                  .itineraryItems
+                                  .removeWhere((item) => item['id'] == id);
+                              this
+                                  .visited
+                                  .removeWhere((item) => item['id'] == id);
+                              store.itineraryStore
+                                  .updateItineraryBuilderDelete(this.dayId, id);
+                              this.loading = false;
+                            });
+                            Scaffold.of(ctxt).showSnackBar(SnackBar(
+                              content: AutoSizeText('$name was removed.',
+                                  style: TextStyle(fontSize: 18)),
+                              duration: Duration(seconds: 5),
+                              action: SnackBarAction(
+                                label: 'Undo',
+                                textColor: color,
+                                onPressed: () async {
+                                  setState(() {
+                                    this.loading = true;
+                                  });
+                                  var response = await addToDay(
+                                      store,
+                                      this.itineraryId,
+                                      this.dayId,
+                                      this.destinationId,
+                                      undoData,
+                                      false);
+                                  if (response.success == true) {
+                                    setState(() {
+                                      this.color = Color(
+                                          hexStringToHexInt(response.color));
+                                      this.destinationName =
+                                          response.destination['name'];
+                                      this.destinationId =
+                                          response.destination['id'].toString();
+                                      this.itineraryItems =
+                                          response.day['itinerary_items'];
+                                      this.visited = response.visited;
+                                      this.loading = false;
+                                      Scaffold.of(ctxt).removeCurrentSnackBar();
+                                      Scaffold.of(ctxt).showSnackBar(SnackBar(
+                                        content: AutoSizeText(
+                                            'Undo successful!',
+                                            style: TextStyle(fontSize: 18)),
+                                        duration: Duration(seconds: 2),
+                                      ));
+                                    });
+                                  } else {
+                                    Scaffold.of(ctxt).removeCurrentSnackBar();
+                                    Scaffold.of(ctxt).showSnackBar(SnackBar(
+                                        content: AutoSizeText(
+                                            'Sorry the undo failed!',
+                                            style: TextStyle(fontSize: 18)),
+                                        duration: Duration(seconds: 2)));
+                                  }
+                                },
+                              ),
+                            ));
+                          } else {
+                            setState(() {
+                              Scaffold.of(this.context).showSnackBar(SnackBar(
+                                content: AutoSizeText(
+                                    'Unable to delete from itinerary',
+                                    style: TextStyle(fontSize: 18)),
+                                duration: Duration(seconds: 2),
+                              ));
+                              this.loading = false;
+                            });
+                          }
+                          Navigator.of(context).pop();
+                        })
+                    : Container(),
               ]);
         });
   }
 
   // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
-    return Column(children: <Widget>[
-      Container(
-        color: Color.fromRGBO(240, 240, 240, 0),
-      ),
-      Flexible(
-        child: DayListLoading(),
-      )
-    ]);
+  Widget _buildLoadingBody(BuildContext ctxt, ScrollController _sc) {
+    double _panelHeightOpen = MediaQuery.of(ctxt).size.height - 130;
+
+    return Container(
+        width: MediaQuery.of(ctxt).size.width,
+        height: _panelHeightOpen,
+        child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+          Container(
+            color: Color.fromRGBO(240, 240, 240, 0),
+          ),
+          Flexible(
+            child: DayListLoading(
+              controller: _sc,
+            ),
+          )
+        ]));
   }
 }

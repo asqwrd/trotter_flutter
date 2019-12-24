@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/itineraries/store.dart';
 import 'package:trotter_flutter/store/middleware.dart';
@@ -113,17 +114,21 @@ class TrotterStore extends Store {
       profileLoading = true;
     });
     try {
+      eventBus.fire(RootEvent(tab: TabItem.trips));
       await _auth.signOut();
       await _googleSignIn.signOut();
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       print('logged out!');
-      setState(() {
-        _currentUser = null;
-        _notifications = NotificationsData(notifications: [], success: true);
-        tripStore = TripsStore();
-        itineraryStore = ItineraryStore();
-        profileLoading = false;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        setState(() {
+          _currentUser = null;
+          _notifications = NotificationsData(notifications: [], success: true);
+          tripStore = TripsStore();
+          itineraryStore = ItineraryStore();
+          profileLoading = false;
+        });
       });
     } catch (error) {
       print('store.dart error');

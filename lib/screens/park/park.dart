@@ -1,481 +1,481 @@
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
-import 'package:flutter_store/flutter_store.dart';
-import 'package:loadmore/loadmore.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:trotter_flutter/store/middleware.dart';
-import 'package:trotter_flutter/store/store.dart';
-import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
-import 'package:trotter_flutter/widgets/errors/index.dart';
-import 'package:trotter_flutter/widgets/itineraries/index.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trotter_flutter/utils/index.dart';
-import 'package:trotter_flutter/widgets/auth/index.dart';
-import 'package:trotter_flutter/globals.dart';
+// import 'package:auto_size_text/auto_size_text.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter_advanced_networkimage/provider.dart';
+// import 'package:flutter_advanced_networkimage/transition.dart';
+// import 'package:flutter_store/flutter_store.dart';
+// import 'package:loadmore/loadmore.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
+// import 'package:trotter_flutter/store/middleware.dart';
+// import 'package:trotter_flutter/store/store.dart';
+// import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
+// import 'package:trotter_flutter/widgets/errors/index.dart';
+// import 'package:trotter_flutter/widgets/itineraries/index.dart';
+// import 'package:http/http.dart' as http;
+// import 'dart:convert';
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:trotter_flutter/utils/index.dart';
+// import 'package:trotter_flutter/widgets/auth/index.dart';
+// import 'package:trotter_flutter/globals.dart';
 
-Future<ParkData> fetchPark(String id) async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  final String cacheData = prefs.getString('park_$id') ?? null;
-  final int cacheDataExpire = prefs.getInt('park_$id-expiration') ?? null;
-  final currentTime = DateTime.now().millisecondsSinceEpoch;
-  if (cacheData != null &&
-      cacheDataExpire != null &&
-      (currentTime < cacheDataExpire)) {
-    print('cached');
-    await Future.delayed(const Duration(seconds: 1));
-    return ParkData.fromJson(json.decode(cacheData));
-  } else {
-    try {
-      print('no-cached');
-      print(id);
-      final response = await http.get(
-          '$ApiDomain/api/explore/national_parks/$id/',
-          headers: {'Authorization': 'security'});
-      if (response.statusCode == 200) {
-        // If server returns an OK response, parse the JSON
-        await prefs.setString('park_$id', response.body);
-        await prefs.setInt('park_$id-expiration',
-            DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
-        return ParkData.fromJson(json.decode(response.body));
-      } else {
-        // If that response was not OK, throw an error.
-        var msg = response.statusCode;
-        return ParkData(error: 'Response> $msg');
-      }
-    } catch (error) {
-      return ParkData(error: 'Server is down');
-    }
-  }
-}
+// Future<ParkData> fetchPark(String id) async {
+//   final SharedPreferences prefs = await SharedPreferences.getInstance();
+//   final String cacheData = prefs.getString('park_$id') ?? null;
+//   final int cacheDataExpire = prefs.getInt('park_$id-expiration') ?? null;
+//   final currentTime = DateTime.now().millisecondsSinceEpoch;
+//   if (cacheData != null &&
+//       cacheDataExpire != null &&
+//       (currentTime < cacheDataExpire)) {
+//     print('cached');
+//     await Future.delayed(const Duration(seconds: 1));
+//     return ParkData.fromJson(json.decode(cacheData));
+//   } else {
+//     try {
+//       print('no-cached');
+//       print(id);
+//       final response = await http.get(
+//           '$ApiDomain/api/explore/national_parks/$id/',
+//           headers: {'Authorization': 'security'});
+//       if (response.statusCode == 200) {
+//         // If server returns an OK response, parse the JSON
+//         await prefs.setString('park_$id', response.body);
+//         await prefs.setInt('park_$id-expiration',
+//             DateTime.now().add(Duration(days: 1)).millisecondsSinceEpoch);
+//         return ParkData.fromJson(json.decode(response.body));
+//       } else {
+//         // If that response was not OK, throw an error.
+//         var msg = response.statusCode;
+//         return ParkData(error: 'Response> $msg');
+//       }
+//     } catch (error) {
+//       return ParkData(error: 'Server is down');
+//     }
+//   }
+// }
 
-class ParkData {
-  final String color;
-  final Map<String, dynamic> park;
-  final dynamic pois;
-  final String error;
+// class ParkData {
+//   final String color;
+//   final Map<String, dynamic> park;
+//   final dynamic pois;
+//   final String error;
 
-  ParkData({this.color, this.park, this.pois, this.error});
+//   ParkData({this.color, this.park, this.pois, this.error});
 
-  factory ParkData.fromJson(Map<String, dynamic> json) {
-    return ParkData(
-        color: json['color'],
-        park: json['park'],
-        pois: json['pois'],
-        error: null);
-  }
-}
+//   factory ParkData.fromJson(Map<String, dynamic> json) {
+//     return ParkData(
+//         color: json['color'],
+//         park: json['park'],
+//         pois: json['pois'],
+//         error: null);
+//   }
+// }
 
-class Park extends StatefulWidget {
-  final String parkId;
-  final Future2VoidFunc onPush;
-  Park({Key key, @required this.parkId, this.onPush}) : super(key: key);
-  @override
-  ParkState createState() =>
-      new ParkState(parkId: this.parkId, onPush: this.onPush);
-}
+// class Park extends StatefulWidget {
+//   final String parkId;
+//   final Future2VoidFunc onPush;
+//   Park({Key key, @required this.parkId, this.onPush}) : super(key: key);
+//   @override
+//   ParkState createState() =>
+//       new ParkState(parkId: this.parkId, onPush: this.onPush);
+// }
 
-class ParkState extends State<Park> with SingleTickerProviderStateMixin {
-  static String id;
-  final String parkId;
-  Future<ParkData> data;
-  final Future2VoidFunc onPush;
-  final ScrollController _sc = ScrollController();
-  PanelController _pc = new PanelController();
-  bool disableScroll = true;
-  bool errorUi = false;
-  bool loading = true;
-  String image;
-  Color color = Colors.transparent;
-  String parkName;
-  dynamic park;
-  dynamic location;
-  dynamic pois = [];
-  bool imageLoading = true;
+// class ParkState extends State<Park> with SingleTickerProviderStateMixin {
+//   static String id;
+//   final String parkId;
+//   Future<ParkData> data;
+//   final Future2VoidFunc onPush;
+//   final ScrollController _sc = ScrollController();
+//   PanelController _pc = new PanelController();
+//   bool disableScroll = true;
+//   bool errorUi = false;
+//   bool loading = true;
+//   String image;
+//   Color color = Colors.transparent;
+//   String parkName;
+//   dynamic park;
+//   dynamic location;
+//   dynamic pois = [];
+//   bool imageLoading = true;
 
-  @override
-  void initState() {
-    _sc.addListener(() {
-      setState(() {
-        if (_pc.isPanelOpen()) {
-          disableScroll = _sc.offset <= 0;
-        }
-      });
-    });
-    super.initState();
-    data = fetchPark(this.parkId);
-  }
+//   @override
+//   void initState() {
+//     _sc.addListener(() {
+//       setState(() {
+//         if (_pc.isPanelOpen()) {
+//           disableScroll = _sc.offset <= 0;
+//         }
+//       });
+//     });
+//     super.initState();
+//     data = fetchPark(this.parkId);
+//   }
 
-  ParkState({this.parkId, this.onPush});
+//   ParkState({this.parkId, this.onPush});
 
-  @override
-  void dispose() {
-    _sc.dispose();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     _sc.dispose();
+//     super.dispose();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-      return getErrorWidget(context, errorDetails);
-    };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
-    double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
-    double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
-    data.then((data) => {
-          if (data.error != null)
-            {
-              setState(() {
-                this.errorUi = true;
-                this.loading = false;
-              })
-            }
-          else if (data.error == null)
-            {
-              setState(() {
-                this.errorUi = false;
-                this.image = data.park['image'];
-                this.parkName = data.park['name'];
-                this.park = data.park;
-                this.pois = data.pois;
-                this.loading = false;
-                this.color = Color(hexStringToHexInt(data.color));
-              })
-            }
-        });
-    return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      Positioned(
-          child: SlidingUpPanel(
-              parallaxEnabled: true,
-              parallaxOffset: .5,
-              minHeight:
-                  errorUi == false ? _panelHeightClosed : _panelHeightOpen,
-              controller: _pc,
-              backdropEnabled: true,
-              backdropColor: color,
-              backdropTapClosesPanel: false,
-              backdropOpacity: 1,
-              onPanelOpened: () {
-                setState(() {
-                  disableScroll = false;
-                });
-              },
-              onPanelClosed: () {
-                if (disableScroll == false) {
-                  setState(() {
-                    disableScroll = true;
-                  });
-                }
-              },
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-              maxHeight: _panelHeightOpen,
-              panel: Center(
-                  child: FutureBuilder(
-                      future: data,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data.error != null) {
-                          return ListView(
-                              controller: _sc,
-                              physics: disableScroll
-                                  ? NeverScrollableScrollPhysics()
-                                  : ClampingScrollPhysics(),
-                              shrinkWrap: true,
-                              children: <Widget>[
-                                Container(
-                                    height: _panelHeightOpen - 80,
-                                    width: MediaQuery.of(context).size.width,
-                                    child: ErrorContainer(
-                                      onRetry: () {
-                                        setState(() {
-                                          data = fetchPark(this.parkId);
-                                        });
-                                      },
-                                    ))
-                              ]);
-                        }
-                        return _buildLoadedBody(context, snapshot);
-                      })),
-              body: Container(
-                height: _bodyHeight,
-                child: Container(
-                    height: _bodyHeight,
-                    child: Stack(children: <Widget>[
-                      Positioned(
-                          width: MediaQuery.of(context).size.width,
-                          height: _bodyHeight,
-                          top: 0,
-                          left: 0,
-                          child: this.image != null
-                              ? TransitionToImage(
-                                  image: AdvancedNetworkImage(
-                                    this.image,
-                                    useDiskCache: true,
-                                    cacheRule: CacheRule(
-                                        maxAge: const Duration(days: 7)),
-                                  ),
-                                  loadingWidgetBuilder: (BuildContext context,
-                                          double progress, test) =>
-                                      Container(),
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.center,
-                                  placeholder: const Icon(Icons.refresh),
-                                  enableRefresh: true,
-                                  loadedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
-                                  },
-                                  loadFailedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
-                                  },
-                                )
-                              : Container()),
-                      Positioned.fill(
-                        top: 0,
-                        left: 0,
-                        child: Container(
-                            color: this.imageLoading
-                                ? this.color
-                                : this.color.withOpacity(.3)),
-                      ),
-                      this.image == null || this.imageLoading == true
-                          ? Positioned.fill(
-                              top: -_bodyHeight / 2,
-                              // left: -50,
-                              child: Center(
-                                  child: Container(
-                                      width: 250,
-                                      child: TrotterLoading(
-                                          file: 'assets/globe.flr',
-                                          animation: 'flight',
-                                          color: Colors.transparent))))
-                          : Container()
-                    ])),
-              ))),
-      Positioned(
-          top: 0,
-          width: MediaQuery.of(context).size.width,
-          child: new TrotterAppBar(
-            onPush: onPush,
-            color: color,
-            title: this.parkName,
-            back: true,
-            loading: loading,
-          )),
-    ]);
-  }
+//   @override
+//   Widget build(BuildContext context) {
+//     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+//       return getErrorWidget(context, errorDetails);
+//     };
+//     double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
+//     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+//     double _panelHeightClosed = (MediaQuery.of(context).size.height / 2) - 50;
+//     data.then((data) => {
+//           if (data.error != null)
+//             {
+//               setState(() {
+//                 this.errorUi = true;
+//                 this.loading = false;
+//               })
+//             }
+//           else if (data.error == null)
+//             {
+//               setState(() {
+//                 this.errorUi = false;
+//                 this.image = data.park['image'];
+//                 this.parkName = data.park['name'];
+//                 this.park = data.park;
+//                 this.pois = data.pois;
+//                 this.loading = false;
+//                 this.color = Color(hexStringToHexInt(data.color));
+//               })
+//             }
+//         });
+//     return Stack(alignment: Alignment.topCenter, children: <Widget>[
+//       Positioned(
+//           child: SlidingUpPanel(
+//               parallaxEnabled: true,
+//               parallaxOffset: .5,
+//               minHeight:
+//                   errorUi == false ? _panelHeightClosed : _panelHeightOpen,
+//               controller: _pc,
+//               backdropEnabled: true,
+//               backdropColor: color,
+//               backdropTapClosesPanel: false,
+//               backdropOpacity: 1,
+//               onPanelOpened: () {
+//                 setState(() {
+//                   disableScroll = false;
+//                 });
+//               },
+//               onPanelClosed: () {
+//                 if (disableScroll == false) {
+//                   setState(() {
+//                     disableScroll = true;
+//                   });
+//                 }
+//               },
+//               borderRadius: BorderRadius.only(
+//                   topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+//               maxHeight: _panelHeightOpen,
+//               panel: Center(
+//                   child: FutureBuilder(
+//                       future: data,
+//                       builder: (context, snapshot) {
+//                         if (snapshot.hasData && snapshot.data.error != null) {
+//                           return ListView(
+//                               controller: _sc,
+//                               physics: disableScroll
+//                                   ? NeverScrollableScrollPhysics()
+//                                   : ClampingScrollPhysics(),
+//                               shrinkWrap: true,
+//                               children: <Widget>[
+//                                 Container(
+//                                     height: _panelHeightOpen - 80,
+//                                     width: MediaQuery.of(context).size.width,
+//                                     child: ErrorContainer(
+//                                       onRetry: () {
+//                                         setState(() {
+//                                           data = fetchPark(this.parkId);
+//                                         });
+//                                       },
+//                                     ))
+//                               ]);
+//                         }
+//                         return _buildLoadedBody(context, snapshot);
+//                       })),
+//               body: Container(
+//                 height: _bodyHeight,
+//                 child: Container(
+//                     height: _bodyHeight,
+//                     child: Stack(children: <Widget>[
+//                       Positioned(
+//                           width: MediaQuery.of(context).size.width,
+//                           height: _bodyHeight,
+//                           top: 0,
+//                           left: 0,
+//                           child: this.image != null
+//                               ? TransitionToImage(
+//                                   image: AdvancedNetworkImage(
+//                                     this.image,
+//                                     useDiskCache: true,
+//                                     cacheRule: CacheRule(
+//                                         maxAge: const Duration(days: 7)),
+//                                   ),
+//                                   loadingWidgetBuilder: (BuildContext context,
+//                                           double progress, test) =>
+//                                       Container(),
+//                                   fit: BoxFit.cover,
+//                                   alignment: Alignment.center,
+//                                   placeholder: const Icon(Icons.refresh),
+//                                   enableRefresh: true,
+//                                   loadedCallback: () async {
+//                                     await Future.delayed(Duration(seconds: 2));
+//                                     setState(() {
+//                                       this.imageLoading = false;
+//                                     });
+//                                   },
+//                                   loadFailedCallback: () async {
+//                                     await Future.delayed(Duration(seconds: 2));
+//                                     setState(() {
+//                                       this.imageLoading = false;
+//                                     });
+//                                   },
+//                                 )
+//                               : Container()),
+//                       Positioned.fill(
+//                         top: 0,
+//                         left: 0,
+//                         child: Container(
+//                             color: this.imageLoading
+//                                 ? this.color
+//                                 : this.color.withOpacity(.3)),
+//                       ),
+//                       this.image == null || this.imageLoading == true
+//                           ? Positioned.fill(
+//                               top: -_bodyHeight / 2,
+//                               // left: -50,
+//                               child: Center(
+//                                   child: Container(
+//                                       width: 250,
+//                                       child: TrotterLoading(
+//                                           file: 'assets/globe.flr',
+//                                           animation: 'flight',
+//                                           color: Colors.transparent))))
+//                           : Container()
+//                     ])),
+//               ))),
+//       Positioned(
+//           top: 0,
+//           width: MediaQuery.of(context).size.width,
+//           child: new TrotterAppBar(
+//             onPush: onPush,
+//             color: color,
+//             title: this.parkName,
+//             back: true,
+//             loading: loading,
+//           )),
+//     ]);
+//   }
 
-// function for rendering view after data is loaded
-  Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return _buildLoadingBody(ctxt);
-    }
-    var destination = snapshot.data.park;
-    var descriptionShort = snapshot.data.park['description_short'];
-    var color = Color(hexStringToHexInt(snapshot.data.color));
+// // function for rendering view after data is loaded
+//   Widget _buildLoadedBody(BuildContext ctxt, AsyncSnapshot snapshot) {
+//     if (snapshot.connectionState == ConnectionState.waiting) {
+//       return _buildLoadingBody(ctxt);
+//     }
+//     var destination = snapshot.data.park;
+//     var descriptionShort = snapshot.data.park['description_short'];
+//     var color = Color(hexStringToHexInt(snapshot.data.color));
 
-    return Container(
-        height: MediaQuery.of(context).size.height,
-        child: LoadMore(
-            delegate: TrotterLoadMoreDelegate(this.color),
-            isFinish: this.pois['more'] == false,
-            onLoadMore: () async {
-              if (this.pois['more'] == true) {
-                //print(data);
-                var res = await fetchMorePlaces(
-                    this.parkId, 'poi', this.pois['places'].length);
-                if (res.success == true) {
-                  setState(() {
-                    this.pois['places'] = this.pois['places']
-                      ..addAll(res.places);
-                    this.pois['more'] = res.more;
-                  });
-                }
-              }
-              return true;
-            },
-            child: ListView(
-                controller: _sc,
-                physics: disableScroll
-                    ? NeverScrollableScrollPhysics()
-                    : ClampingScrollPhysics(),
-                children: <Widget>[
-                  Center(
-                      child: Container(
-                    width: 30,
-                    height: 5,
-                    decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.all(Radius.circular(12.0))),
-                  )),
-                  Container(
-                      padding: EdgeInsets.only(
-                          top: 20, left: 20, right: 20, bottom: 20),
-                      child: AutoSizeText(
-                        descriptionShort,
-                        style: TextStyle(
-                            fontSize: 13.0, fontWeight: FontWeight.w300),
-                      )),
-                  Container(child: _buildListView('poi', color, destination))
-                ])));
-  }
+//     return Container(
+//         height: MediaQuery.of(context).size.height,
+//         child: LoadMore(
+//             delegate: TrotterLoadMoreDelegate(this.color),
+//             isFinish: this.pois['more'] == false,
+//             onLoadMore: () async {
+//               if (this.pois['more'] == true) {
+//                 //print(data);
+//                 var res = await fetchMorePlaces(
+//                     this.parkId, 'poi', this.pois['places'].length);
+//                 if (res.success == true) {
+//                   setState(() {
+//                     this.pois['places'] = this.pois['places']
+//                       ..addAll(res.places);
+//                     this.pois['more'] = res.more;
+//                   });
+//                 }
+//               }
+//               return true;
+//             },
+//             child: ListView(
+//                 controller: _sc,
+//                 physics: disableScroll
+//                     ? NeverScrollableScrollPhysics()
+//                     : ClampingScrollPhysics(),
+//                 children: <Widget>[
+//                   Center(
+//                       child: Container(
+//                     width: 30,
+//                     height: 5,
+//                     decoration: BoxDecoration(
+//                         color: Colors.grey[300],
+//                         borderRadius: BorderRadius.all(Radius.circular(12.0))),
+//                   )),
+//                   Container(
+//                       padding: EdgeInsets.only(
+//                           top: 20, left: 20, right: 20, bottom: 20),
+//                       child: AutoSizeText(
+//                         descriptionShort,
+//                         style: TextStyle(
+//                             fontSize: 13.0, fontWeight: FontWeight.w300),
+//                       )),
+//                   Container(child: _buildListView('poi', color, destination))
+//                 ])));
+//   }
 
-  _buildListView(String key, Color color, destination) {
-    final store = Provider.of<TrotterStore>(context);
-    final items = this.pois["places"];
-    return ListView.builder(
-      shrinkWrap: true,
-      primary: false,
-      key: new PageStorageKey(key),
-      itemCount: items.length,
-      itemBuilder: (BuildContext context, int index) {
-        return InkWell(
-            onTap: () {
-              var id = items[index]['id'];
-              var level = items[index]['level'];
-              onPush({'id': id.toString(), 'level': level.toString()});
-            },
-            onLongPress: () async {
-              var currentUser = store.currentUser;
-              if (currentUser == null) {
-                loginBottomSheet(context, data, color);
-              } else {
-                final result = await addToItinerary(
-                    context, items[index], color, destination);
-                if (result != null &&
-                    result['selected'] != null &&
-                    result['dayId'] != null &&
-                    result['itinerary'] != null &&
-                    result['poi'] != null &&
-                    result['dayIndex'] != null) {
-                  //Navigator.of(context).pop();
+//   _buildListView(String key, Color color, destination) {
+//     final store = Provider.of<TrotterStore>(context);
+//     final items = this.pois["places"];
+//     return ListView.builder(
+//       shrinkWrap: true,
+//       primary: false,
+//       key: new PageStorageKey(key),
+//       itemCount: items.length,
+//       itemBuilder: (BuildContext context, int index) {
+//         return InkWell(
+//             onTap: () {
+//               var id = items[index]['id'];
+//               var level = items[index]['level'];
+//               onPush({'id': id.toString(), 'level': level.toString()});
+//             },
+//             onLongPress: () async {
+//               var currentUser = store.currentUser;
+//               if (currentUser == null) {
+//                 loginBottomSheet(context, data, color);
+//               } else {
+//                 final result = await addToItinerary(
+//                     context, items[index], color, destination);
+//                 if (result != null &&
+//                     result['selected'] != null &&
+//                     result['dayId'] != null &&
+//                     result['itinerary'] != null &&
+//                     result['poi'] != null &&
+//                     result['dayIndex'] != null) {
+//                   //Navigator.of(context).pop();
 
-                  await showSuccessSnackbar(context,
-                      onPush: onPush,
-                      dayId: result['dayId'],
-                      dayIndex: result['dayIndex'],
-                      itinerary: result['itinerary'],
-                      poi: result['poi']);
-                }
-              }
-            },
-            child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Container(
-                        width: 120,
-                        height: 90,
-                        margin: EdgeInsets.only(right: 20),
-                        child: ClipPath(
-                            clipper: ShapeBorderClipper(
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8))),
-                            child: items[index]['image'] != null
-                                ? TransitionToImage(
-                                    image: AdvancedNetworkImage(
-                                      items[index]['image'],
-                                      useDiskCache: true,
-                                      cacheRule: CacheRule(
-                                          maxAge: const Duration(days: 7)),
-                                    ),
-                                    loadingWidgetBuilder: (BuildContext context,
-                                            double progress, test) =>
-                                        Center(
-                                            child: CircularProgressIndicator(
-                                      backgroundColor: Colors.white,
-                                      valueColor:
-                                          new AlwaysStoppedAnimation<Color>(
-                                              this.color),
-                                    )),
-                                    fit: BoxFit.cover,
-                                    alignment: Alignment.center,
-                                    placeholder: const Icon(Icons.refresh),
-                                    enableRefresh: true,
-                                  )
-                                : Container(
-                                    decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        image: AssetImage(
-                                            'images/placeholder.png'),
-                                        fit: BoxFit.cover),
-                                  )))),
-                    Container(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                              width: MediaQuery.of(context).size.width - 210,
-                              child: AutoSizeText(
-                                items[index]['name'],
-                                maxLines: 2,
-                                overflow: TextOverflow.fade,
-                                style: TextStyle(
-                                    fontSize: 15.0,
-                                    fontWeight: FontWeight.w500),
-                              )),
-                          Container(
-                              margin: EdgeInsets.only(top: 5),
-                              width: MediaQuery.of(context).size.width - 210,
-                              child: AutoSizeText(
-                                items[index]['description_short'],
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 3,
-                                style: TextStyle(
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.w300),
-                              ))
-                        ],
-                      ),
-                    )
-                  ],
-                )));
-      },
-    );
-  }
+//                   await showSuccessSnackbar(context,
+//                       onPush: onPush,
+//                       dayId: result['dayId'],
+//                       dayIndex: result['dayIndex'],
+//                       itinerary: result['itinerary'],
+//                       poi: result['poi']);
+//                 }
+//               }
+//             },
+//             child: Padding(
+//                 padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+//                 child: Row(
+//                   mainAxisAlignment: MainAxisAlignment.start,
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: <Widget>[
+//                     Container(
+//                         width: 120,
+//                         height: 90,
+//                         margin: EdgeInsets.only(right: 20),
+//                         child: ClipPath(
+//                             clipper: ShapeBorderClipper(
+//                                 shape: RoundedRectangleBorder(
+//                                     borderRadius: BorderRadius.circular(8))),
+//                             child: items[index]['image'] != null
+//                                 ? TransitionToImage(
+//                                     image: AdvancedNetworkImage(
+//                                       items[index]['image'],
+//                                       useDiskCache: true,
+//                                       cacheRule: CacheRule(
+//                                           maxAge: const Duration(days: 7)),
+//                                     ),
+//                                     loadingWidgetBuilder: (BuildContext context,
+//                                             double progress, test) =>
+//                                         Center(
+//                                             child: CircularProgressIndicator(
+//                                       backgroundColor: Colors.white,
+//                                       valueColor:
+//                                           new AlwaysStoppedAnimation<Color>(
+//                                               this.color),
+//                                     )),
+//                                     fit: BoxFit.cover,
+//                                     alignment: Alignment.center,
+//                                     placeholder: const Icon(Icons.refresh),
+//                                     enableRefresh: true,
+//                                   )
+//                                 : Container(
+//                                     decoration: BoxDecoration(
+//                                     image: DecorationImage(
+//                                         image: AssetImage(
+//                                             'images/placeholder.png'),
+//                                         fit: BoxFit.cover),
+//                                   )))),
+//                     Container(
+//                       child: Column(
+//                         crossAxisAlignment: CrossAxisAlignment.start,
+//                         mainAxisAlignment: MainAxisAlignment.start,
+//                         children: <Widget>[
+//                           Container(
+//                               width: MediaQuery.of(context).size.width - 210,
+//                               child: AutoSizeText(
+//                                 items[index]['name'],
+//                                 maxLines: 2,
+//                                 overflow: TextOverflow.fade,
+//                                 style: TextStyle(
+//                                     fontSize: 15.0,
+//                                     fontWeight: FontWeight.w500),
+//                               )),
+//                           Container(
+//                               margin: EdgeInsets.only(top: 5),
+//                               width: MediaQuery.of(context).size.width - 210,
+//                               child: AutoSizeText(
+//                                 items[index]['description_short'],
+//                                 overflow: TextOverflow.ellipsis,
+//                                 maxLines: 3,
+//                                 style: TextStyle(
+//                                     fontSize: 13.0,
+//                                     fontWeight: FontWeight.w300),
+//                               ))
+//                         ],
+//                       ),
+//                     )
+//                   ],
+//                 )));
+//       },
+//     );
+//   }
 
-  // function for rendering while data is loading
-  Widget _buildLoadingBody(BuildContext ctxt) {
-    var children2 = <Widget>[
-      Center(
-          child: Container(
-        width: 30,
-        height: 5,
-        decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.all(Radius.circular(12.0))),
-      )),
-      Container(
-        alignment: Alignment.center,
-        padding: EdgeInsets.only(top: 10, bottom: 20),
-        child: AutoSizeText(
-          ' Loading...',
-          style: TextStyle(fontSize: 25),
-        ),
-      ),
-      Center(heightFactor: 12, child: RefreshProgressIndicator()),
-    ];
-    return Container(
-      padding: EdgeInsets.only(top: 0.0),
-      decoration: BoxDecoration(color: Colors.transparent),
-      child: ListView(
-        controller: _sc,
-        physics: disableScroll
-            ? NeverScrollableScrollPhysics()
-            : ClampingScrollPhysics(),
-        children: children2,
-      ),
-    );
-  }
-}
+//   // function for rendering while data is loading
+//   Widget _buildLoadingBody(BuildContext ctxt) {
+//     var children2 = <Widget>[
+//       Center(
+//           child: Container(
+//         width: 30,
+//         height: 5,
+//         decoration: BoxDecoration(
+//             color: Colors.grey[300],
+//             borderRadius: BorderRadius.all(Radius.circular(12.0))),
+//       )),
+//       Container(
+//         alignment: Alignment.center,
+//         padding: EdgeInsets.only(top: 10, bottom: 20),
+//         child: AutoSizeText(
+//           ' Loading...',
+//           style: TextStyle(fontSize: 23),
+//         ),
+//       ),
+//       Center(heightFactor: 12, child: RefreshProgressIndicator()),
+//     ];
+//     return Container(
+//       padding: EdgeInsets.only(top: 0.0),
+//       decoration: BoxDecoration(color: Colors.transparent),
+//       child: ListView(
+//         controller: _sc,
+//         physics: disableScroll
+//             ? NeverScrollableScrollPhysics()
+//             : ClampingScrollPhysics(),
+//         children: children2,
+//       ),
+//     );
+//   }
+// }

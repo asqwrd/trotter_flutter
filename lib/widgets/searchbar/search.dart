@@ -1,8 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
-import 'package:loadmore/loadmore.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/loaders/index.dart';
@@ -10,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:trotter_flutter/globals.dart';
+import 'package:trotter_flutter/widgets/searchbar/index.dart';
 
 Future<SearchData> fetchSearch(
   String query,
@@ -40,9 +43,11 @@ Future<SearchData> fetchSearch(
     } else {
       // If that response was not OK, throw an error.
       var msg = response.statusCode;
+      print(msg);
       return SearchData(error: "Response > $msg");
     }
   } catch (error) {
+    print(error);
     return SearchData(error: "Server is down");
   }
 }
@@ -128,6 +133,7 @@ class SearchState extends State<Search> {
   Future<SearchData> data;
   var txt = new TextEditingController();
   var timer;
+  bool isSearchLoading = false;
 
   @override
   void initState() {
@@ -163,7 +169,6 @@ class SearchState extends State<Search> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     return new Scaffold(
         resizeToAvoidBottomPadding: false,
         body: FutureBuilder(
@@ -171,26 +176,22 @@ class SearchState extends State<Search> {
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
-                  return ListView(shrinkWrap: true, children: <Widget>[
-                    Container(
-                        height: _panelHeightOpen - 80,
-                        width: MediaQuery.of(context).size.width,
-                        child: ErrorContainer(
-                          color: Color.fromRGBO(106, 154, 168, 1),
-                          onRetry: () {
-                            setState(() {
-                              data = fetchSearch('', this.location['lat'],
-                                  this.location['lng'], selectId);
-                            });
-                            data.then((res) {
-                              setState(() {
-                                this.nextPageToken = res.nextPageToken;
-                                this.results = res.results;
-                              });
-                            });
-                          },
-                        ))
-                  ]);
+                  return SingleChildScrollView(
+                      child: ErrorContainer(
+                    color: Color.fromRGBO(106, 154, 168, 1),
+                    onRetry: () {
+                      setState(() {
+                        data = fetchSearch('', this.location['lat'],
+                            this.location['lng'], selectId);
+                      });
+                      data.then((res) {
+                        setState(() {
+                          this.nextPageToken = res.nextPageToken;
+                          this.results = res.results;
+                        });
+                      });
+                    },
+                  ));
                 case ConnectionState.active:
                 case ConnectionState.waiting:
                   return _buildLoadedBody(context, snapshot, true, '');
@@ -272,107 +273,115 @@ class SearchState extends State<Search> {
             });
           }));
     }
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
-      body: isLoading
-          ? Column(children: <Widget>[
-              renderTopBar(timer, chips),
-              Flexible(child: _buildLoadingBody())
-            ])
-          : results != null
-              ? Column(children: <Widget>[
-                  renderTopBar(timer, chips),
-                  Flexible(
-                      child: this.location != null
-                          ? LoadMore(
-                              delegate:
-                                  TrotterLoadMoreDelegate(Colors.blueAccent),
-                              isFinish: this.nextPageToken == null ||
-                                  this.nextPageToken.isEmpty,
-                              onLoadMore: () async {
-                                if (this.results != null) {
-                                  var res = await fetchSearchNext(
-                                      txt.text,
-                                      this.location['lat'],
-                                      this.location['lng'],
-                                      this.nextPageToken);
+        resizeToAvoidBottomPadding: false,
+        body: isLoading
+            ? Column(children: <Widget>[
+                renderTopBar(timer, chips),
+                Flexible(child: _buildLoadingBody())
+              ])
+            : results != null
+                ? Column(children: <Widget>[
+                    renderTopBar(timer, chips),
+                    results.length == 0
+                        ? Flexible(
+                            child: EmptySearch(
+                              color: Color.fromRGBO(106, 154, 168, 1),
+                            ),
+                          )
+                        : Flexible(
+                            child: this.location != null
+                                ? LazyLoadScrollView(
+                                    onEndOfPage: () async {
+                                      if (this.results != null &&
+                                          this.nextPageToken.isNotEmpty) {
+                                        setState(() {
+                                          this.isSearchLoading = true;
+                                        });
+                                        var res = await fetchSearchNext(
+                                            txt.text,
+                                            this.location['lat'],
+                                            this.location['lng'],
+                                            this.nextPageToken);
+                                        setState(() {
+                                          this.results = this.results
+                                            ..addAll(res.results);
+                                          this.nextPageToken =
+                                              res.nextPageToken;
+                                          this.isSearchLoading = false;
+                                        });
+                                      }
+                                      return true;
+                                    },
+                                    child: renderResults(results))
+                                : renderResults(results)),
+                    this.isSearchLoading
+                        ? AwesomeLoader(
+                            loaderType: AwesomeLoader.AwesomeLoader4,
+                            color: Colors.blueAccent,
+                          )
+                        : Container(),
+                  ])
+                : error == null && recentSearch != null
+                    ? Column(children: <Widget>[
+                        renderTopBar(timer, chips),
+                        Flexible(
+                            child: ListView.builder(
+                          itemCount: recentSearch.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            return InkWell(
+                                onTap: () {
                                   setState(() {
-                                    this.results = this.results
-                                      ..addAll(res.results);
-                                    this.nextPageToken = res.nextPageToken;
-                                  });
-                                }
-                                return true;
-                              },
-                              child: renderResults(results))
-                          : renderResults(results))
-                ])
-              : error == null && recentSearch != null
-                  ? Column(children: <Widget>[
-                      renderTopBar(timer, chips),
-                      Flexible(
-                          child: ListView.builder(
-                        itemCount: recentSearch.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  txt.text = recentSearch[index]['value'];
-                                  data = fetchSearch(
-                                      recentSearch[index]['value'],
-                                      this.location != null
-                                          ? this.location['lat']
-                                          : null,
-                                      this.location != null
-                                          ? this.location['lng']
-                                          : null,
-                                      selectId);
-                                  data.then((res) {
-                                    setState(() {
-                                      this.nextPageToken = res.nextPageToken;
-                                      this.results = res.results;
+                                    txt.text = recentSearch[index]['value'];
+                                    data = fetchSearch(
+                                        recentSearch[index]['value'],
+                                        this.location != null
+                                            ? this.location['lat']
+                                            : null,
+                                        this.location != null
+                                            ? this.location['lng']
+                                            : null,
+                                        selectId);
+                                    data.then((res) {
+                                      setState(() {
+                                        this.nextPageToken = res.nextPageToken;
+                                        this.results = res.results;
+                                      });
                                     });
                                   });
-                                });
-                              },
-                              child: ListTile(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 20),
-                                  title: AutoSizeText(
-                                    recentSearch[index]['value'],
-                                  )));
-                        },
-                      ))
-                    ])
-                  : ListView(shrinkWrap: true, children: <Widget>[
-                      Container(
-                          height: _panelHeightOpen - 80,
-                          width: MediaQuery.of(context).size.width,
-                          child: ErrorContainer(
-                            color: Color.fromRGBO(106, 154, 168, 1),
-                            onRetry: () {
+                                },
+                                child: ListTile(
+                                    contentPadding: EdgeInsets.symmetric(
+                                        vertical: 10, horizontal: 20),
+                                    title: AutoSizeText(
+                                      recentSearch[index]['value'],
+                                    )));
+                          },
+                        ))
+                      ])
+                    : SingleChildScrollView(
+                        child: ErrorContainer(
+                        color: Color.fromRGBO(106, 154, 168, 1),
+                        onRetry: () {
+                          setState(() {
+                            data = fetchSearch(
+                                '',
+                                this.location != null
+                                    ? this.location['lat']
+                                    : null,
+                                this.location != null
+                                    ? this.location['lng']
+                                    : null,
+                                selectId);
+                            data.then((res) {
                               setState(() {
-                                data = fetchSearch(
-                                    '',
-                                    this.location != null
-                                        ? this.location['lat']
-                                        : null,
-                                    this.location != null
-                                        ? this.location['lng']
-                                        : null,
-                                    selectId);
-                                data.then((res) {
-                                  setState(() {
-                                    this.nextPageToken = res.nextPageToken;
-                                    this.results = res.results;
-                                  });
-                                });
+                                this.nextPageToken = res.nextPageToken;
+                                this.results = res.results;
                               });
-                            },
-                          ))
-                    ]),
-    );
+                            });
+                          });
+                        },
+                      )));
   }
 
   ListView renderResults(results) {
@@ -475,7 +484,7 @@ class SearchState extends State<Search> {
 
   Container renderTopBar(timer, List<ChoiceChip> chips) {
     return Container(
-      padding: EdgeInsets.only(top: 20),
+      padding: EdgeInsets.only(top: 25),
       decoration: BoxDecoration(
           border: Border(
               bottom:
@@ -487,8 +496,13 @@ class SearchState extends State<Search> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   IconButton(
-                    padding: EdgeInsets.all(0),
-                    icon: Icon(Icons.close),
+                    padding: EdgeInsets.only(left: 10),
+                    icon: SvgPicture.asset(
+                      'images/back-icon.svg',
+                      width: 30,
+                      height: 30,
+                      color: Colors.black,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                     },

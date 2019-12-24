@@ -46,7 +46,7 @@ class TopList extends StatelessWidget {
                   child: AutoSizeText(
                     this.header,
                     style: TextStyle(
-                        fontSize: 19.0,
+                        fontSize: 17.0,
                         fontWeight: this.enableMini == true
                             ? FontWeight.w500
                             : FontWeight.w500),
@@ -86,20 +86,21 @@ class TopList extends StatelessWidget {
         onLongPress: () {
           this.onLongPressed({'poi': item, "index": index});
         },
-        child: buildThumbnailItem(index, item, Colors.black));
+        child: buildThumbnailItem(index, item, Colors.black, this.enableMini));
   }
 
-  Container buildThumbnailItem(int index, item, Color fontColor) {
+  Container buildThumbnailItem(
+      int index, item, Color fontColor, bool enableMini) {
     return Container(
         //height:210.0,
-        margin: index == 0 && this.enableMini != true
+        margin: index == 0 && enableMini != true
             ? EdgeInsets.only(left: 20.0)
             : EdgeInsets.only(left: 0.0),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              this.enableMini == true
+              enableMini == true
                   ? Container(
                       width: 100,
                       child: Center(
@@ -139,9 +140,8 @@ class TopList extends StatelessWidget {
                   width: 100.0,
                   child: AutoSizeText(
                     item['name'],
-                    textAlign: this.enableMini == true
-                        ? TextAlign.center
-                        : TextAlign.left,
+                    textAlign:
+                        enableMini == true ? TextAlign.center : TextAlign.left,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                     style: TextStyle(

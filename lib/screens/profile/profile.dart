@@ -3,7 +3,8 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_panel/sliding_panel.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -22,7 +23,6 @@ class ProfileState extends State<Profile> {
   final ValueChanged<dynamic> onPush;
   PanelController _pc = new PanelController();
 
-  final ScrollController _scrollController = ScrollController();
   var kExpandedHeight = 280;
   var trip;
   final color = Color.fromRGBO(1, 155, 174, 1);
@@ -34,7 +34,6 @@ class ProfileState extends State<Profile> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -46,26 +45,33 @@ class ProfileState extends State<Profile> {
       return getErrorWidget(context, errorDetails);
     };
     final store = Provider.of<TrotterStore>(context);
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingUpPanel(
-        parallaxEnabled: true,
-        parallaxOffset: .5,
-        minHeight: _panelHeightOpen,
-        controller: _pc,
-        backdropEnabled: true,
-        backdropColor: color,
-        isDraggable: false,
-        backdropTapClosesPanel: false,
-        backdropOpacity: .8,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        maxHeight: _panelHeightOpen,
-        panel: Center(child: _buildContent(context, store)),
-        body: Container(color: color),
-      )),
+          child: SlidingPanel(
+              snapPanel: true,
+              initialState: InitialPanelState.expanded,
+              isDraggable: false,
+              size: PanelSize(expandedHeight: getPanelHeight(context)),
+              autoSizing: PanelAutoSizing(),
+              decoration: PanelDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30))),
+              parallaxSlideAmount: .5,
+              panelController: _pc,
+              content: PanelContent(
+                panelContent: (context, _sc) {
+                  return Center(
+                      child: RenderWidget(
+                          builder: (context,
+                                  {scrollController,
+                                  asyncSnapshot,
+                                  startLocation}) =>
+                              _buildContent(context, store, scrollController)));
+                },
+                bodyContent: Container(color: color),
+              ))),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -78,11 +84,39 @@ class ProfileState extends State<Profile> {
     ]);
   }
 
-  Widget _buildContent(BuildContext context, TrotterStore store) {
+  Widget _buildContent(
+      BuildContext context, TrotterStore store, ScrollController _sc) {
     final List<Widget> fields = [
       store.currentUser != null
           ? ListTile(
               title: CountryCodePicker(
+                searchDecoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                    prefixIcon: Padding(
+                        padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                        child: Icon(Icons.home, size: 15)),
+                    //fillColor: Colors.blueGrey.withOpacity(0.5),
+                    filled: true,
+                    errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide: BorderSide(width: 1.0, color: Colors.red)),
+                    focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide: BorderSide(width: 1.0, color: Colors.red)),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide:
+                            BorderSide(width: 0.0, color: Colors.transparent)),
+                    disabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide:
+                            BorderSide(width: 0.0, color: Colors.transparent)),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                        borderSide:
+                            BorderSide(width: 0.0, color: Colors.transparent)),
+                    hintText: 'Search country',
+                    hintStyle: TextStyle(fontSize: 13)),
                 onChanged: (CountryCode data) {
                   print(data.code);
                   setState(() {
@@ -117,7 +151,8 @@ class ProfileState extends State<Profile> {
       fit: StackFit.expand,
       children: <Widget>[
         Center(
-            child: ListView(shrinkWrap: true, children: <Widget>[
+            child:
+                ListView(shrinkWrap: true, controller: _sc, children: <Widget>[
           Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,

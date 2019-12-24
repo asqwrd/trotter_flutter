@@ -1,8 +1,9 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flare_loading/flare_loading.dart';
 import 'package:flutter/material.dart';
-import 'package:loadmore/loadmore.dart';
+import 'package:html/parser.dart' show parse;
 
 class PixelRatioDivider {
   double quantizedUnit;
@@ -13,6 +14,18 @@ class PixelRatioDivider {
     quantizedUnit = (pixels * pixelRatio ~/ divideBy) / pixelRatio;
     remainder = pixels - (quantizedUnit * divideBy);
   }
+}
+
+double getPanelHeight(BuildContext context) {
+  final relativeHeight = MediaQuery.of(context).size.height;
+  double offset = 135;
+  if (Platform.isIOS) {
+    offset += MediaQuery.of(context).padding.top;
+  }
+
+  final height = relativeHeight - offset;
+
+  return height / relativeHeight;
 }
 
 String ordinalNumber(final int n) {
@@ -29,6 +42,15 @@ String ordinalNumber(final int n) {
     default:
       return "${n}th";
   }
+}
+
+String parseHtmlString(String htmlString) {
+  if (htmlString == null) return '';
+  var document = parse(htmlString);
+
+  String parsedString = parse(document.body.text).documentElement.text;
+
+  return parsedString;
 }
 
 class BottomWaveClipper extends CustomClipper<Path> {
@@ -218,8 +240,8 @@ Widget buildTravelers(List<dynamic> travelers) {
                 child: Container(
                     color: Colors.blueGrey,
                     alignment: Alignment.center,
-                    width: 35.0,
-                    height: 35,
+                    width: 33.0,
+                    height: 33.0,
                     child: AutoSizeText(
                       moreText,
                       style: TextStyle(color: Colors.white),
@@ -239,7 +261,7 @@ Widget buildTravelers(List<dynamic> travelers) {
               child: ClipPath(
                   clipper: CornerRadiusClipper(100),
                   child: Image.network(travelers[i]['photoUrl'],
-                      width: 35.0, height: 35.0, fit: BoxFit.contain)))),
+                      width: 33.0, height: 33.0, fit: BoxFit.contain)))),
     );
     right += 30;
   }
@@ -265,88 +287,6 @@ Widget buildTravelers(List<dynamic> travelers) {
 
 typedef String2VoidFunc = void Function(Map<String, dynamic>);
 typedef Future2VoidFunc = Future Function(Map<String, dynamic>);
-
-class TrotterLoadMoreDelegate extends LoadMoreDelegate {
-  final Color color;
-  const TrotterLoadMoreDelegate(this.color);
-
-  @override
-  Widget buildChild(LoadMoreStatus status,
-      {LoadMoreTextBuilder builder = DefaultLoadMoreTextBuilder.chinese}) {
-    if (status == LoadMoreStatus.fail) {
-      return Container(
-        child: AutoSizeText('failed to load'),
-      );
-    }
-    if (status == LoadMoreStatus.idle) {
-      return AutoSizeText('');
-    }
-    if (status == LoadMoreStatus.loading) {
-      return Container(
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            SizedBox(
-              width: 50,
-              height: 50,
-              child: AwesomeLoader(
-                loaderType: AwesomeLoader.AwesomeLoader4,
-                color: this.color,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: AutoSizeText(''),
-            ),
-          ],
-        ),
-      );
-    }
-    if (status == LoadMoreStatus.nomore) {
-      return Center(
-          child: Container(
-              color: Colors.transparent,
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Container(
-                      width: 30,
-                      height: 30,
-                      foregroundDecoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            colors: [
-                              Colors.white.withOpacity(0),
-                              Colors.white.withOpacity(1),
-                              Colors.white.withOpacity(1),
-                            ],
-                            center: Alignment.center,
-                            focal: Alignment.center,
-                            radius: 1.02,
-                          ),
-                          borderRadius: BorderRadius.circular(130)),
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image:
-                                  AssetImage('images/notification-empty.jpg'),
-                              fit: BoxFit.contain),
-                          borderRadius: BorderRadius.circular(130))),
-                  AutoSizeText(
-                    'All caught up!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 15,
-                        color: color,
-                        fontWeight: FontWeight.w300),
-                  ),
-                ],
-              )));
-    }
-
-    return AutoSizeText('');
-  }
-}
 
 Widget getErrorWidget(BuildContext context, FlutterErrorDetails error) {
   return Center(
@@ -382,5 +322,66 @@ class TrotterLoading extends StatelessWidget {
           onSuccess: (data) {},
           onError: (data, error) {},
         )));
+  }
+}
+
+class RenderWidget extends StatefulWidget {
+  final Widget Function(BuildContext,
+      {ScrollController scrollController,
+      AsyncSnapshot asyncSnapshot,
+      dynamic startLocation}) builder;
+  final ValueChanged<double> onScroll;
+  final ScrollController scrollController;
+  final AsyncSnapshot asyncSnapshot;
+  final dynamic startLocation;
+
+  RenderWidget(
+      {this.builder,
+      this.onScroll,
+      this.scrollController,
+      this.asyncSnapshot,
+      this.startLocation});
+
+  @override
+  RenderWidgetState createState() => RenderWidgetState(
+      builder: this.builder,
+      onScroll: this.onScroll,
+      asyncSnapshot: this.asyncSnapshot,
+      scrollController: this.scrollController,
+      startLocation: this.startLocation);
+}
+
+class RenderWidgetState extends State<RenderWidget> {
+  final Widget Function(BuildContext,
+      {ScrollController scrollController,
+      AsyncSnapshot asyncSnapshot,
+      dynamic startLocation}) builder;
+  final ValueChanged<double> onScroll;
+  ScrollController scrollController;
+  AsyncSnapshot asyncSnapshot;
+  dynamic startLocation;
+
+  @override
+  void initState() {
+    if (scrollController != null) {
+      scrollController.addListener(() {
+        onScroll(scrollController.offset);
+      });
+    }
+    super.initState();
+  }
+
+  RenderWidgetState(
+      {this.builder,
+      this.onScroll,
+      this.scrollController,
+      this.asyncSnapshot,
+      this.startLocation});
+
+  Widget build(context) {
+    return this.builder(context,
+        scrollController: scrollController,
+        asyncSnapshot: widget.asyncSnapshot,
+        startLocation: widget.startLocation);
   }
 }

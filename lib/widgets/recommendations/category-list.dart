@@ -82,7 +82,7 @@ class CategoryList extends StatelessWidget {
                   child: AutoSizeText(
                     this.header,
                     style:
-                        TextStyle(fontSize: 19.0, fontWeight: FontWeight.w500),
+                        TextStyle(fontSize: 17.0, fontWeight: FontWeight.w500),
                   )),
               this.subText != null
                   ? Container(
@@ -141,23 +141,23 @@ class CategoryList extends StatelessWidget {
                             ClipPath(
                                 clipper: CornerRadiusClipper(10),
                                 child: Container(
-                                    color: Colors.black.withOpacity(.3))),
+                                    color: Colors.black.withOpacity(.45))),
                             Positioned(
                                 bottom: 0,
                                 left: 0,
+                                right: 5,
                                 child: Container(
                                     padding:
                                         EdgeInsets.symmetric(vertical: 10.0),
-                                    margin:
-                                        EdgeInsets.symmetric(horizontal: 10),
+                                    margin: EdgeInsets.only(left: 0),
                                     width: size,
                                     child: AutoSizeText(
                                       item['name'],
-                                      textAlign: TextAlign.center,
+                                      textAlign: TextAlign.right,
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 2,
                                       style: TextStyle(
-                                          fontSize: 13,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.white),
                                     )))

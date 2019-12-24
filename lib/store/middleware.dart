@@ -309,3 +309,8 @@ class RefreshTripEvent {
 class LogoutEvent {
   LogoutEvent();
 }
+
+class RootEvent {
+  TabItem tab;
+  RootEvent({this.tab});
+}

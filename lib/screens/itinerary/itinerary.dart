@@ -138,7 +138,7 @@ class ItineraryState extends State<Itinerary> {
                               margin: EdgeInsets.only(top: 10, bottom: 20),
                               child: AutoSizeText(
                                 'Getting itinerary...',
-                                style: TextStyle(fontSize: 25),
+                                style: TextStyle(fontSize: 20),
                               ),
                             )
                           : Container(
@@ -146,7 +146,7 @@ class ItineraryState extends State<Itinerary> {
                               padding: EdgeInsets.only(top: 10, bottom: 20),
                               child: AutoSizeText(
                                 '$destinationName, $destinationCountryName',
-                                style: TextStyle(fontSize: 25),
+                                style: TextStyle(fontSize: 20),
                               ),
                             )
                     ],

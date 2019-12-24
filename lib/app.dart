@@ -122,6 +122,10 @@ class AppStateWidget extends State<App> {
       else if (tabItem == TabItem.notifications)
         FocusScope.of(context).requestFocus(store.profile);
 
+      if (currentTab == tabItem) {
+        store.eventBus.fire(RootEvent(tab: tabItem));
+      }
+
       currentTab = tabItem;
     });
   }

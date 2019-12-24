@@ -461,7 +461,7 @@
 //         padding: EdgeInsets.only(top: 10, bottom: 20),
 //         child: AutoSizeText(
 //           ' Loading...',
-//           style: TextStyle(fontSize: 25),
+//           style: TextStyle(fontSize: 23),
 //         ),
 //       ),
 //       Center(heightFactor: 12, child: RefreshProgressIndicator()),

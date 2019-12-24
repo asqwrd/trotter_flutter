@@ -11,6 +11,7 @@ import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:sliding_panel/sliding_panel.dart';
+import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -181,6 +182,11 @@ class HomeState extends State<Home> {
           });
         }
       });
+
+      store.eventBus.on<RootEvent>().listen((event) {
+        if (event.tab == TabItem.explore)
+          Navigator.popUntil(context, ModalRoute.withName("/"));
+      });
     }();
 
     super.initState();
@@ -307,7 +313,7 @@ class HomeState extends State<Home> {
                       padding: EdgeInsets.only(top: 10, bottom: 20),
                       child: AutoSizeText(
                         'Explore',
-                        style: TextStyle(fontSize: 25),
+                        style: TextStyle(fontSize: 23),
                       ),
                     ),
                   ],
@@ -452,13 +458,13 @@ class HomeState extends State<Home> {
           child: AutoSizeText(
             'Get inspired by itineraries!',
             style: TextStyle(
-                fontSize: 20, color: color, fontWeight: FontWeight.w500),
+                fontSize: 18, color: color, fontWeight: FontWeight.w500),
           )),
       Padding(
           padding: EdgeInsets.only(bottom: 10, top: 0, left: 20, right: 20),
           child: AutoSizeText(
             'Trotter is for people who love to travel and those who need help planning. Itineraries are helpful in organizing your trips.',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
           ))
     ];
     for (var itinerary in itineraries) {
@@ -496,14 +502,14 @@ class HomeState extends State<Home> {
                 'Experience ${destination['destination_name']}',
                 textAlign: TextAlign.left,
                 style: TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.w500, color: color),
+                    fontSize: 18, fontWeight: FontWeight.w500, color: color),
               )),
           Container(
               margin: EdgeInsets.symmetric(horizontal: 20),
               alignment: Alignment.topLeft,
               child: AutoSizeText(
                 'Check out these places for your upcoming trip to ${destination['destination_name']}',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
               )),
           Container(
               margin: EdgeInsets.symmetric(vertical: 20, horizontal: 20),

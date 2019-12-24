@@ -233,7 +233,7 @@ class PoiState extends State<Poi> {
                                           EdgeInsets.only(top: 10, bottom: 20),
                                       child: AutoSizeText(
                                         ' Loading...',
-                                        style: TextStyle(fontSize: 25),
+                                        style: TextStyle(fontSize: 23),
                                       ),
                                     )
                                   : Container(
@@ -248,7 +248,7 @@ class PoiState extends State<Poi> {
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 2,
                                         textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 25),
+                                        style: TextStyle(fontSize: 23),
                                       ),
                                     ),
                             ],

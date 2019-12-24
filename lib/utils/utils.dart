@@ -240,8 +240,8 @@ Widget buildTravelers(List<dynamic> travelers) {
                 child: Container(
                     color: Colors.blueGrey,
                     alignment: Alignment.center,
-                    width: 35.0,
-                    height: 35,
+                    width: 33.0,
+                    height: 33.0,
                     child: AutoSizeText(
                       moreText,
                       style: TextStyle(color: Colors.white),
@@ -261,7 +261,7 @@ Widget buildTravelers(List<dynamic> travelers) {
               child: ClipPath(
                   clipper: CornerRadiusClipper(100),
                   child: Image.network(travelers[i]['photoUrl'],
-                      width: 35.0, height: 35.0, fit: BoxFit.contain)))),
+                      width: 33.0, height: 33.0, fit: BoxFit.contain)))),
     );
     right += 30;
   }

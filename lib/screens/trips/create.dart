@@ -307,7 +307,7 @@ class CreateTripState extends State<CreateTrip> {
                             padding: EdgeInsets.only(top: 10, bottom: 20),
                             child: AutoSizeText(
                               'Where to?',
-                              style: TextStyle(fontSize: 25),
+                              style: TextStyle(fontSize: 23),
                             ),
                           )
                         ],

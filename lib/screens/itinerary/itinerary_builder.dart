@@ -168,7 +168,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                   margin: EdgeInsets.only(top: 10, bottom: 20),
                                   child: AutoSizeText(
                                     'Getting itinerary...',
-                                    style: TextStyle(fontSize: 25),
+                                    style: TextStyle(fontSize: 23),
                                   ),
                                 )
                               : Container(
@@ -176,7 +176,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                   padding: EdgeInsets.only(top: 10, bottom: 20),
                                   child: AutoSizeText(
                                     '$destinationName, $destinationCountryName',
-                                    style: TextStyle(fontSize: 25),
+                                    style: TextStyle(fontSize: 23),
                                   ),
                                 )
                         ],
@@ -483,7 +483,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                             child: AutoSizeText(
                           'Your ${ordinalNumber(dayBuilder[dayIndex]['day'] + 1)} day in $destinationName',
                           style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w400),
+                              fontSize: 16, fontWeight: FontWeight.w400),
                         ))),
                     this.startDate != null && this.startDate != 0
                         ? Align(
@@ -497,7 +497,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                       .add(Duration(
                                           days: dayBuilder[dayIndex]['day']))),
                               style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w300),
+                                  fontSize: 13, fontWeight: FontWeight.w300),
                             )))
                         : Container(),
                     Align(
@@ -507,7 +507,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                             child: AutoSizeText(
                               '${itineraryItems.length} ${itineraryItems.length == 1 ? "place" : "places"} to see',
                               style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w300),
+                                  fontSize: 13, fontWeight: FontWeight.w300),
                             )))
                   ]),
                   itineraryItems.length > 0 ||
@@ -579,7 +579,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                   style: TextStyle(
                                       color: color,
                                       fontWeight: FontWeight.w400,
-                                      fontSize: 15)),
+                                      fontSize: 13)),
                             )
                           ],
                         ))

@@ -246,7 +246,7 @@ class DayListState extends State<DayList> {
                           'Tap the drop point icon at the top to search',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 13,
                               color: color,
                               fontWeight: FontWeight.w300),
                         )
@@ -254,7 +254,7 @@ class DayListState extends State<DayList> {
                           'Places you mark as visited will appear here',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              fontSize: 15,
+                              fontSize: 13,
                               color: color,
                               fontWeight: FontWeight.w300),
                         ),
@@ -565,7 +565,7 @@ class DayListState extends State<DayList> {
                                                                             ? Colors.black
                                                                             : color,
                                                                         fontSize:
-                                                                            17,
+                                                                            15,
                                                                         fontWeight:
                                                                             FontWeight.w500,
                                                                       ))),
@@ -577,7 +577,7 @@ class DayListState extends State<DayList> {
                                                                         color:
                                                                             color,
                                                                         fontSize:
-                                                                            17,
+                                                                            15,
                                                                         fontWeight:
                                                                             FontWeight.w400,
                                                                       ))
@@ -680,7 +680,7 @@ class DayListState extends State<DayList> {
                                                                         context)
                                                                     .size
                                                                     .width -
-                                                                105,
+                                                                107,
                                                             child: Column(
                                                                 children: <
                                                                     Widget>[
@@ -729,7 +729,7 @@ class DayListState extends State<DayList> {
                                                                               ? "Your thoughts"
                                                                               : '${user.displayName}\'s thoughts'),
                                                                           subtitle:
-                                                                              AutoSizeText(description));
+                                                                              AutoSizeText(description,style:TextStyle(fontSize: 13)));
                                                                     },
                                                                   )
                                                                 ]))
@@ -792,8 +792,8 @@ class DayListState extends State<DayList> {
             child: ListTile(
               title: AutoSizeText(
                   "Tap here to describe your experience at ${poi['name']}",
-                  style: TextStyle(fontWeight: FontWeight.w300)),
-            )));
+                  style: TextStyle(fontWeight: FontWeight.w300, fontSize: 15),
+            ))));
   }
 
   Future onDescriptionModal(
@@ -863,7 +863,7 @@ class DayListState extends State<DayList> {
                                                   width: MediaQuery.of(context)
                                                           .size
                                                           .width -
-                                                      105,
+                                                      107,
                                                   child: AutoSizeText(
                                                       destination[
                                                           'destination_name'],
@@ -871,7 +871,7 @@ class DayListState extends State<DayList> {
                                                           TextOverflow.ellipsis,
                                                       style: TextStyle(
                                                         color: Colors.black,
-                                                        fontSize: 17,
+                                                        fontSize: 15,
                                                         fontWeight:
                                                             FontWeight.w500,
                                                       ))),
@@ -880,7 +880,7 @@ class DayListState extends State<DayList> {
                                             width: MediaQuery.of(context)
                                                     .size
                                                     .width -
-                                                105,
+                                                107,
                                             padding: EdgeInsets.all(0),
                                             margin: EdgeInsets.only(
                                                 top: 10,
@@ -916,7 +916,7 @@ class DayListState extends State<DayList> {
             child: Row(children: <Widget>[
               AutoSizeText(
                 '$totalComments',
-                style: TextStyle(fontSize: 20),
+                style: TextStyle(fontSize: 18),
               ),
               SvgPicture.asset(
                 "images/comment-icon.svg",
@@ -935,7 +935,7 @@ class DayListState extends State<DayList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: Container(
           height: 200,
-          width: MediaQuery.of(context).size.width - 105,
+          width: MediaQuery.of(context).size.width - 107,
           child: ClipPath(
               clipper: ShapeBorderClipper(
                   shape: RoundedRectangleBorder(
@@ -1143,7 +1143,7 @@ class DescriptionModalState extends State<DescriptionModal> {
                                   },
                                   child: AutoSizeText('Save',
                                       style: TextStyle(
-                                          fontSize: 20,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w300,
                                           color: Colors.white)),
                                 ))),

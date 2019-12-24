@@ -215,7 +215,7 @@ class CountryState extends State<Country> {
                                   padding: EdgeInsets.only(top: 10, bottom: 20),
                                   child: AutoSizeText(
                                     'Getting tips & requirements...',
-                                    style: TextStyle(fontSize: 25),
+                                    style: TextStyle(fontSize: 23),
                                   ),
                                 )
                               : Container(
@@ -223,7 +223,7 @@ class CountryState extends State<Country> {
                                   padding: EdgeInsets.only(top: 10, bottom: 20),
                                   child: AutoSizeText(
                                     'Tips & Requirements',
-                                    style: TextStyle(fontSize: 25),
+                                    style: TextStyle(fontSize: 23),
                                   ),
                                 ),
                         ],
@@ -250,9 +250,12 @@ class CountryState extends State<Country> {
                               onScroll: onScroll,
                               scrollController: _sc,
                               asyncSnapshot: snapshot,
-                              builder: (context, {scrollController, asyncSnapshot, startLocation}) =>
-                                  _buildLoadedBody(
-                                      context, asyncSnapshot, scrollController));
+                              builder: (context,
+                                      {scrollController,
+                                      asyncSnapshot,
+                                      startLocation}) =>
+                                  _buildLoadedBody(context, asyncSnapshot,
+                                      scrollController));
                         }
                         return _buildLoadingBody(context, _sc);
                       });

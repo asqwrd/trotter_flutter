@@ -299,7 +299,7 @@ class DayEditState extends State<DayEdit> {
                   ),
                   Positioned(
                       left: 0,
-                      top: (MediaQuery.of(context).size.height / 2) - 110,
+                      top: (_bodyHeight / 2),
                       width: MediaQuery.of(context).size.width,
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -308,8 +308,8 @@ class DayEditState extends State<DayEdit> {
                             destinationName != null
                                 ? AutoSizeText('$destinationName',
                                     style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 30,
+                                        color: fontContrast(color),
+                                        fontSize: 28,
                                         fontWeight: FontWeight.w300))
                                 : Container(),
                           ])),

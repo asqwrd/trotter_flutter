@@ -164,8 +164,8 @@ class DayState extends State<Day> {
                                   alignment: Alignment.center,
                                   margin: EdgeInsets.only(top: 10, bottom: 0),
                                   child: AutoSizeText(
-                                    'Loading day...',
-                                    style: TextStyle(fontSize: 20),
+                                    'Getting day...',
+                                    style: TextStyle(fontSize: 23),
                                   ),
                                 )
                               : Container(
@@ -174,7 +174,7 @@ class DayState extends State<Day> {
                                   child: Column(children: <Widget>[
                                     AutoSizeText(
                                       '${ordinalNumber(day['day'] + 1)} day',
-                                      style: TextStyle(fontSize: 20),
+                                      style: TextStyle(fontSize: 23),
                                     )
                                   ]),
                                 ),
@@ -310,7 +310,7 @@ class DayState extends State<Day> {
                       ),
                       Positioned(
                           left: 0,
-                          top: (MediaQuery.of(context).size.height / 2) - 110,
+                          top: (_bodyHeight / 2),
                           width: MediaQuery.of(context).size.width,
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -318,8 +318,8 @@ class DayState extends State<Day> {
                               children: <Widget>[
                                 AutoSizeText('$destinationName',
                                     style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 30,
+                                        color: fontContrast(color),
+                                        fontSize: 28,
                                         fontWeight: FontWeight.w300)),
                               ])),
                       this.image == null || this.imageLoading == true

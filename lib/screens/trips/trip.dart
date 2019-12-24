@@ -1105,7 +1105,7 @@ class TripState extends State<Trip> {
                       padding: EdgeInsets.only(top: 10, bottom: 20),
                       child: AutoSizeText(
                         'Get Organized',
-                        style: TextStyle(fontSize: 25),
+                        style: TextStyle(fontSize: 23),
                       ),
                     ),
                   ],
@@ -1518,7 +1518,7 @@ class TripState extends State<Trip> {
                     title: AutoSizeText(
                       fields[index]['label'],
                       style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w300),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
                     ),
                   );
                 })

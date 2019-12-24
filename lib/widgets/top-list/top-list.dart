@@ -46,7 +46,7 @@ class TopList extends StatelessWidget {
                   child: AutoSizeText(
                     this.header,
                     style: TextStyle(
-                        fontSize: 19.0,
+                        fontSize: 17.0,
                         fontWeight: this.enableMini == true
                             ? FontWeight.w500
                             : FontWeight.w500),

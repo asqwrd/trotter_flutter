@@ -293,7 +293,7 @@ class DestinationState extends State<Destination>
                                         EdgeInsets.only(top: 10, bottom: 20),
                                     child: AutoSizeText(
                                       ' Loading...',
-                                      style: TextStyle(fontSize: 25),
+                                      style: TextStyle(fontSize: 23),
                                     ),
                                   )
                                 : Container(
@@ -309,7 +309,7 @@ class DestinationState extends State<Destination>
                                         AutoSizeText(
                                             'Info on ${destination['country_name']}',
                                             style: TextStyle(
-                                                fontSize: 25, color: color)),
+                                                fontSize: 23, color: color)),
                                         Icon(
                                           Icons.chevron_right,
                                           size: 25,
@@ -718,13 +718,13 @@ class DestinationState extends State<Destination>
             child: AutoSizeText(
               'Check out itineraries',
               style: TextStyle(
-                  fontSize: 20, color: color, fontWeight: FontWeight.w500),
+                  fontSize: 18, color: color, fontWeight: FontWeight.w500),
             )),
         Padding(
             padding: EdgeInsets.only(bottom: 10, top: 0, left: 20, right: 20),
             child: AutoSizeText(
               'See what other people did while traveling to ${destination['name']}',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w300),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
             ))
       ];
       for (var itinerary in itineraries) {

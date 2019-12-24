@@ -84,7 +84,7 @@ class TrotterAppBar extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontWeight: FontWeight.w300,
-                        fontSize: 24,
+                        fontSize: 22,
                         color: fontContrast(color)),
                   )
                 : AutoSizeText(

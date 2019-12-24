@@ -148,8 +148,9 @@ class TripsState extends State<Trips> {
           }
         }
       });
-      store.eventBus.on<LogoutEvent>().listen((event) {
-        Navigator.popUntil(context, ModalRoute.withName("/"));
+      store.eventBus.on<RootEvent>().listen((event) {
+        if (event.tab == TabItem.trips)
+          Navigator.popUntil(context, ModalRoute.withName("/"));
       });
       setState(() {
         isSub = true;
@@ -203,7 +204,7 @@ class TripsState extends State<Trips> {
                             padding: EdgeInsets.only(top: 10, bottom: 20),
                             child: AutoSizeText(
                               'Your adventures',
-                              style: TextStyle(fontSize: 25),
+                              style: TextStyle(fontSize: 23),
                             ),
                           )
                         : store.tripsLoading == true
@@ -212,7 +213,7 @@ class TripsState extends State<Trips> {
                                 padding: EdgeInsets.only(top: 10, bottom: 20),
                                 child: AutoSizeText(
                                   'Getting trips...',
-                                  style: TextStyle(fontSize: 25),
+                                  style: TextStyle(fontSize: 23),
                                 ),
                               )
                             : Container(
@@ -220,7 +221,7 @@ class TripsState extends State<Trips> {
                                 padding: EdgeInsets.only(top: 10, bottom: 20),
                                 child: AutoSizeText(
                                   'Get Started',
-                                  style: TextStyle(fontSize: 25),
+                                  style: TextStyle(fontSize: 23),
                                 ),
                               )
                   ],
@@ -455,7 +456,7 @@ class TripsState extends State<Trips> {
                             "Past trips",
                             style: TextStyle(
                               fontWeight: FontWeight.w400,
-                              fontSize: 24,
+                              fontSize: 23,
                             ),
                           ))
                       : Container(),
@@ -677,7 +678,7 @@ class TripsState extends State<Trips> {
                                       textAlign: TextAlign.left,
                                       style: TextStyle(
                                           color: fontContrast(color),
-                                          fontSize: 20.0,
+                                          fontSize: 18.0,
                                           fontWeight: FontWeight.w400),
                                     )),
                               ]),
@@ -819,7 +820,7 @@ class TripsState extends State<Trips> {
                                   textAlign: TextAlign.left,
                                   style: TextStyle(
                                       color: fontContrast(color),
-                                      fontSize: 15.0,
+                                      fontSize: 13.0,
                                       fontWeight: FontWeight.w400),
                                 )),
                           ]),
@@ -875,7 +876,7 @@ class TripsState extends State<Trips> {
             style: TextStyle(
               fontWeight: FontWeight.w400,
               color: fontContrast(color),
-              fontSize: 15,
+              fontSize: 13,
             )),
       ));
     }
@@ -887,7 +888,7 @@ class TripsState extends State<Trips> {
             style: TextStyle(
               fontWeight: FontWeight.w400,
               color: fontContrast(color),
-              fontSize: 15,
+              fontSize: 13,
             )),
       ));
     }

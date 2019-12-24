@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/itineraries/store.dart';
 import 'package:trotter_flutter/store/middleware.dart';
@@ -113,7 +114,7 @@ class TrotterStore extends Store {
       profileLoading = true;
     });
     try {
-      eventBus.fire(LogoutEvent());
+      eventBus.fire(RootEvent(tab: TabItem.trips));
       await _auth.signOut();
       await _googleSignIn.signOut();
       final SharedPreferences prefs = await SharedPreferences.getInstance();

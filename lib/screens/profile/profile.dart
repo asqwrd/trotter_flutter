@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/auth/index.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class Profile extends StatefulWidget {
   final ValueChanged<dynamic> onPush;
@@ -181,7 +181,7 @@ class ProfileState extends State<Profile> {
                                     height: 80.0,
                                     fit: BoxFit.contain)))),
                 store.currentUser == null
-                    ? AutoSizeText('Profile',
+                    ? AutoSizeText('Who are you?',
                         style: TextStyle(
                             color: Colors.black,
                             fontSize: 25,
@@ -259,7 +259,52 @@ class ProfileState extends State<Profile> {
                       ),
                     ),
                   ))
-              : Container()
+              : Container(),
+          Center(
+              child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 20),
+                  child: FlatButton(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    child: AutoSizeText(
+                      "Privacy policy",
+                      style: TextStyle(color: Colors.blueGrey),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              fullscreenDialog: true,
+                              builder: (context) {
+                                return Container(
+                                    color: Colors.white,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        Container(
+                                            //color: color,
+                                            height: 80,
+                                            child: TrotterAppBar(
+                                                title: 'Privacy policy',
+                                                back: true,
+                                                onPush: () {},
+                                                showSearch: false,
+                                                brightness: Brightness.light,
+                                                color: Colors.white)),
+                                        Flexible(
+                                            child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          margin: EdgeInsets.only(top: 0),
+                                          child: WebView(
+                                            initialUrl:
+                                                'https://ajibade.me/privacy.html',
+                                          ),
+                                        ))
+                                      ],
+                                    ));
+                              }));
+                    },
+                  )))
         ])),
         store.profileLoading
             ? Align(

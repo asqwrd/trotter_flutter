@@ -24,25 +24,25 @@ Future<SearchModalData> fetchSearchModal(
     var response;
     if (query.isEmpty && !searchPoi) {
       response = await http.get('$ApiDomain/api/search/recent',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else if (query.isEmpty && searchPoi) {
       response = await http.get('$ApiDomain/api/search/recent?poi=true',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else if (query.isNotEmpty &&
         (lat != null && lng != null && near == true) &&
         searchPoi) {
       response = await http.get(
           '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&isNear=$near',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else if (query.isNotEmpty &&
         (lat != null && lng != null && near == false) &&
         searchPoi) {
       response = await http.get(
           '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else {
       response = await http.get('$ApiDomain/api/search/find/$query',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     }
 
     if (response.statusCode == 200) {
@@ -79,11 +79,11 @@ Future<SearchModalData> fetchSearchModalNext(
     if (lat != null && lng != null && near == true) {
       response = await http.get(
           '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&nextPageToken=$nextPageToken&isNear=$near',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else if (lat != null && lng != null && near == false) {
       response = await http.get(
           '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&nextPageToken=$nextPageToken',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     }
 
     if (response.statusCode == 200) {

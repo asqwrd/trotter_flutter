@@ -24,17 +24,17 @@ Future<SearchData> fetchSearch(
   try {
     if (query.isEmpty && !searchPoi) {
       response = await http.get('$ApiDomain/api/search/recent',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else if (query.isEmpty && searchPoi) {
       response = await http.get('$ApiDomain/api/search/recent?poi=true',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else if (query.isNotEmpty && (lat != null && lng != null) && searchPoi) {
       response = await http.get(
           '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     } else {
       response = await http.get('$ApiDomain/api/search/find/$query',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
     }
 
     if (response.statusCode == 200) {
@@ -62,7 +62,7 @@ Future<SearchData> fetchSearchNext(
     var response;
     response = await http.get(
         '$ApiDomain/api/search/google/$query?lat=$lat&lng=$lng&nextPageToken=$nextPageToken',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON

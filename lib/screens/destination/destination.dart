@@ -40,7 +40,7 @@ Future<DestinationData> fetchDestination(
       print(id);
       final response = await http.get(
           '$ApiDomain/api/explore/destinations/$id?type=$destinationType',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('destination_$id', response.body);
@@ -63,7 +63,7 @@ Future<DestinationItinerariesData> fetchDestinationItineraries(
   try {
     final response = await http.get(
         '$ApiDomain/api/itineraries/all?public=true&destination=$destinationId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var data = json.decode(response.body);
@@ -85,7 +85,7 @@ Future<DestinationItinerariesData> fetchDestinationItinerariesNext(
   try {
     final response = await http.get(
         '$ApiDomain/api/itineraries/all?public=true&last=$lastId&destination=$destinationId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var data = json.decode(response.body);

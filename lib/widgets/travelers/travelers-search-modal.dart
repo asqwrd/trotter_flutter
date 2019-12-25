@@ -19,7 +19,7 @@ Future<TravelersModalData> fetchSearchUsers(
     var response;
 
     response = await http.get('$ApiDomain/api/users/search?query=$query',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON

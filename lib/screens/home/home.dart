@@ -46,7 +46,7 @@ Future<PopularCitiesData> fetchPopularCities([bool refresh]) async {
   } else {
     try {
       var response = await http.get('$ApiDomain/api/explore/home/',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('home', response.body);
@@ -70,7 +70,7 @@ Future<HomeItinerariesData> fetchHomeItineraries() async {
   try {
     final response = await http.get(
         '$ApiDomain/api/itineraries/all?public=true',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var data = json.decode(response.body);
@@ -91,7 +91,7 @@ Future<HomeItinerariesData> fetchHomeItinerariesNext(lastId) async {
   try {
     final response = await http.get(
         '$ApiDomain/api/itineraries/all?public=true&last=$lastId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var data = json.decode(response.body);

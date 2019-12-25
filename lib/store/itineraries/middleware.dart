@@ -16,7 +16,7 @@ Future<CreateItineraryData> postCreateItinerary(
     final response = await http.post('$ApiDomain/api/itineraries/create',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {
@@ -40,7 +40,7 @@ Future<CreateItineraryData> postCreateItinerary(
 Future<ItineraryData> fetchItinerary(String id, [TrotterStore store]) async {
   try {
     final response = await http.get('$ApiDomain/api/itineraries/get/$id',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
@@ -73,7 +73,7 @@ Future<StartLocationData> updateStartLocation(String id, dynamic data,
     final response = await http.put(
         '$ApiDomain/api/itineraries/update/$id/startLocation',
         body: json.encode(data),
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = StartLocationData.fromJson(json.decode(response.body));
@@ -97,7 +97,7 @@ Future<PoiData> updatePoiImageEdit(String itineraryId, String dayId,
   try {
     final response = await http.put(
         '$ApiDomain/api/itineraries/update/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/poi/$poiId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = PoiData.fromJson(json.decode(response.body));
@@ -122,7 +122,7 @@ Future<PoiData> updatePoiImagePublic(String itineraryId, String dayId,
   try {
     final response = await http.put(
         '$ApiDomain/api/itineraries/update/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/poi/$poiId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = PoiData.fromJson(json.decode(response.body));
@@ -144,7 +144,7 @@ Future<ItineraryData> fetchSelectedItinerary(
     TrotterStore store, String id) async {
   try {
     final response = await http.get('$ApiDomain/api/itineraries/get/$id',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
@@ -174,7 +174,7 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get('$ApiDomain/api/itineraries/get/$id',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
@@ -239,7 +239,7 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
   try {
     final response = await http.get(
         '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId?latlng=$location&filter=$filter',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = DayData.fromJson(json.decode(response.body));
@@ -272,7 +272,7 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
     final response = await http.post(
         '$ApiDomain/api/itineraries/add/$itineraryId/day/$dayId?optimize=$optimize&userId=$userId&copied=$copied',
         body: json.encode(data),
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var res = DayData.fromJson(json.decode(response.body));
@@ -325,7 +325,7 @@ Future<DayData> toggleVisited(
     final response = await http.put(
         '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/toggle?tripId=$tripId&userId=${store.currentUser.uid}',
         body: json.encode(data),
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var res = DayData.fromJson(json.decode(response.body));
@@ -371,7 +371,7 @@ Future<DescriptionData> addDescription(
     final response = await http.post(
         '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/description?tripId=$tripId',
         body: json.encode(data),
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var res = DescriptionData.fromJson(json.decode(response.body));
@@ -400,7 +400,7 @@ Future<DeleteItemData> deleteFromDay(String itineraryId, String dayId,
   try {
     final response = await http.delete(
         '$ApiDomain/api/itineraries/delete/$itineraryId/day/$dayId/place/$itineraryItemId?deletedBy=$currentUserId&sendNotification=$sendNotification&movedPlaceId=$movedPlaceId&movedDayId=$movedDayId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
 
@@ -416,7 +416,7 @@ Future<DeleteItemData> deleteFromDay(String itineraryId, String dayId,
 
 Future<ItinerariesData> fetchItineraries(String filter) async {
   final response = await http.get('$ApiDomain/api/itineraries/all?$filter',
-      headers: {'Authorization': 'security'});
+      headers: {'Authorization': APITOKEN});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     return ItinerariesData.fromJson(json.decode(response.body));

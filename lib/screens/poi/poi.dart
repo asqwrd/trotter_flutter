@@ -37,7 +37,7 @@ Future<PoiData> fetchPoi(String id,
       print('no-cached');
       final response = await http.get(
           '$ApiDomain/api/explore/poi/$id?googlePlace=$googlePlace&locationId=$locationId',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('poi_$id', response.body);

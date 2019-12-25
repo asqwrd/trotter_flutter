@@ -16,7 +16,7 @@ Future<UserLoginData> saveUserToFirebase(dynamic data) async {
     final response = await http.post('$ApiDomain/api/users/login',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {
@@ -38,7 +38,7 @@ Future<UserData> getUser(String id) async {
   print(id);
   try {
     final response = await http.get('$ApiDomain/api/users/get/$id', headers: {
-      'Authorization': 'security',
+      'Authorization': APITOKEN,
       "Content-Type": "application/json"
     });
     if (response.statusCode == 200) {
@@ -62,7 +62,7 @@ Future<UserData> updateUser(String id, dynamic data) async {
     final response = await http.put('$ApiDomain/api/users/update/$id',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {
@@ -96,7 +96,7 @@ Future<TokenData> saveDeviceTokenFirebase(dynamic data) async {
     final response = await http.post('$ApiDomain/api/users/device',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {

@@ -19,7 +19,7 @@ Future<TravelersModalData> fetchTravelersModal(
     var response;
 
     response = await http.get('$ApiDomain/api/trips/$tripId/travelers',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON

@@ -73,7 +73,7 @@ Future<ThingsToDoData> fetchThingsToDo(String userId,
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   try {
     final response = await http.get('$ApiDomain/api/explore/do?user_id=$userId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('thingsToDo', response.body);
@@ -110,7 +110,7 @@ Future<CategoryData> fetchCategoryPlaces(
   try {
     final response = await http.get(
         '$ApiDomain/api/explore/destinations/$destinationId/category?query=$query&type=$type',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('category_$destinationId-$query', response.body);
@@ -173,7 +173,7 @@ Future<NearByData> fetchNearbyPlaces(String type, String keywords) async {
   try {
     final response = await http.get(
         '$ApiDomain/api/explore/nearby?type=$type&lat=${position.latitude}&lng=${position.longitude}&keywords=$keywords',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var data = json.decode(response.body);
@@ -196,7 +196,7 @@ Future<PlacesData> fetchMorePlaces(
     print(id);
     final response = await http.get(
         '$ApiDomain/api/explore/places?levelId=$id&type=$placeType&offset=$offset',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       return PlacesData.fromJson(json.decode(response.body));
@@ -215,7 +215,7 @@ Future<NotificationsData> fetchNotifications([TrotterStore store]) async {
   try {
     final response = await http.get(
         '$ApiDomain/api/notifications?user_id=${store.currentUser.uid}',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = NotificationsData.fromJson(json.decode(response.body));
@@ -239,7 +239,7 @@ Future<NotificationsData> clearNotifications([TrotterStore store]) async {
   try {
     final response = await http.post(
         '$ApiDomain/api/notifications/clear?user_id=${store.currentUser.uid}',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = NotificationsData.fromJson(json.decode(response.body));
@@ -263,7 +263,7 @@ Future<NotificationsData> markNotificationRead(String notificationId,
   try {
     final response = await http.put(
         '$ApiDomain/api/notifications/$notificationId?user_id=${store.currentUser.uid}',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = NotificationsData.fromJson(json.decode(response.body));

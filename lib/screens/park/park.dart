@@ -34,7 +34,7 @@
 //       print(id);
 //       final response = await http.get(
 //           '$ApiDomain/api/explore/national_parks/$id/',
-//           headers: {'Authorization': 'security'});
+//           headers: {'Authorization': APITOKEN});
 //       if (response.statusCode == 200) {
 //         // If server returns an OK response, parse the JSON
 //         await prefs.setString('park_$id', response.body);

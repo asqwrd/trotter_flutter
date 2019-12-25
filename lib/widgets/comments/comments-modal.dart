@@ -24,7 +24,7 @@ Future<CommentsData> fetchCommentsModal(
 
     response = await http.get(
         '$ApiDomain/api/itineraries/get/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/comments?last=$last',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
 
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
@@ -44,7 +44,7 @@ Future<CommentData> postCommentsModal(String dayId, String itineraryId,
     var response;
     response = await http.post(
         '$ApiDomain/api/itineraries/$itineraryId/day/$dayId/itinerary_items/$itineraryItemId/comments/add?tripId=$tripId',
-        headers: {'Authorization': 'security'},
+        headers: {'Authorization': APITOKEN},
         body: json.encode(data));
 
     if (response.statusCode == 200) {

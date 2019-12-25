@@ -12,7 +12,7 @@ Future<TripsData> fetchTrips([TrotterStore store]) async {
   try {
     final response = await http.get(
         '$ApiDomain/api/trips/all?user_id=${store.currentUser.uid}',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = TripsData.fromJson(json.decode(response.body));
@@ -55,7 +55,7 @@ Future<FlightsAndAccomodationsData> fetchFlightsAccomodations(
   try {
     final response = await http.get(
         '$ApiDomain/api/trips/$tripId/flights_accomodations?user_id=$userId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       return FlightsAndAccomodationsData.fromJson(json.decode(response.body));
@@ -74,7 +74,7 @@ Future<DeleteTripData> deleteTrip(TrotterStore store, String tripId) async {
   try {
     final response = await http.delete(
         '$ApiDomain/api/trips/delete/trip/$tripId',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = DeleteTripData.fromJson(json.decode(response.body));
@@ -99,7 +99,7 @@ Future<AddTravelerData> addTraveler(
         '$ApiDomain/api/trips/$tripId/travelers/add',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     print(response.statusCode);
@@ -133,7 +133,7 @@ Future<CreateTripData> postCreateTrip(TrotterStore store, dynamic data,
     final response = await http.post('$ApiDomain/api/trips/create/',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     print(response.statusCode);
@@ -275,7 +275,7 @@ Future<dynamic> postAddToTrip(String tripId, dynamic data,
         '$ApiDomain/api/trips/add/$tripId?updatedBy=$currentUserId',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {
@@ -299,7 +299,7 @@ Future<AddFlightsAndAccomodationsData> postAddFlightsAndAccomodations(
         '$ApiDomain/api/trips/add/flights_accomodations/$tripId/destination/$destinationId',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {
@@ -325,7 +325,7 @@ Future<AddFlightsAndAccomodationsData> deleteFlightsAndAccomodations(
     final response = await http.delete(
         '$ApiDomain/api/trips/delete/flights_accomodations/$tripId/destination/$destinationId/detail/$detailId?deletedBy=$currentUserId',
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {
@@ -347,10 +347,7 @@ Future<FlightsAndAccomodationsTravelersData>
   final response = await http.put(
       '$ApiDomain/api/trips/update/$tripId/destination/$destinationId/details/$detailId?updatedBy=$currentUserId',
       body: json.encode(data),
-      headers: {
-        'Authorization': 'security',
-        "Content-Type": "application/json"
-      });
+      headers: {'Authorization': APITOKEN, "Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     return FlightsAndAccomodationsTravelersData.fromJson(
@@ -369,7 +366,7 @@ Future<dynamic> putUpdateTripDestination(
         '$ApiDomain/api/trips/update/$tripId/destination/$destinationId',
         body: json.encode(data),
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {
@@ -391,10 +388,7 @@ Future<UpdateTripData> putUpdateTrip(
   final response = await http.put(
       '$ApiDomain/api/trips/update/trip/$tripId?updatedBy=$currentUserId',
       body: json.encode(data),
-      headers: {
-        'Authorization': 'security',
-        "Content-Type": "application/json"
-      });
+      headers: {'Authorization': APITOKEN, "Content-Type": "application/json"});
   if (response.statusCode == 200) {
     // If server returns an OK response, parse the JSON
     return UpdateTripData.fromJson(json.decode(response.body));
@@ -410,7 +404,7 @@ Future<UpdateTripData> deleteDestination(String tripId, String destinationId,
     final response = await http.delete(
         '$ApiDomain/api/trips/delete/$tripId/destination/$destinationId?updatedBy=$currentUserId',
         headers: {
-          'Authorization': 'security',
+          'Authorization': APITOKEN,
           "Content-Type": "application/json"
         });
     if (response.statusCode == 200) {

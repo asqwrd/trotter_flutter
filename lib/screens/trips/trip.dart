@@ -327,7 +327,7 @@ Future<TripData> fetchTrip(String id, [TrotterStore store]) async {
 
   try {
     final response = await http.get('$ApiDomain/api/trips/get/$id',
-        headers: {'Authorization': 'security'});
+        headers: {'Authorization': APITOKEN});
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       await prefs.setString('trip_$id', response.body);

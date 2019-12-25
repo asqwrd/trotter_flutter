@@ -33,7 +33,7 @@ Future<CountryData> fetchCountry(String id, String userId) async {
       print('no-cached');
       final response = await http.get(
           '$ApiDomain/api/explore/countries/$id?user_id=$userId',
-          headers: {'Authorization': 'security'});
+          headers: {'Authorization': APITOKEN});
       if (response.statusCode == 200) {
         // If server returns an OK response, parse the JSON
         await prefs.setString('country_$id', response.body);

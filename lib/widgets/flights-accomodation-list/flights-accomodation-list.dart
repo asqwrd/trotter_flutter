@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:intl/intl.dart';
@@ -64,67 +65,64 @@ class FlightsAccomodationsList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                      margin: EdgeInsets.only(bottom: 20),
+                      margin: EdgeInsets.only(bottom: 0),
                       child: ListTile(
-                          trailing: store.currentUser.uid ==
-                                      details[index]['ownerId'] &&
-                                  readWrite == true
-                              ? IconButton(
-                                  icon: Icon(EvilIcons.trash),
-                                  iconSize: 27,
-                                  onPressed: () {
-                                    this.onDeletePressed({
-                                      "id": details[index]['id'],
-                                      "destinationId": destination['id'],
-                                      'undoData': details[index]
-                                    });
-                                  },
-                                )
-                              : Container(width: 20, height: 20),
-                          title: AutoSizeText(
-                              '${details[index]['source'].length > 0 ? details[index]['source'] : "Travel itinerary"}',
-                              style: TextStyle(fontSize: 17)),
-                          subtitle: readWrite == true
-                              ? Container(
-                                  margin: EdgeInsets.only(top: 20, left: 0),
-                                  width: 250,
-                                  child: InkWell(
-                                      onTap: () {
-                                        this.onAddPressed({
-                                          "id": details[index]['id'],
-                                          "destinationId": destination['id'],
-                                          "travelers": travelers,
-                                          "index": index,
-                                          "ownerId": details[index]['ownerId']
-                                        });
-                                      },
-                                      child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          children: <Widget>[
-                                            Container(
-                                              padding: EdgeInsets.all(0),
-                                              margin: EdgeInsets.only(top: 0),
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                  color: Colors.transparent),
-                                              child: SvgPicture.asset(
-                                                  'images/edit-icon.svg',
-                                                  color: Colors.blueAccent,
-                                                  width: 20,
-                                                  height: 20),
-                                            ),
-                                            AutoSizeText('Edit travelers',
-                                                style: TextStyle(
-                                                    fontSize: 13,
-                                                    color: Colors.blueAccent))
-                                          ])),
-                                )
-                              : Container())),
+                        trailing: store.currentUser.uid ==
+                                    details[index]['ownerId'] &&
+                                readWrite == true
+                            ? IconButton(
+                                icon: Icon(EvilIcons.trash),
+                                iconSize: 27,
+                                onPressed: () {
+                                  this.onDeletePressed({
+                                    "id": details[index]['id'],
+                                    "destinationId": destination['id'],
+                                    'undoData': details[index]
+                                  });
+                                },
+                              )
+                            : Container(width: 20, height: 20),
+                        title: AutoSizeText(
+                            '${details[index]['source'].length > 0 ? details[index]['source'] : "Travel itinerary"}',
+                            style: TextStyle(fontSize: 17)),
+                      )),
+                  readWrite == true
+                      ? Container(
+                          margin: EdgeInsets.only(top: 0, left: 10, bottom: 20),
+                          width: 250,
+                          child: InkWell(
+                              onTap: () {
+                                this.onAddPressed({
+                                  "id": details[index]['id'],
+                                  "destinationId": destination['id'],
+                                  "travelers": travelers,
+                                  "index": index,
+                                  "ownerId": details[index]['ownerId']
+                                });
+                              },
+                              child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      padding: EdgeInsets.all(0),
+                                      margin: EdgeInsets.only(top: 0),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(100),
+                                          color: Colors.transparent),
+                                      child: SvgPicture.asset(
+                                          'images/edit-icon.svg',
+                                          color: Colors.blueAccent,
+                                          width: 20,
+                                          height: 20),
+                                    ),
+                                    AutoSizeText('Edit travelers',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.blueAccent))
+                                  ])))
+                      : Container(),
                   Container(
                       margin: EdgeInsets.symmetric(horizontal: 10),
                       child: ListView.separated(
@@ -150,11 +148,13 @@ class FlightsAccomodationsList extends StatelessWidget {
   renderSegment(
       BuildContext context, dynamic segment, index, dynamic travelers) {
     TextStyle style = TextStyle(
-        fontSize: 25, color: Colors.black, fontWeight: FontWeight.w400);
+        fontSize: 23, color: Colors.black, fontWeight: FontWeight.w400);
     TextStyle topstyle = TextStyle(
-        fontSize: 20, color: Colors.black, fontWeight: FontWeight.w200);
+        fontSize: 18, color: Colors.black, fontWeight: FontWeight.w200);
     TextStyle substyle = TextStyle(
-        fontSize: 13, color: Colors.black, fontWeight: FontWeight.w300);
+        fontSize: 11, color: Colors.black, fontWeight: FontWeight.w300);
+    TextStyle substyle2 = TextStyle(
+        fontSize: 11, color: Colors.blueAccent, fontWeight: FontWeight.w300);
 
     switch (segment['type']) {
       case 'Air':
@@ -224,10 +224,21 @@ class FlightsAccomodationsList extends StatelessWidget {
                               style: substyle,
                             ),
                             segment['confirmation_no'] != null
-                                ? AutoSizeText(
-                                    'Confirmation #: ${segment['confirmation_no']}',
-                                    style: substyle,
-                                  )
+                                ? GestureDetector(
+                                    onLongPress: () {
+                                      Clipboard.setData(new ClipboardData(
+                                          text: segment['confirmation_no']));
+                                      Scaffold.of(context)
+                                          .showSnackBar(new SnackBar(
+                                        duration: Duration(seconds: 2),
+                                        content:
+                                            new Text("Copied to Clipboard"),
+                                      ));
+                                    },
+                                    child: AutoSizeText(
+                                      'Confirmation #: ${segment['confirmation_no']}',
+                                      style: substyle2,
+                                    ))
                                 : Container(),
                             Container(
                                 margin: EdgeInsets.only(top: 60),
@@ -255,23 +266,25 @@ class FlightsAccomodationsList extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: <Widget>[
                                   Container(
-                                      width: 130,
+                                      width: 128,
                                       child: AutoSizeText(
                                           "${segment['airline']} flight ${segment['iata_code']}${segment['flight_number']}",
                                           style: TextStyle(
                                               fontSize: 13,
                                               fontWeight: FontWeight.w400))),
                                   Container(
-                                      width: 30,
+                                      width: 28,
                                       height: 1,
                                       margin:
                                           EdgeInsets.only(left: 0, right: 15),
                                       color: Colors.black.withOpacity(0.3)),
-                                  AutoSizeText("$timeInAir in air",
-                                      maxLines: 2,
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w300)),
+                                  Container(
+                                      width: 100,
+                                      child: AutoSizeText("$timeInAir in air",
+                                          maxLines: 3,
+                                          style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w300))),
                                 ],
                               ),
                             )
@@ -319,7 +332,12 @@ class FlightsAccomodationsList extends StatelessWidget {
         final hotelInfo = [
           {"label": "Checkin", "value": segment['checkin_date']},
           {"label": "Checkout", "value": segment['checkout_date']},
-          {"label": "Confirmation number", "value": segment['confirmation_no']},
+          {"label": "Confirmation no", "value": segment['confirmation_no']},
+          {
+            "label": "Address",
+            "value":
+                '${segment['address1']}${segment['address2'] != null ? ' ${segment['address2']}' : ''} ${segment['city_name']}, ${segment['country']} ${segment['postal_code'] != null ? segment['postal_code'] : ''}'
+          },
           {'label': "Guests", "value": travelers}
         ];
         String address = '';
@@ -335,7 +353,7 @@ class FlightsAccomodationsList extends StatelessWidget {
             ? double.tryParse(segment['lon']) ?? null
             : null;
         return Container(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 0),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: <
                 Widget>[
               Container(
@@ -373,7 +391,8 @@ class FlightsAccomodationsList extends StatelessWidget {
                                 ))
                             : Container(),
                     Container(
-                        height: 170,
+                        constraints: BoxConstraints(minHeight: 170),
+                        //height: 170,
                         margin: EdgeInsets.only(top: 10),
                         width: MediaQuery.of(context).size.width,
                         child: ListView.builder(
@@ -383,54 +402,64 @@ class FlightsAccomodationsList extends StatelessWidget {
                           itemCount: hotelInfo.length,
                           itemBuilder: (BuildContext hotelContext, int index) {
                             if (hotelInfo[index]['label'] == 'Guests') {
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  AutoSizeText(hotelInfo[index]['label'],
+                              return ListTile(
+                                  contentPadding:
+                                      EdgeInsets.symmetric(horizontal: 0),
+                                  title: AutoSizeText(hotelInfo[index]['label'],
                                       style: substyle),
-                                  buildTravelers(travelers)
-                                ],
-                              );
+                                  trailing: buildTravelers(travelers));
                             }
-                            if (hotelInfo[index]['label'] ==
-                                    'Confirmation number' &&
-                                hotelInfo[index]['value'] != null) {
+                            if ((hotelInfo[index]['label'] ==
+                                        'Confirmation no' &&
+                                    hotelInfo[index]['value'] != null ||
+                                (hotelInfo[index]['label'] == 'Address' &&
+                                    hotelInfo[index]['value'] != null))) {
                               return Container(
-                                  height: 35,
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      AutoSizeText(hotelInfo[index]['label'],
+                                  constraints: BoxConstraints(minHeight: 35),
+                                  //height: 35,
+                                  child: ListTile(
+                                      contentPadding:
+                                          EdgeInsets.symmetric(horizontal: 0),
+                                      title: AutoSizeText(
+                                          hotelInfo[index]['label'],
                                           style: substyle),
-                                      AutoSizeText(hotelInfo[index]['value'],
-                                          style: substyle)
-                                    ],
-                                  ));
+                                      trailing: Container(
+                                          width: 150,
+                                          child: GestureDetector(
+                                              onLongPress: () {
+                                                Clipboard.setData(
+                                                    new ClipboardData(
+                                                        text: hotelInfo[index]
+                                                            ['value']));
+                                                Scaffold.of(context)
+                                                    .showSnackBar(new SnackBar(
+                                                  duration:
+                                                      Duration(seconds: 2),
+                                                  content: new Text(
+                                                      "Copied to Clipboard"),
+                                                ));
+                                              },
+                                              child: AutoSizeText(
+                                                  hotelInfo[index]['value'],
+                                                  textAlign: TextAlign.right,
+                                                  style: substyle2)))));
                             }
                             return Container(
-                                height: 35,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    AutoSizeText(hotelInfo[index]['label'],
+                                constraints: BoxConstraints(minHeight: 35),
+                                child: ListTile(
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 0),
+                                    title: AutoSizeText(
+                                        hotelInfo[index]['label'],
                                         style: substyle),
-                                    hotelInfo[index]['value'] != null
+                                    trailing: hotelInfo[index]['value'] != null
                                         ? AutoSizeText(
                                             DateFormat("MMMM d, y").format(
                                                 DateTime.parse(
                                                     hotelInfo[index]['value'])),
                                             style: substyle)
                                         : AutoSizeText("Not given",
-                                            style: substyle)
-                                  ],
-                                ));
+                                            style: substyle)));
                           },
                         ))
                   ]))

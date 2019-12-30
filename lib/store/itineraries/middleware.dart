@@ -178,7 +178,6 @@ Future<ItineraryData> fetchItineraryBuilder(String id,
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = ItineraryData.fromJson(json.decode(response.body));
-      await prefs.setString('itinerary_$id', response.body);
       store?.itineraryStore?.setItineraryBuilder(
         results.itinerary,
         results.destination,

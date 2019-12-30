@@ -676,14 +676,14 @@ class DayEditState extends State<DayEdit> {
         this.loading = false;
         Scaffold.of(ctxt).showSnackBar(SnackBar(
           content: AutoSizeText('Visit status successfully changed',
-              style: TextStyle(fontSize: 18)),
+              style: TextStyle(fontSize: 16)),
           duration: Duration(seconds: 2),
         ));
       });
     } else {
       Scaffold.of(ctxt).showSnackBar(SnackBar(
         content: AutoSizeText('Failed to mark place as visited',
-            style: TextStyle(fontSize: 18)),
+            style: TextStyle(fontSize: 16)),
         duration: Duration(seconds: 2),
       ));
     }
@@ -982,7 +982,7 @@ class DayEditState extends State<DayEdit> {
                             Scaffold.of(this.context).showSnackBar(SnackBar(
                               content: AutoSizeText(
                                   'Unable to delete from itinerary',
-                                  style: TextStyle(fontSize: 18)),
+                                  style: TextStyle(fontSize: 16)),
                               duration: Duration(seconds: 2),
                             ));
                             this.loading = false;
@@ -1038,7 +1038,7 @@ class DayEditState extends State<DayEdit> {
                         setState(() {
                           Scaffold.of(this.context).showSnackBar(SnackBar(
                             content: AutoSizeText('Unable to copy',
-                                style: TextStyle(fontSize: 18)),
+                                style: TextStyle(fontSize: 16)),
                             duration: Duration(seconds: 2),
                           ));
                           this.loading = false;
@@ -1070,7 +1070,7 @@ class DayEditState extends State<DayEdit> {
                             });
                             Scaffold.of(ctxt).showSnackBar(SnackBar(
                               content: AutoSizeText('$name was removed.',
-                                  style: TextStyle(fontSize: 18)),
+                                  style: TextStyle(fontSize: 16)),
                               duration: Duration(seconds: 5),
                               action: SnackBarAction(
                                 label: 'Undo',
@@ -1102,7 +1102,7 @@ class DayEditState extends State<DayEdit> {
                                       Scaffold.of(ctxt).showSnackBar(SnackBar(
                                         content: AutoSizeText(
                                             'Undo successful!',
-                                            style: TextStyle(fontSize: 18)),
+                                            style: TextStyle(fontSize: 16)),
                                         duration: Duration(seconds: 2),
                                       ));
                                     });
@@ -1111,7 +1111,7 @@ class DayEditState extends State<DayEdit> {
                                     Scaffold.of(ctxt).showSnackBar(SnackBar(
                                         content: AutoSizeText(
                                             'Sorry the undo failed!',
-                                            style: TextStyle(fontSize: 18)),
+                                            style: TextStyle(fontSize: 16)),
                                         duration: Duration(seconds: 2)));
                                   }
                                 },
@@ -1122,7 +1122,7 @@ class DayEditState extends State<DayEdit> {
                               Scaffold.of(this.context).showSnackBar(SnackBar(
                                 content: AutoSizeText(
                                     'Unable to delete from itinerary',
-                                    style: TextStyle(fontSize: 18)),
+                                    style: TextStyle(fontSize: 16)),
                                 duration: Duration(seconds: 2),
                               ));
                               this.loading = false;

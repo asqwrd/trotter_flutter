@@ -318,13 +318,16 @@ class ItineraryState extends State<Itinerary> {
         }
 
         return InkWell(
-            onTap: () => onPush({
-                  'itineraryId': this.itineraryId,
-                  'dayId': dayId,
-                  "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
-                  'level': 'itinerary/day',
-                  'color': color
-                }),
+            onTap: () {
+              //print(dayBuilder[dayIndex]['linked_itinerary']);
+              onPush({
+                'itineraryId': this.itineraryId,
+                'dayId': dayId,
+                "linkedItinerary": dayBuilder[dayIndex]['linked_itinerary'],
+                'level': 'itinerary/day',
+                'color': color
+              });
+            },
             child: Column(children: <Widget>[
               Column(children: <Widget>[
                 Align(
@@ -381,7 +384,46 @@ class ItineraryState extends State<Itinerary> {
                         },
                         onLongPressed: (data) {},
                       ))
-                  : Container()
+                  : Center(
+                      child: Container(
+                          color: Colors.transparent,
+                          padding: EdgeInsets.symmetric(horizontal: 30),
+                          child: ListView(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            children: <Widget>[
+                              Container(
+                                  width: MediaQuery.of(context).size.width / 2,
+                                  height: MediaQuery.of(context).size.width / 2,
+                                  foregroundDecoration: BoxDecoration(
+                                      gradient: RadialGradient(
+                                        colors: [
+                                          Colors.white.withOpacity(.2),
+                                          Colors.white.withOpacity(1),
+                                          Colors.white.withOpacity(1),
+                                        ],
+                                        center: Alignment.center,
+                                        focal: Alignment.center,
+                                        radius: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(130)),
+                                  decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              'images/day-empty.jpg'),
+                                          fit: BoxFit.contain),
+                                      borderRadius:
+                                          BorderRadius.circular(130))),
+                              AutoSizeText(
+                                'Nothing done on this day.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: color,
+                                    fontWeight: FontWeight.w300),
+                              ),
+                            ],
+                          ))),
             ]));
       },
     );

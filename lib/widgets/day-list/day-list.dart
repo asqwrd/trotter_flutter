@@ -38,12 +38,14 @@ class DayList extends StatefulWidget {
   final bool tabs;
   final bool visited;
   final bool showTimeSpent;
+  final bool showDescriptions;
   final PanelController panelController;
 
   //passing props in react style
   DayList(
       {this.onPressed,
       this.onLongPressed,
+      this.showDescriptions,
       this.onCommentPressed,
       this.onRefreshImage,
       this.items,
@@ -72,6 +74,7 @@ class DayList extends StatefulWidget {
       onLongPressed: this.onLongPressed,
       onCommentPressed: this.onCommentPressed,
       onRefreshImage: this.onRefreshImage,
+      showDescriptions: this.showDescriptions,
       items: this.items,
       day: this.day,
       ownerId: this.ownerId,
@@ -115,6 +118,7 @@ class DayListState extends State<DayList> {
   final int day;
   final String subHeader;
   final bool comments;
+  final bool showDescriptions;
   final dynamic linkedItinerary;
   final bool showTutorial;
   final bool tabs;
@@ -131,6 +135,7 @@ class DayListState extends State<DayList> {
       {this.onPressed,
       this.onLongPressed,
       this.onCommentPressed,
+      this.showDescriptions,
       this.onDescriptionAdded,
       this.onRefreshImage,
       this.items,
@@ -320,9 +325,9 @@ class DayListState extends State<DayList> {
             var poi = itineraryItems[index]['poi'];
             var item = itineraryItems[index];
             List<dynamic> travelerDescription = item['traveler_descriptions'];
-            var indexDes = travelerDescription.indexWhere((element) {
+            var indexDes = store.currentUser != null ? travelerDescription.indexWhere((element) {
               return element['user']['uid'] == store.currentUser.uid;
-            });
+            }) : null;
             var justAdded = itineraryItems[index]['justAdded'];
             var travelTime = itineraryItems[index]['travel'];
             var prevIndex = index - 1;
@@ -674,7 +679,7 @@ class DayListState extends State<DayList> {
                                                         this.visited == true
                                                     ? renderEditButton(
                                                         context, poi, item)
-                                                    : this.visited == true
+                                                    : this.visited == true || this.showDescriptions == true
                                                         ? Container(
                                                             width: MediaQuery.of(
                                                                         context)
@@ -684,7 +689,7 @@ class DayListState extends State<DayList> {
                                                             child: Column(
                                                                 children: <
                                                                     Widget>[
-                                                                  indexDes < 0
+                                                                  indexDes != null && indexDes < 0
                                                                       ? renderEditButton(
                                                                           context,
                                                                           poi,
@@ -725,7 +730,7 @@ class DayListState extends State<DayList> {
                                                                                 useDiskCache: true,
                                                                                 cacheRule: CacheRule(maxAge: Duration(days: 1))),
                                                                           ),
-                                                                          title: AutoSizeText(store.currentUser.uid == user.uid
+                                                                          title: AutoSizeText(store.currentUser != null && store.currentUser.uid == user.uid
                                                                               ? "Your thoughts"
                                                                               : '${user.displayName}\'s thoughts'),
                                                                           subtitle:

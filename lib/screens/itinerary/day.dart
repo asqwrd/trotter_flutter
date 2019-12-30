@@ -17,7 +17,7 @@ import 'package:trotter_flutter/widgets/errors/index.dart';
 class Day extends StatefulWidget {
   final String dayId;
   final String itineraryId;
-  final String linkedItinerary;
+  final dynamic linkedItinerary;
   final Color color;
   final ValueChanged<dynamic> onPush;
   Day(
@@ -40,7 +40,7 @@ class Day extends StatefulWidget {
 class DayState extends State<Day> {
   final String dayId;
   final String itineraryId;
-  final String linkedItinerary;
+  final dynamic linkedItinerary;
   final ValueChanged<dynamic> onPush;
   Color color = Colors.blueGrey;
   String destinationName = '';
@@ -57,7 +57,10 @@ class DayState extends State<Day> {
   String itineraryName;
   dynamic day;
   bool shadow = false;
+  bool canView = false;
   List<dynamic> days;
+  TrotterStore store;
+  dynamic itinerary;
 
   Future<DayData> data;
 
@@ -78,6 +81,9 @@ class DayState extends State<Day> {
           this.loading = false;
           this.day = data.day;
           this.days = data.itinerary['days'];
+          this.itinerary = data.itinerary;
+          this.canView = data.itinerary['travelers'].any((traveler) =>
+              store.currentUser != null && store.currentUser.uid == traveler);
         });
       } else {
         setState(() {
@@ -105,6 +111,9 @@ class DayState extends State<Day> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
+    if (store == null) {
+      store = Provider.of<TrotterStore>(context);
+    }
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
@@ -372,8 +381,11 @@ class DayState extends State<Day> {
         controller: _sc,
         items: itineraryItems,
         color: color,
+        linkedItinerary: this.linkedItinerary,
+        day: day['day'],
         showTimeSpent: true,
         showTutorial: false,
+        showDescriptions: true,
         onLongPressed: (data) {},
         onRefreshImage: (data) async {
           final store = Provider.of<TrotterStore>(context);
@@ -393,15 +405,31 @@ class DayState extends State<Day> {
           }
         },
         onPressed: (data) {
-          if (data['itinerary'] != null) {
-            onPush({'id': data['itinerary']['id'], 'level': 'itinerary'});
-          } else {
-            onPush({
-              'id': data['id'],
-              'level': 'poi',
-              'google_place': data['google_place']
-            });
-          }
+          final store = Provider.of<TrotterStore>(context);
+          setState(() {
+            this.canView = this.itinerary['travelers'].any((traveler) =>
+                store.currentUser != null && store.currentUser.uid == traveler);
+            if (data['itinerary'] != null &&
+                    data['itinerary']['public'] == true ||
+                (store.currentUser != null && this.canView == true)) {
+              onPush({'id': data['itinerary']['id'], 'level': 'itinerary'});
+            } else if (data['itinerary'] != null &&
+                data['itinerary']['public'] != true) {
+              print('not public');
+              Scaffold.of(ctxt).showSnackBar(SnackBar(
+                content: AutoSizeText(
+                    'This itinerary has not been made public for viewing',
+                    style: TextStyle(fontSize: 16)),
+                duration: Duration(seconds: 3),
+              ));
+            } else {
+              onPush({
+                'id': data['id'],
+                'level': 'poi',
+                'google_place': data['google_place']
+              });
+            }
+          });
         },
       ),
     ]);

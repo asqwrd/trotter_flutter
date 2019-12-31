@@ -50,6 +50,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   GlobalKey _one = GlobalKey();
   bool imageLoading = true;
   bool shadow = false;
+  bool isPublic = false;
 
   @override
   void initState() {
@@ -97,6 +98,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
           this.color = Color(hexStringToHexInt(res.color));
           this.hotels = res.hotels;
           this.loading = false;
+          this.isPublic = res.itinerary['public'];
           store.itineraryStore.setItineraryBuilder(
             res.itinerary,
             res.destination,
@@ -269,71 +271,125 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
               title: this.itineraryName,
               actions: <Widget>[
                 Container(
-                    width: 50,
-                    height: 50,
-                    margin: EdgeInsets.symmetric(horizontal: 0),
-                    child: Showcase.withWidget(
-                        shapeBorder: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100)),
-                        width: 250,
-                        height: 50,
-                        container: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Container(
-                                width: 250,
-                                child: Text(
-                                  'Tap to open location modal.\nSelect a starting location to use for each day',
-                                  style: TextStyle(color: Colors.white),
-                                  maxLines: 3,
-                                ))
-                          ],
-                        ),
-                        key: _one,
-                        child: FlatButton(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(100)),
-                          onPressed: () async {
-                            final store = Provider.of<TrotterStore>(context);
+                    width: 58,
+                    height: 58,
+                    margin: EdgeInsets.symmetric(horizontal: 10),
+                    child: FlatButton(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100)),
+                      onPressed: () {
+                        var days = itinerary['days'];
+                        final currentTime = DateTime.now();
+                        final tempDay = DateTime.fromMillisecondsSinceEpoch(
+                                this.startDate,
+                                isUtc: false)
+                            .add(Duration(days: days[days.length - 1]['day']));
+                        final compareDay = DateTime(
+                            tempDay.year,
+                            tempDay.month,
+                            tempDay.day,
+                            currentTime.hour,
+                            currentTime.minute,
+                            currentTime.second,
+                            currentTime.millisecond,
+                            currentTime.microsecond);
 
-                            var latlng = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    fullscreenDialog: true,
-                                    builder: (context) => StartLocationModal(
-                                          hotels: this.hotels,
-                                          destination: this.destination,
-                                        )));
+                        showModalBottomSheet(
+                            context: context,
+                            builder: (BuildContext buildercontext) {
+                              return ListView(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                children: <Widget>[
+                                  Container(
+                                      decoration: BoxDecoration(
+                                          border: Border(
+                                              bottom: BorderSide(
+                                                  width: 1,
+                                                  color: Colors.black
+                                                      .withOpacity(0.1)))),
+                                      child: StatefulSwitch(
+                                        disabled:
+                                            compareDay.isAfter(currentTime) ||
+                                                this.startDate == 0 ||
+                                                this.startDate == null,
+                                        disableMessage: AutoSizeText(
+                                          'Cannot make itinerary public until after your trip',
+                                          style: TextStyle(fontSize: 13),
+                                        ),
+                                        title: AutoSizeText(
+                                          'Public',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        value: this.isPublic,
+                                        color: color,
+                                        onChanged: (value) async {
+                                          final response = await togglePublic(
+                                              store, this.itineraryId);
+                                          if (response.success == true) {
+                                            setState(() {
+                                              this.isPublic = value;
+                                              store.itineraryStore
+                                                  .toggleItineraryBuilderPublic(
+                                                      value);
+                                            });
+                                          }
+                                        },
+                                      )),
+                                  ListTile(
+                                    onTap: () async {
+                                      final store =
+                                          Provider.of<TrotterStore>(context);
 
-                            if (latlng != null) {
-                              final response = await updateStartLocation(
-                                  this.itineraryId, latlng, store);
-                              if (response.success == true) {
-                                Scaffold.of(context).showSnackBar(SnackBar(
-                                  content: AutoSizeText(
-                                      'Updated start location',
-                                      style: TextStyle(fontSize: 13)),
-                                  duration: Duration(seconds: 5),
-                                ));
-                              } else {
-                                Scaffold.of(context).showSnackBar(SnackBar(
-                                  content: AutoSizeText(
-                                      'Failed to update start location',
-                                      style: TextStyle(fontSize: 13)),
-                                  duration: Duration(seconds: 5),
-                                ));
-                              }
-                            }
-                          },
-                          child: SvgPicture.asset("images/place-icon.svg",
-                              width: 25.0,
-                              height: 25.0,
-                              color: fontContrast(color),
-                              fit: BoxFit.cover),
-                        ))),
+                                      var latlng = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              fullscreenDialog: true,
+                                              builder: (context) =>
+                                                  StartLocationModal(
+                                                    hotels: this.hotels,
+                                                    destination:
+                                                        this.destination,
+                                                  )));
+
+                                      if (latlng != null) {
+                                        final response =
+                                            await updateStartLocation(
+                                                this.itineraryId,
+                                                latlng,
+                                                store);
+                                        if (response.success == true) {
+                                          Scaffold.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: AutoSizeText(
+                                                'Updated start location',
+                                                style: TextStyle(fontSize: 13)),
+                                            duration: Duration(seconds: 5),
+                                          ));
+                                        } else {
+                                          Scaffold.of(context)
+                                              .showSnackBar(SnackBar(
+                                            content: AutoSizeText(
+                                                'Failed to update start location',
+                                                style: TextStyle(fontSize: 13)),
+                                            duration: Duration(seconds: 5),
+                                          ));
+                                        }
+                                      }
+                                    },
+                                    title: AutoSizeText('Update start location',
+                                        style: TextStyle(fontSize: 16)),
+                                  )
+                                ],
+                              );
+                            });
+                      },
+                      child: SvgPicture.asset("images/setting-icon.svg",
+                          width: 35,
+                          height: 35,
+                          color: fontContrast(color),
+                          fit: BoxFit.cover),
+                    )),
                 Container(
                     width: 58,
                     height: 58,

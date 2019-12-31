@@ -312,6 +312,31 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
   }
 }
 
+Future<PublicData> togglePublic(
+  TrotterStore store,
+  String itineraryId,
+) async {
+  try {
+    final response = await http.put(
+        '$ApiDomain/api/itineraries/$itineraryId/toggle',
+        headers: {'Authorization': APITOKEN});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      return PublicData.fromJson(json.decode(response.body));
+    } else {
+      // If that response was not OK, throw an error.
+      store.itineraryStore.setItineraryError('Server is down');
+      store.setOffline(true);
+      return PublicData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    store.itineraryStore.setItineraryError('Server is down');
+    store.setOffline(true);
+    return PublicData(success: false);
+  }
+}
+
 Future<DayData> toggleVisited(
   TrotterStore store,
   String tripId,
@@ -539,6 +564,17 @@ class ItineraryData {
         color: json['color'],
         hotels: json['hotels'],
         error: null);
+  }
+}
+
+class PublicData {
+  final bool success;
+  PublicData({this.success});
+
+  factory PublicData.fromJson(Map<String, dynamic> json) {
+    return PublicData(
+      success: true,
+    );
   }
 }
 

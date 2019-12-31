@@ -83,6 +83,19 @@ class ItineraryStore extends Store {
     });
   }
 
+  toggleItineraryBuilderPublic(bool value) {
+    final itinerary = _itineraryBuilder.itinerary;
+    itinerary['public'] = value;
+    setState(() {
+      _itineraryBuilder = ItineraryData(
+          itinerary: itinerary,
+          color: _itineraryBuilder.color,
+          destination: _itineraryBuilder.destination,
+          loading: false,
+          error: _itinerary.error);
+    });
+  }
+
   setSelectedItinerary(String selectedItineraryId, String destinationId,
       dynamic selectedItinerary,
       [bool loading]) {

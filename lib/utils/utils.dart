@@ -385,3 +385,70 @@ class RenderWidgetState extends State<RenderWidget> {
         startLocation: widget.startLocation);
   }
 }
+
+class StatefulSwitch extends StatefulWidget {
+  final bool value;
+  final bool disabled;
+  final ValueChanged<bool> onChanged;
+  final Widget title;
+  final Widget disableMessage;
+  final Color color;
+  StatefulSwitch(
+      {this.value,
+      this.color,
+      this.title,
+      this.onChanged,
+      this.disabled,
+      this.disableMessage});
+
+  StatefulSwitchState createState() => StatefulSwitchState(
+      color: this.color,
+      value: this.value,
+      title: this.title,
+      disabled: this.disabled,
+      disableMessage: this.disableMessage,
+      onChanged: this.onChanged);
+}
+
+class StatefulSwitchState extends State<StatefulSwitch> {
+  final bool value;
+  final bool disabled;
+  final Color color;
+  final Widget title;
+  final Widget disableMessage;
+  final ValueChanged<bool> onChanged;
+  bool isPublic;
+
+  @override
+  void initState() {
+    super.initState();
+    this.isPublic = this.value;
+  }
+
+  StatefulSwitchState(
+      {this.value,
+      this.color,
+      this.title,
+      this.onChanged,
+      this.disabled,
+      this.disableMessage});
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+      title: title,
+      subtitle: disabled == true ? disableMessage : null,
+      value: this.isPublic,
+      activeColor: color,
+      onChanged: (value) {
+        if (this.disabled == false) {
+          setState(() {
+            this.isPublic = value;
+            onChanged(value);
+          });
+        }
+      },
+    );
+  }
+}

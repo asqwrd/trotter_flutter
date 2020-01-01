@@ -7,7 +7,7 @@ description: A travel guide app.
 # Both the version and the builder number may be overridden in flutter
 # build by specifying --build-name and --build-number, respectively.
 # Read more about versioning at semver.org.
-version: 1.0.8+79
+version: 1.0.8+80
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -155,6 +155,13 @@ flutter:
     - images/shopping-icon.svg
     - images/reminder-icon.svg
     - images/mark-all.svg
+    - images/hat.svg
+    - images/hat_2.svg
+    - images/sun-umbrella.svg
+    - images/jacket.svg
+    - images/sweater.svg
+    - images/flip-flops.svg
+    - images/swimming-trunks.svg
     - images/place-icon.png
     - images/reminder-icon.png
     - images/A.png

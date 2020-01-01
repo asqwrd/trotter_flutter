@@ -6,6 +6,7 @@ import 'package:sliding_panel/sliding_panel.dart';
 // import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
+import 'package:trotter_flutter/widgets/climate/climate-list.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:trotter_flutter/widgets/images/image-swiper.dart';
 import 'package:trotter_flutter/widgets/itinerary-card/itinerary-card-loading.dart';
@@ -562,49 +563,38 @@ class DestinationState extends State<Destination>
               subText:
                   "See some recommendations for sights, food, shopping and nightlife",
               header: "Experiencing ${destination['name']}")),
+      this.destination['climate'] != null &&
+              this.destination['climate']['temperature'] != null &&
+              this.destination['climate']['temperature']['average_max']
+                      ['months'] !=
+                  null &&
+              this.destination['climate']['temperature']['average_min']
+                      ['months'] !=
+                  null
+          ? Container(
+              margin: EdgeInsets.only(bottom: 20),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                        padding: EdgeInsets.only(
+                            bottom: 10, top: 10, left: 20, right: 20),
+                        child: AutoSizeText(
+                          'Average monthly weather',
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: color,
+                              fontWeight: FontWeight.w500),
+                        )),
+                    ClimateList(
+                      color: color,
+                      temperature: TemperatureType.fromJson(
+                          this.destination['climate']['temperature']),
+                    )
+                  ]))
+          : Container(),
     ];
-    // for (var article in articles) {
-    //   var items = article['places'];
-    //   var title = article['name'];
-    //   if (items.length > 0) {
-    //     widgets.add(TopList(
-    //         items: items,
-    //         onPressed: (data) {
-    //           onPush({
-    //             'id': data['id'],
-    //             'level': data['level'],
-    //             "destination": destination,
-    //             "google_place": true,
-    //           });
-    //         },
-    //         onLongPressed: (data) async {
-    //           var currentUser = store.currentUser;
-    //           if (currentUser == null) {
-    //             loginBottomSheet(context, data, color);
-    //           } else {
-    //             var index = data['index'];
-    //             var result = await addToItinerary(
-    //                 context, items[index], color, destination);
-    //             if (result != null &&
-    //                 result['selected'] != null &&
-    //                 result['dayId'] != null &&
-    //                 result['itinerary'] != null &&
-    //                 result['poi'] != null &&
-    //                 result['dayIndex'] != null) {
-    //               //Navigator.of(context).pop();
 
-    //               await showSuccessSnackbar(context,
-    //                   onPush: onPush,
-    //                   dayId: result['dayId'],
-    //                   dayIndex: result['dayIndex'],
-    //                   itinerary: result['itinerary'],
-    //                   poi: result['poi']);
-    //             }
-    //           }
-    //         },
-    //         header: title));
-    //   }
-    // }
     return new List<Widget>.from(widgets)
       ..addAll(<Widget>[
         FutureBuilder(

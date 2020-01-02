@@ -83,8 +83,7 @@ class CreateTripState extends State<CreateTrip> {
           "image": this.param['image_hd']
         };
       }
-      this._destinations.add(destination);
-      //this._destinationImages.add(this.param['image']);
+      this._destinations = [destination];
     }
     this.destinationsCount = 1;
     super.initState();
@@ -210,6 +209,7 @@ class CreateTripState extends State<CreateTrip> {
                         "uid": store.currentUser.uid,
                       }
                     };
+                    print(this._destinations.length);
                     setState(() {
                       this.loading = true;
                     });

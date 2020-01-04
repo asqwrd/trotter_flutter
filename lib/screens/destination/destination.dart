@@ -307,10 +307,19 @@ class DestinationState extends State<Destination>
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: <Widget>[
-                                        AutoSizeText(
-                                            'Info on ${destination['country_name']}',
-                                            style: TextStyle(
-                                                fontSize: 23, color: color)),
+                                        Container(
+                                            constraints: BoxConstraints(
+                                                maxWidth: MediaQuery.of(context)
+                                                        .size
+                                                        .width -
+                                                    99),
+                                            child: AutoSizeText(
+                                                'Info on ${destination['country_name']}',
+                                                //maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                    fontSize: 23,
+                                                    color: color))),
                                         Icon(
                                           Icons.chevron_right,
                                           size: 25,

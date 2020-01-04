@@ -513,44 +513,66 @@ class CountryState extends State<Country> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 20.0),
-                        child: AutoSizeText(
-                          'Emergency numbers',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 15.0),
-                        )),
-                    Container(
-                        padding: EdgeInsets.all(20.0),
-                        margin: EdgeInsets.only(
-                            left: 20.0, right: 20.0, top: 0.0, bottom: 20.0),
-                        decoration: BoxDecoration(
-                          //color: this.color.withOpacity(.3),
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              ambulance.isNotEmpty
-                                  ? _buildEmergencyNumRow(
-                                      'Ambulance', ambulance)
-                                  : Container(),
-                              dispatch.isNotEmpty
-                                  ? _buildEmergencyNumRow('Dispatch', dispatch)
-                                  : Container(),
-                              fire.isNotEmpty
-                                  ? _buildEmergencyNumRow('Fire', fire)
-                                  : Container(),
-                              police.isNotEmpty
-                                  ? _buildEmergencyNumRow('Police', police)
-                                  : Container(),
-                              europeanEmergencyNumber.isNotEmpty
-                                  ? _buildEmergencyNumRow(
-                                      'European Emergency Number',
-                                      europeanEmergencyNumber)
-                                  : Container(),
-                            ])),
-                    buildDivider(),
+                    ambulance.isNotEmpty ||
+                            dispatch.isNotEmpty ||
+                            fire.isNotEmpty ||
+                            police.isNotEmpty ||
+                            europeanEmergencyNumber.isNotEmpty
+                        ? Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20.0),
+                            child: AutoSizeText(
+                              'Emergency numbers',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 15.0),
+                            ))
+                        : Container(),
+                    ambulance.isNotEmpty ||
+                            dispatch.isNotEmpty ||
+                            fire.isNotEmpty ||
+                            police.isNotEmpty ||
+                            europeanEmergencyNumber.isNotEmpty
+                        ? Container(
+                            padding: EdgeInsets.all(20.0),
+                            margin: EdgeInsets.only(
+                                left: 20.0,
+                                right: 20.0,
+                                top: 0.0,
+                                bottom: 20.0),
+                            decoration: BoxDecoration(
+                              //color: this.color.withOpacity(.3),
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  ambulance.isNotEmpty
+                                      ? _buildEmergencyNumRow(
+                                          'Ambulance', ambulance)
+                                      : Container(),
+                                  dispatch.isNotEmpty
+                                      ? _buildEmergencyNumRow(
+                                          'Dispatch', dispatch)
+                                      : Container(),
+                                  fire.isNotEmpty
+                                      ? _buildEmergencyNumRow('Fire', fire)
+                                      : Container(),
+                                  police.isNotEmpty
+                                      ? _buildEmergencyNumRow('Police', police)
+                                      : Container(),
+                                  europeanEmergencyNumber.isNotEmpty
+                                      ? _buildEmergencyNumRow(
+                                          'European Emergency Number',
+                                          europeanEmergencyNumber)
+                                      : Container(),
+                                ]))
+                        : Container(),
+                    ambulance.isNotEmpty ||
+                            dispatch.isNotEmpty ||
+                            fire.isNotEmpty ||
+                            police.isNotEmpty ||
+                            europeanEmergencyNumber.isNotEmpty
+                        ? buildDivider()
+                        : Container(),
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
@@ -676,7 +698,7 @@ class CountryState extends State<Country> {
     ];
     for (var plug in plugsData) {
       plugs.add(Padding(
-          padding: EdgeInsets.only(bottom: 0, right: 20.0),
+          padding: EdgeInsets.only(bottom: 20, right: 20.0),
           child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[

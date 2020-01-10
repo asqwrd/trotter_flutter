@@ -1255,7 +1255,7 @@ class HotelsFormState extends State<HotelsForm> {
               margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: FormBuilderTextField(
                 maxLines: 1,
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.text,
                 attribute: 'confirmation_no',
                 decoration: InputDecoration(
                   contentPadding: EdgeInsets.symmetric(vertical: 20.0),

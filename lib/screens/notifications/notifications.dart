@@ -4,10 +4,9 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/trips/index.dart';
@@ -55,40 +54,34 @@ class NotificationsState extends State<Notifications> {
     if (store.currentUser != null && data == null) {
       data = fetchNotifications(store);
     }
+    final panelHeights = getPanelHeights(context);
 
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingPanel(
-              snapPanel: true,
-              initialState: InitialPanelState.expanded,
-              isDraggable: false,
-              size: PanelSize(expandedHeight: getPanelHeight(context)),
-              autoSizing: PanelAutoSizing(),
-              decoration: PanelDecoration(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30))),
-              parallaxSlideAmount: .5,
-              panelController: _pc,
-              content: PanelContent(
-                panelContent: (context, _sc) {
-                  return Center(
-                      child: Stack(children: <Widget>[
-                    RenderWidget(
-                        onScroll: onScroll,
-                        scrollController: _sc,
-                        builder: (context,
-                                {scrollController,
-                                asyncSnapshot,
-                                startLocation}) =>
-                            _buildContent(context, store, scrollController)),
-                    store.notificationsLoading == true
-                        ? Center(child: RefreshProgressIndicator())
-                        : Container()
-                  ]));
-                },
-                bodyContent: Container(color: color),
-              ))),
+          child: SlidingUpPanel(
+        backdropColor: color,
+        backdropEnabled: true,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        backdropOpacity: 1,
+        maxHeight: panelHeights.max,
+        minHeight: panelHeights.max,
+        isDraggable: false,
+        defaultPanelState: PanelState.OPEN,
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        controller: _pc,
+        panelBuilder: (sc) {
+          return Center(
+            child: RenderWidget(
+                onScroll: onScroll,
+                scrollController: sc,
+                builder: (context,
+                        {scrollController, asyncSnapshot, startLocation}) =>
+                    _buildContent(context, store, scrollController)),
+          );
+        },
+      )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,

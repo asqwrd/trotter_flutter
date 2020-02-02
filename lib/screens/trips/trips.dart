@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
-import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -156,21 +155,42 @@ class TripsState extends State<Trips> {
         isSub = true;
       });
     }
-
-    return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      SlidingPanel(
-        snapPanel: true,
-        autoSizing: PanelAutoSizing(),
-        parallaxSlideAmount: .5,
-        backdropConfig: BackdropConfig(
-            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
-        decoration: PanelDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
-        panelController: _pc,
-        content: PanelContent(
-          headerWidget: PanelHeaderWidget(
-            headerContent: Container(
+    final panelHeights = getPanelHeights(context);
+    return Stack(alignment: Alignment.topLeft, children: <Widget>[
+      SlidingUpPanel(
+        backdropColor: color,
+        backdropEnabled: true,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        backdropOpacity: 1,
+        maxHeight: panelHeights.max,
+        minHeight: panelHeights.min,
+        defaultPanelState: PanelState.CLOSED,
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        controller: _pc,
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+              Positioned(
+                  width: MediaQuery.of(context).size.width,
+                  height: _bodyHeight,
+                  top: 0,
+                  left: 0,
+                  child: Image.asset(
+                    "images/trips2.jpg",
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                  )),
+              Positioned.fill(
+                top: 0,
+                left: 0,
+                child: Container(color: color.withOpacity(.3)),
+              ),
+            ])),
+        panelBuilder: (sc) {
+          return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            Container(
                 decoration: BoxDecoration(
                     boxShadow: this.shadow
                         ? <BoxShadow>[
@@ -226,37 +246,15 @@ class TripsState extends State<Trips> {
                               )
                   ],
                 )),
-          ),
-          panelContent: (context, scrollController) {
-            return RenderWidget(
-                scrollController: scrollController,
-                onScroll: onScroll,
-                builder: (context,
-                        {scrollController, asyncSnapshot, startLocation}) =>
-                    buildScaffold(color, store, context, scrollController));
-          },
-          bodyContent: Container(
-              height: _bodyHeight,
-              child: Stack(children: <Widget>[
-                Positioned(
-                    width: MediaQuery.of(context).size.width,
-                    height: _bodyHeight,
-                    top: 0,
-                    left: 0,
-                    child: Image.asset(
-                      "images/trips2.jpg",
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
-                    )),
-                Positioned.fill(
-                  top: 0,
-                  left: 0,
-                  child: Container(color: color.withOpacity(.3)),
-                ),
-              ])),
-        ),
-        size: PanelSize(
-            closedHeight: .45, expandedHeight: getPanelHeight(context)),
+            Expanded(
+                child: RenderWidget(
+                    scrollController: sc,
+                    onScroll: onScroll,
+                    builder: (context,
+                            {scrollController, asyncSnapshot, startLocation}) =>
+                        buildScaffold(color, store, context, scrollController)))
+          ]);
+        },
       ),
       Positioned(
           top: 0,
@@ -302,35 +300,38 @@ class TripsState extends State<Trips> {
     }
   }
 
-  Scaffold buildScaffold(Color color, TrotterStore store, BuildContext context,
+  buildScaffold(Color color, TrotterStore store, BuildContext context,
       ScrollController scrollController) {
     var currentUser = store.currentUser;
     var tripsError = store.tripStore.tripsError;
     var offline = store.offline;
 
-    return Scaffold(
-        backgroundColor: Colors.transparent,
-        floatingActionButton:
-            (currentUser != null && tripsError == null && offline == false)
-                ? FloatingActionButton(
-                    backgroundColor: color,
-                    onPressed: () {
-                      onPush({"level": "createtrip"});
-                    },
-                    tooltip: 'Create trip',
-                    child: Icon(
-                      Icons.add,
-                      color: fontContrast(color),
-                    ),
-                    elevation: 5.0,
-                  )
-                : Container(),
-        body: RenderWidget(
-            scrollController: scrollController,
-            onScroll: onScroll,
-            builder: (context,
-                    {scrollController, asyncSnapshot, startLocation}) =>
-                _buildLoadedBody(context, store, color, scrollController)));
+    return Container(
+        height: MediaQuery.of(context).size.height,
+        child: Scaffold(
+            backgroundColor: Colors.transparent,
+            floatingActionButton:
+                (currentUser != null && tripsError == null && offline == false)
+                    ? FloatingActionButton(
+                        backgroundColor: color,
+                        onPressed: () {
+                          onPush({"level": "createtrip"});
+                        },
+                        tooltip: 'Create trip',
+                        child: Icon(
+                          Icons.add,
+                          color: fontContrast(color),
+                        ),
+                        elevation: 5.0,
+                      )
+                    : Container(),
+            body: RenderWidget(
+                scrollController: scrollController,
+                onScroll: onScroll,
+                builder: (context,
+                        {scrollController, asyncSnapshot, startLocation}) =>
+                    _buildLoadedBody(
+                        context, store, color, scrollController))));
   }
 
 // function for rendering view after data is loaded
@@ -359,7 +360,8 @@ class TripsState extends State<Trips> {
     if (currentUser == null) {
       return Scaffold(
           backgroundColor: Colors.transparent,
-          body: Stack(children: <Widget>[
+          body: Container(
+              child: Stack(children: <Widget>[
             Container(
                 color: Colors.transparent,
                 padding: EdgeInsets.symmetric(horizontal: 30),
@@ -413,7 +415,7 @@ class TripsState extends State<Trips> {
             store.tripsLoading == true
                 ? Center(child: RefreshProgressIndicator())
                 : Container()
-          ]));
+          ])));
     } else if (currentUser != null && trips == null) {
       // fetchTrips(store).then((res) {
       //   setState(() {
@@ -444,6 +446,7 @@ class TripsState extends State<Trips> {
               top: 0,
               left: 0,
               child: ListView(
+                shrinkWrap: true,
                 controller: scrollController,
                 children: <Widget>[
                   trips.length > 0

@@ -10,7 +10,6 @@ import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
-import 'package:sliding_panel/sliding_panel.dart';
 import 'package:trotter_flutter/bottom_navigation.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
@@ -29,7 +28,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:shimmer/shimmer.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 Future<PopularCitiesData> fetchPopularCities([bool refresh]) async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -68,9 +67,9 @@ Future<PopularCitiesData> fetchPopularCities([bool refresh]) async {
 
 Future<HomeItinerariesData> fetchHomeItineraries() async {
   try {
-    final response = await http.get(
-        '$ApiDomain/api/itineraries/all?public=true',
-        headers: {'Authorization': APITOKEN});
+    final response = await http.get('$ApiDomain/api/itineraries/all', headers: {
+      'Authorization': APITOKEN,
+    });
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var data = json.decode(response.body);
@@ -82,7 +81,7 @@ Future<HomeItinerariesData> fetchHomeItineraries() async {
       return HomeItinerariesData(error: "Api returned a $msg");
     }
   } catch (error) {
-    //print('Response> $error');
+    print('Response> $error');
     return HomeItinerariesData(error: "Server is down");
   }
 }
@@ -144,8 +143,8 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home> {
   final ValueChanged<dynamic> onPush;
-  ScrollController _sc = new ScrollController();
   PanelController _pc = new PanelController();
+  ScrollController _sc = new ScrollController();
   bool disableScroll = true;
   bool errorUi = false;
   bool loading = true;
@@ -230,6 +229,7 @@ class HomeState extends State<Home> {
       return getErrorWidget(context, errorDetails);
     };
     double _bodyHeight = (MediaQuery.of(context).size.height / 2) + 20;
+
     //final store = Provider.of<TrotterStore>(context);
     //print(this.thingsToDo);
     if (doData != null) {
@@ -267,21 +267,42 @@ class HomeState extends State<Home> {
               })
             }
         });
-
+    final panelHeights = getPanelHeights(context);
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      SlidingPanel(
-        snapPanel: true,
-        autoSizing: PanelAutoSizing(),
-        parallaxSlideAmount: .5,
-        backdropConfig: BackdropConfig(
-            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
-        decoration: PanelDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
-        panelController: _pc,
-        content: PanelContent(
-          headerWidget: PanelHeaderWidget(
-            headerContent: Container(
+      SlidingUpPanel(
+        backdropColor: color,
+        backdropEnabled: true,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        backdropOpacity: 1,
+        maxHeight: panelHeights.max,
+        minHeight: panelHeights.min,
+        defaultPanelState: PanelState.CLOSED,
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        controller: _pc,
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+              Positioned(
+                  width: MediaQuery.of(context).size.width,
+                  height: _bodyHeight,
+                  top: 0,
+                  left: 0,
+                  child: Image.asset(
+                    "images/home_bg.jpeg",
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                  )),
+              Positioned.fill(
+                top: 0,
+                left: 0,
+                child: Container(color: color.withOpacity(.3)),
+              ),
+            ])),
+        panelBuilder: (sc) {
+          return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            Container(
                 decoration: BoxDecoration(
                     boxShadow: this.shadow
                         ? <BoxShadow>[
@@ -318,69 +339,49 @@ class HomeState extends State<Home> {
                     ),
                   ],
                 )),
-          ),
-          panelContent: (context, scrollController) {
-            return FutureBuilder(
-                future: data,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData && snapshot.data.success == false) {
-                    return SingleChildScrollView(
-                        controller: scrollController,
-                        child: ErrorContainer(
-                          color: color,
-                          onRetry: () async {
-                            final store = Provider.of<TrotterStore>(context);
-                            setState(() {
-                              this.loading = true;
-                              this.errorUi = false;
-                            });
-                            await Future.delayed(Duration(seconds: 2));
+            Expanded(
+                child: FutureBuilder(
+                    future: data,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data.success == false) {
+                        return SingleChildScrollView(
+                            controller: _sc,
+                            child: ErrorContainer(
+                              color: color,
+                              onRetry: () async {
+                                final store =
+                                    Provider.of<TrotterStore>(context);
+                                setState(() {
+                                  this.loading = true;
+                                  this.errorUi = false;
+                                });
+                                await Future.delayed(Duration(seconds: 2));
 
-                            setState(() {
-                              data = fetchPopularCities();
-                              dataItineraries = fetchHomeItineraries();
-                              if (store.currentUser != null) {
-                                doData = fetchThingsToDo(store.currentUser.uid);
-                              }
-                            });
-                          },
-                        ));
-                  }
+                                setState(() {
+                                  data = fetchPopularCities();
+                                  dataItineraries = fetchHomeItineraries();
+                                  if (store.currentUser != null) {
+                                    doData =
+                                        fetchThingsToDo(store.currentUser.uid);
+                                  }
+                                });
+                              },
+                            ));
+                      }
 
-                  return RenderWidget(
-                      onScroll: onScroll,
-                      asyncSnapshot: snapshot,
-                      scrollController: scrollController,
-                      builder: (context,
-                              {scrollController,
-                              asyncSnapshot,
-                              startLocation}) =>
-                          _buildLoadedBody(
-                              context, asyncSnapshot, scrollController));
-                });
-          },
-          bodyContent: Container(
-              height: _bodyHeight,
-              child: Stack(children: <Widget>[
-                Positioned(
-                    width: MediaQuery.of(context).size.width,
-                    height: _bodyHeight,
-                    top: 0,
-                    left: 0,
-                    child: Image.asset(
-                      "images/home_bg.jpeg",
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
-                    )),
-                Positioned.fill(
-                  top: 0,
-                  left: 0,
-                  child: Container(color: color.withOpacity(.3)),
-                ),
-              ])),
-        ),
-        size: PanelSize(
-            closedHeight: .45, expandedHeight: getPanelHeight(context)),
+                      return RenderWidget(
+                          onScroll: onScroll,
+                          asyncSnapshot: snapshot,
+                          scrollController: sc,
+                          builder: (context,
+                                  {scrollController,
+                                  asyncSnapshot,
+                                  startLocation}) =>
+                              _buildLoadedBody(
+                                  context, asyncSnapshot, scrollController));
+                    }))
+          ]);
+        },
       ),
       Positioned(
           top: 0,
@@ -511,30 +512,38 @@ class HomeState extends State<Home> {
                 'Check out these places for your upcoming trip to ${destination['destination_name']}',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w300),
               )),
-          Container(
-              margin: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              height: 220,
-              width: double.infinity,
-              child: ClipPath(
-                  clipper: ShapeBorderClipper(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8))),
-                  child: TransitionToImage(
-                    image: AdvancedNetworkImage(
-                      destination['image'],
-                      useDiskCache: true,
-                      cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                    ),
-                    loadingWidgetBuilder:
-                        (BuildContext context, double progress, test) => Center(
-                            child: RefreshProgressIndicator(
-                      backgroundColor: Colors.white,
-                    )),
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
-                    placeholder: const Icon(Icons.refresh),
-                    enableRefresh: true,
-                  ))),
+          InkWell(
+              onTap: () {
+                onPush({
+                  'id': destination['destination_id'],
+                  'level': destination['level']
+                });
+              },
+              child: Container(
+                  margin: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  height: 220,
+                  width: double.infinity,
+                  child: ClipPath(
+                      clipper: ShapeBorderClipper(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8))),
+                      child: TransitionToImage(
+                        image: AdvancedNetworkImage(
+                          destination['image'],
+                          useDiskCache: true,
+                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                        ),
+                        loadingWidgetBuilder:
+                            (BuildContext context, double progress, test) =>
+                                Center(
+                                    child: RefreshProgressIndicator(
+                          backgroundColor: Colors.white,
+                        )),
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        placeholder: const Icon(Icons.refresh),
+                        enableRefresh: true,
+                      )))),
           Container(
               margin: EdgeInsets.symmetric(horizontal: 20),
               child: CategoryList(
@@ -617,148 +626,143 @@ class HomeState extends State<Home> {
     final store = Provider.of<TrotterStore>(context);
 
     return Container(
-      child: LazyLoadScrollView(
-          isLoading: this.isLoading,
-          onEndOfPage: () async {
-            if (this.itineraries.length > 0 &&
-                this.itineraries.length < this.totalPublic) {
-              setState(() {
-                this.isLoading = true;
-              });
-              var lastId = this.itineraries[this.itineraries.length - 1]['id'];
-              var res = await fetchHomeItinerariesNext(lastId);
-              setState(() {
-                this.itineraries = this.itineraries..addAll(res.itineraries);
-                this.isLoading = false;
-              });
-            }
-            return true;
-          },
-          child: ListView(
-            cacheExtent: MediaQuery.of(context).size.height,
-            controller: scrollController,
-            children: <Widget>[
-              snapshot.connectionState == ConnectionState.waiting ||
-                      this.loading
+        child: LazyLoadScrollView(
+      isLoading: this.isLoading,
+      onEndOfPage: () async {
+        //print('end');
+        if (this.itineraries.length > 0 &&
+            this.itineraries.length < this.totalPublic) {
+          setState(() {
+            this.isLoading = true;
+          });
+          var lastId = this.itineraries[this.itineraries.length - 1]['id'];
+          var res = await fetchHomeItinerariesNext(lastId);
+          setState(() {
+            this.itineraries = this.itineraries..addAll(res.itineraries);
+            this.isLoading = false;
+          });
+        }
+        return true;
+      },
+      child: ListView(
+        shrinkWrap: true,
+        controller: scrollController,
+        children: <Widget>[
+          snapshot.connectionState == ConnectionState.waiting || this.loading
+              ? Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(bottom: 30.0),
+                  child: TopListLoading(
+                    enableMini: true,
+                  ))
+              : popularCities.length > 0
                   ? Container(
-                      width: double.infinity,
-                      margin: EdgeInsets.only(bottom: 30.0),
-                      child: TopListLoading(
-                        enableMini: true,
-                      ))
-                  : popularCities.length > 0
-                      ? Container(
-                          child: TopList(
-                              items: popularCities,
-                              enableMini: true,
-                              onPressed: (data) {
-                                onPush(
-                                    {'id': data['id'], 'level': data['level']});
-                              },
-                              onLongPressed: (data) {
-                                var currentUser = store.currentUser;
-                                if (currentUser == null) {
-                                  loginBottomSheet(context, data, color);
-                                } else {
-                                  bottomSheetModal(context, data['poi']);
-                                }
-                              },
-                              subText:
-                                  "Learn about popular cities and why so many people like to travel to them.",
-                              header: "Trending cities"))
-                      : Container(),
-              store.currentUser != null
-                  ? Container(
-                      margin: EdgeInsets.symmetric(vertical: 0),
-                      child: FutureBuilder(
-                          future: doData,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return doLoadingWidget();
-                            } else if (snapshot.hasData &&
-                                snapshot.data.success == true) {
-                              return _buildThingsToDo(context, snapshot, color);
-                            } else if (snapshot.hasData &&
-                                    snapshot.data.success == false ||
-                                (snapshot.connectionState ==
-                                        ConnectionState.done &&
-                                    snapshot.hasData == false)) {
-                              return Container(
-                                  margin: EdgeInsets.only(bottom: 20),
-                                  child: Column(
-                                    children: <Widget>[
-                                      Container(
-                                          margin: EdgeInsets.only(bottom: 20),
-                                          child: AutoSizeText(
-                                            'Failed to get things to do.',
-                                            style: TextStyle(
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.w300),
-                                          )),
-                                      RetryButton(
-                                        color: color,
-                                        width: 100,
-                                        height: 50,
-                                        onPressed: () {
-                                          setState(() {
-                                            doData = fetchThingsToDo(
-                                                store.currentUser.uid);
-                                          });
-                                        },
-                                      )
-                                    ],
-                                  ));
+                      child: TopList(
+                          items: popularCities,
+                          enableMini: true,
+                          onPressed: (data) {
+                            onPush({'id': data['id'], 'level': data['level']});
+                          },
+                          onLongPressed: (data) {
+                            var currentUser = store.currentUser;
+                            if (currentUser == null) {
+                              loginBottomSheet(context, data, color);
+                            } else {
+                              bottomSheetModal(context, data['poi']);
                             }
-                            return doLoadingWidget();
-                          }))
+                          },
+                          subText:
+                              "Learn about popular cities and why so many people like to travel to them.",
+                          header: "Trending cities"))
                   : Container(),
-              FutureBuilder(
-                  future: dataItineraries,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return _buildItineraryLoading(context);
-                    } else if (snapshot.hasData &&
-                        snapshot.data.error == null) {
-                      return _buildItinerary(context, snapshot, color);
-                    } else if (snapshot.hasData &&
-                        snapshot.data.error != null) {
-                      return Container(
-                          margin: EdgeInsets.only(bottom: 20),
-                          child: Column(
-                            children: <Widget>[
-                              Container(
-                                  margin: EdgeInsets.only(bottom: 20),
-                                  child: AutoSizeText(
-                                    'Failed to get itineraries.',
-                                    style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w300),
-                                  )),
-                              RetryButton(
-                                color: color,
-                                width: 100,
-                                height: 50,
-                                onPressed: () {
-                                  setState(() {
-                                    dataItineraries = fetchHomeItineraries();
-                                  });
-                                },
-                              )
-                            ],
-                          ));
-                    }
-                    return _buildItineraryLoading(context);
-                  }),
-              this.isLoading
-                  ? AwesomeLoader(
-                      loaderType: AwesomeLoader.AwesomeLoader4,
-                      color: this.color,
-                    )
-                  : Container()
-            ],
-          )),
-    );
+          store.currentUser != null
+              ? Container(
+                  margin: EdgeInsets.symmetric(vertical: 0),
+                  child: FutureBuilder(
+                      future: doData,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return doLoadingWidget();
+                        } else if (snapshot.hasData &&
+                            snapshot.data.success == true) {
+                          return _buildThingsToDo(context, snapshot, color);
+                        } else if (snapshot.hasData &&
+                                snapshot.data.success == false ||
+                            (snapshot.connectionState == ConnectionState.done &&
+                                snapshot.hasData == false)) {
+                          return Container(
+                              margin: EdgeInsets.only(bottom: 20),
+                              child: Column(
+                                children: <Widget>[
+                                  Container(
+                                      margin: EdgeInsets.only(bottom: 20),
+                                      child: AutoSizeText(
+                                        'Failed to get things to do.',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w300),
+                                      )),
+                                  RetryButton(
+                                    color: color,
+                                    width: 100,
+                                    height: 50,
+                                    onPressed: () {
+                                      setState(() {
+                                        doData = fetchThingsToDo(
+                                            store.currentUser.uid);
+                                      });
+                                    },
+                                  )
+                                ],
+                              ));
+                        }
+                        return doLoadingWidget();
+                      }))
+              : Container(),
+          FutureBuilder(
+              future: dataItineraries,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return _buildItineraryLoading(context);
+                } else if (snapshot.hasData && snapshot.data.error == null) {
+                  return _buildItinerary(context, snapshot, color);
+                } else if (snapshot.hasData && snapshot.data.error != null) {
+                  return Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      child: Column(
+                        children: <Widget>[
+                          Container(
+                              margin: EdgeInsets.only(bottom: 20),
+                              child: AutoSizeText(
+                                'Failed to get itineraries.',
+                                style: TextStyle(
+                                    fontSize: 24, fontWeight: FontWeight.w300),
+                              )),
+                          RetryButton(
+                            color: color,
+                            width: 100,
+                            height: 50,
+                            onPressed: () {
+                              setState(() {
+                                dataItineraries = fetchHomeItineraries();
+                              });
+                            },
+                          )
+                        ],
+                      ));
+                }
+                return _buildItineraryLoading(context);
+              }),
+          this.isLoading
+              ? AwesomeLoader(
+                  loaderType: AwesomeLoader.AwesomeLoader4,
+                  color: this.color,
+                )
+              : Container()
+        ],
+      ),
+    ));
   }
 
   Container doLoadingWidget() {

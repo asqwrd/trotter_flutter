@@ -6,8 +6,7 @@ import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rating_bar/rating_bar.dart';
-import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
 import 'package:http/http.dart' as http;
@@ -169,6 +168,7 @@ class PoiState extends State<Poi> {
         });
       }
     });
+    final panelHeights = getPanelHeights(context);
 
     return WillPopScope(
         onWillPop: () {
@@ -177,186 +177,170 @@ class PoiState extends State<Poi> {
         },
         child: Stack(alignment: Alignment.topCenter, children: <Widget>[
           Positioned(
-              child: new SlidingPanel(
-                  snapPanel: true,
-                  initialState: this.errorUi == true
-                      ? InitialPanelState.expanded
-                      : InitialPanelState.closed,
-                  size: PanelSize(
-                      closedHeight: .45,
-                      expandedHeight: getPanelHeight(context)),
-                  autoSizing: PanelAutoSizing(),
-                  decoration: PanelDecoration(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30))),
-                  parallaxSlideAmount: .5,
-                  backdropConfig: BackdropConfig(
-                      dragFromBody: true,
-                      shadowColor: color,
-                      opacity: 1,
-                      enabled: true),
-                  panelController: _pc,
-                  content: PanelContent(
-                    headerWidget: PanelHeaderWidget(
-                      headerContent: Container(
-                          decoration: BoxDecoration(
-                              boxShadow: this.shadow
-                                  ? <BoxShadow>[
-                                      BoxShadow(
-                                          color: Colors.black.withOpacity(.2),
-                                          blurRadius: 10.0,
-                                          offset: Offset(0.0, 0.75))
-                                    ]
-                                  : [],
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(30),
-                                  topRight: Radius.circular(30))),
-                          padding: const EdgeInsets.only(top: 16.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Center(
-                                  child: Container(
-                                width: 30,
-                                height: 5,
-                                decoration: BoxDecoration(
-                                    color: Colors.grey[300],
-                                    borderRadius: BorderRadius.all(
-                                        Radius.circular(12.0))),
-                              )),
-                              this.loading
-                                  ? Container(
-                                      alignment: Alignment.center,
-                                      padding:
-                                          EdgeInsets.only(top: 10, bottom: 20),
-                                      child: AutoSizeText(
-                                        ' Loading...',
-                                        style: TextStyle(fontSize: 23),
-                                      ),
+              child: SlidingUpPanel(
+            backdropColor: color,
+            backdropEnabled: true,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+            backdropOpacity: 1,
+            maxHeight: panelHeights.max,
+            minHeight: panelHeights.min,
+            defaultPanelState:
+                this.errorUi == true ? PanelState.OPEN : PanelState.CLOSED,
+            parallaxEnabled: true,
+            parallaxOffset: .5,
+            controller: _pc,
+            body: Container(
+                height: _bodyHeight,
+                child: Stack(children: <Widget>[
+                  Positioned.fill(
+                      top: 0,
+                      child: this.image != null
+                          ? TransitionToImage(
+                              image: this.image.length > 0
+                                  ? AdvancedNetworkImage(
+                                      this.image,
+                                      useDiskCache: true,
+                                      cacheRule: CacheRule(
+                                          maxAge: const Duration(days: 7)),
                                     )
-                                  : Container(
-                                      alignment: Alignment.center,
-                                      padding: EdgeInsets.only(
-                                          top: 10,
-                                          bottom: 20,
-                                          left: 20,
-                                          right: 20),
-                                      child: AutoSizeText(
-                                        'About ${this.poiName}',
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 2,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(fontSize: 23),
-                                      ),
-                                    ),
-                            ],
-                          )),
-                    ),
-                    panelContent: (context, _sc) {
-                      return Center(
-                          child: FutureBuilder(
-                              future: data,
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData &&
-                                    snapshot.connectionState ==
-                                        ConnectionState.done &&
-                                    snapshot.data.error == null) {
-                                  return RenderWidget(
-                                      onScroll: onScroll,
-                                      scrollController: _sc,
-                                      asyncSnapshot: snapshot,
-                                      builder: (context,
-                                              {scrollController,
-                                              asyncSnapshot,
-                                              startLocation}) =>
-                                          _buildLoadedBody(context,
-                                              asyncSnapshot, scrollController));
-                                } else if (snapshot.hasData &&
-                                    snapshot.connectionState ==
-                                        ConnectionState.done &&
-                                    snapshot.data.error != null) {
-                                  return SingleChildScrollView(
-                                      controller: _sc,
-                                      child: ErrorContainer(
-                                        onRetry: () {
-                                          setState(() {
-                                            data = fetchPoi(this.poiId);
-                                          });
-                                        },
-                                      ));
-                                }
-                                return _buildLoadingBody(context, _sc);
-                              }));
-                    },
-                    bodyContent: Container(
-                        height: _bodyHeight,
-                        child: Stack(children: <Widget>[
-                          Positioned.fill(
-                              top: 0,
-                              child: this.image != null
-                                  ? TransitionToImage(
-                                      image: this.image.length > 0
-                                          ? AdvancedNetworkImage(
-                                              this.image,
-                                              useDiskCache: true,
-                                              cacheRule: CacheRule(
-                                                  maxAge:
-                                                      const Duration(days: 7)),
-                                            )
-                                          : AssetImage(
-                                              "images/placeholder.png"),
-                                      loadingWidgetBuilder:
-                                          (BuildContext context,
-                                                  double progress, test) =>
-                                              Container(),
+                                  : AssetImage("images/placeholder.png"),
+                              loadingWidgetBuilder: (BuildContext context,
+                                      double progress, test) =>
+                                  Container(),
+                              fit: BoxFit.cover,
+                              alignment: Alignment.center,
+                              placeholder: Container(
+                                  child: Image(
                                       fit: BoxFit.cover,
-                                      alignment: Alignment.center,
-                                      placeholder: Container(
-                                          child: Image(
-                                              fit: BoxFit.cover,
-                                              image: AssetImage(
-                                                  "images/placeholder.png"))),
-                                      enableRefresh: true,
-                                      loadedCallback: () async {
-                                        await Future.delayed(
-                                            Duration(seconds: 2));
-                                        setState(() {
-                                          this.imageLoading = false;
-                                        });
-                                      },
-                                      loadFailedCallback: () async {
-                                        await Future.delayed(
-                                            Duration(seconds: 2));
-                                        setState(() {
-                                          this.imageLoading = false;
-                                        });
-                                      },
-                                    )
-                                  : Container()),
-                          Positioned.fill(
-                            top: 0,
-                            left: 0,
+                                      image: AssetImage(
+                                          "images/placeholder.png"))),
+                              enableRefresh: true,
+                              loadedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                              loadFailedCallback: () async {
+                                await Future.delayed(Duration(seconds: 2));
+                                setState(() {
+                                  this.imageLoading = false;
+                                });
+                              },
+                            )
+                          : Container()),
+                  Positioned.fill(
+                    top: 0,
+                    left: 0,
+                    child: Container(
+                        color: this.imageLoading
+                            ? this.color
+                            : this.color.withOpacity(.3)),
+                  ),
+                  this.image == null || this.imageLoading == true
+                      ? Positioned.fill(
+                          top: -((_bodyHeight / 2) + 100),
+                          // left: -50,
+                          child: Center(
+                              child: Container(
+                                  width: 250,
+                                  child: TrotterLoading(
+                                      file: 'assets/globe.flr',
+                                      animation: 'flight',
+                                      color: Colors.transparent))))
+                      : Container()
+                ])),
+            panelBuilder: (sc) {
+              return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                Container(
+                    decoration: BoxDecoration(
+                        boxShadow: this.shadow
+                            ? <BoxShadow>[
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(.2),
+                                    blurRadius: 10.0,
+                                    offset: Offset(0.0, 0.75))
+                              ]
+                            : [],
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30))),
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Center(
                             child: Container(
-                                color: this.imageLoading
-                                    ? this.color
-                                    : this.color.withOpacity(.3)),
-                          ),
-                          this.image == null || this.imageLoading == true
-                              ? Positioned.fill(
-                                  top: -((_bodyHeight / 2) + 100),
-                                  // left: -50,
-                                  child: Center(
-                                      child: Container(
-                                          width: 250,
-                                          child: TrotterLoading(
-                                              file: 'assets/globe.flr',
-                                              animation: 'flight',
-                                              color: Colors.transparent))))
-                              : Container()
-                        ])),
-                  ))),
+                          width: 30,
+                          height: 5,
+                          decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12.0))),
+                        )),
+                        this.loading
+                            ? Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.only(top: 10, bottom: 20),
+                                child: AutoSizeText(
+                                  ' Loading...',
+                                  style: TextStyle(fontSize: 23),
+                                ),
+                              )
+                            : Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.only(
+                                    top: 10, bottom: 20, left: 20, right: 20),
+                                child: AutoSizeText(
+                                  'About ${this.poiName}',
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 23),
+                                ),
+                              ),
+                      ],
+                    )),
+                Expanded(
+                    child: Center(
+                        child: FutureBuilder(
+                            future: data,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData &&
+                                  snapshot.connectionState ==
+                                      ConnectionState.done &&
+                                  snapshot.data.error == null) {
+                                return RenderWidget(
+                                    onScroll: onScroll,
+                                    scrollController: sc,
+                                    asyncSnapshot: snapshot,
+                                    builder: (context,
+                                            {scrollController,
+                                            asyncSnapshot,
+                                            startLocation}) =>
+                                        _buildLoadedBody(context, asyncSnapshot,
+                                            scrollController));
+                              } else if (snapshot.hasData &&
+                                  snapshot.connectionState ==
+                                      ConnectionState.done &&
+                                  snapshot.data.error != null) {
+                                return SingleChildScrollView(
+                                    controller: sc,
+                                    child: ErrorContainer(
+                                      onRetry: () {
+                                        setState(() {
+                                          data = fetchPoi(this.poiId);
+                                        });
+                                      },
+                                    ));
+                              }
+                              return _buildLoadingBody(context, sc);
+                            }))),
+              ]);
+            },
+          )),
           Positioned(
               top: 0,
               width: MediaQuery.of(context).size.width,

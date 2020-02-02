@@ -77,7 +77,7 @@ Future<StartLocationData> updateStartLocation(String id, dynamic data,
     if (response.statusCode == 200) {
       // If server returns an OK response, parse the JSON
       var results = StartLocationData.fromJson(json.decode(response.body));
-      store?.itineraryStore?.updateStartLocation(results.startLocation);
+      //store?.itineraryStore?.updateStartLocation(results.startLocation);
 
       return results;
     } else {

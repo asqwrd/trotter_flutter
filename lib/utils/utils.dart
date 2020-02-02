@@ -1,9 +1,20 @@
 import 'dart:io';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flare_loading/flare_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart' show parse;
+
+PanelHeights getPanelHeights(context) {
+  return PanelHeights(
+      max: MediaQuery.of(context).size.height - 140,
+      min: MediaQuery.of(context).size.height / 2);
+}
+
+class PanelHeights {
+  final double max;
+  final double min;
+  PanelHeights({this.min, this.max});
+}
 
 class PixelRatioDivider {
   double quantizedUnit;
@@ -18,7 +29,7 @@ class PixelRatioDivider {
 
 double getPanelHeight(BuildContext context) {
   final relativeHeight = MediaQuery.of(context).size.height;
-  double offset = 135;
+  double offset = 100;
   if (Platform.isIOS) {
     offset += MediaQuery.of(context).padding.top;
   }
@@ -292,7 +303,8 @@ Widget getErrorWidget(BuildContext context, FlutterErrorDetails error) {
   return Center(
     child: Text(
       "Error appeared.",
-      style: Theme.of(context).textTheme.title.copyWith(color: Colors.white),
+      style:
+          Theme.of(context).textTheme.headline6.copyWith(color: Colors.white),
     ),
   );
 }

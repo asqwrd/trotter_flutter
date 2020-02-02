@@ -7,7 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:sliding_panel/sliding_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/auth.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -39,6 +39,7 @@ class DayList extends StatefulWidget {
   final bool visited;
   final bool showTimeSpent;
   final bool showDescriptions;
+  final bool public;
   final PanelController panelController;
 
   //passing props in react style
@@ -62,6 +63,7 @@ class DayList extends StatefulWidget {
       this.comments,
       this.showTutorial,
       this.tabs,
+      this.public,
       this.visited,
       this.showTimeSpent,
       this.onToggleVisited,
@@ -94,6 +96,7 @@ class DayList extends StatefulWidget {
       onDescriptionAdded: this.onDescriptionAdded,
       onToggleVisited: this.onToggleVisited,
       panelController: this.panelController,
+      public: this.public,
       startLocation: this.startLocation);
 }
 
@@ -119,6 +122,7 @@ class DayListState extends State<DayList> {
   final String subHeader;
   final bool comments;
   final bool showDescriptions;
+  final bool public;
   final dynamic linkedItinerary;
   final bool showTutorial;
   final bool tabs;
@@ -152,6 +156,7 @@ class DayListState extends State<DayList> {
       this.comments,
       this.showTutorial,
       this.tabs,
+      this.public,
       this.visited,
       this.showTimeSpent,
       this.onToggleVisited,
@@ -183,8 +188,7 @@ class DayListState extends State<DayList> {
           prefs.getString('dayListShowCaseVisited') ?? null;
       if (cacheData == null &&
           panelController != null &&
-          panelController.currentPosition ==
-              panelController.sizeData.expandedHeight &&
+              panelController.isPanelOpen &&
           this.showTutorial == true) {
         ShowCaseWidget.of(context).startShowCase([_three]);
         await prefs.setString('dayListShowCasePoi', "true");
@@ -207,6 +211,7 @@ class DayListState extends State<DayList> {
               child: ListView(
                 controller: this.controller,
                 shrinkWrap: true,
+                primary: false,
                 children: <Widget>[
                   Container(
                       width: MediaQuery.of(context).size.width / 2,
@@ -228,7 +233,7 @@ class DayListState extends State<DayList> {
                               image: AssetImage('images/day-empty.jpg'),
                               fit: BoxFit.contain),
                           borderRadius: BorderRadius.circular(130))),
-                  this.visited != true
+                  this.visited != true && this.public == false
                       ? AutoSizeText(
                           'Lets find some things to do',
                           textAlign: TextAlign.center,
@@ -237,8 +242,15 @@ class DayListState extends State<DayList> {
                               color: color,
                               fontWeight: FontWeight.w300),
                         )
-                      : AutoSizeText(
+                      : this.public == false ? AutoSizeText(
                           'All the places you have visited for the day',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 25,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ) : AutoSizeText(
+                          'Nothing done on this day',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 25,
@@ -246,7 +258,7 @@ class DayListState extends State<DayList> {
                               fontWeight: FontWeight.w300),
                         ),
                   SizedBox(height: 10),
-                  this.visited != true
+                  this.visited != true && this.public == false
                       ? AutoSizeText(
                           'Tap the drop point icon at the top to search',
                           textAlign: TextAlign.center,
@@ -255,8 +267,15 @@ class DayListState extends State<DayList> {
                               color: color,
                               fontWeight: FontWeight.w300),
                         )
-                      : AutoSizeText(
+                      : this.public == false ? AutoSizeText(
                           'Places you mark as visited will appear here',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: color,
+                              fontWeight: FontWeight.w300),
+                        ) : AutoSizeText(
+                          '',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               fontSize: 13,
@@ -674,9 +693,9 @@ class DayListState extends State<DayList> {
                                                               height: 1.3),
                                                         ))
                                                     : Container(),
-                                                travelerDescription.length ==
+                                                (travelerDescription.length ==
                                                             0 &&
-                                                        this.visited == true
+                                                        this.visited == true)
                                                     ? renderEditButton(
                                                         context, poi, item)
                                                     : this.visited == true || this.showDescriptions == true
@@ -783,6 +802,9 @@ class DayListState extends State<DayList> {
   }
 
   renderEditButton(BuildContext context, poi, item) {
+    if(item['description'].isNotEmpty){
+      return Container();
+    }
     return InkWell(
         onTap: () async {
           await onDescriptionModal(context, '', poi, item);

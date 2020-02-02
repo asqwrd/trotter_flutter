@@ -1,9 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
-import 'package:sliding_panel/sliding_panel.dart';
 import 'dart:core';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:intl/intl.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
@@ -253,68 +252,66 @@ class CreateTripState extends State<CreateTrip> {
               )))
     ];
     double _bodyHeight = MediaQuery.of(context).size.height - 110;
+    final panelHeights = getPanelHeights(context);
+
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingPanel(
-              snapPanel: true,
-              initialState: InitialPanelState.expanded,
-              isDraggable: false,
-              size: PanelSize(
-                  closedHeight: .7, expandedHeight: getPanelHeight(context)),
-              autoSizing: PanelAutoSizing(),
-              decoration: PanelDecoration(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30))),
-              parallaxSlideAmount: .5,
-              backdropConfig: BackdropConfig(
-                  dragFromBody: true,
-                  shadowColor: color,
-                  opacity: 1,
-                  enabled: true),
-              panelController: _pc,
-              content: PanelContent(
-                headerWidget: PanelHeaderWidget(
-                  headerContent: Container(
-                      decoration: BoxDecoration(
-                          boxShadow: this.shadow
-                              ? <BoxShadow>[
-                                  BoxShadow(
-                                      color: Colors.black.withOpacity(.2),
-                                      blurRadius: 10.0,
-                                      offset: Offset(0.0, 0.75))
-                                ]
-                              : [],
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30))),
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Center(
-                              child: Container(
-                            width: 30,
-                            height: 5,
-                            decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(12.0))),
-                          )),
-                          Container(
-                            alignment: Alignment.center,
-                            padding: EdgeInsets.only(top: 10, bottom: 20),
-                            child: AutoSizeText(
-                              'Where to?',
-                              style: TextStyle(fontSize: 23),
-                            ),
-                          )
-                        ],
+          child: SlidingUpPanel(
+        backdropColor: color,
+        backdropEnabled: true,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        backdropOpacity: 1,
+        isDraggable: false,
+        maxHeight: panelHeights.max,
+        minHeight: panelHeights.max,
+        defaultPanelState: PanelState.OPEN,
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        controller: _pc,
+        panelBuilder: (sc) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Container(
+                  decoration: BoxDecoration(
+                      boxShadow: this.shadow
+                          ? <BoxShadow>[
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(.2),
+                                  blurRadius: 10.0,
+                                  offset: Offset(0.0, 0.75))
+                            ]
+                          : [],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30))),
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Center(
+                          child: Container(
+                        width: 30,
+                        height: 5,
+                        decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(12.0))),
                       )),
-                ),
-                panelContent: (context, _sc) {
-                  return Center(
+                      Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.only(top: 10, bottom: 20),
+                        child: AutoSizeText(
+                          'Where to?',
+                          style: TextStyle(fontSize: 23),
+                        ),
+                      )
+                    ],
+                  )),
+              Expanded(
+                  child: Center(
                       child: new Scaffold(
                           resizeToAvoidBottomPadding: false,
                           backgroundColor: Colors.transparent,
@@ -323,7 +320,7 @@ class CreateTripState extends State<CreateTrip> {
                                 child: IgnorePointer(
                                     ignoring: this.loading,
                                     child: RenderWidget(
-                                        scrollController: _sc,
+                                        scrollController: sc,
                                         onScroll: onScroll,
                                         builder: (context,
                                                 {scrollController,
@@ -334,28 +331,30 @@ class CreateTripState extends State<CreateTrip> {
                             this.loading
                                 ? Center(child: RefreshProgressIndicator())
                                 : Container()
-                          ])));
-                },
-                bodyContent: Container(
-                    height: _bodyHeight,
-                    child: Stack(children: <Widget>[
-                      Positioned(
-                          width: MediaQuery.of(context).size.width,
-                          height: _bodyHeight,
-                          top: 0,
-                          left: 0,
-                          child: Image.asset(
-                            "images/home_bg.jpeg",
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
-                          )),
-                      Positioned.fill(
-                        top: 0,
-                        left: 0,
-                        child: Container(color: color.withOpacity(.65)),
-                      ),
-                    ])),
-              ))),
+                          ]))))
+            ],
+          );
+        },
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+              Positioned(
+                  width: MediaQuery.of(context).size.width,
+                  height: _bodyHeight,
+                  top: 0,
+                  left: 0,
+                  child: Image.asset(
+                    "images/home_bg.jpeg",
+                    fit: BoxFit.cover,
+                    alignment: Alignment.center,
+                  )),
+              Positioned.fill(
+                top: 0,
+                left: 0,
+                child: Container(color: color.withOpacity(.65)),
+              ),
+            ])),
+      )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,

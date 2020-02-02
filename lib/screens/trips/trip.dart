@@ -8,8 +8,7 @@ import 'dart:convert';
 import 'dart:core';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
@@ -889,7 +888,6 @@ class TripState extends State<Trip> {
   bool isPast = false;
   List<dynamic> destinations;
   dynamic trip;
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
@@ -911,13 +909,7 @@ class TripState extends State<Trip> {
     if (isPast == null) {
       isPast = false;
     }
-    // _sc.addListener(() {
-    //   setState(() {
-    //     if (_pc.isPanelOpen()) {
-    //       disableScroll = _sc.offset <= 0;
-    //     }
-    //   });
-    // });
+
     data = fetchTrip(this.tripId);
     data.then((data) {
       setState(() {
@@ -946,7 +938,6 @@ class TripState extends State<Trip> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -1059,131 +1050,145 @@ class TripState extends State<Trip> {
     if (store == null) {
       store = Provider.of<TrotterStore>(context);
     }
-
+    final panelHeights = getPanelHeights(context);
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
-      SlidingPanel(
-        snapPanel: true,
-        autoSizing: PanelAutoSizing(),
-        parallaxSlideAmount: .5,
-        backdropConfig: BackdropConfig(
-            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
-        decoration: PanelDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
-        panelController: _pc,
-        content: PanelContent(
-          headerWidget: PanelHeaderWidget(
-            headerContent: Container(
-                decoration: BoxDecoration(
-                    boxShadow: this.shadow
-                        ? <BoxShadow>[
-                            BoxShadow(
-                                color: Colors.black.withOpacity(.2),
-                                blurRadius: 10.0,
-                                offset: Offset(0.0, 0.75))
-                          ]
-                        : [],
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30),
-                        topRight: Radius.circular(30))),
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Center(
-                        child: Container(
-                      width: 30,
-                      height: 5,
-                      decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(12.0))),
-                    )),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: EdgeInsets.only(top: 10, bottom: 20),
-                      child: AutoSizeText(
-                        'Get Organized',
-                        style: TextStyle(fontSize: 23),
+      Positioned(
+        child: SlidingUpPanel(
+          backdropColor: color,
+          backdropEnabled: true,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+          backdropOpacity: 1,
+          maxHeight: panelHeights.max,
+          minHeight: panelHeights.min,
+          defaultPanelState:
+              this.errorUi == true ? PanelState.OPEN : PanelState.CLOSED,
+          parallaxEnabled: true,
+          parallaxOffset: .5,
+          controller: _pc,
+          panelBuilder: (sc) {
+            return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+              Container(
+                  decoration: BoxDecoration(
+                      boxShadow: this.shadow
+                          ? <BoxShadow>[
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(.2),
+                                  blurRadius: 10.0,
+                                  offset: Offset(0.0, 0.75))
+                            ]
+                          : [],
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30))),
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Center(
+                          child: Container(
+                        width: 30,
+                        height: 5,
+                        decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(12.0))),
+                      )),
+                      Container(
+                        alignment: Alignment.center,
+                        padding: EdgeInsets.only(top: 10, bottom: 20),
+                        child: AutoSizeText(
+                          'Get Organized',
+                          style: TextStyle(fontSize: 23),
+                        ),
                       ),
-                    ),
-                  ],
-                )),
-          ),
-          panelContent: (context, scrollController) {
-            return Center(
-                child: Scaffold(
-                    resizeToAvoidBottomPadding: false,
-                    backgroundColor: Colors.transparent,
-                    body: FutureBuilder(
-                        future: data,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData &&
-                              snapshot.data.error == null &&
-                              snapshot.connectionState ==
-                                  ConnectionState.done) {
-                            if (this.canView) {
-                              return RenderWidget(
-                                  onScroll: onScroll,
-                                  scrollController: scrollController,
-                                  asyncSnapshot: snapshot,
-                                  builder: (context,
-                                          {scrollController,
-                                          asyncSnapshot,
-                                          startLocation}) =>
-                                      _buildLoadedBody(context, asyncSnapshot,
-                                          store, scrollController));
-                            } else {
-                              return CannotView(controller: scrollController);
-                            }
-                          } else if (snapshot.hasData &&
-                              snapshot.data.error != null) {
-                            return SingleChildScrollView(
-                                controller: scrollController,
-                                child: ErrorContainer(
-                                  color: Color.fromRGBO(106, 154, 168, 1),
-                                  onRetry: () {
-                                    setState(() {
-                                      data = fetchTrip(this.tripId, store);
-                                      data.then((data) {
-                                        setState(() {
-                                          this.canView = data.travelers.any(
-                                              (traveler) =>
-                                                  store.currentUser.uid ==
-                                                  traveler['uid']);
-                                          this.color = Color(hexStringToHexInt(
-                                              data.trip['color']));
-                                          this.destinations = data.destinations;
-                                          this.travelers = data.travelers;
-                                          this.trip = data.trip;
-                                          this.trip['destinations'] =
-                                              this.destinations;
-                                          this.tripName = data.trip['name'];
-                                          _nameControllerModal.text =
-                                              this.tripName;
-                                          _nameDialog = TripNameDialogContent(
-                                            tripId: this.tripId,
-                                            trip: this.trip,
-                                            color: this.color,
-                                            travelers: this.travelers,
-                                            controller: _nameControllerModal,
-                                          );
-                                          this.destinationDialog =
-                                              TripDestinationDialogContent(
-                                                  color: color,
+                    ],
+                  )),
+              Expanded(
+                  child: Center(
+                      child: Scaffold(
+                          resizeToAvoidBottomPadding: false,
+                          backgroundColor: Colors.transparent,
+                          body: FutureBuilder(
+                              future: data,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData &&
+                                    snapshot.data.error == null &&
+                                    snapshot.connectionState ==
+                                        ConnectionState.done) {
+                                  if (this.canView) {
+                                    return RenderWidget(
+                                        onScroll: onScroll,
+                                        scrollController: sc,
+                                        asyncSnapshot: snapshot,
+                                        builder: (context,
+                                                {scrollController,
+                                                asyncSnapshot,
+                                                startLocation}) =>
+                                            _buildLoadedBody(
+                                                context,
+                                                asyncSnapshot,
+                                                store,
+                                                scrollController));
+                                  } else {
+                                    return CannotView(controller: sc);
+                                  }
+                                } else if (snapshot.hasData &&
+                                    snapshot.data.error != null) {
+                                  return SingleChildScrollView(
+                                      controller: sc,
+                                      child: ErrorContainer(
+                                        color: Color.fromRGBO(106, 154, 168, 1),
+                                        onRetry: () {
+                                          setState(() {
+                                            data =
+                                                fetchTrip(this.tripId, store);
+                                            data.then((data) {
+                                              setState(() {
+                                                this.canView = data.travelers
+                                                    .any((traveler) =>
+                                                        store.currentUser.uid ==
+                                                        traveler['uid']);
+                                                this.color = Color(
+                                                    hexStringToHexInt(
+                                                        data.trip['color']));
+                                                this.destinations =
+                                                    data.destinations;
+                                                this.travelers = data.travelers;
+                                                this.trip = data.trip;
+                                                this.trip['destinations'] =
+                                                    this.destinations;
+                                                this.tripName =
+                                                    data.trip['name'];
+                                                _nameControllerModal.text =
+                                                    this.tripName;
+                                                _nameDialog =
+                                                    TripNameDialogContent(
                                                   tripId: this.tripId,
-                                                  destinations: destinations);
-                                        });
-                                      });
-                                    });
-                                  },
-                                ));
-                          }
-                          return _buildLoadingBody(context, scrollController);
-                        })));
+                                                  trip: this.trip,
+                                                  color: this.color,
+                                                  travelers: this.travelers,
+                                                  controller:
+                                                      _nameControllerModal,
+                                                );
+                                                this.destinationDialog =
+                                                    TripDestinationDialogContent(
+                                                        color: color,
+                                                        tripId: this.tripId,
+                                                        destinations:
+                                                            destinations);
+                                              });
+                                            });
+                                          });
+                                        },
+                                      ));
+                                }
+                                return _buildLoadingBody(context, sc);
+                              }))))
+            ]);
           },
-          bodyContent: Container(
+          body: Container(
               height: _bodyHeight,
               child: Stack(children: <Widget>[
                 this.destinations == null
@@ -1310,8 +1315,6 @@ class TripState extends State<Trip> {
                     : Container()
               ])),
         ),
-        size: PanelSize(
-            closedHeight: .45, expandedHeight: getPanelHeight(context)),
       ),
       Positioned(
           top: 0,

@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
-import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -85,98 +84,99 @@ class ItineraryState extends State<Itinerary> {
         itinerary != null ? itinerary['destination_name'] : '';
     var destinationCountryName =
         itinerary != null ? itinerary['destination_country_name'] : '';
+    final panelHeights = getPanelHeights(context);
+
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingPanel(
-        snapPanel: true,
-        initialState: this.errorUi == true
-            ? InitialPanelState.expanded
-            : InitialPanelState.closed,
-        size: PanelSize(
-            closedHeight: .45, expandedHeight: getPanelHeight(context)),
-        isDraggable: true,
-        autoSizing: PanelAutoSizing(),
-        decoration: PanelDecoration(
+        child: SlidingUpPanel(
+            backdropColor: color,
+            backdropEnabled: true,
             borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30), topRight: Radius.circular(30))),
-        parallaxSlideAmount: .5,
-        backdropConfig: BackdropConfig(
-            dragFromBody: true, shadowColor: color, opacity: 1, enabled: true),
-        panelController: _pc,
-        content: PanelContent(
-            headerWidget: PanelHeaderWidget(
-              headerContent: Container(
-                  decoration: BoxDecoration(
-                      boxShadow: this.shadow
-                          ? <BoxShadow>[
-                              BoxShadow(
-                                  color: Colors.black.withOpacity(.2),
-                                  blurRadius: 10.0,
-                                  offset: Offset(0.0, 0.75))
-                            ]
-                          : [],
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30))),
-                  padding: const EdgeInsets.only(top: 16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Center(
-                          child: Container(
-                        width: 30,
-                        height: 5,
-                        decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(12.0))),
-                      )),
-                      itinerary == null || this.loading == true
-                          ? Container(
-                              alignment: Alignment.center,
-                              margin: EdgeInsets.only(top: 10, bottom: 20),
-                              child: AutoSizeText(
-                                'Getting itinerary...',
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            )
-                          : Container(
-                              alignment: Alignment.center,
-                              padding: EdgeInsets.only(top: 10, bottom: 20),
-                              child: AutoSizeText(
-                                '$destinationName, $destinationCountryName',
-                                style: TextStyle(fontSize: 20),
-                              ),
-                            )
-                    ],
-                  )),
-            ),
-            panelContent: (context, _sc) {
-              return Center(
-                  child: FutureBuilder(
-                      future: data,
-                      builder: (context, snapshot) {
-                        if (store.itineraryStore.itinerary.itinerary == null ||
-                            store.itineraryStore.itinerary.loading ||
-                            store.itineraryStore.itinerary.itinerary['id'] !=
-                                this.itineraryId ||
-                            snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                          return _buildLoadingBody(context, _sc);
-                        }
-                        return RenderWidget(
-                            scrollController: _sc,
-                            onScroll: onScroll,
-                            builder: (context,
-                                    {scrollController,
-                                    asyncSnapshot,
-                                    startLocation}) =>
-                                _buildLoadedBody(
-                                    context, store, scrollController));
-                      }));
+                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+            backdropOpacity: 1,
+            maxHeight: panelHeights.max,
+            minHeight: panelHeights.min,
+            defaultPanelState:
+                this.errorUi == true ? PanelState.OPEN : PanelState.CLOSED,
+            parallaxEnabled: true,
+            parallaxOffset: .5,
+            controller: _pc,
+            panelBuilder: (sc) {
+              return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                Container(
+                    decoration: BoxDecoration(
+                        boxShadow: this.shadow
+                            ? <BoxShadow>[
+                                BoxShadow(
+                                    color: Colors.black.withOpacity(.2),
+                                    blurRadius: 10.0,
+                                    offset: Offset(0.0, 0.75))
+                              ]
+                            : [],
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(30),
+                            topRight: Radius.circular(30))),
+                    padding: const EdgeInsets.only(top: 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Center(
+                            child: Container(
+                          width: 30,
+                          height: 5,
+                          decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12.0))),
+                        )),
+                        itinerary == null || this.loading == true
+                            ? Container(
+                                alignment: Alignment.center,
+                                margin: EdgeInsets.only(top: 10, bottom: 20),
+                                child: AutoSizeText(
+                                  'Getting itinerary...',
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                              )
+                            : Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.only(top: 10, bottom: 20),
+                                child: AutoSizeText(
+                                  '$destinationName, $destinationCountryName',
+                                  style: TextStyle(fontSize: 20),
+                                ),
+                              )
+                      ],
+                    )),
+                Expanded(
+                    child: Center(
+                        child: FutureBuilder(
+                            future: data,
+                            builder: (context, snapshot) {
+                              if (store.itineraryStore.itinerary.itinerary ==
+                                      null ||
+                                  store.itineraryStore.itinerary.loading ||
+                                  store.itineraryStore.itinerary
+                                          .itinerary['id'] !=
+                                      this.itineraryId ||
+                                  snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                return _buildLoadingBody(context, sc);
+                              }
+                              return RenderWidget(
+                                  scrollController: sc,
+                                  onScroll: onScroll,
+                                  builder: (context,
+                                          {scrollController,
+                                          asyncSnapshot,
+                                          startLocation}) =>
+                                      _buildLoadedBody(
+                                          context, store, scrollController));
+                            })))
+              ]);
             },
-            bodyContent: Container(
+            body: Container(
                 height: _bodyHeight,
                 child: Stack(children: <Widget>[
                   Positioned(
@@ -234,7 +234,7 @@ class ItineraryState extends State<Itinerary> {
                                       color: Colors.transparent))))
                       : Container()
                 ]))),
-      )),
+      ),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,

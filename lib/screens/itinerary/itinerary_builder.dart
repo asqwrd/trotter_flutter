@@ -8,8 +8,7 @@ import 'package:flutter_store/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:showcaseview/showcaseview.dart';
-import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -35,7 +34,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
   static String id;
   final String itineraryId;
   final ValueChanged<dynamic> onPush;
-  final ScrollController _sc = ScrollController();
   PanelController _pc = new PanelController();
   bool disableScroll = true;
   bool errorUi = false;
@@ -60,7 +58,6 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
 
   @override
   void dispose() {
-    _sc.dispose();
     super.dispose();
   }
 
@@ -113,153 +110,148 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
         itinerary != null ? itinerary['destination_name'] : '';
     var destinationCountryName =
         itinerary != null ? itinerary['destination_country_name'] : '';
+    final panelHeights = getPanelHeights(context);
+
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-          child: SlidingPanel(
-              snapPanel: true,
-              initialState: this.errorUi == true
-                  ? InitialPanelState.expanded
-                  : InitialPanelState.closed,
-              size: PanelSize(
-                  closedHeight: .45, expandedHeight: getPanelHeight(context)),
-              isDraggable: true,
-              autoSizing: PanelAutoSizing(),
-              decoration: PanelDecoration(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30))),
-              parallaxSlideAmount: .5,
-              backdropConfig: BackdropConfig(
-                  dragFromBody: true,
-                  shadowColor: color,
-                  opacity: 1,
-                  enabled: true),
-              panelController: _pc,
-              content: PanelContent(
-                headerWidget: PanelHeaderWidget(
-                  headerContent: Container(
-                      decoration: BoxDecoration(
-                          boxShadow: this.shadow
-                              ? <BoxShadow>[
-                                  BoxShadow(
-                                      color: Colors.black.withOpacity(.2),
-                                      blurRadius: 10.0,
-                                      offset: Offset(0.0, 0.75))
-                                ]
-                              : [],
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30))),
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Center(
-                              child: Container(
-                            width: 30,
-                            height: 5,
-                            decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(12.0))),
-                          )),
-                          itinerary == null || this.loading == true
-                              ? Container(
-                                  alignment: Alignment.center,
-                                  margin: EdgeInsets.only(top: 10, bottom: 20),
-                                  child: AutoSizeText(
-                                    'Getting itinerary...',
-                                    style: TextStyle(fontSize: 23),
-                                  ),
-                                )
-                              : Container(
-                                  alignment: Alignment.center,
-                                  padding: EdgeInsets.only(top: 10, bottom: 20),
-                                  child: AutoSizeText(
-                                    '$destinationName, $destinationCountryName',
-                                    style: TextStyle(fontSize: 23),
-                                  ),
-                                )
-                        ],
-                      )),
-                ),
-                panelContent: (context, scrollController) {
-                  return Center(
-                      child: FutureBuilder(
-                          future: data,
-                          builder: (context, snapshot) {
-                            return RenderWidget(
-                                scrollController: scrollController,
-                                onScroll: onScroll,
-                                asyncSnapshot: snapshot,
-                                builder: (context,
-                                        {scrollController,
-                                        asyncSnapshot,
-                                        startLocation}) =>
-                                    _buildLoadedBody(
-                                        context, store, scrollController));
-                          }));
-                },
-                bodyContent: Container(
-                    height: _bodyHeight,
-                    child: Stack(children: <Widget>[
-                      Positioned(
-                          width: MediaQuery.of(context).size.width,
-                          height: _bodyHeight,
-                          top: 0,
-                          left: 0,
-                          child: this.image != null && this.loading == false
-                              ? TransitionToImage(
-                                  image: AdvancedNetworkImage(
-                                    this.image,
-                                    useDiskCache: true,
-                                    cacheRule: CacheRule(
-                                        maxAge: const Duration(days: 7)),
-                                  ),
-                                  loadingWidgetBuilder: (BuildContext context,
-                                          double progress, test) =>
-                                      Container(),
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.center,
-                                  placeholder: const Icon(Icons.refresh),
-                                  enableRefresh: true,
-                                  loadedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
-                                  },
-                                  loadFailedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
-                                  },
-                                )
-                              : Container()),
-                      Positioned.fill(
-                        top: 0,
-                        left: 0,
+          child: SlidingUpPanel(
+        backdropColor: color,
+        backdropEnabled: true,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        backdropOpacity: 1,
+        maxHeight: panelHeights.max,
+        minHeight: panelHeights.min,
+        defaultPanelState:
+            this.errorUi == true ? PanelState.OPEN : PanelState.CLOSED,
+        parallaxEnabled: true,
+        parallaxOffset: .5,
+        controller: _pc,
+        panelBuilder: (sc) {
+          return Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
+            Container(
+                decoration: BoxDecoration(
+                    boxShadow: this.shadow
+                        ? <BoxShadow>[
+                            BoxShadow(
+                                color: Colors.black.withOpacity(.2),
+                                blurRadius: 10.0,
+                                offset: Offset(0.0, 0.75))
+                          ]
+                        : [],
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30))),
+                padding: const EdgeInsets.only(top: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Center(
                         child: Container(
-                            color: this.imageLoading
-                                ? this.color
-                                : this.color.withOpacity(.3)),
-                      ),
-                      this.image == null || this.imageLoading
-                          ? Positioned.fill(
-                              top: -((_bodyHeight / 2) + 100),
-                              // left: -50,
-                              child: Center(
-                                  child: Container(
-                                      width: 250,
-                                      child: TrotterLoading(
-                                          file: 'assets/globe.flr',
-                                          animation: 'flight',
-                                          color: Colors.transparent))))
-                          : Container()
-                    ])),
-              ))),
+                      width: 30,
+                      height: 5,
+                      decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(12.0))),
+                    )),
+                    itinerary == null || this.loading == true
+                        ? Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.only(top: 10, bottom: 20),
+                            child: AutoSizeText(
+                              'Getting itinerary...',
+                              style: TextStyle(fontSize: 23),
+                            ),
+                          )
+                        : Container(
+                            alignment: Alignment.center,
+                            padding: EdgeInsets.only(top: 10, bottom: 20),
+                            child: AutoSizeText(
+                              '$destinationName, $destinationCountryName',
+                              style: TextStyle(fontSize: 23),
+                            ),
+                          )
+                  ],
+                )),
+            Expanded(
+                child: Center(
+                    child: FutureBuilder(
+                        future: data,
+                        builder: (context, snapshot) {
+                          return RenderWidget(
+                              scrollController: sc,
+                              onScroll: onScroll,
+                              asyncSnapshot: snapshot,
+                              builder: (context,
+                                      {scrollController,
+                                      asyncSnapshot,
+                                      startLocation}) =>
+                                  _buildLoadedBody(
+                                      context, store, scrollController));
+                        })))
+          ]);
+        },
+        body: Container(
+            height: _bodyHeight,
+            child: Stack(children: <Widget>[
+              Positioned(
+                  width: MediaQuery.of(context).size.width,
+                  height: _bodyHeight,
+                  top: 0,
+                  left: 0,
+                  child: this.image != null && this.loading == false
+                      ? TransitionToImage(
+                          image: AdvancedNetworkImage(
+                            this.image,
+                            useDiskCache: true,
+                            cacheRule:
+                                CacheRule(maxAge: const Duration(days: 7)),
+                          ),
+                          loadingWidgetBuilder:
+                              (BuildContext context, double progress, test) =>
+                                  Container(),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          placeholder: const Icon(Icons.refresh),
+                          enableRefresh: true,
+                          loadedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
+                          loadFailedCallback: () async {
+                            await Future.delayed(Duration(seconds: 2));
+                            setState(() {
+                              this.imageLoading = false;
+                            });
+                          },
+                        )
+                      : Container()),
+              Positioned.fill(
+                top: 0,
+                left: 0,
+                child: Container(
+                    color: this.imageLoading
+                        ? this.color
+                        : this.color.withOpacity(.3)),
+              ),
+              this.image == null || this.imageLoading
+                  ? Positioned.fill(
+                      top: -((_bodyHeight / 2) + 100),
+                      // left: -50,
+                      child: Center(
+                          child: Container(
+                              width: 250,
+                              child: TrotterLoading(
+                                  file: 'assets/globe.flr',
+                                  animation: 'flight',
+                                  color: Colors.transparent))))
+                  : Container()
+            ])),
+      )),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,
@@ -359,12 +351,18 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                                 latlng,
                                                 store);
                                         if (response.success == true) {
+                                          setState(() {
+                                            store.itineraryStore
+                                                .updateStartLocation(
+                                                    response.startLocation);
+                                            Navigator.pop(context);
+                                          });
                                           Scaffold.of(context)
                                               .showSnackBar(SnackBar(
                                             content: AutoSizeText(
                                                 'Updated start location',
                                                 style: TextStyle(fontSize: 13)),
-                                            duration: Duration(seconds: 5),
+                                            duration: Duration(seconds: 2),
                                           ));
                                         } else {
                                           Scaffold.of(context)
@@ -372,7 +370,7 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                                             content: AutoSizeText(
                                                 'Failed to update start location',
                                                 style: TextStyle(fontSize: 13)),
-                                            duration: Duration(seconds: 5),
+                                            duration: Duration(seconds: 3),
                                           ));
                                         }
                                       }
@@ -467,14 +465,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
             startLocation: startLocation,
             builder: (context,
                 {scrollController, asyncSnapshot, startLocation}) {
-              return _buildDay(
-                  days,
-                  destinationName,
-                  destinationCountryName,
-                  itinerary['destination'],
-                  color,
-                  startLocation,
-                  scrollController);
+              return _buildDay(days, destinationName, destinationCountryName,
+                  itinerary['destination'], color, scrollController, store);
             }));
   }
 
@@ -484,8 +476,8 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
       String destinationCountryName,
       String locationId,
       Color color,
-      dynamic startLocation,
-      ScrollController scrollController) {
+      ScrollController scrollController,
+      TrotterStore store) {
     var dayBuilder = days;
     return ListView.separated(
       controller: scrollController,
@@ -514,6 +506,13 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
             currentTime.second,
             currentTime.millisecond,
             currentTime.microsecond);
+
+        var itinerary = store.itineraryStore.itineraryBuilder.itinerary;
+        final startLocation = itinerary['start_location'] != null
+            ? itinerary['start_location']['location']
+            : itinerary['location'];
+
+        //print(startLocation);
 
         return Opacity(
             opacity: this.startDate != null &&

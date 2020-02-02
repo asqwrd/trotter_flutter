@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -90,8 +89,9 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
     ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
       return getErrorWidget(context, errorDetails);
     };
-    double _panelHeightOpen = MediaQuery.of(context).size.height - 130;
     var store = Provider.of<TrotterStore>(context);
+    final panelHeights = getPanelHeights(context);
+
     return WillPopScope(
         onWillPop: () {
           Navigator.pop(context, {"refresh": this.refreshParent});
@@ -99,97 +99,80 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
         },
         child: Stack(alignment: Alignment.topCenter, children: <Widget>[
           Positioned(
-              child: SlidingPanel(
-                  snapPanel: true,
-                  initialState: InitialPanelState.expanded,
-                  isDraggable: false,
-                  size: PanelSize(expandedHeight: getPanelHeight(context)),
-                  autoSizing: PanelAutoSizing(),
-                  decoration: PanelDecoration(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30),
-                          topRight: Radius.circular(30))),
-                  parallaxSlideAmount: .5,
-                  panelController: _pc,
-                  content: PanelContent(
-                    panelContent: (context, scrollController) {
-                      return Center(
-                          child: Scaffold(
-                              backgroundColor: Colors.transparent,
-                              body: FutureBuilder(
-                                  future: data,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return ListView(
-                                          shrinkWrap: true,
-                                          controller: scrollController,
-                                          children: <Widget>[
-                                            Center(
-                                                child:
-                                                    RefreshProgressIndicator())
-                                          ]);
-                                    }
-                                    if (snapshot.hasData &&
-                                        snapshot.connectionState ==
-                                            ConnectionState.done &&
-                                        snapshot.data.error == null) {
-                                      return RenderWidget(
-                                          scrollController: scrollController,
-                                          asyncSnapshot: snapshot,
-                                          onScroll: onScroll,
-                                          builder: (context,
-                                                  {scrollController,
-                                                  asyncSnapshot,
-                                                  startLocation}) =>
-                                              _buildLoadedBody(
-                                                  context,
-                                                  asyncSnapshot,
-                                                  scrollController));
-                                    } else if (snapshot.hasData &&
-                                        snapshot.data.error != null) {
-                                      return SingleChildScrollView(
-                                          controller: scrollController,
-                                          child: ErrorContainer(
-                                            color: Color.fromRGBO(
-                                                106, 154, 168, 1),
-                                            onRetry: () {
-                                              setState(() {
-                                                data =
-                                                    fetchFlightsAccomodations(
-                                                        this.tripId,
-                                                        store.currentUser.uid);
-                                                data.then((data) {
-                                                  if (data.error == null) {
-                                                    setState(() {
-                                                      this.flightsAccomodations =
-                                                          data.flightsAccomodations;
-                                                    });
-                                                  }
-                                                });
-                                              });
-                                            },
-                                          ));
-                                    }
-                                    return ListView(
-                                        shrinkWrap: true,
-                                        controller: scrollController,
-                                        children: <Widget>[
-                                          Center(
-                                              child: RefreshProgressIndicator())
-                                        ]);
-                                  })));
-                    },
-                    bodyContent: Container(
-                        height: _panelHeightOpen,
-                        child: Stack(children: <Widget>[
-                          Positioned.fill(
-                            top: 0,
-                            left: 0,
-                            child: Container(color: this.color.withOpacity(.8)),
-                          )
-                        ])),
-                  ))),
+              child: SlidingUpPanel(
+            backdropColor: color,
+            backdropEnabled: true,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+            backdropOpacity: 1,
+            maxHeight: panelHeights.max,
+            minHeight: panelHeights.max,
+            isDraggable: false,
+            defaultPanelState: PanelState.OPEN,
+            parallaxEnabled: true,
+            parallaxOffset: .5,
+            controller: _pc,
+            panelBuilder: (sc) {
+              return Center(
+                  child: Scaffold(
+                      backgroundColor: Colors.transparent,
+                      body: FutureBuilder(
+                          future: data,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return ListView(
+                                  shrinkWrap: true,
+                                  controller: sc,
+                                  children: <Widget>[
+                                    Center(child: RefreshProgressIndicator())
+                                  ]);
+                            }
+                            if (snapshot.hasData &&
+                                snapshot.connectionState ==
+                                    ConnectionState.done &&
+                                snapshot.data.error == null) {
+                              return RenderWidget(
+                                  scrollController: sc,
+                                  asyncSnapshot: snapshot,
+                                  onScroll: onScroll,
+                                  builder: (context,
+                                          {scrollController,
+                                          asyncSnapshot,
+                                          startLocation}) =>
+                                      _buildLoadedBody(context, asyncSnapshot,
+                                          scrollController));
+                            } else if (snapshot.hasData &&
+                                snapshot.data.error != null) {
+                              return SingleChildScrollView(
+                                  controller: sc,
+                                  child: ErrorContainer(
+                                    color: Color.fromRGBO(106, 154, 168, 1),
+                                    onRetry: () {
+                                      setState(() {
+                                        data = fetchFlightsAccomodations(
+                                            this.tripId, store.currentUser.uid);
+                                        data.then((data) {
+                                          if (data.error == null) {
+                                            setState(() {
+                                              this.flightsAccomodations =
+                                                  data.flightsAccomodations;
+                                            });
+                                          }
+                                        });
+                                      });
+                                    },
+                                  ));
+                            }
+                            return ListView(
+                                shrinkWrap: true,
+                                controller: sc,
+                                children: <Widget>[
+                                  Center(child: RefreshProgressIndicator())
+                                ]);
+                          })));
+            },
+          )),
           Positioned(
               top: 0,
               width: MediaQuery.of(context).size.width,
@@ -458,7 +441,10 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
                               : []),
                       alignment: Alignment.center,
                       child: RenderWidget(
-                          builder: (context, {scrollController, asyncSnapshot, startLocation}) =>
+                          builder: (context,
+                                  {scrollController,
+                                  asyncSnapshot,
+                                  startLocation}) =>
                               _renderTabBar(Colors.blueGrey, Colors.black))),
                   Flexible(
                       child: Container(
@@ -489,7 +475,8 @@ class FlightsAccomodationsState extends State<FlightsAccomodations> {
       tabs.add(
         Tab(
             child: RenderWidget(
-                builder: (context, {scrollController, asyncSnapshot, startLocation}) =>
+                builder: (context,
+                        {scrollController, asyncSnapshot, startLocation}) =>
                     _renderTab(section['destination']['destination_name']))),
       );
     }

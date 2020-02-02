@@ -2,8 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:sliding_panel/sliding_panel.dart';
-// import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 import 'package:trotter_flutter/widgets/app_button/index.dart';
 import 'package:trotter_flutter/widgets/climate/climate-list.dart';
@@ -162,6 +161,7 @@ class DestinationState extends State<Destination>
   Future<DestinationItinerariesData> dataItineraries;
   final Future2VoidFunc onPush;
   PanelController _pc = new PanelController();
+  final ScrollController _sc = ScrollController();
   bool disableScroll = true;
   bool errorUi = false;
   bool loading = true;
@@ -229,31 +229,28 @@ class DestinationState extends State<Destination>
               })
             }
         });
+
+    final panelHeights = getPanelHeights(context);
+
     return Stack(alignment: Alignment.topCenter, children: <Widget>[
       Positioned(
-        child: SlidingPanel(
-            snapPanel: true,
-            initialState: this.errorUi == true
-                ? InitialPanelState.expanded
-                : InitialPanelState.closed,
-            size: PanelSize(
-                closedHeight: .45, expandedHeight: getPanelHeight(context)),
-            isDraggable: true,
-            autoSizing: PanelAutoSizing(),
-            decoration: PanelDecoration(
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30))),
-            parallaxSlideAmount: .5,
-            backdropConfig: BackdropConfig(
-                dragFromBody: true,
-                shadowColor: color,
-                opacity: 1,
-                enabled: true),
-            panelController: _pc,
-            content: PanelContent(
-                headerWidget: PanelHeaderWidget(
-                  headerContent: Container(
+          child: SlidingUpPanel(
+              backdropColor: color,
+              backdropEnabled: true,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+              backdropOpacity: 1,
+              maxHeight: panelHeights.max,
+              minHeight: panelHeights.min,
+              defaultPanelState:
+                  this.errorUi == true ? PanelState.OPEN : PanelState.CLOSED,
+              parallaxEnabled: true,
+              parallaxOffset: .5,
+              controller: _pc,
+              panelBuilder: (sc) {
+                return Column(mainAxisSize: MainAxisSize.min, children: <
+                    Widget>[
+                  Container(
                       decoration: BoxDecoration(
                           boxShadow: this.shadow
                               ? <BoxShadow>[
@@ -330,9 +327,7 @@ class DestinationState extends State<Destination>
                           ),
                         ],
                       )),
-                ),
-                panelContent: (context, _sc) {
-                  return Center(
+                  Expanded(
                       child: FutureBuilder(
                           future: data,
                           builder: (context, snapshot) {
@@ -342,7 +337,7 @@ class DestinationState extends State<Destination>
                                 snapshot.data.error == null) {
                               return RenderWidget(
                                   onScroll: onScroll,
-                                  scrollController: _sc,
+                                  scrollController: sc,
                                   asyncSnapshot: snapshot,
                                   builder: (context,
                                           {scrollController,
@@ -355,7 +350,7 @@ class DestinationState extends State<Destination>
                                     ConnectionState.done &&
                                 snapshot.data.error != null) {
                               return SingleChildScrollView(
-                                  controller: _sc,
+                                  controller: sc,
                                   child: ErrorContainer(
                                     onRetry: () {
                                       setState(() {
@@ -367,67 +362,67 @@ class DestinationState extends State<Destination>
                                   ));
                             }
                             return _buildLoadingBody(context, _sc);
-                          }));
-                },
-                bodyContent: Container(
-                    height: _bodyHeight,
-                    child: Stack(children: <Widget>[
-                      Positioned(
-                          width: MediaQuery.of(context).size.width,
-                          height: _bodyHeight,
-                          top: 0,
-                          left: 0,
-                          child: this.image != null
-                              ? TransitionToImage(
-                                  image: AdvancedNetworkImage(
-                                    this.image,
-                                    useDiskCache: true,
-                                    cacheRule: CacheRule(
-                                        maxAge: const Duration(days: 7)),
-                                  ),
-                                  loadingWidgetBuilder: (BuildContext context,
-                                          double progress, test) =>
-                                      Container(),
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.center,
-                                  placeholder: const Icon(Icons.refresh),
-                                  enableRefresh: true,
-                                  loadedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
-                                  },
-                                  loadFailedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
-                                  },
-                                )
-                              : Container()),
-                      Positioned.fill(
+                          }))
+                ]);
+              },
+              body: Container(
+                  height: _bodyHeight,
+                  child: Stack(children: <Widget>[
+                    Positioned(
+                        width: MediaQuery.of(context).size.width,
+                        height: _bodyHeight,
                         top: 0,
                         left: 0,
-                        child: Container(
-                            color: this.imageLoading
-                                ? this.color
-                                : this.color.withOpacity(.3)),
-                      ),
-                      this.image == null || this.imageLoading == true
-                          ? Positioned.fill(
-                              top: -((_bodyHeight / 2) + 100),
-                              // left: -50,
-                              child: Center(
-                                  child: Container(
-                                      width: 250,
-                                      child: TrotterLoading(
-                                          file: 'assets/globe.flr',
-                                          animation: 'flight',
-                                          color: Colors.transparent))))
-                          : Container()
-                    ])))),
-      ),
+                        child: this.image != null
+                            ? TransitionToImage(
+                                image: AdvancedNetworkImage(
+                                  this.image,
+                                  useDiskCache: true,
+                                  cacheRule: CacheRule(
+                                      maxAge: const Duration(days: 7)),
+                                ),
+                                loadingWidgetBuilder: (BuildContext context,
+                                        double progress, test) =>
+                                    Container(),
+                                fit: BoxFit.cover,
+                                alignment: Alignment.center,
+                                placeholder: const Icon(Icons.refresh),
+                                enableRefresh: true,
+                                loadedCallback: () async {
+                                  await Future.delayed(Duration(seconds: 2));
+                                  setState(() {
+                                    this.imageLoading = false;
+                                  });
+                                },
+                                loadFailedCallback: () async {
+                                  await Future.delayed(Duration(seconds: 2));
+                                  setState(() {
+                                    this.imageLoading = false;
+                                  });
+                                },
+                              )
+                            : Container()),
+                    Positioned.fill(
+                      top: 0,
+                      left: 0,
+                      child: Container(
+                          color: this.imageLoading
+                              ? this.color
+                              : this.color.withOpacity(.3)),
+                    ),
+                    this.image == null || this.imageLoading == true
+                        ? Positioned.fill(
+                            top: -((_bodyHeight / 2) + 100),
+                            // left: -50,
+                            child: Center(
+                                child: Container(
+                                    width: 250,
+                                    child: TrotterLoading(
+                                        file: 'assets/globe.flr',
+                                        animation: 'flight',
+                                        color: Colors.transparent))))
+                        : Container()
+                  ])))),
       Positioned(
           top: 0,
           width: MediaQuery.of(context).size.width,

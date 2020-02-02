@@ -439,6 +439,7 @@ Future<DeleteItemData> deleteFromDay(String itineraryId, String dayId,
 }
 
 Future<ItinerariesData> fetchItineraries(String filter) async {
+  print('$ApiDomain/api/itineraries/all?$filter');
   final response = await http.get('$ApiDomain/api/itineraries/all?$filter',
       headers: {'Authorization': APITOKEN});
   if (response.statusCode == 200) {

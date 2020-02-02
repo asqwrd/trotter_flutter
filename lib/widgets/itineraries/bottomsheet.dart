@@ -33,9 +33,10 @@ Future addToItinerary(
     }
     return result;
   } else {
-    var id = destination['destination_id'] != null ? destination['destination_id'] : destination['id'];
-    await showItineraryBottomSheet(
-        store, context, id, poi, color, destination);
+    var id = destination['destination_id'] != null
+        ? destination['destination_id']
+        : destination['id'];
+    await showItineraryBottomSheet(store, context, id, poi, color, destination);
   }
 }
 

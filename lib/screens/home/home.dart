@@ -67,7 +67,8 @@ Future<PopularCitiesData> fetchPopularCities([bool refresh]) async {
 
 Future<HomeItinerariesData> fetchHomeItineraries() async {
   try {
-    final response = await http.get('$ApiDomain/api/itineraries/all', headers: {
+    final response =
+        await http.get('$ApiDomain/api/itineraries/all?public=true', headers: {
       'Authorization': APITOKEN,
     });
     if (response.statusCode == 200) {

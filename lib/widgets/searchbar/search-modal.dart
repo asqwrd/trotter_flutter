@@ -616,117 +616,104 @@ class SearchModalState extends State<SearchModal> {
           border: Border(
               bottom:
                   BorderSide(width: 1, color: Colors.black.withOpacity(.1)))),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <
-          Widget>[
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <
-            Widget>[
-          IconButton(
-            padding: EdgeInsets.only(left: 10),
-            icon: SvgPicture.asset(
-              'images/back-icon.svg',
-              width: 30,
-              height: 30,
-              color: Colors.black,
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  IconButton(
+                    padding: EdgeInsets.only(left: 10),
+                    icon: SvgPicture.asset(
+                      'images/back-icon.svg',
+                      width: 30,
+                      height: 30,
+                      color: Colors.black,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    iconSize: 30,
+                    color: Colors.black,
+                  ),
+                ]),
+            TextField(
+              enabled: true,
+              controller: txt,
+              cursorColor: Colors.black,
+              textInputAction: TextInputAction.search,
+              enableInteractiveSelection: true,
+              decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: this.results == null || this.results.length == 0
+                        ? Icon(Icons.search)
+                        : Icon(Icons.close),
+                    onPressed: () {
+                      if (this.results == null || this.results.length == 0) {
+                        searchText();
+                      } else {
+                        clearSearch();
+                      }
+                    },
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.only(
+                      left: 20.0, right: 20.0, bottom: 20, top: 10),
+                  hintText: selectId
+                      ? 'Search for places in $destinationName...'
+                      : 'Search for destinations to travel to...'),
+              onEditingComplete: () {
+                searchText();
+              },
             ),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            iconSize: 30,
-            color: Colors.black,
-          ),
-          FlatButton(
-            child: AutoSizeText('Clear', style: TextStyle(color: Colors.blue)),
-            color: Colors.blue.shade100,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-            onPressed: () {
-              setState(() {
-                txt.text = '';
-                data = fetchSearchModal(
-                    '',
-                    this.near != null
-                        ? this.near['location']['lat']
-                        : this.location != null ? this.location['lat'] : null,
-                    this.near != null
-                        ? this.near['location']['lng']
-                        : this.location != null ? this.location['lng'] : null,
-                    selectId,
-                    near: nearId);
-              });
-              data.then((res) {
-                setState(() {
-                  this.nextPageToken = res.nextPageToken;
-                  this.results = res.results;
-                });
-              });
-            },
-          )
-        ]),
-        TextField(
-          enabled: true,
-          controller: txt,
-          cursorColor: Colors.black,
-          textInputAction: TextInputAction.search,
-          enableInteractiveSelection: true,
-          decoration: InputDecoration(
-              border: InputBorder.none,
-              contentPadding:
-                  EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20, top: 10),
-              hintText: selectId
-                  ? 'Search for places in $destinationName...'
-                  : 'Search for destinations to travel to...'),
-          // onChanged: (value) {
-          //   if (timer != null) {
-          //     timer.cancel();
-          //     timer = null;
-          //   }
-          //   timer = new Timer(const Duration(milliseconds: 500), () {
-          //     setState(() {
-          //       data = fetchSearchModal(
-          //           value,
-          //           this.near != null
-          //               ? this.near['location']['lat']
-          //               : this.location != null ? this.location['lat'] : null,
-          //           this.near != null
-          //               ? this.near['location']['lng']
-          //               : this.location != null ? this.location['lng'] : null,
-          //           selectId,
-          //           near: nearId);
-          //       data.then((res) {
-          //         setState(() {
-          //           this.nextPageToken = res.nextPageToken;
-          //           this.results = res.results;
-          //         });
-          //       });
-          //     });
-          //   });
-          // },
-          onEditingComplete: () {
-            setState(() {
-              data = fetchSearchModal(
-                  txt.text,
-                  this.near != null
-                      ? this.near['location']['lat']
-                      : this.location != null ? this.location['lat'] : null,
-                  this.near != null
-                      ? this.near['location']['lng']
-                      : this.location != null ? this.location['lng'] : null,
-                  selectId,
-                  near: nearId);
-              data.then((res) {
-                setState(() {
-                  this.nextPageToken = res.nextPageToken;
-                  this.results = res.results;
-                });
-              });
-            });
-          },
-        ),
-        Container(
-            margin: EdgeInsets.symmetric(horizontal: 20.0),
-            child: Wrap(spacing: 10.0, children: chips))
-      ]),
+            Container(
+                margin: EdgeInsets.symmetric(horizontal: 20.0),
+                child: Wrap(spacing: 10.0, children: chips))
+          ]),
     );
+  }
+
+  void searchText() {
+    setState(() {
+      data = fetchSearchModal(
+          txt.text,
+          this.near != null
+              ? this.near['location']['lat']
+              : this.location != null ? this.location['lat'] : null,
+          this.near != null
+              ? this.near['location']['lng']
+              : this.location != null ? this.location['lng'] : null,
+          selectId,
+          near: nearId);
+      data.then((res) {
+        setState(() {
+          this.nextPageToken = res.nextPageToken;
+          this.results = res.results;
+        });
+      });
+    });
+  }
+
+  void clearSearch() {
+    setState(() {
+      txt.text = '';
+      data = fetchSearchModal(
+          '',
+          this.near != null
+              ? this.near['location']['lat']
+              : this.location != null ? this.location['lat'] : null,
+          this.near != null
+              ? this.near['location']['lng']
+              : this.location != null ? this.location['lng'] : null,
+          selectId,
+          near: nearId);
+    });
+    data.then((res) {
+      setState(() {
+        this.nextPageToken = res.nextPageToken;
+        this.results = res.results;
+      });
+    });
   }
 
   // function for rendering while data is loading

@@ -509,29 +509,6 @@ class SearchState extends State<Search> {
                     iconSize: 30,
                     color: Colors.black,
                   ),
-                  FlatButton(
-                    child: AutoSizeText('Clear',
-                        style: TextStyle(color: Colors.blue)),
-                    color: Colors.blue.shade100,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
-                    onPressed: () {
-                      setState(() {
-                        txt.text = '';
-                        data = fetchSearch(
-                            '',
-                            this.location != null ? this.location['lat'] : null,
-                            this.location != null ? this.location['lng'] : null,
-                            selectId);
-                        data.then((res) {
-                          setState(() {
-                            this.nextPageToken = res.nextPageToken;
-                            this.results = res.results;
-                          });
-                        });
-                      });
-                    },
-                  )
                 ]),
             TextField(
               enabled: true,
@@ -540,48 +517,26 @@ class SearchState extends State<Search> {
               textInputAction: TextInputAction.search,
               enableInteractiveSelection: true,
               decoration: InputDecoration(
+                  suffixIcon: IconButton(
+                    icon: this.results == null || this.results.length == 0
+                        ? Icon(Icons.search)
+                        : Icon(Icons.close),
+                    onPressed: () {
+                      if (this.results == null || this.results.length == 0) {
+                        searchText();
+                      } else {
+                        clearSearch();
+                      }
+                    },
+                  ),
                   border: InputBorder.none,
                   contentPadding:
                       EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
                   hintText: selectId
                       ? 'Search for places in ${this.destinationName}...'
                       : 'Search for destinations to travel to...'),
-              // onChanged: (value) {
-              //   if (timer != null) {
-              //     timer.cancel();
-              //     timer = null;
-              //   }
-              //   timer = new Timer(const Duration(milliseconds: 500), () {
-              //     print('Print $value');
-              //     setState(() {
-              //       data = fetchSearch(
-              //           value,
-              //           this.location != null ? this.location['lat'] : null,
-              //           this.location != null ? this.location['lng'] : null,
-              //           selectId);
-              //       data.then((res) {
-              //         setState(() {
-              //           this.nextPageToken = res.nextPageToken;
-              //           this.results = res.results;
-              //         });
-              //       });
-              //     });
-              //   });
-              // },
               onEditingComplete: () {
-                setState(() {
-                  data = fetchSearch(
-                      txt.text,
-                      this.location != null ? this.location['lat'] : null,
-                      this.location != null ? this.location['lng'] : null,
-                      selectId);
-                  data.then((res) {
-                    setState(() {
-                      this.nextPageToken = res.nextPageToken;
-                      this.results = res.results;
-                    });
-                  });
-                });
+                searchText();
               },
             ),
             Container(
@@ -589,6 +544,39 @@ class SearchState extends State<Search> {
                 child: Wrap(spacing: 10.0, children: chips))
           ]),
     );
+  }
+
+  void clearSearch() {
+    setState(() {
+      txt.text = '';
+      data = fetchSearch(
+          '',
+          this.location != null ? this.location['lat'] : null,
+          this.location != null ? this.location['lng'] : null,
+          selectId);
+      data.then((res) {
+        setState(() {
+          this.nextPageToken = res.nextPageToken;
+          this.results = res.results;
+        });
+      });
+    });
+  }
+
+  void searchText() {
+    setState(() {
+      data = fetchSearch(
+          txt.text,
+          this.location != null ? this.location['lat'] : null,
+          this.location != null ? this.location['lng'] : null,
+          selectId);
+      data.then((res) {
+        setState(() {
+          this.nextPageToken = res.nextPageToken;
+          this.results = res.results;
+        });
+      });
+    });
   }
 
   // function for rendering while data is loading

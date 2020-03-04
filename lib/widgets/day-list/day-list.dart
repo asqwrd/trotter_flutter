@@ -40,6 +40,7 @@ class DayList extends StatefulWidget {
   final bool showTimeSpent;
   final bool showDescriptions;
   final bool public;
+  final bool editable;
   final PanelController panelController;
 
   //passing props in react style
@@ -64,6 +65,7 @@ class DayList extends StatefulWidget {
       this.showTutorial,
       this.tabs,
       this.public,
+      this.editable,
       this.visited,
       this.showTimeSpent,
       this.onToggleVisited,
@@ -92,6 +94,7 @@ class DayList extends StatefulWidget {
       showTutorial: this.showTutorial,
       tabs: this.tabs,
       visited: this.visited,
+      editable: this.editable,
       showTimeSpent: this.showTimeSpent,
       onDescriptionAdded: this.onDescriptionAdded,
       onToggleVisited: this.onToggleVisited,
@@ -123,6 +126,7 @@ class DayListState extends State<DayList> {
   final bool comments;
   final bool showDescriptions;
   final bool public;
+  final bool editable;
   final dynamic linkedItinerary;
   final bool showTutorial;
   final bool tabs;
@@ -158,6 +162,7 @@ class DayListState extends State<DayList> {
       this.tabs,
       this.public,
       this.visited,
+      this.editable,
       this.showTimeSpent,
       this.onToggleVisited,
       this.panelController,
@@ -679,7 +684,7 @@ class DayListState extends State<DayList> {
                                                         padding:
                                                             EdgeInsets.all(0),
                                                         margin: EdgeInsets.only(
-                                                            top: 10,
+                                                            top: 2,
                                                             left: 0,
                                                             right: 0,
                                                             bottom: 0),
@@ -693,13 +698,14 @@ class DayListState extends State<DayList> {
                                                               height: 1.3),
                                                         ))
                                                     : Container(),
-                                                (travelerDescription.length ==
+                                                (this.editable == true && travelerDescription.length ==
                                                             0 &&
                                                         this.visited == true)
                                                     ? renderEditButton(
                                                         context, poi, item)
-                                                    : this.visited == true || this.showDescriptions == true
+                                                    :  this.visited == true || this.showDescriptions == true
                                                         ? Container(
+                                                          margin: EdgeInsets.only(top:10),
                                                             width: MediaQuery.of(
                                                                         context)
                                                                     .size
@@ -708,7 +714,7 @@ class DayListState extends State<DayList> {
                                                             child: Column(
                                                                 children: <
                                                                     Widget>[
-                                                                  indexDes != null && indexDes < 0
+                                                                  indexDes != null && indexDes < 0 && this.editable == true
                                                                       ? renderEditButton(
                                                                           context,
                                                                           poi,
@@ -737,11 +743,13 @@ class DayListState extends State<DayList> {
                                                                       return ListTile(
                                                                           onTap:
                                                                               () async {
+                                                                                if(this.editable == true){
                                                                             await onDescriptionModal(
                                                                                 context,
                                                                                 description,
                                                                                 poi,
                                                                                 item);
+                                                                                }
                                                                           },
                                                                           leading:
                                                                               CircleAvatar(

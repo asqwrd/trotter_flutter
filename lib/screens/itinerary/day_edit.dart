@@ -744,8 +744,14 @@ class DayEditState extends State<DayEdit> {
         ownerId: this.ownerId,
         day: day['day'],
         items: this.itineraryItems,
-        linkedItinerary:
-            this.itineraryItems.length > 0 ? this.linkedItinerary : null,
+        linkedItinerary: this.itineraryItems.length > 0 ||
+                (DateTime.now().isBefore(DateTime.fromMillisecondsSinceEpoch(
+                            this.startDate,
+                            isUtc: true)
+                        .add(Duration(days: day['day']))) ==
+                    true)
+            ? this.linkedItinerary
+            : null,
         color: color,
         startLocation: this.currentPosition != null
             ? this.currentPosition
@@ -802,6 +808,7 @@ class DayEditState extends State<DayEdit> {
         panelController: _pc,
         tabs: true,
         showTutorial: true,
+        editable: true,
         onToggleVisited: (item) => onToggleVisited(ctxt, item),
         onRefreshImage: (data) async {
           final store = Provider.of<TrotterStore>(context);
@@ -863,8 +870,14 @@ class DayEditState extends State<DayEdit> {
         day: day['day'],
         items: visited,
         color: color,
-        linkedItinerary:
-            this.itineraryItems.length == 0 ? this.linkedItinerary : null,
+        linkedItinerary: this.itineraryItems.length == 0 &&
+                (DateTime.now().isAfter(DateTime.fromMillisecondsSinceEpoch(
+                            this.startDate,
+                            isUtc: true)
+                        .add(Duration(days: day['day']))) ==
+                    true)
+            ? this.linkedItinerary
+            : null,
         startLocation: this.currentPosition != null
             ? this.currentPosition
             : this.startLocation,

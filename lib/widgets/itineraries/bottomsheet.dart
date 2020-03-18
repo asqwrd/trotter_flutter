@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_store/flutter_store.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
@@ -15,15 +16,12 @@ Future addToItinerary(
   final store = Provider.of<TrotterStore>(context);
   final selectedItineraryId =
       store.itineraryStore.selectedItinerary.selectedItineraryId;
-  final selectedItineraryDestination =
-      store.itineraryStore.selectedItinerary.destinationId;
   final startDate = store.itineraryStore.selectedItinerary.selectedItinerary !=
           null
       ? store.itineraryStore.selectedItinerary.selectedItinerary['start_date']
       : 0;
 
-  if (selectedItineraryId != null &&
-      selectedItineraryDestination == destination['id']) {
+  if (selectedItineraryId != null) {
     var result = await showDayBottomSheet(store, context, selectedItineraryId,
         poi, destination['id'], color, destination, store.currentUser.uid,
         onPush: onPush, startDate: startDate * 1000);
@@ -299,6 +297,26 @@ Future<DayData> responseFromDayBottomSheet(BuildContext context, dynamic item,
   return response;
 }
 
+Future<WishListData> responseFromWishListBottomSheet(
+  BuildContext context,
+  dynamic item,
+  dynamic poi,
+  String addedBy,
+) async {
+  final store = Provider.of<TrotterStore>(context);
+  var data = {
+    "poi": poi,
+    "title": "",
+    "description": "",
+    "time": {"value": "", "unit": ""},
+    "poi_id": poi['id'],
+    "added_by": addedBy
+  };
+  var response = await addToList(store, item['id'], data);
+
+  return response;
+}
+
 showDayBottomSheet(
     TrotterStore storeApp,
     BuildContext context,
@@ -358,43 +376,64 @@ showDayBottomSheet(
                         children: <Widget>[
                           Container(
                               padding:
-                                  EdgeInsets.only(top: 10, bottom: 5, left: 20),
-                              child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    AutoSizeText(
-                                      'Choose a day',
+                                  EdgeInsets.only(top: 10, bottom: 5, left: 0),
+                              child: ListTile(
+                                  contentPadding: EdgeInsets.only(
+                                    left: 0,
+                                  ),
+                                  title: AutoSizeText(
+                                    'Choose a day',
+                                    style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w300),
+                                  ),
+                                  trailing: FlatButton(
+                                    child: AutoSizeText(
+                                      'Add to wishlist',
                                       style: TextStyle(
-                                          fontSize: 20,
+                                          color: color,
                                           fontWeight: FontWeight.w300),
                                     ),
-                                    store.itineraryStore.selectedItinerary
-                                                .selectedItinerary !=
-                                            null
-                                        ? FlatButton(
-                                            onPressed: () {
-                                              Navigator.pop(
-                                                  context, {"change": true});
-                                              showItineraryBottomSheet(
-                                                  storeApp,
-                                                  context,
-                                                  destinationId,
-                                                  poi,
-                                                  color,
-                                                  destination);
-                                            },
-                                            child: AutoSizeText(
-                                              'Change',
-                                              style: TextStyle(
-                                                  color: color,
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w300),
-                                            ),
-                                          )
-                                        : Container()
-                                  ])),
+                                    onPressed: () async {
+                                      store.setBottomSheetLoading(true);
+
+                                      var response =
+                                          await responseFromWishListBottomSheet(
+                                              context, item, poi, addedBy);
+                                      Navigator.pop(context, {
+                                        'success': response.success,
+                                        'exist': response.exist,
+                                        'poi': poi,
+                                        'itinerary': item,
+                                      });
+
+                                      store.setBottomSheetLoading(false);
+                                    },
+                                  ),
+                                  leading: store
+                                              .itineraryStore
+                                              .selectedItinerary
+                                              .selectedItinerary !=
+                                          null
+                                      ? IconButton(
+                                          icon: SvgPicture.asset(
+                                              'images/back-icon.svg',
+                                              width: 25,
+                                              height: 25,
+                                              color: Colors.black),
+                                          onPressed: () {
+                                            Navigator.pop(
+                                                context, {"change": true});
+                                            showItineraryBottomSheet(
+                                                storeApp,
+                                                context,
+                                                destinationId,
+                                                poi,
+                                                color,
+                                                destination);
+                                          },
+                                        )
+                                      : Container())),
                           Container(
                               margin: EdgeInsets.only(bottom: 0, top: 0),
                               child:
@@ -498,7 +537,7 @@ Future<ScaffoldFeatureController<SnackBar, SnackBarClosedReason>>
         toIndex != null
             ? '${poi['name']} $action to day $toIndex'
             : '${poi['name']} $action to ${itinerary['name']}',
-        style: TextStyle(fontSize: 18)),
+        style: TextStyle(fontSize: 15)),
     duration: Duration(seconds: 2),
     action: onPush != null
         ? SnackBarAction(
@@ -515,6 +554,19 @@ Future<ScaffoldFeatureController<SnackBar, SnackBarClosedReason>>
             },
           )
         : null,
+  ));
+}
+
+Future<ScaffoldFeatureController<SnackBar, SnackBarClosedReason>>
+    showSuccessWishlistSnackbar(BuildContext context,
+        {dynamic poi, dynamic itinerary, bool exist}) async {
+  return Scaffold.of(context).showSnackBar(SnackBar(
+    content: AutoSizeText(
+        exist
+            ? '${poi['name']} is already in wishlist'
+            : '${poi['name']} added to wishlist',
+        style: TextStyle(fontSize: 15)),
+    duration: Duration(seconds: 2),
   ));
 }
 

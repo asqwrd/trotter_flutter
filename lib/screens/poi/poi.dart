@@ -383,6 +383,15 @@ class PoiState extends State<Poi> {
                                     dayIndex: result['dayIndex'],
                                     itinerary: result['itinerary'],
                                     poi: result['poi']);
+                              } else if (result != null &&
+                                  result['exist'] != null &&
+                                  result['success'] != null &&
+                                  result['poi'] != null &&
+                                  result['itinerary'] != null) {
+                                await showSuccessWishlistSnackbar(context,
+                                    poi: result['poi'],
+                                    itinerary: result['itinerary'],
+                                    exist: result['exist']);
                               }
                             },
                             child: SvgPicture.asset("images/add-icon.svg",

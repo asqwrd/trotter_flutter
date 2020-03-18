@@ -285,7 +285,7 @@ packages:
       name: flutter_svg
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.17.1"
+    version: "0.17.3+1"
   flutter_swiper:
     dependency: "direct main"
     description:
@@ -589,7 +589,7 @@ packages:
       name: shared_preferences
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.5.6+1"
+    version: "0.5.6+3"
   shared_preferences_macos:
     dependency: transitive
     description:
@@ -692,7 +692,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.11"
+    version: "0.2.15"
   timeago:
     dependency: "direct main"
     description:
@@ -735,6 +735,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.2"
+  union:
+    dependency: "direct main"
+    description:
+      name: union
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.3+1"
   url_launcher:
     dependency: "direct main"
     description:

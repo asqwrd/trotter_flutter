@@ -312,6 +312,36 @@ Future<DayData> addToDay(TrotterStore store, String itineraryId, String dayId,
   }
 }
 
+Future<WishListData> addToList(
+    TrotterStore store, String itineraryId, dynamic data,
+    [userId = '']) async {
+  try {
+    final response = await http.post(
+        '$ApiDomain/api/itineraries/add/$itineraryId/list?userId=$userId',
+        body: json.encode(data),
+        headers: {'Authorization': APITOKEN});
+    if (response.statusCode == 200) {
+      // If server returns an OK response, parse the JSON
+      var res = WishListData.fromJson(json.decode(response.body));
+
+      store.itineraryStore.setItineraryError(null);
+      store.setOffline(false);
+
+      return res;
+    } else {
+      // If that response was not OK, throw an error.
+      store.itineraryStore.setItineraryError('Server is down');
+      store.setOffline(true);
+      return WishListData(success: false);
+    }
+  } catch (error) {
+    print(error);
+    store.itineraryStore.setItineraryError('Server is down');
+    store.setOffline(true);
+    return WishListData(success: false);
+  }
+}
+
 Future<PublicData> togglePublic(
   TrotterStore store,
   String itineraryId,
@@ -453,6 +483,22 @@ Future<ItinerariesData> fetchItineraries(String filter) async {
   }
 }
 
+Future<WishListData> fetchWishlist(String itineraryId) async {
+  print('$ApiDomain/api/itineraries/get/$itineraryId/wishlist');
+  final response = await http.get(
+      '$ApiDomain/api/itineraries/get/$itineraryId/wishlist',
+      headers: {'Authorization': APITOKEN});
+  if (response.statusCode == 200) {
+    // If server returns an OK response, parse the JSON
+    return WishListData.fromJson(json.decode(response.body));
+  } else {
+    // If that response was not OK, throw an error.
+    var msg = response.statusCode;
+    print(msg);
+    return WishListData(success: false);
+  }
+}
+
 class ItinerariesData {
   final List<dynamic> itineraries;
   final bool success;
@@ -499,6 +545,21 @@ class AddItemData {
     return AddItemData(
       itineraryItem: json['itinerary_item'],
     );
+  }
+}
+
+class WishListData {
+  final List<dynamic> wishlistItems;
+  final bool success;
+  final bool exist;
+
+  WishListData({this.success, this.wishlistItems, this.exist});
+
+  factory WishListData.fromJson(Map<String, dynamic> json) {
+    return WishListData(
+        wishlistItems: json['wishlistItems'],
+        success: true,
+        exist: json['exist']);
   }
 }
 

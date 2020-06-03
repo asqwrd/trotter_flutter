@@ -923,98 +923,90 @@ class CountryPickerForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FormBuilderCustomField(
+    return FormBuilderField(
         validators: [
           FormBuilderValidators.required(errorText: 'Country is required')
         ],
         attribute: attribute,
-        formField: FormField(
-            builder: (FormFieldState<dynamic> field) =>
-                Column(children: <Widget>[
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                        color: Colors.blueGrey.withOpacity(0.08),
-                        border: Border(
-                            top: BorderSide(
-                                color: field.hasError
-                                    ? Colors.red
-                                    : Colors.transparent),
-                            left: BorderSide(
-                                color: field.hasError
-                                    ? Colors.red
-                                    : Colors.transparent),
-                            right: BorderSide(
-                                color: field.hasError
-                                    ? Colors.red
-                                    : Colors.transparent),
-                            bottom: BorderSide(
-                                color: field.hasError
-                                    ? Colors.red
-                                    : Colors.transparent))),
-                    margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: CountryCodePicker(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-                      onChanged: (CountryCode data) {
-                        print(data.code);
-                        field.didChange(data.code);
-                      },
-                      searchDecoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(vertical: 20.0),
-                          prefixIcon: Padding(
-                              padding: EdgeInsets.only(left: 20.0, right: 5.0),
-                              child: Icon(Icons.home, size: 15)),
-                          //fillColor: Colors.blueGrey.withOpacity(0.5),
-                          filled: true,
-                          errorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0)),
-                              borderSide:
-                                  BorderSide(width: 1.0, color: Colors.red)),
-                          focusedErrorBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0)),
-                              borderSide:
-                                  BorderSide(width: 1.0, color: Colors.red)),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0)),
-                              borderSide: BorderSide(
-                                  width: 0.0, color: Colors.transparent)),
-                          disabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0)),
-                              borderSide: BorderSide(
-                                  width: 0.0, color: Colors.transparent)),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(5.0)),
-                              borderSide: BorderSide(
-                                  width: 0.0, color: Colors.transparent)),
-                          hintText: 'Search country',
-                          hintStyle: TextStyle(fontSize: 13)),
-                      showOnlyCountryWhenClosed: true,
-                      showCountryOnly: true,
-                      alignLeft: true,
-                    ),
-                  ),
-                  field.hasError
-                      ? Align(
-                          alignment: Alignment.topLeft,
-                          child: Container(
-                              margin: EdgeInsets.only(
-                                  left: 20, right: 20, bottom: 10),
-                              child: AutoSizeText(
-                                field.errorText,
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    color: Colors.red.shade800,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 13),
-                              )))
-                      : Container()
-                ])));
+        builder: (FormFieldState<dynamic> field) => Column(children: <Widget>[
+              Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    color: Colors.blueGrey.withOpacity(0.08),
+                    border: Border(
+                        top: BorderSide(
+                            color: field.hasError
+                                ? Colors.red
+                                : Colors.transparent),
+                        left: BorderSide(
+                            color: field.hasError
+                                ? Colors.red
+                                : Colors.transparent),
+                        right: BorderSide(
+                            color: field.hasError
+                                ? Colors.red
+                                : Colors.transparent),
+                        bottom: BorderSide(
+                            color: field.hasError
+                                ? Colors.red
+                                : Colors.transparent))),
+                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: CountryCodePicker(
+                  padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                  onChanged: (CountryCode data) {
+                    print(data.code);
+                    field.didChange(data.code);
+                  },
+                  searchDecoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                      prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 20.0, right: 5.0),
+                          child: Icon(Icons.home, size: 15)),
+                      //fillColor: Colors.blueGrey.withOpacity(0.5),
+                      filled: true,
+                      errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide:
+                              BorderSide(width: 1.0, color: Colors.red)),
+                      focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide:
+                              BorderSide(width: 1.0, color: Colors.red)),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                          borderSide: BorderSide(
+                              width: 0.0, color: Colors.transparent)),
+                      hintText: 'Search country',
+                      hintStyle: TextStyle(fontSize: 13)),
+                  showOnlyCountryWhenClosed: true,
+                  showCountryOnly: true,
+                  alignLeft: true,
+                ),
+              ),
+              field.hasError
+                  ? Align(
+                      alignment: Alignment.topLeft,
+                      child: Container(
+                          margin:
+                              EdgeInsets.only(left: 20, right: 20, bottom: 10),
+                          child: AutoSizeText(
+                            field.errorText,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                color: Colors.red.shade800,
+                                fontWeight: FontWeight.w400,
+                                fontSize: 13),
+                          )))
+                  : Container()
+            ]));
   }
 }
 

@@ -136,7 +136,7 @@ Future<bool> getLocationPermission() async {
 // Platform messages may fail, so we use a try/catch PlatformException.
   try {
     var permission = await location.hasPermission();
-    if (permission == false) {
+    if (permission == LocationPermission.PermissionStatus.granted) {
       await location.requestPermission();
     }
     return true;
@@ -151,7 +151,7 @@ Future<bool> getLocationPermission() async {
 
 Future<NearByData> fetchNearbyPlaces(String type, String keywords) async {
   final PermissionStatus isLocationEnabled =
-      await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+      await Permission.location.request();
   Position position;
   print(isLocationEnabled);
   if (isLocationEnabled == PermissionStatus.granted) {

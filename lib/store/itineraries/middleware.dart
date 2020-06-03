@@ -221,7 +221,7 @@ Future<DayData> fetchDay(String itineraryId, String dayId,
   double distanceInMeters = -1;
   Position position;
   final PermissionStatus isLocationEnabled =
-      await PermissionHandler().checkPermissionStatus(PermissionGroup.location);
+      await Permission.location.request();
 
   if (startLocation != null && isLocationEnabled == PermissionStatus.granted) {
     location = '${startLocation['lat']},${startLocation['lng']}';

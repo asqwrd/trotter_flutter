@@ -3,6 +3,160 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flare_loading/flare_loading.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart' show parse;
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
+class TrotterImage extends StatefulWidget {
+  final String imageUrl;
+  final ValueChanged<bool> onLoaded;
+  final ValueChanged<bool> onLoadedFailed;
+  final BlendMode blendMode;
+  final Widget placeholder;
+  final Function(BuildContext) loadingWidgetBuilder;
+  final bool enableRefresh;
+
+  TrotterImage(
+      {Key key,
+      this.imageUrl,
+      this.onLoaded,
+      this.onLoadedFailed,
+      this.loadingWidgetBuilder,
+      this.blendMode,
+      this.enableRefresh,
+      this.placeholder})
+      : super(key: key);
+  @override
+  TrotterImageState createState() => new TrotterImageState(
+        imageUrl: this.imageUrl,
+        onLoaded: this.onLoaded,
+        blendMode: this.blendMode,
+        enableRefresh: this.enableRefresh,
+        onLoadedFailed: this.onLoadedFailed,
+        placeholder: this.placeholder,
+        loadingWidgetBuilder: this.loadingWidgetBuilder,
+      );
+}
+
+class TrotterImageState extends State<TrotterImage> {
+  final String imageUrl;
+  final BlendMode blendMode;
+  final ValueChanged<bool> onLoaded;
+  final ValueChanged<bool> onLoadedFailed;
+  final Widget placeholder;
+  final bool enableRefresh;
+  final Function(BuildContext) loadingWidgetBuilder;
+  bool loading;
+  Timer loadingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    this.loading = true;
+  }
+
+  TrotterImageState(
+      {Key key,
+      this.imageUrl,
+      this.onLoaded,
+      this.blendMode,
+      this.onLoadedFailed,
+      this.loadingWidgetBuilder,
+      this.enableRefresh,
+      this.placeholder});
+
+  @override
+  void dispose() {
+    super.dispose();
+    this.loadingTimer?.cancel();
+    this.loadingTimer = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(fit: StackFit.expand, children: <Widget>[
+      this.loadingWidgetBuilder != null && this.loading == true
+          ? Positioned.fill(
+              child: this.loadingWidgetBuilder(context),
+            )
+          : Container(),
+      CachedNetworkImage(
+          imageUrl: this.imageUrl,
+          cacheManager: ImageCacheManager(),
+          colorBlendMode: this.blendMode ?? this.blendMode,
+          placeholder: (context, url) =>
+              this.placeholder != null ? this.placeholder : Container(),
+          errorWidget: (context, url, error) {
+            if (this.onLoadedFailed != null) {
+              this.loadingTimer = Timer(Duration(seconds: 2), () {
+                this.onLoadedFailed(true);
+                setState(() {
+                  this.loading = false;
+                });
+              });
+            } else if (this.loading == true) {
+              this.loadingTimer = Timer(Duration(seconds: 2), () {
+                setState(() {
+                  this.loading = false;
+                });
+              });
+            }
+            return this.enableRefresh ? Container() : Icons.error;
+          },
+          imageBuilder: (context, imageProvider) {
+            if (this.onLoaded != null &&
+                this.loading == true &&
+                this.loadingTimer == null) {
+              this.loadingTimer = Timer(Duration(seconds: 2), () {
+                this.onLoaded(true);
+                setState(() {
+                  this.loading = false;
+                });
+              });
+            } else if (this.loading == true && this.loadingTimer == null) {
+              this.loadingTimer = Timer(Duration(seconds: 2), () {
+                setState(() {
+                  this.loading = false;
+                });
+              });
+            }
+            return Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: imageProvider,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                ),
+              ),
+            );
+          }),
+    ]);
+  }
+}
+
+class ImageCacheManager extends BaseCacheManager {
+  static const key = "imageCache";
+
+  static ImageCacheManager _instance;
+
+  factory ImageCacheManager() {
+    if (_instance == null) {
+      _instance = new ImageCacheManager._();
+    }
+    return _instance;
+  }
+
+  ImageCacheManager._()
+      : super(key,
+            maxAgeCacheObject: Duration(days: 7), maxNrOfCacheObjects: 20);
+
+  Future<String> getFilePath() async {
+    var directory = await getTemporaryDirectory();
+    return p.join(directory.path, key);
+  }
+}
 
 PanelHeights getPanelHeights(context) {
   return PanelHeights(

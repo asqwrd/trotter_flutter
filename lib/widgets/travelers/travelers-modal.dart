@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/errors/index.dart';
@@ -232,23 +230,16 @@ class TravelersModalState extends State<TravelersModal> {
                             clipper: ShapeBorderClipper(
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(100))),
-                            child: TransitionToImage(
-                              image: AdvancedNetworkImage(
-                                results[index]['photoUrl'],
-                                useDiskCache: true,
-                                cacheRule:
-                                    CacheRule(maxAge: const Duration(days: 7)),
-                              ),
-                              loadingWidgetBuilder: (BuildContext context,
-                                      double progress, test) =>
+                            child: TrotterImage(
+                              imageUrl: results[index]['photoUrl'],
+                              loadingWidgetBuilder: (
+                                BuildContext context,
+                              ) =>
                                   Center(
                                       child: CircularProgressIndicator(
                                 backgroundColor: Colors.white,
                               )),
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
                               placeholder: const Icon(Icons.refresh),
-                              enableRefresh: true,
                             )),
                       ),
                       title: AutoSizeText(

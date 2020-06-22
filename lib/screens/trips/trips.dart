@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/store/auth.dart';
@@ -66,7 +64,7 @@ class TripsState extends State<Trips> {
   @override
   void initState() {
     () async {
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(seconds: 5));
       final store = Provider.of<TrotterStore>(context);
       if (store.currentUser != null) {
         fetchTrips(store).then((res) {
@@ -624,23 +622,14 @@ class TripsState extends State<Trips> {
                         Positioned.fill(
                             top: 0,
                             left: 0,
-                            child: TransitionToImage(
-                              image: AdvancedNetworkImage(
-                                tripBuilder[index]['image'],
-                                useDiskCache: true,
-                                cacheRule:
-                                    CacheRule(maxAge: const Duration(days: 7)),
-                              ),
-                              loadingWidgetBuilder: (BuildContext context,
-                                      double progress, test) =>
+                            child: TrotterImage(
+                              imageUrl: tripBuilder[index]['image'],
+                              placeholder: Icon(Icons.refresh),
+                              loadingWidgetBuilder: (BuildContext context) =>
                                   Center(
                                       child: RefreshProgressIndicator(
                                 backgroundColor: Colors.white,
                               )),
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
-                              placeholder: const Icon(Icons.refresh),
-                              enableRefresh: true,
                             )),
                         Positioned.fill(
                             top: 0,
@@ -777,26 +766,17 @@ class TripsState extends State<Trips> {
                 child: Stack(
                   children: <Widget>[
                     Positioned.fill(
-                        top: 0,
-                        left: 0,
-                        child: TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            trip['image'],
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
-                                  Center(
-                                      child: RefreshProgressIndicator(
-                            backgroundColor: Colors.white,
-                          )),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
+                      top: 0,
+                      left: 0,
+                      child: TrotterImage(
+                        imageUrl: trip['image'],
+                        placeholder: Icon(Icons.refresh),
+                        loadingWidgetBuilder: (BuildContext context) => Center(
+                            child: RefreshProgressIndicator(
+                          backgroundColor: Colors.white,
                         )),
+                      ),
+                    ),
                     Positioned.fill(
                         top: 0,
                         left: 0,

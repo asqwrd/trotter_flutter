@@ -1,13 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:trotter_flutter/store/middleware.dart';
 import 'package:trotter_flutter/store/store.dart';
 import 'package:trotter_flutter/store/trips/middleware.dart';
 import 'package:trotter_flutter/tab_navigator.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
 void showTripsBottomSheet(context,
     [dynamic destination, dynamic notification, String notificationId]) {
@@ -246,23 +245,14 @@ Widget _buildBody(BuildContext context, dynamic item,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8))),
                   child: item['image'] != null
-                      ? TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            item['image'],
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
-                                  Center(
-                                      child: CircularProgressIndicator(
+                      ? TrotterImage(
+                          imageUrl: item['image'],
+                          loadingWidgetBuilder: (BuildContext context) =>
+                              Center(
+                                  child: CircularProgressIndicator(
                             backgroundColor: Colors.white,
                           )),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
                           placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
                         )
                       : Container(
                           decoration: BoxDecoration(

@@ -1,6 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:trotter_flutter/store/auth.dart';
@@ -63,10 +62,8 @@ class MessageNotification extends StatelessWidget {
                 borderRadius: BorderRadius.circular(100),
                 border: Border.all(width: 2, color: Colors.blueGrey)),
             child: CircleAvatar(
-                backgroundImage: AdvancedNetworkImage(
-              user.photoUrl,
-              useDiskCache: true,
-              cacheRule: CacheRule(maxAge: const Duration(days: 7)),
+                child: TrotterImage(
+              imageUrl: user.photoUrl,
             )));
     }
 

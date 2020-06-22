@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -230,31 +228,23 @@ class ItineraryBuilderState extends State<ItineraryBuilder> {
                           top: 0,
                           left: 0,
                           child: this.image != null && this.loading == false
-                              ? TransitionToImage(
-                                  image: AdvancedNetworkImage(
-                                    this.image,
-                                    useDiskCache: true,
-                                    cacheRule: CacheRule(
-                                        maxAge: const Duration(days: 7)),
-                                  ),
-                                  loadingWidgetBuilder: (BuildContext context,
-                                          double progress, test) =>
-                                      Container(),
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.center,
-                                  placeholder: const Icon(Icons.refresh),
-                                  enableRefresh: true,
-                                  loadedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
+                              ? TrotterImage(
+                                  imageUrl: this.image,
+                                  onLoadedFailed: (value) async {
+                                    //await Future.delayed(Duration(seconds: 2));
+                                    if (this.imageLoading == true) {
+                                      setState(() {
+                                        this.imageLoading = false;
+                                      });
+                                    }
                                   },
-                                  loadFailedCallback: () async {
-                                    await Future.delayed(Duration(seconds: 2));
-                                    setState(() {
-                                      this.imageLoading = false;
-                                    });
+                                  onLoaded: (value) async {
+                                    //await Future.delayed(Duration(seconds: 2));
+                                    if (this.imageLoading == true) {
+                                      setState(() {
+                                        this.imageLoading = false;
+                                      });
+                                    }
                                   },
                                 )
                               : Container()),

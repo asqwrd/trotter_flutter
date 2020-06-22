@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
 class ItineraryCard extends StatelessWidget {
@@ -66,25 +64,16 @@ class ItineraryCard extends StatelessWidget {
                                             ['images'][0]['sizes']['medium']
                                         ['url'] !=
                                     null
-                                ? TransitionToImage(
-                                    image: AdvancedNetworkImage(
-                                      item['days'][0]['itinerary_items'][0]
-                                              ['poi']['images'][0]['sizes']
-                                          ['medium']['url'],
-                                      useDiskCache: true,
-                                      cacheRule: CacheRule(
-                                          maxAge: const Duration(days: 7)),
-                                    ),
-                                    loadingWidgetBuilder: (BuildContext context,
-                                            double progress, test) =>
-                                        Center(
+                                ? TrotterImage(
+                                    imageUrl: item['days'][0]['itinerary_items']
+                                            [0]['poi']['images'][0]['sizes']
+                                        ['medium']['url'],
+                                    loadingWidgetBuilder:
+                                        (BuildContext context) => Center(
                                             child: CircularProgressIndicator(
                                       backgroundColor: Colors.white,
                                     )),
-                                    fit: BoxFit.cover,
-                                    alignment: Alignment.center,
-                                    placeholder: const Icon(Icons.refresh),
-                                    enableRefresh: true,
+                                    placeholder: Icon(Icons.refresh),
                                   )
                                 : Container(
                                     decoration: BoxDecoration(

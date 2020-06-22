@@ -1,8 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
 import 'package:trotter_flutter/utils/index.dart';
@@ -431,23 +429,16 @@ class SearchState extends State<Search> {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8))),
                             child: results[index]['image'] != null
-                                ? TransitionToImage(
-                                    image: AdvancedNetworkImage(
-                                      results[index]['image'],
-                                      useDiskCache: true,
-                                      cacheRule: CacheRule(
-                                          maxAge: const Duration(days: 7)),
-                                    ),
-                                    loadingWidgetBuilder: (BuildContext context,
-                                            double progress, test) =>
+                                ? TrotterImage(
+                                    imageUrl: results[index]['image'],
+                                    loadingWidgetBuilder: (
+                                      BuildContext context,
+                                    ) =>
                                         Center(
                                             child: CircularProgressIndicator(
                                       backgroundColor: Colors.white,
                                     )),
-                                    fit: BoxFit.cover,
-                                    alignment: Alignment.center,
                                     placeholder: const Icon(Icons.refresh),
-                                    enableRefresh: true,
                                   )
                                 : Container(
                                     decoration: BoxDecoration(

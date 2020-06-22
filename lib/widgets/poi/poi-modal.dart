@@ -1,10 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:rating_bar/rating_bar.dart';
 import 'package:trotter_flutter/store/itineraries/middleware.dart';
 import 'package:trotter_flutter/store/middleware.dart';
+import 'package:trotter_flutter/utils/index.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
 
 class PoiModal extends StatefulWidget {
@@ -237,23 +236,16 @@ class Results extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
                         child: results[index]['image'] != null
-                            ? TransitionToImage(
-                                image: AdvancedNetworkImage(
-                                  results[index]['image'],
-                                  useDiskCache: true,
-                                  cacheRule: CacheRule(
-                                      maxAge: const Duration(days: 7)),
-                                ),
-                                loadingWidgetBuilder: (BuildContext context,
-                                        double progress, test) =>
+                            ? TrotterImage(
+                                imageUrl: results[index]['image'],
+                                loadingWidgetBuilder: (
+                                  BuildContext context,
+                                ) =>
                                     Center(
                                         child: CircularProgressIndicator(
                                   backgroundColor: Colors.white,
                                 )),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
                                 placeholder: const Icon(Icons.refresh),
-                                enableRefresh: true,
                               )
                             : Container(
                                 decoration: BoxDecoration(
@@ -336,23 +328,16 @@ class WishlistResults extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
                         child: results[index]['poi']['image'] != null
-                            ? TransitionToImage(
-                                image: AdvancedNetworkImage(
-                                  results[index]['poi']['image'],
-                                  useDiskCache: true,
-                                  cacheRule: CacheRule(
-                                      maxAge: const Duration(days: 7)),
-                                ),
-                                loadingWidgetBuilder: (BuildContext context,
-                                        double progress, test) =>
+                            ? TrotterImage(
+                                imageUrl: results[index]['poi']['image'],
+                                loadingWidgetBuilder: (
+                                  BuildContext context,
+                                ) =>
                                     Center(
                                         child: CircularProgressIndicator(
                                   backgroundColor: Colors.white,
                                 )),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
                                 placeholder: const Icon(Icons.refresh),
-                                enableRefresh: true,
                               )
                             : Container(
                                 decoration: BoxDecoration(

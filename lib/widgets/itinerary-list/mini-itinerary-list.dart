@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
 class MiniItineraryList extends StatelessWidget {
@@ -74,21 +72,13 @@ class MiniItineraryList extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8))),
             child: usePlaceholder == false
-                ? TransitionToImage(
-                    image: AdvancedNetworkImage(
-                      image,
-                      useDiskCache: true,
-                      cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                    ),
-                    loadingWidgetBuilder:
-                        (BuildContext context, double progress, test) => Center(
-                            child: RefreshProgressIndicator(
+                ? TrotterImage(
+                    imageUrl: image,
+                    loadingWidgetBuilder: (BuildContext context) => Center(
+                        child: RefreshProgressIndicator(
                       backgroundColor: Colors.white,
                     )),
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
                     placeholder: const Icon(Icons.refresh),
-                    enableRefresh: true,
                   )
                 : Container(
                     decoration: BoxDecoration(
@@ -126,22 +116,13 @@ class MiniItineraryList extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8))),
                 child: usePlaceholder == false
-                    ? TransitionToImage(
-                        image: AdvancedNetworkImage(
-                          image,
-                          useDiskCache: true,
-                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                        ),
-                        loadingWidgetBuilder:
-                            (BuildContext context, double progress, test) =>
-                                Center(
-                                    child: RefreshProgressIndicator(
+                    ? TrotterImage(
+                        imageUrl: image,
+                        loadingWidgetBuilder: (BuildContext context) => Center(
+                            child: RefreshProgressIndicator(
                           backgroundColor: Colors.white,
                         )),
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
                         placeholder: const Icon(Icons.refresh),
-                        enableRefresh: true,
                       )
                     : Container(
                         decoration: BoxDecoration(

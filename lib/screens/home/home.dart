@@ -5,8 +5,6 @@ import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
@@ -165,12 +163,12 @@ class HomeState extends State<Home> {
   @override
   void initState() {
     () async {
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(Duration(seconds: 5));
       final store = Provider.of<TrotterStore>(context);
       if (store.currentUser != null) {
-        setState(() {
-          doData = fetchThingsToDo(store.currentUser.uid);
-        });
+        //setState(() {
+        doData = fetchThingsToDo(store.currentUser.uid);
+        // });
       }
 
       store.eventBus.on<RefreshHomeEvent>().listen((event) {
@@ -528,22 +526,13 @@ class HomeState extends State<Home> {
                       clipper: ShapeBorderClipper(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8))),
-                      child: TransitionToImage(
-                        image: AdvancedNetworkImage(
-                          destination['image'],
-                          useDiskCache: true,
-                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                        ),
-                        loadingWidgetBuilder:
-                            (BuildContext context, double progress, test) =>
-                                Center(
-                                    child: RefreshProgressIndicator(
+                      child: TrotterImage(
+                        imageUrl: destination['image'],
+                        loadingWidgetBuilder: (BuildContext context) => Center(
+                            child: RefreshProgressIndicator(
                           backgroundColor: Colors.white,
                         )),
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
                         placeholder: const Icon(Icons.refresh),
-                        enableRefresh: true,
                       )))),
           Container(
               margin: EdgeInsets.symmetric(horizontal: 20),

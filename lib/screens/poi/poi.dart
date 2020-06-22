@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rating_bar/rating_bar.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -196,37 +194,27 @@ class PoiState extends State<Poi> {
                   Positioned.fill(
                       top: 0,
                       child: this.image != null
-                          ? TransitionToImage(
-                              image: this.image.length > 0
-                                  ? AdvancedNetworkImage(
-                                      this.image,
-                                      useDiskCache: true,
-                                      cacheRule: CacheRule(
-                                          maxAge: const Duration(days: 7)),
-                                    )
-                                  : AssetImage("images/placeholder.png"),
-                              loadingWidgetBuilder: (BuildContext context,
-                                      double progress, test) =>
-                                  Container(),
-                              fit: BoxFit.cover,
-                              alignment: Alignment.center,
+                          ? TrotterImage(
+                              imageUrl: this.image,
                               placeholder: Container(
                                   child: Image(
-                                      fit: BoxFit.cover,
                                       image: AssetImage(
                                           "images/placeholder.png"))),
-                              enableRefresh: true,
-                              loadedCallback: () async {
-                                await Future.delayed(Duration(seconds: 2));
-                                setState(() {
-                                  this.imageLoading = false;
-                                });
+                              onLoadedFailed: (value) async {
+                                //await Future.delayed(Duration(seconds: 2));
+                                if (this.imageLoading == true) {
+                                  setState(() {
+                                    this.imageLoading = false;
+                                  });
+                                }
                               },
-                              loadFailedCallback: () async {
-                                await Future.delayed(Duration(seconds: 2));
-                                setState(() {
-                                  this.imageLoading = false;
-                                });
+                              onLoaded: (value) async {
+                                //await Future.delayed(Duration(seconds: 2));
+                                if (this.imageLoading == true) {
+                                  setState(() {
+                                    this.imageLoading = false;
+                                  });
+                                }
                               },
                             )
                           : Container()),
@@ -549,21 +537,8 @@ class PoiState extends State<Poi> {
               width: 35.0,
               height: 35.0,
               child: CircleAvatar(
-                  child: TransitionToImage(
-                image: AdvancedNetworkImage(
-                  reviews[index]['profile_photo_url'],
-                  useDiskCache: true,
-                  cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                ),
-                loadingWidgetBuilder:
-                    (BuildContext context, double progress, test) => Center(
-                        child: CircularProgressIndicator(
-                  backgroundColor: Colors.white,
-                )),
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                placeholder: const Icon(Icons.refresh),
-                enableRefresh: true,
+                  child: TrotterImage(
+                imageUrl: reviews[index]['profile_photo_url'],
               )),
             ),
             title: Column(

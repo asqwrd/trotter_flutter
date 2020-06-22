@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:recase/recase.dart';
@@ -159,24 +157,16 @@ class ItineraryListState extends State<ItineraryList> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8))),
                     child: usePlaceholder == false
-                        ? TransitionToImage(
-                            image: AdvancedNetworkImage(
-                              image,
-                              useDiskCache: true,
-                              cacheRule:
-                                  CacheRule(maxAge: const Duration(days: 7)),
-                            ),
-                            loadFailedCallback: () {},
-                            loadingWidgetBuilder:
-                                (BuildContext context, double progress, test) =>
-                                    Center(
-                                        child: CircularProgressIndicator(
+                        ? TrotterImage(
+                            imageUrl: image,
+                            loadingWidgetBuilder: (BuildContext context) =>
+                                Center(
+                                    child: CircularProgressIndicator(
                               backgroundColor: Colors.white,
                               valueColor:
                                   new AlwaysStoppedAnimation<Color>(this.color),
                             )),
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
+                            enableRefresh: true,
                             placeholder: Center(
                                 child: IconButton(
                               icon: Icon(Icons.refresh),
@@ -188,7 +178,6 @@ class ItineraryListState extends State<ItineraryList> {
                                 });
                               },
                             )),
-                            enableRefresh: true,
                           )
                         : Container(
                             decoration: BoxDecoration(
@@ -253,25 +242,16 @@ class ItineraryListState extends State<ItineraryList> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8))),
                     child: usePlaceholder == false
-                        ? TransitionToImage(
-                            image: AdvancedNetworkImage(
-                              image,
-                              useDiskCache: true,
-                              cacheRule:
-                                  CacheRule(maxAge: const Duration(days: 7)),
-                            ),
-                            loadingWidgetBuilder:
-                                (BuildContext context, double progress, test) =>
-                                    Center(
-                                        child: CircularProgressIndicator(
+                        ? TrotterImage(
+                            imageUrl: image,
+                            loadingWidgetBuilder: (BuildContext context) =>
+                                Center(
+                                    child: CircularProgressIndicator(
                               backgroundColor: Colors.white,
                               valueColor:
                                   new AlwaysStoppedAnimation<Color>(this.color),
                             )),
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
                             placeholder: const Icon(Icons.refresh),
-                            enableRefresh: true,
                           )
                         : Container(
                             decoration: BoxDecoration(

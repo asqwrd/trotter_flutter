@@ -17,8 +17,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trotter_flutter/utils/index.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/globals.dart';
 
 Future<DestinationData> fetchDestination(
@@ -374,31 +372,28 @@ class DestinationState extends State<Destination>
                         top: 0,
                         left: 0,
                         child: this.image != null
-                            ? TransitionToImage(
-                                image: AdvancedNetworkImage(
-                                  this.image,
-                                  useDiskCache: true,
-                                  cacheRule: CacheRule(
-                                      maxAge: const Duration(days: 7)),
-                                ),
-                                loadingWidgetBuilder: (BuildContext context,
-                                        double progress, test) =>
+                            ? TrotterImage(
+                                imageUrl: this.image,
+                                loadingWidgetBuilder: (
+                                  BuildContext context,
+                                ) =>
                                     Container(),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
                                 placeholder: const Icon(Icons.refresh),
-                                enableRefresh: true,
-                                loadedCallback: () async {
-                                  await Future.delayed(Duration(seconds: 2));
-                                  setState(() {
-                                    this.imageLoading = false;
-                                  });
+                                onLoaded: (value) async {
+                                  //await Future.delayed(Duration(seconds: 2));
+                                  if (this.imageLoading == true) {
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  }
                                 },
-                                loadFailedCallback: () async {
-                                  await Future.delayed(Duration(seconds: 2));
-                                  setState(() {
-                                    this.imageLoading = false;
-                                  });
+                                onLoadedFailed: (value) async {
+                                  //await Future.delayed(Duration(seconds: 2));
+                                  if (this.imageLoading == true) {
+                                    setState(() {
+                                      this.imageLoading = false;
+                                    });
+                                  }
                                 },
                               )
                             : Container()),
@@ -891,29 +886,19 @@ class StucturedContent extends StatelessWidget {
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             8))),
-                                            child: TransitionToImage(
-                                              image: AdvancedNetworkImage(
-                                                images[bodyImages[0]]['sizes']
-                                                    ['medium']['url'],
-                                                useDiskCache: true,
-                                                cacheRule: CacheRule(
-                                                    maxAge: const Duration(
-                                                        days: 7)),
-                                              ),
-                                              loadingWidgetBuilder: (BuildContext
-                                                          context,
-                                                      double progress,
-                                                      test) =>
+                                            child: TrotterImage(
+                                              imageUrl: images[bodyImages[0]]
+                                                  ['sizes']['medium']['url'],
+                                              loadingWidgetBuilder: (
+                                                BuildContext context,
+                                              ) =>
                                                   Center(
                                                       child:
                                                           RefreshProgressIndicator(
                                                 backgroundColor: Colors.white,
                                               )),
-                                              fit: BoxFit.cover,
-                                              alignment: Alignment.center,
                                               placeholder:
                                                   const Icon(Icons.refresh),
-                                              enableRefresh: true,
                                             )))
                                     : Container(),
                                 AutoSizeText(

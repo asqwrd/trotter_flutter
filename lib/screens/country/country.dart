@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:trotter_flutter/widgets/app_bar/app_bar.dart';
@@ -182,32 +180,27 @@ class CountryState extends State<Country> {
                   top: 0,
                   left: 0,
                   child: this.image != null
-                      ? TransitionToImage(
-                          image: AdvancedNetworkImage(
-                            this.image,
-                            useDiskCache: true,
-                            cacheRule:
-                                CacheRule(maxAge: const Duration(days: 7)),
-                          ),
-                          loadingWidgetBuilder:
-                              (BuildContext context, double progress, test) =>
-                                  Container(),
-                          fit: BoxFit.cover,
-                          alignment: Alignment.center,
+                      ? TrotterImage(
+                          imageUrl: this.image,
+                          loadingWidgetBuilder: (BuildContext context) =>
+                              Container(),
                           placeholder: const Icon(Icons.refresh),
-                          enableRefresh: true,
                           blendMode: BlendMode.overlay,
-                          loadedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
+                          onLoaded: (value) async {
+                            //await Future.delayed(Duration(seconds: 2));
+                            if (this.imageLoading == true) {
+                              setState(() {
+                                this.imageLoading = false;
+                              });
+                            }
                           },
-                          loadFailedCallback: () async {
-                            await Future.delayed(Duration(seconds: 2));
-                            setState(() {
-                              this.imageLoading = false;
-                            });
+                          onLoadedFailed: (value) async {
+                            //await Future.delayed(Duration(seconds: 2));
+                            if (this.imageLoading == true) {
+                              setState(() {
+                                this.imageLoading = false;
+                              });
+                            }
                           },
                         )
                       : Container()),

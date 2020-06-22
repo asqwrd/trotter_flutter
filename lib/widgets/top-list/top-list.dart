@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
 
 class TopList extends StatelessWidget {
@@ -154,21 +152,13 @@ class TopList extends StatelessWidget {
 
   Widget renderImage(item) {
     return item['image'] != null
-        ? TransitionToImage(
-            image: AdvancedNetworkImage(
-              item['image'],
-              useDiskCache: true,
-              cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-            ),
-            loadingWidgetBuilder:
-                (BuildContext context, double progress, test) => Center(
-                    child: CircularProgressIndicator(
+        ? TrotterImage(
+            imageUrl: item['image'],
+            loadingWidgetBuilder: (BuildContext context) => Center(
+                child: CircularProgressIndicator(
               backgroundColor: Colors.white,
             )),
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
             placeholder: const Icon(Icons.refresh),
-            enableRefresh: true,
           )
         : Container(
             decoration: BoxDecoration(

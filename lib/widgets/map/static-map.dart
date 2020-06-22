@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:trotter_flutter/utils/index.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -99,21 +97,13 @@ class _StaticMapState extends State<StaticMap> {
                   clipper: ShapeBorderClipper(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8))),
-                  child: TransitionToImage(
-                    image: AdvancedNetworkImage(
-                      this.renderURL.toString(),
-                      useDiskCache: true,
-                      cacheRule: CacheRule(maxAge: const Duration(days: 1)),
-                    ),
-                    loadingWidgetBuilder:
-                        (BuildContext context, double progress, test) => Center(
-                            child: CircularProgressIndicator(
+                  child: TrotterImage(
+                    imageUrl: this.renderURL.toString(),
+                    loadingWidgetBuilder: (BuildContext context) => Center(
+                        child: CircularProgressIndicator(
                       backgroundColor: Colors.white,
                     )),
-                    fit: BoxFit.cover,
-                    alignment: Alignment.center,
                     placeholder: const Icon(Icons.refresh),
-                    enableRefresh: true,
                   ))),
           lat == null && lng == null && address == null
               ? Container()

@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:html_unescape/html_unescape.dart';
@@ -193,7 +191,7 @@ class DayListState extends State<DayList> {
           prefs.getString('dayListShowCaseVisited') ?? null;
       if (cacheData == null &&
           panelController != null &&
-              panelController.isPanelOpen &&
+          panelController.isPanelOpen &&
           this.showTutorial == true) {
         ShowCaseWidget.of(context).startShowCase([_three]);
         await prefs.setString('dayListShowCasePoi', "true");
@@ -247,21 +245,23 @@ class DayListState extends State<DayList> {
                               color: color,
                               fontWeight: FontWeight.w300),
                         )
-                      : this.public == false ? AutoSizeText(
-                          'All the places you have visited for the day',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 25,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ) : AutoSizeText(
-                          'Nothing done on this day',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 25,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ),
+                      : this.public == false
+                          ? AutoSizeText(
+                              'All the places you have visited for the day',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 25,
+                                  color: color,
+                                  fontWeight: FontWeight.w300),
+                            )
+                          : AutoSizeText(
+                              'Nothing done on this day',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 25,
+                                  color: color,
+                                  fontWeight: FontWeight.w300),
+                            ),
                   SizedBox(height: 10),
                   this.visited != true && this.public == false
                       ? AutoSizeText(
@@ -272,21 +272,23 @@ class DayListState extends State<DayList> {
                               color: color,
                               fontWeight: FontWeight.w300),
                         )
-                      : this.public == false ? AutoSizeText(
-                          'Places you mark as visited will appear here',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ) : AutoSizeText(
-                          '',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: color,
-                              fontWeight: FontWeight.w300),
-                        ),
+                      : this.public == false
+                          ? AutoSizeText(
+                              'Places you mark as visited will appear here',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: color,
+                                  fontWeight: FontWeight.w300),
+                            )
+                          : AutoSizeText(
+                              '',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 13,
+                                  color: color,
+                                  fontWeight: FontWeight.w300),
+                            ),
                 ],
               ))),
     ]);
@@ -349,9 +351,11 @@ class DayListState extends State<DayList> {
             var poi = itineraryItems[index]['poi'];
             var item = itineraryItems[index];
             List<dynamic> travelerDescription = item['traveler_descriptions'];
-            var indexDes = store.currentUser != null ? travelerDescription.indexWhere((element) {
-              return element['user']['uid'] == store.currentUser.uid;
-            }) : null;
+            var indexDes = store.currentUser != null
+                ? travelerDescription.indexWhere((element) {
+                    return element['user']['uid'] == store.currentUser.uid;
+                  })
+                : null;
             var justAdded = itineraryItems[index]['justAdded'];
             var travelTime = itineraryItems[index]['travel'];
             var prevIndex = index - 1;
@@ -617,37 +621,27 @@ class DayListState extends State<DayList> {
                                                         margin: EdgeInsets.only(
                                                             bottom: 3, top: 2),
                                                         child: AutoSizeText(
-                                                            timeSpent['unit']
-                                                                        .toString()
-                                                                        .isEmpty ==
-                                                                    false
+                                                            timeSpent['unit'].toString().isEmpty == false
                                                                 ? 'You were here for ${timeSpent['value']} $unit'
                                                                 : '',
                                                             textAlign:
                                                                 TextAlign.left,
                                                             style: TextStyle(
                                                                 fontSize: 11,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w300)))
-                                                    : this.showTimeSpent == true ? Container(
-                                                        margin: EdgeInsets.only(
-                                                            bottom: 3, top: 2),
-                                                        child: AutoSizeText(
-                                                            timeSpent['unit']
-                                                                        .toString()
-                                                                        .isEmpty ==
-                                                                    false
-                                                                 ? 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} ${timeSpent['value']} $unit'
-                                : 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} Not given',
-                                                            textAlign:
-                                                                TextAlign.left,
-                                                            style: TextStyle(
-                                                                fontSize: 11,
-                                                                color: color,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400))): Container(),
+                                                                fontWeight: FontWeight
+                                                                    .w300)))
+                                                    : this.showTimeSpent == true
+                                                        ? Container(
+                                                            margin: EdgeInsets.only(
+                                                                bottom: 3,
+                                                                top: 2),
+                                                            child: AutoSizeText(
+                                                                timeSpent['unit'].toString().isEmpty == false
+                                                                    ? 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} ${timeSpent['value']} $unit'
+                                                                    : 'Suggested time to spend here ${new HtmlUnescape().convert('&bull;')} Not given',
+                                                                textAlign: TextAlign.left,
+                                                                style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w400)))
+                                                        : Container(),
                                                 poi == null
                                                     ? Container()
                                                     : poi['tags'] != null
@@ -698,14 +692,20 @@ class DayListState extends State<DayList> {
                                                               height: 1.3),
                                                         ))
                                                     : Container(),
-                                                (this.editable == true && travelerDescription.length ==
+                                                (this.editable == true &&
+                                                        travelerDescription
+                                                                .length ==
                                                             0 &&
                                                         this.visited == true)
                                                     ? renderEditButton(
                                                         context, poi, item)
-                                                    :  this.visited == true || this.showDescriptions == true
+                                                    : this.visited == true ||
+                                                            this.showDescriptions ==
+                                                                true
                                                         ? Container(
-                                                          margin: EdgeInsets.only(top:10),
+                                                            margin:
+                                                                EdgeInsets.only(
+                                                                    top: 10),
                                                             width: MediaQuery.of(
                                                                         context)
                                                                     .size
@@ -714,7 +714,11 @@ class DayListState extends State<DayList> {
                                                             child: Column(
                                                                 children: <
                                                                     Widget>[
-                                                                  indexDes != null && indexDes < 0 && this.editable == true
+                                                                  indexDes != null &&
+                                                                          indexDes <
+                                                                              0 &&
+                                                                          this.editable ==
+                                                                              true
                                                                       ? renderEditButton(
                                                                           context,
                                                                           poi,
@@ -743,25 +747,20 @@ class DayListState extends State<DayList> {
                                                                       return ListTile(
                                                                           onTap:
                                                                               () async {
-                                                                                if(this.editable == true){
-                                                                            await onDescriptionModal(
-                                                                                context,
-                                                                                description,
-                                                                                poi,
-                                                                                item);
-                                                                                }
+                                                                            if (this.editable ==
+                                                                                true) {
+                                                                              await onDescriptionModal(context, description, poi, item);
+                                                                            }
                                                                           },
-                                                                          leading:
-                                                                              CircleAvatar(
-                                                                            backgroundImage: AdvancedNetworkImage(user.photoUrl,
-                                                                                useDiskCache: true,
-                                                                                cacheRule: CacheRule(maxAge: Duration(days: 1))),
-                                                                          ),
-                                                                          title: AutoSizeText(store.currentUser != null && store.currentUser.uid == user.uid
-                                                                              ? "Your thoughts"
-                                                                              : '${user.displayName}\'s thoughts'),
-                                                                          subtitle:
-                                                                              AutoSizeText(description,style:TextStyle(fontSize: 13)));
+                                                                          leading: ClipPath(
+                                                                              clipper: ShapeBorderClipper(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100))),
+                                                                              child: CircleAvatar(
+                                                                                child: TrotterImage(
+                                                                                  imageUrl: user.photoUrl,
+                                                                                ),
+                                                                              )),
+                                                                          title: AutoSizeText(store.currentUser != null && store.currentUser.uid == user.uid ? "Your thoughts" : '${user.displayName}\'s thoughts'),
+                                                                          subtitle: AutoSizeText(description, style: TextStyle(fontSize: 13)));
                                                                     },
                                                                   )
                                                                 ]))
@@ -798,9 +797,9 @@ class DayListState extends State<DayList> {
                                                 ],
                                               ),
                                               key: _three,
-                                              child:
-                                                  renderPoiImage(context, item,index))
-                                          : renderPoiImage(context, item,index)
+                                              child: renderPoiImage(
+                                                  context, item, index))
+                                          : renderPoiImage(context, item, index)
                                       : Container()
                                 ])))
                       ],
@@ -810,7 +809,7 @@ class DayListState extends State<DayList> {
   }
 
   renderEditButton(BuildContext context, poi, item) {
-    if(item['description'].isNotEmpty){
+    if (item['description'].isNotEmpty) {
       return Container();
     }
     return InkWell(
@@ -825,9 +824,9 @@ class DayListState extends State<DayList> {
               color: Colors.black.withOpacity(0.05),
             ),
             child: ListTile(
-              title: AutoSizeText(
-                  "Tap here to describe your experience at ${poi['name']}",
-                  style: TextStyle(fontWeight: FontWeight.w300, fontSize: 15),
+                title: AutoSizeText(
+              "Tap here to describe your experience at ${poi['name']}",
+              style: TextStyle(fontWeight: FontWeight.w300, fontSize: 15),
             ))));
   }
 
@@ -962,7 +961,7 @@ class DayListState extends State<DayList> {
             ])));
   }
 
-  Card renderPoiImage(BuildContext context, item,int index) {
+  Card renderPoiImage(BuildContext context, item, int index) {
     return Card(
         //opacity: 1,
         elevation: 1,
@@ -977,31 +976,24 @@ class DayListState extends State<DayList> {
                       borderRadius: BorderRadius.circular(15))),
               child: item['image'] != null
                   ? Stack(fit: StackFit.expand, children: <Widget>[
-                      TransitionToImage(
-                        image: AdvancedNetworkImage(
-                          item['image'],
-                          useDiskCache: true,
-                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                        ),
-                        loadingWidgetBuilder:
-                            (BuildContext context, double progress, test) =>
-                                Center(
-                                    child: RefreshProgressIndicator(
+                      TrotterImage(
+                        imageUrl: item['image'],
+                        enableRefresh: true,
+                        placeholder: Center(
+                            child: IconButton(
+                                  icon: Icon(Icons.refresh),
+                                  onPressed: () {
+                                    this.onRefreshImage({
+                                      "index": index,
+                                      "poi": item['poi'],
+                                      "itineraryItemId": item['id']
+                                    });
+                                  },
+                                )),
+                        loadingWidgetBuilder: (BuildContext context) => Center(
+                            child: RefreshProgressIndicator(
                           backgroundColor: Colors.white,
                         )),
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                        placeholder: Center(child:IconButton(
-                              icon: Icon(Icons.refresh),
-                              onPressed: () {
-                                this.onRefreshImage({
-                                  "index": index,
-                                  "poi": item['poi'],
-                                  "itineraryItemId": item['id']
-                                });
-                              },
-                        )),
-                        enableRefresh: true,
                       ),
                       item['added_by_full'] != null
                           ? Positioned(
@@ -1015,11 +1007,8 @@ class DayListState extends State<DayList> {
                                       border: Border.all(
                                           width: 2, color: Colors.white)),
                                   child: CircleAvatar(
-                                      backgroundImage: AdvancedNetworkImage(
-                                    item['added_by_full']['photoUrl'],
-                                    useDiskCache: true,
-                                    cacheRule: CacheRule(
-                                        maxAge: const Duration(days: 7)),
+                                      child: TrotterImage(
+                                    imageUrl: item['added_by_full']['photoUrl'],
                                   ))),
                             )
                           : Container()
@@ -1048,22 +1037,13 @@ class DayListState extends State<DayList> {
                       borderRadius: BorderRadius.circular(15))),
               child: item['image'] != null
                   ? Stack(fit: StackFit.expand, children: <Widget>[
-                      TransitionToImage(
-                        image: AdvancedNetworkImage(
-                          item['image'],
-                          useDiskCache: true,
-                          cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                        ),
-                        loadingWidgetBuilder:
-                            (BuildContext context, double progress, test) =>
-                                Center(
-                                    child: RefreshProgressIndicator(
+                      TrotterImage(
+                        imageUrl: item['image'],
+                        placeholder: Icon(Icons.refresh),
+                        loadingWidgetBuilder: (BuildContext context) => Center(
+                            child: RefreshProgressIndicator(
                           backgroundColor: Colors.white,
                         )),
-                        fit: BoxFit.cover,
-                        alignment: Alignment.center,
-                        placeholder: const Icon(Icons.refresh),
-                        enableRefresh: true,
                       ),
                     ])
                   : Container(

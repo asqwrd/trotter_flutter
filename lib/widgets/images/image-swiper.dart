@@ -1,8 +1,7 @@
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:flutter_page_indicator/flutter_page_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
+import 'package:trotter_flutter/utils/index.dart';
 
 class ImageSwiper extends StatelessWidget {
   const ImageSwiper({
@@ -30,20 +29,13 @@ class ImageSwiper extends StatelessWidget {
           child: Swiper(
             itemBuilder: (BuildContext context, int index) {
               return Stack(fit: StackFit.expand, children: <Widget>[
-                TransitionToImage(
-                  image: AdvancedNetworkImage(
-                    this.images[index]['sizes']['medium']['url'],
-                    useDiskCache: true,
-                    cacheRule: CacheRule(maxAge: const Duration(days: 7)),
-                  ),
-                  loadingWidgetBuilder:
-                      (BuildContext context, double progress, test) =>
-                          Container(),
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                  placeholder: const Icon(Icons.refresh),
-                  enableRefresh: true,
-                )
+                TrotterImage(
+                  imageUrl: this.images[index]['sizes']['medium']['url'],
+                  loadingWidgetBuilder: (context) => Center(
+                      child: RefreshProgressIndicator(
+                    backgroundColor: Colors.white,
+                  )),
+                ),
               ]);
             },
             loop: true,

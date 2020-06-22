@@ -1,7 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_loader/awesome_loader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:lazy_load_scrollview/lazy_load_scrollview.dart';
@@ -245,11 +244,9 @@ class CommentsModalState extends State<CommentsModal> {
                               TrotterUser.fromJson(results[index]['user']);
                           return ListTile(
                             leading: CircleAvatar(
-                              backgroundImage: AdvancedNetworkImage(
-                                  user.photoUrl,
-                                  useDiskCache: true,
-                                  cacheRule:
-                                      CacheRule(maxAge: Duration(days: 1))),
+                              child: TrotterImage(
+                                imageUrl: user.photoUrl,
+                              ),
                             ),
                             title: AutoSizeText(user.displayName),
                             subtitle: AutoSizeText(results[index]['msg']),

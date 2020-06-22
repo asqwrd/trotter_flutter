@@ -1,7 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_advanced_networkimage/provider.dart';
-import 'package:flutter_advanced_networkimage/transition.dart';
 import 'package:flutter_store/flutter_store.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -255,6 +253,8 @@ class DatesModalState extends State<DatesModal> {
             onChanged: (bool newVal) {
               setState(() {
                 this.setDatesLater = newVal;
+                this.arrival = 0;
+                this.departure = 0;
               });
             },
           ),
@@ -282,6 +282,8 @@ class DatesModalState extends State<DatesModal> {
                     if (this.setDatesLater) {
                       destination['num_of_days'] =
                           int.parse(numOfDaysController.text);
+                      destination["start_date"] = 0;
+                      destination["end_date"] = 0;
                     }
                     store.tripStore.setTripsLoading(true);
                     var response = await putUpdateTripDestination(
@@ -1205,23 +1207,14 @@ class TripState extends State<Trip> {
                                     destinations[index]['end_date'] * 1000));
                             return Stack(fit: StackFit.expand, children: <
                                 Widget>[
-                              TransitionToImage(
-                                image: AdvancedNetworkImage(
-                                  this.destinations[index]['image'],
-                                  useDiskCache: true,
-                                  cacheRule: CacheRule(
-                                      maxAge: const Duration(days: 7)),
-                                ),
-                                loadingWidgetBuilder: (BuildContext context,
-                                        double progress, test) =>
+                              TrotterImage(
+                                imageUrl: this.destinations[index]['image'],
+                                placeholder: Icon(Icons.refresh),
+                                loadingWidgetBuilder: (BuildContext context) =>
                                     Center(
                                         child: RefreshProgressIndicator(
                                   backgroundColor: Colors.white,
                                 )),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
-                                placeholder: const Icon(Icons.refresh),
-                                enableRefresh: true,
                               ),
                               Container(color: Colors.black.withOpacity(0.5)),
                               Positioned(
